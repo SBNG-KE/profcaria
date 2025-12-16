@@ -1,0 +1,74 @@
+//lib/security.ts
+
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
+
+// Load keys from environment
+const ENCRYPTION_KEY = process.env.DATA_ENCRYPTION_KEY || ''; 
+const PEPPER = process.env.BLIND_INDEX_PEPPER || '';
+
+// Algorithm for symmetric encryption (speed + security)
+const ALGORITHM = 'aes-256-gcm';
+
+/**
+ * ENCRYPT: Converts plain text (e.g., "John Doe") into encrypted hex string.
+ * This is what gets stored in columns like 'enc_first_name'.
+ */
+export const encryptData = (text: string) => {
+  if (!text) return null;
+  
+  // 1. Create a random initialization vector (IV)
+  const iv = randomBytes(16);
+  
+  // 2. Create the cipher
+  // Note: We assume ENCRYPTION_KEY is a 32-byte hex string
+  const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'hex');
+  const cipher = createCipheriv(ALGORITHM, keyBuffer, iv);
+  
+  // 3. Encrypt
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  
+  // 4. Get the auth tag (integrity check)
+  const authTag = cipher.getAuthTag().toString('hex');
+  
+  // 5. Return everything needed to decrypt later: IV + AuthTag + EncryptedData
+  // Format: iv:authTag:encryptedData
+  return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+};
+
+/**
+ * DECRYPT: Converts the DB string back to "John Doe" for the UI.
+ * Only runs on your server (Next.js API routes), never in the browser logic if possible.
+ */
+export const decryptData = (encryptedString: string) => {
+  if (!encryptedString) return null;
+
+  const [ivHex, authTagHex, encryptedHex] = encryptedString.split(':');
+  
+  const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'hex');
+  const ivBuffer = Buffer.from(ivHex, 'hex');
+  const authTagBuffer = Buffer.from(authTagHex, 'hex');
+  
+  const decipher = createDecipheriv(ALGORITHM, keyBuffer, ivBuffer);
+  decipher.setAuthTag(authTagBuffer);
+  
+  let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  
+  return decrypted;
+};
+
+/**
+ * BLIND INDEX HASHING:
+ * Creates the hash for 'email_index' or 'phone_index'.
+ * It uses SHA3-256 (via scrypt for simplicity here, or use actual sha3 library) + Pepper.
+ */
+export const hashForIndex = (input: string) => {
+  // Normalize input (trim, lowercase) to ensure matching
+  const cleanInput = input.trim().toLowerCase();
+  const dataToHash = cleanInput + PEPPER;
+  
+  // Using scrypt as a robust hashing mechanism available in Node crypto
+  // Generates a 64-character hex string
+  return scryptSync(dataToHash, 'salt', 64).toString('hex');
+};

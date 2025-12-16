@@ -1,0 +1,14 @@
+//app/professional/home/page.tsx
+
+export default function ProfessionalHome() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#050b14] text-slate-200">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Professional Dashboard</h1>
+        <p className="text-slate-400 text-sm">
+          Temporary page – will be replaced later
+        </p>
+      </div>
+    </div>
+  );
+}
