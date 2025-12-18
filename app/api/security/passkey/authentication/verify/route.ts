@@ -88,8 +88,8 @@ export async function POST(req: Request) {
                 .setExpirationTime('30d')
                 .sign(secret);
 
-            const redirectPath = credential.user_schema === 'professional' ? '/professional' :
-                credential.user_schema === 'employer' ? '/employer' : '/';
+            const redirectPath = credential.user_schema === 'professional' ? '/professional/home' :
+                credential.user_schema === 'employer' ? '/employer/home' : '/';
 
             console.log('🔐 [PASSKEY-VERIFY] Success! Redirecting to:', redirectPath);
 

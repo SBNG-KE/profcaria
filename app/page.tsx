@@ -1,8 +1,6 @@
-//app/page.tsx
-
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -13,38 +11,33 @@ import {
   Mail,
   Upload,
   Phone,
-  Globe
+  FileText,
+  X,
+  Shield,
+  AlertCircle,
+  CheckCircle,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
-// --- COMPONENTS ---
-
-
-
-// 1. The Pillar Component - Enhanced Visibility & Texture
+// 1. The Pillar Component
 const Pillar = ({ className }: { className?: string }) => (
   <div className={`relative h-full w-24 flex-shrink-0 flex flex-col items-center justify-end ${className}`}>
-    {/* Capital (Top) */}
     <div className="w-32 h-12 bg-gradient-to-b from-slate-600 to-slate-800 rounded-t-sm shadow-2xl mb-1 border-b border-black/50 z-10" />
-
-    {/* Shaft (Main Body) - Fluted effect */}
     <div className="flex-grow w-24 bg-[#1e293b] shadow-2xl relative overflow-hidden flex justify-center border-x border-slate-900">
-      {/* Fluting (Vertical Lines) */}
       <div className="w-full h-full flex justify-between px-2 opacity-50">
         <div className="w-2 h-full bg-gradient-to-r from-black/60 to-transparent"></div>
         <div className="w-2 h-full bg-gradient-to-r from-black/60 to-transparent"></div>
         <div className="w-2 h-full bg-gradient-to-r from-black/60 to-transparent"></div>
         <div className="w-2 h-full bg-gradient-to-r from-black/60 to-transparent"></div>
       </div>
-      {/* 3D lighting gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60 pointer-events-none"></div>
     </div>
-
-    {/* Base (Bottom) */}
     <div className="w-36 h-14 bg-gradient-to-t from-slate-800 to-slate-700 rounded-sm shadow-xl mt-1 border-t border-slate-600/50 z-10" />
   </div>
 );
 
-// 2. Input Component
+// 2. Input Component with show/hide password
 const ModernInput = ({
   type = "text",
   placeholder,
@@ -52,7 +45,10 @@ const ModernInput = ({
   value,
   onChange,
   onFocus,
-  className
+  className,
+  showPasswordToggle = false,
+  passwordVisible = false,
+  onTogglePassword
 }: {
   type?: string;
   placeholder: string;
@@ -61,38 +57,368 @@ const ModernInput = ({
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus?: () => void;
   className?: string;
+  showPasswordToggle?: boolean;
+  passwordVisible?: boolean;
+  onTogglePassword?: () => void;
 }) => (
   <div className={`relative group ${className}`}>
     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
       {Icon && <Icon size={18} />}
     </div>
     <input
-      type={type}
+      type={showPasswordToggle ? (passwordVisible ? "text" : "password") : type}
       onFocus={onFocus}
-      className="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent block pl-10 p-3.5 placeholder-slate-600 transition-all duration-300 backdrop-blur-md hover:bg-slate-800/80 shadow-inner"
+      className="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent block pl-10 pr-10 p-3.5 placeholder-slate-600 transition-all duration-300 backdrop-blur-md hover:bg-slate-800/80 shadow-inner"
       placeholder={placeholder}
       value={value}
       onChange={onChange}
     />
+    {showPasswordToggle && onTogglePassword && (
+      <button
+        type="button"
+        onClick={onTogglePassword}
+        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+      >
+        {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    )}
   </div>
 );
 
-// 3. Social Auth Button
-const SocialButton = ({ icon: Icon, label, color }: { icon: React.ElementType; label: string; color: string }) => (
-  <button className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition-all duration-300 group shadow-lg hover:shadow-blue-900/20">
-    <Icon className={`${color} group-hover:scale-110 transition-transform`} size={20} />
-    <span className="text-slate-300 font-medium text-sm">{label}</span>
-  </button>
-);
+// 3. Animated Button Component with press effect
+const AnimatedSubmitButton = ({
+  onClick,
+  disabled,
+  loading,
+  color = 'blue',
+  icon: Icon = ArrowRight
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  loading: boolean;
+  color?: 'blue' | 'emerald';
+  icon?: React.ElementType;
+}) => {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handleClick = () => {
+    if (disabled || loading) return;
+
+    // Press animation
+    setIsPressed(true);
+    setTimeout(() => setIsPressed(false), 200);
+
+    // Trigger the actual click
+    onClick();
+  };
+
+  const baseClass = color === 'blue'
+    ? 'bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500'
+    : 'bg-gradient-to-r from-emerald-800 to-emerald-700 hover:from-emerald-700 hover:to-emerald-600';
+
+  return (
+    <button
+      disabled={disabled || loading}
+      onClick={handleClick}
+      className={`
+        relative p-5 rounded-full shadow-xl transition-all duration-200
+        ${baseClass}
+        ${isPressed ? 'scale-90 shadow-inner' : 'scale-100 hover:scale-105'}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+        active:scale-90
+      `}
+    >
+      <div className="relative">
+        <div className={`absolute inset-0 rounded-full bg-white opacity-0 ${isPressed ? 'animate-ping opacity-20' : ''}`}></div>
+        <Icon size={28} className="text-white relative z-10" />
+      </div>
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-white"></div>
+        </div>
+      )}
+    </button>
+  );
+};
+
+// 4. Forgot Password Modal Component
+const ForgotPasswordModal = ({
+  isOpen,
+  onClose,
+  userType,
+  email,
+  onEmailChange,
+  onReset,
+  loading,
+  error,
+  success,
+  requires2FA
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  userType: 'professional' | 'employer';
+  email: string;
+  onEmailChange: (email: string) => void;
+  onReset: (email: string, newPassword: string) => void;
+  loading: boolean;
+  error: string | null;
+  success: boolean;
+  requires2FA: boolean;
+}) => {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [step, setStep] = useState<'email' | 'verify' | 'reset'>('email');
+  const [verificationComplete, setVerificationComplete] = useState(false);
+
+  // Store email in localStorage so security/verify page can read it
+  const storeResetEmail = (email: string) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('reset_password_email', email);
+      localStorage.setItem('reset_password_userType', userType);
+      localStorage.setItem('reset_password_timestamp', Date.now().toString());
+    }
+  };
+
+  // Check if user is returning from 2FA verification
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const email = localStorage.getItem('reset_password_email');
+      const userType = localStorage.getItem('reset_password_userType');
+      const timestamp = localStorage.getItem('reset_password_timestamp');
+
+      // Check if returning within 15 minutes
+      if (email && userType && timestamp) {
+        const timeDiff = Date.now() - parseInt(timestamp);
+        if (timeDiff < 15 * 60 * 1000) { // 15 minutes
+          setVerificationComplete(true);
+          onEmailChange(email);
+          setStep('reset');
+          // Clear storage after reading
+          localStorage.removeItem('reset_password_email');
+          localStorage.removeItem('reset_password_userType');
+          localStorage.removeItem('reset_password_timestamp');
+        }
+      }
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const handleReset = () => {
+    if (newPassword !== confirmPassword) {
+      alert("Passwords don't match!");
+      return;
+    }
+    onReset(email, newPassword);
+  };
+
+  const handle2FARedirect = () => {
+    // Store email before redirecting
+    storeResetEmail(email);
+    window.location.href = '/security/verify';
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-[#0f172a] border border-slate-700 rounded-2xl w-full max-w-md p-6 animate-in zoom-in-95">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-bold text-white">Reset Password</h3>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            <X size={20} className="text-slate-400" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-500/20 text-red-400 rounded-lg text-sm flex items-center gap-2">
+            <AlertCircle size={16} /> {error}
+          </div>
+        )}
+
+        {success ? (
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center p-3 bg-emerald-900/20 rounded-full text-emerald-400 mb-4">
+              <CheckCircle size={32} />
+            </div>
+            <h4 className="text-lg font-semibold text-white mb-2">Password Reset Successful!</h4>
+            <p className="text-slate-400 text-sm">You can now log in with your new password.</p>
+            <button
+              onClick={onClose}
+              className="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        ) : verificationComplete ? (
+          <div className="space-y-4">
+            <div className="mb-4 p-3 bg-emerald-900/20 border border-emerald-500/20 text-emerald-400 rounded-lg text-sm flex items-center gap-2">
+              <CheckCircle size={16} /> 2FA Verification Complete
+            </div>
+            <p className="text-slate-400 text-sm">Now enter your new password.</p>
+            <ModernInput
+              type="password"
+              placeholder="New Password"
+              icon={Lock}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              showPasswordToggle
+              passwordVisible={passwordVisible}
+              onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+            />
+            <ModernInput
+              type="password"
+              placeholder="Confirm New Password"
+              icon={Lock}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              showPasswordToggle
+              passwordVisible={passwordVisible}
+              onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+            />
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleReset}
+                disabled={loading || !newPassword || !confirmPassword}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors"
+              >
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </button>
+              <button
+                onClick={() => setStep('email')}
+                className="px-4 py-3 border border-slate-700 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        ) : requires2FA && step === 'email' ? (
+          <div className="text-center py-6">
+            <div className="inline-flex items-center justify-center p-3 bg-amber-900/20 rounded-full text-amber-400 mb-4">
+              <Shield size={32} />
+            </div>
+            <h4 className="text-lg font-semibold text-white mb-2">2-Step Verification Required</h4>
+            <p className="text-slate-400 text-sm mb-6">
+              You have two-factor authentication enabled. Please verify your identity first, then you'll be able to reset your password.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={handle2FARedirect}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium transition-colors"
+              >
+                Go to 2FA Verification
+              </button>
+              <button
+                onClick={onClose}
+                className="w-full py-2 text-slate-400 hover:text-slate-300 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : step === 'email' ? (
+          <div className="space-y-4">
+            <p className="text-slate-400 text-sm">
+              Enter your {userType === 'professional' ? 'email' : 'work email'} to reset your password.
+            </p>
+            <ModernInput
+              type="email"
+              placeholder={userType === 'professional' ? "Email Address" : "Work Email"}
+              icon={Mail}
+              value={email}
+              onChange={(e) => onEmailChange(e.target.value)}
+            />
+            <button
+              onClick={() => setStep('reset')}
+              disabled={loading || !email}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors"
+            >
+              {loading ? 'Checking...' : 'Continue'}
+            </button>
+          </div>
+        ) : step === 'reset' ? (
+          <div className="space-y-4">
+            <p className="text-slate-400 text-sm">Enter your new password.</p>
+            <ModernInput
+              type="password"
+              placeholder="New Password"
+              icon={Lock}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              showPasswordToggle
+              passwordVisible={passwordVisible}
+              onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+            />
+            <ModernInput
+              type="password"
+              placeholder="Confirm New Password"
+              icon={Lock}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              showPasswordToggle
+              passwordVisible={passwordVisible}
+              onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+            />
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleReset}
+                disabled={loading || !newPassword || !confirmPassword}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-white font-medium transition-colors"
+              >
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </button>
+              <button
+                onClick={() => setStep('email')}
+                className="px-4 py-3 border border-slate-700 hover:bg-slate-800 rounded-lg text-slate-400 transition-colors"
+              >
+                Back
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
 
 export default function ProfcariaLogin() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  // Global Mode State: 'login' or 'signup' applies to both sides
   const [globalMode, setGlobalMode] = useState<'login' | 'signup'>('login');
-
-  // Focus State: 'professional', 'employer', or null
   const [activeSection, setActiveSection] = useState<'professional' | 'employer' | null>(null);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotPasswordType, setForgotPasswordType] = useState<'professional' | 'employer'>('professional');
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const [forgotPasswordError, setForgotPasswordError] = useState<string | null>(null);
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  // === ADD THIS useEffect HERE ===
+  useEffect(() => {
+    // Check if returning from 2FA verification for password reset
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const resetPassword = urlParams.get('resetPassword');
+
+      if (resetPassword === 'true') {
+        const resetEmail = localStorage.getItem('reset_password_email');
+        const userType = localStorage.getItem('reset_password_userType');
+
+        if (resetEmail && userType) {
+          setForgotPasswordEmail(resetEmail);
+          setForgotPasswordType(userType as 'professional' | 'employer');
+          setForgotPasswordOpen(true);
+
+          // Clear URL param
+          window.history.replaceState({}, '', '/');
+        }
+      }
+    }
+  }, []);
 
   // Professional State
   const [profFirstName, setProfFirstName] = useState('');
@@ -107,7 +433,6 @@ export default function ProfcariaLogin() {
   const [empWorkEmail, setEmpWorkEmail] = useState('');
   const [empPhone, setEmpPhone] = useState('');
   const [empPassword, setEmpPassword] = useState('');
-
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,10 +443,135 @@ export default function ProfcariaLogin() {
     }
   };
 
-  // Helper to determine opacity based on active section
   const getOpacity = (section: 'professional' | 'employer') => {
     if (activeSection === null) return 'opacity-100 grayscale-0';
     return activeSection === section ? 'opacity-100 grayscale-0 scale-[1.01]' : 'opacity-30 grayscale blur-[1px]';
+  };
+
+  const handleForgotPassword = async (type: 'professional' | 'employer') => {
+    setForgotPasswordType(type);
+    setForgotPasswordLoading(true);
+    setForgotPasswordError(null);
+
+    try {
+      const emailToCheck = type === 'professional' ? profEmail : empWorkEmail;
+
+      const checkRes = await fetch(`/api/${type}/check-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailToCheck }),
+      });
+
+      if (!checkRes.ok) {
+        throw new Error('User not found');
+      }
+
+      const checkData = await checkRes.json();
+
+      if (checkData.requires_2fa) {
+        setRequires2FA(true);
+      } else {
+        setRequires2FA(false);
+      }
+
+      setForgotPasswordEmail(emailToCheck);
+      setForgotPasswordOpen(true);
+    } catch (err: any) {
+      setForgotPasswordError(err.message || 'Failed to check account');
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (email: string, newPassword: string) => {
+    setForgotPasswordLoading(true);
+    setForgotPasswordError(null);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          newPassword: newPassword,
+          userType: forgotPasswordType
+        })
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to reset password');
+      }
+
+      setForgotPasswordSuccess(true);
+
+      // Clear localStorage
+      localStorage.removeItem('reset_password_email');
+      localStorage.removeItem('reset_password_userType');
+      localStorage.removeItem('reset_password_timestamp');
+
+    } catch (err: any) {
+      setForgotPasswordError(err.message || 'Failed to reset password');
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
+  const handleLogin = async (type: 'professional' | 'employer') => {
+    setLoading(true);
+    try {
+      const endpoint = type === 'professional' ? '/api/professional/login' : '/api/employer/login';
+      const email = type === 'professional' ? profEmail : empWorkEmail;
+      const password = type === 'professional' ? profPassword : empPassword;
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      router.push(data.redirect || (type === 'professional' ? '/professional/home' : '/employer/home'));
+    } catch (err: any) {
+      alert(err.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignup = async (type: 'professional' | 'employer') => {
+    setLoading(true);
+    try {
+      const endpoint = type === 'professional' ? '/api/professional/signup' : '/api/employer/signup';
+
+      const payload = type === 'professional' ? {
+        email: profEmail,
+        password: profPassword,
+        firstName: profFirstName,
+        lastName: profLastName,
+        phone: profPhone,
+        role: profRole
+      } : {
+        companyName: empCompanyName,
+        workEmail: empWorkEmail,
+        phone: empPhone,
+        password: empPassword,
+        logoUrl: logoPreview,
+      };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      router.push(data.redirect || (type === 'professional' ? '/professional/home' : '/employer/home'));
+    } catch (err: any) {
+      alert(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -130,22 +580,24 @@ export default function ProfcariaLogin() {
       {/* Background Texture */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 mix-blend-overlay"></div>
 
-      {/* --- HEADER --- */}
-      <header className="relative z-20 w-full p-6 flex flex-col items-center justify-center mt-2 mb-4">
-
-        {/* Logo Placeholder */}
-        <div className="mb-4 w-20 h-20 bg-slate-900/50 border border-dashed border-slate-700 rounded-xl flex items-center justify-center relative overflow-hidden group hover:border-blue-500/50 transition-colors">
-          {/* User will add their logo logic/image here */}
-          <span className="text-[10px] text-slate-500 text-center px-2">Logo Placeholder</span>
-          <div className="absolute inset-0 bg-blue-500/10 blur-xl rounded-full opacity-50"></div>
-        </div>
-
-        {/* Title */}
-        <h1 className="text-6xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-lg mb-6">
+      {/* Original Profcaria name at top left */}
+      <div className="absolute top-6 left-6 z-40">
+        <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
           Profcaria
         </h1>
+      </div>
 
-        {/* Universal Mode Switcher */}
+      {/* Docs Icon at top right */}
+      <button
+        onClick={() => window.open('/docs', '_blank')}
+        className="absolute top-6 right-6 z-40 p-2 hover:bg-slate-800/50 rounded-lg transition-colors group"
+        title="Documentation"
+      >
+        <FileText size={20} className="text-slate-400 group-hover:text-white transition-colors" />
+      </button>
+
+      {/* Header with Sign/Get Started - Added mb-8 for spacing below */}
+      <header className="relative z-20 w-full p-4 flex flex-col items-center justify-center mt-20 mb-8">
         <div className="flex bg-slate-900 p-1.5 rounded-xl border border-slate-800 shadow-2xl w-[300px]">
           <button
             onClick={() => { setGlobalMode('login'); setActiveSection(null); }}
@@ -162,27 +614,27 @@ export default function ProfcariaLogin() {
         </div>
       </header>
 
-      {/* --- MAIN PANTHEON LAYOUT --- */}
-      <main className="flex-grow flex justify-center items-stretch relative z-10 px-0 md:px-8 pb-12 max-w-[1920px] mx-auto w-full h-full">
+      {/* Main Layout - ONLY changed logo section and Employer title order */}
+      <main className="flex-grow flex justify-center items-stretch relative z-10 px-0 md:px-8 pb-4 max-w-[1920px] mx-auto w-full h-full">
 
         {/* PILLAR 1 */}
         <Pillar className="hidden lg:flex" />
 
-        {/* --- SECTION 1: PROFESSIONAL (The Talent) --- */}
+        {/* SECTION 1: PROFESSIONAL */}
         <section
-          className={`flex-1 min-w-[320px] max-w-xl flex flex-col p-8 transition-all duration-500 ${getOpacity('professional')}`}
+          className={`flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('professional')}`}
           onClick={() => setActiveSection('professional')}
         >
-          <div className="flex items-center gap-4 mb-8">
-            <div className="p-3 bg-blue-900/20 rounded-xl text-blue-400 shadow-inner border border-blue-900/30">
-              <User size={28} />
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-2 bg-blue-900/20 rounded-xl text-blue-400 shadow-inner border border-blue-900/30">
+              <User size={24} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-100 tracking-wide">Professional</h2>
+            <h2 className="text-xl font-bold text-slate-100 tracking-wide">Professional</h2>
           </div>
 
-          <div className="space-y-5 flex-grow">
+          <div className="space-y-3">
             {globalMode === 'signup' && (
-              <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-2 gap-2">
                 <ModernInput
                   onFocus={() => setActiveSection('professional')}
                   placeholder="First Name"
@@ -207,6 +659,7 @@ export default function ProfcariaLogin() {
               value={profEmail}
               onChange={(e) => setProfEmail(e.target.value)}
             />
+
             {globalMode === 'signup' && (
               <ModernInput
                 onFocus={() => setActiveSection('professional')}
@@ -217,6 +670,7 @@ export default function ProfcariaLogin() {
                 onChange={(e) => setProfPhone(e.target.value)}
               />
             )}
+
             <ModernInput
               onFocus={() => setActiveSection('professional')}
               placeholder="Password"
@@ -224,135 +678,78 @@ export default function ProfcariaLogin() {
               icon={Lock}
               value={profPassword}
               onChange={(e) => setProfPassword(e.target.value)}
+              showPasswordToggle
+              passwordVisible={passwordVisible}
+              onTogglePassword={() => setPasswordVisible(!passwordVisible)}
             />
 
-            {globalMode === 'signup' ? (
-              <ModernInput
-                onFocus={() => setActiveSection('professional')}
-                placeholder="Current Role / Title"
-                icon={Briefcase}
-                className="animate-in fade-in slide-in-from-bottom-5 duration-700"
-                value={profRole}
-                onChange={(e) => setProfRole(e.target.value)}
-              />
-            ) : (
+            {globalMode === 'login' && (
               <div className="flex justify-end pt-1">
-                <button className="text-xs text-blue-400 hover:text-blue-300 transition-colors">Forgot Password?</button>
+                <button
+                  onClick={() => handleForgotPassword('professional')}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                  disabled={forgotPasswordLoading}
+                >
+                  {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
+                </button>
               </div>
             )}
           </div>
 
-          <div className="mt-10 flex justify-end">
-            <button
-              disabled={loading}
-              onClick={async () => {
-                try {
-                  setLoading(true);
-
-                  const res = await fetch(
-                    globalMode === 'login'
-                      ? '/api/professional/login'
-                      : '/api/professional/signup',
-                    {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        email: profEmail,
-                        password: profPassword,
-                        firstName: profFirstName,
-                        lastName: profLastName,
-                        phone: profPhone,
-                        role: profRole
-                      }),
-                    }
-                  );
-
-                  if (!res.ok) throw new Error('Auth failed');
-
-                  // ✅ TEMP REDIRECT
-                  router.push('/professional/home');
-                } catch (err) {
-                  console.error(err);
-                  alert('Authentication failed');
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className="bg-gradient-to-r from-blue-700 to-blue-600 p-5 rounded-full"
-            >
-              <ArrowRight size={28} />
-            </button>
-
+          {/* Button positioned close to inputs */}
+          <div className="mt-3 flex justify-end">
+            <AnimatedSubmitButton
+              onClick={() => globalMode === 'login'
+                ? handleLogin('professional')
+                : handleSignup('professional')
+              }
+              disabled={loading || (globalMode === 'login' ? (!profEmail || !profPassword) : (!profEmail || !profPassword || !profFirstName || !profLastName))}
+              loading={loading}
+              color="blue"
+            />
           </div>
         </section>
 
         {/* PILLAR 2 */}
         <Pillar className="hidden md:flex" />
 
-        {/* --- SECTION 2: CENTRAL GATEWAY (Social & 2FA) --- */}
-        <section className="flex-1 min-w-[300px] max-w-md flex flex-col p-6 relative justify-center">
-          {/* Mobile divider */}
-          <div className="absolute inset-y-8 left-0 w-px bg-gradient-to-b from-transparent via-slate-800 to-transparent md:hidden" />
+        {/* CENTRAL SECTION */}
+        <section className="flex-1 min-w-[300px] max-w-md flex items-center justify-center relative pb-24">
+          <div className="w-48 h-48 rounded-full bg-gradient-to-br from-blue-900/20 to-emerald-900/20 border-2 border-slate-700/50 shadow-2xl flex items-center justify-center relative overflow-hidden">
 
-          <div className="flex justify-center mb-6">
-            <div className="p-3 bg-purple-900/10 rounded-full text-purple-400 ring-1 ring-purple-500/20">
-              <Globe size={28} />
+            {/* Logo container */}
+            <div className="w-40 h-40 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-700/30 overflow-hidden">
+              <Image
+                src="/profcaria.png"     // 👈 path from /public
+                alt="Profcaria Logo"
+                width={160}
+                height={160}
+                className="object-contain"
+                priority
+              />
             </div>
-          </div>
 
-          <div className="space-y-4 w-full">
-            <SocialButton
-              icon={({ className }: { className?: string }) => (
-                <svg className={className} viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-              )}
-              label="Continue with Google"
-              color=""
-            />
-
-            <SocialButton
-              icon={({ className }: { className?: string }) => (
-                <svg className={className} viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.78 1.18-.19 2.31-.89 3.51-.84 1.54.06 2.68.75 3.56 1.77-3.19 1.6-2.66 6.09.52 7.46-.3 1.54-1.12 3-2.67 3.8ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z" /></svg>
-              )}
-              label="Continue with Apple"
-              color="text-white"
-            />
-
-            <SocialButton
-              icon={({ className }: { className?: string }) => (
-                <svg className={className} viewBox="0 0 23 23" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="#f35325" d="M1 1h10v10H1z" /><path fill="#81bc06" d="M12 1h10v10H12z" /><path fill="#05a6f0" d="M1 12h10v10H1z" /><path fill="#ffba08" d="M12 12h10v10H12z" /></svg>
-              )}
-              label="Continue with Microsoft"
-              color=""
-            />
           </div>
         </section>
 
         {/* PILLAR 3 */}
         <Pillar className="hidden md:flex" />
 
-        {/* --- SECTION 3: EMPLOYER (The Corporate Side) --- */}
+        {/* SECTION 3: EMPLOYER */}
         <section
-          className={`flex-1 min-w-[320px] max-w-xl flex flex-col p-8 transition-all duration-500 ${getOpacity('employer')}`}
+          className={`flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('employer')}`}
           onClick={() => setActiveSection('employer')}
         >
-          {/* Mobile divider */}
-          <div className="absolute inset-y-8 left-0 w-px bg-gradient-to-b from-transparent via-slate-800 to-transparent md:hidden" />
-
-          <div className="flex items-center gap-4 mb-8 justify-end md:justify-start">
-            <h2 className="text-2xl font-bold text-slate-100 tracking-wide">Employer</h2>
-            <div className="p-3 bg-emerald-900/20 rounded-xl text-emerald-400 shadow-inner border border-emerald-900/30">
-              <Briefcase size={28} />
+          <div className="flex items-center gap-4 mb-4 justify-end md:justify-start">
+            <div className="p-2 bg-emerald-900/20 rounded-xl text-emerald-400 shadow-inner border border-emerald-900/30">
+              <Briefcase size={24} />
             </div>
+            <h2 className="text-xl font-bold text-slate-100 tracking-wide">Employer</h2>
           </div>
 
-          <div className="space-y-5 flex-grow">
+          <div className="space-y-3">
             {globalMode === 'signup' && (
-              <div className="animate-in fade-in slide-in-from-right-4 duration-500 space-y-5">
+              <div className="space-y-3">
                 <ModernInput
                   onFocus={() => setActiveSection('employer')}
                   placeholder="Company Name"
@@ -361,8 +758,7 @@ export default function ProfcariaLogin() {
                   onChange={(e) => setEmpCompanyName(e.target.value)}
                 />
 
-                {/* Logo Image Picker */}
-                <div className="relative group cursor-pointer border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-xl p-6 transition-colors text-center bg-slate-900/40">
+                <div className="relative group cursor-pointer border border-dashed border-slate-700 hover:border-emerald-500/50 rounded-lg p-3 transition-colors text-center bg-slate-900/40">
                   <input
                     type="file"
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -371,14 +767,21 @@ export default function ProfcariaLogin() {
                     onFocus={() => setActiveSection('employer')}
                   />
                   {logoPreview ? (
-                    <div className="flex items-center gap-3 justify-center">
-                      <Image src={logoPreview} alt="Logo" width={48} height={48} unoptimized className="w-12 h-12 rounded-full object-cover border border-slate-600" />
-                      <span className="text-sm text-emerald-400 font-medium">Logo Uploaded</span>
+                    <div className="flex items-center gap-2 justify-center">
+                      <Image
+                        src={logoPreview}
+                        alt="Logo"
+                        width={32}
+                        height={32}
+                        unoptimized
+                        className="w-8 h-8 rounded-full object-cover border border-slate-600"
+                      />
+                      <span className="text-xs text-emerald-400">Logo Uploaded</span>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 text-slate-500 group-hover:text-slate-300">
-                      <Upload size={24} />
-                      <span className="text-sm font-medium">Upload Company Logo</span>
+                    <div className="flex flex-col items-center gap-1 text-slate-500 group-hover:text-slate-300">
+                      <Upload size={16} />
+                      <span className="text-xs">Upload Logo</span>
                     </div>
                   )}
                 </div>
@@ -393,6 +796,7 @@ export default function ProfcariaLogin() {
               value={empWorkEmail}
               onChange={(e) => setEmpWorkEmail(e.target.value)}
             />
+
             {globalMode === 'signup' && (
               <ModernInput
                 onFocus={() => setActiveSection('employer')}
@@ -403,6 +807,7 @@ export default function ProfcariaLogin() {
                 onChange={(e) => setEmpPhone(e.target.value)}
               />
             )}
+
             <ModernInput
               onFocus={() => setActiveSection('employer')}
               placeholder="Password"
@@ -410,71 +815,67 @@ export default function ProfcariaLogin() {
               icon={Lock}
               value={empPassword}
               onChange={(e) => setEmpPassword(e.target.value)}
+              showPasswordToggle
+              passwordVisible={passwordVisible}
+              onTogglePassword={() => setPasswordVisible(!passwordVisible)}
             />
 
             {globalMode === 'login' && (
               <div className="flex justify-end pt-1">
-                <button className="text-xs text-emerald-500 hover:text-emerald-400 transition-colors">Forgot Password?</button>
+                <button
+                  onClick={() => handleForgotPassword('employer')}
+                  className="text-xs text-emerald-500 hover:text-emerald-400 transition-colors"
+                  disabled={forgotPasswordLoading}
+                >
+                  {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
+                </button>
               </div>
             )}
           </div>
 
-          <div className="mt-10 flex justify-end">
-            <button
-              disabled={loading}
-              onClick={async () => {
-                try {
-                  setLoading(true);
-
-                  const res = await fetch(
-                    globalMode === 'login'
-                      ? '/api/employer/login'
-                      : '/api/employer/signup',
-                    {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        companyName: empCompanyName,
-                        workEmail: empWorkEmail,
-                        phone: empPhone,
-                        password: empPassword,
-                        logoUrl: logoPreview,
-                      }),
-                    }
-                  );
-
-                  if (!res.ok) throw new Error('Auth failed');
-
-                  // ✅ TEMP REDIRECT
-                  router.push('/employer/home');
-                } catch (err) {
-                  console.error(err);
-                  alert('Authentication failed');
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className="bg-gradient-to-r from-emerald-800 to-emerald-700 p-5 rounded-full"
-            >
-              <ArrowRight size={28} />
-            </button>
-
+          {/* Button positioned close to inputs */}
+          <div className="mt-3 flex justify-end">
+            <AnimatedSubmitButton
+              onClick={() => globalMode === 'login'
+                ? handleLogin('employer')
+                : handleSignup('employer')
+              }
+              disabled={loading || (globalMode === 'login' ? (!empWorkEmail || !empPassword) : (!empWorkEmail || !empPassword || !empCompanyName))}
+              loading={loading}
+              color="emerald"
+            />
           </div>
         </section>
 
         {/* PILLAR 4 */}
         <Pillar className="hidden lg:flex" />
-
       </main>
 
-      {/* Footer - Minimal System Status */}
-      <footer className="w-full text-center py-4 text-[10px] text-slate-700 bg-[#02050a] z-10">
+      {/* Footer */}
+      <footer className="w-full text-center py-3 text-[10px] text-slate-700 bg-[#02050a] z-10">
         <div className="flex justify-center gap-8 font-mono tracking-widest opacity-60">
           <span>SYSTEM_ONLINE</span>
           <span>SECURE_CONNECTION</span>
         </div>
       </footer>
 
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={forgotPasswordOpen}
+        onClose={() => {
+          setForgotPasswordOpen(false);
+          setForgotPasswordSuccess(false);
+          setRequires2FA(false);
+        }}
+        userType={forgotPasswordType}
+        email={forgotPasswordEmail}
+        onEmailChange={setForgotPasswordEmail}
+        onReset={handlePasswordReset}
+        loading={forgotPasswordLoading}
+        error={forgotPasswordError}
+        success={forgotPasswordSuccess}
+        requires2FA={requires2FA}
+      />
     </div>
   );
 }

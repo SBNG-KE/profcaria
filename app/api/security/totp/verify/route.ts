@@ -87,8 +87,8 @@ export async function POST(req: Request) {
             .setExpirationTime('30d')
             .sign(tokenSecret);
 
-        const redirectPath = schema === 'professional' ? '/professional' :
-            schema === 'employer' ? '/employer' : '/';
+        const redirectPath = schema === 'professional' ? '/professional/home' :
+            schema === 'employer' ? '/employer/home' : '/';
 
         const response = NextResponse.json({ success: true, redirect: redirectPath });
         response.cookies.set('profcaria_session', newToken, {

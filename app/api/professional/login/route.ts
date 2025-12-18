@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       .sign(secret);
 
     // 7. Set Cookie & Return
-    const response = NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true, redirect: '/professional/home' });
 
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,

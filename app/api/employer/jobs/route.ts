@@ -1,0 +1,118 @@
+import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
+import { supabaseAdmin } from '@/lib/supabase';
+import { encryptData, decryptData } from '@/lib/security';
+
+export const runtime = 'nodejs';
+
+export async function POST(req: Request) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('profcaria_session')?.value;
+
+        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
+        let payload;
+        try {
+            const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
+            payload = verifiedPayload;
+        } catch (e) {
+            return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+        }
+
+        const { uid, schema } = payload;
+        if (schema !== 'employer') {
+            return NextResponse.json({ error: 'Only employers can create jobs' }, { status: 403 });
+        }
+
+        const body = await req.json();
+        const { title, description, formSchema } = body;
+
+        if (!title || !description || !formSchema) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Encrypt everything
+        const encTitle = encryptData(title);
+        const encDescription = encryptData(description);
+        const encFormSchema = encryptData(JSON.stringify(formSchema));
+
+        const { data, error } = await supabaseAdmin
+            .schema('employer')
+            .from('jobs')
+            .insert([
+                {
+                    company_id: uid,
+                    enc_title: encTitle,
+                    enc_description: encDescription,
+                    enc_form_schema: encFormSchema,
+                    is_active: true
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Job Creation Error:', error);
+            return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true, jobId: data.id });
+
+    } catch (error: any) {
+        console.error('API Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+export async function GET(req: Request) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('profcaria_session')?.value;
+
+        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
+        let payload;
+        try {
+            const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
+            payload = verifiedPayload;
+        } catch (e) {
+            return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+        }
+
+        const { uid, schema } = payload;
+
+        if (schema !== 'employer') {
+            return NextResponse.json({ error: 'Only employers can access this route' }, { status: 403 });
+        }
+
+        const { data: jobs, error } = await supabaseAdmin
+            .schema('employer')
+            .from('jobs')
+            .select('*')
+            .eq('company_id', uid)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Fetch Jobs Error:', error);
+            return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
+        }
+
+        // Decrypt job info for the employer
+        const decryptedJobs = (jobs || []).map((job: any) => ({
+            ...job,
+            title: decryptData(job.enc_title),
+            description: decryptData(job.enc_description),
+            formSchema: JSON.parse(decryptData(job.enc_form_schema) || '[]')
+        }));
+
+        return NextResponse.json({ jobs: decryptedJobs });
+
+    } catch (error: any) {
+        console.error('API Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

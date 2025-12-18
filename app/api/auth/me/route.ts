@@ -29,24 +29,49 @@ export async function GET(req: Request) {
 
         const { uid, schema } = payload;
 
-        // Fetch Security Flags
+        // Fetch Security Flags and Profile Data
+        const isProfessional = schema === 'professional';
+        const userTable = isProfessional ? 'users' : 'companies';
+        const emailField = isProfessional ? 'email_index' : 'work_email_index';
+
+        let selectFields = `has_passkey, has_totp, has_phone_otp, requires_2fa, created_at, ${emailField}`;
+
+        if (isProfessional) {
+            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url`;
+        } else {
+            selectFields += `, enc_company_name`; // Add employer fields if needed
+        }
+
         const { data: user, error } = await supabaseAdmin
             .schema(schema as string)
-            .from(schema === 'professional' ? 'users' : 'companies')
-            .select('has_passkey, has_totp, has_phone_otp, requires_2fa, created_at, email_index')
+            .from(userTable)
+            .select(selectFields)
             .eq('id', uid)
-            .single();
+            .single() as any;
 
         if (error || !user) {
+            console.error('Fetch User Error:', error);
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // We don't decrypt email/phone here unless necessary. 
-        // Just return flags.
+        let profile: any = {};
+        if (isProfessional) {
+            profile = {
+                firstName: decryptData(user.enc_first_name),
+                lastName: decryptData(user.enc_last_name),
+                role: decryptData(user.enc_current_role),
+                profileImageUrl: decryptData(user.enc_profile_image_url)
+            };
+        } else {
+            profile = {
+                companyName: decryptData(user.enc_company_name)
+            };
+        }
 
         return NextResponse.json({
             id: uid,
             schema: schema,
+            profile,
             security: {
                 hasPasskey: user.has_passkey,
                 hasTotp: user.has_totp,

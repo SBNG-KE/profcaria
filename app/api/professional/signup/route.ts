@@ -93,7 +93,7 @@ export async function POST(req: Request) {
       .sign(secret);
 
     // 8. Return Success & Set HTTP-Only Cookie
-    const response = NextResponse.json({ success: true, user_id: data.id });
+    const response = NextResponse.json({ success: true, user_id: data.id, redirect: '/professional/home' });
 
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,

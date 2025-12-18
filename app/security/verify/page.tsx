@@ -41,48 +41,84 @@ export default function SecurityVerifyPage() {
 
     // 1. Fetch Status
     useEffect(() => {
-        console.log('🔍 DEBUG: Fetching security status from /api/auth/me');
-        fetch('/api/auth/me')
-            .then(res => res.json())
-            .then(data => {
-                console.log('🔍 DEBUG: Received data from /api/auth/me:', data);
-                if (data.security) {
-                    console.log('🔍 DEBUG: Security status:', data.security);
-                    setStatus(data.security);
+    console.log('🔍 DEBUG: Fetching security status from /api/auth/me');
+    fetch('/api/auth/me')
+        .then(res => res.json())
+        .then(data => {
+            console.log('🔍 DEBUG: Received data from /api/auth/me:', data);
+            if (data.security) {
+                console.log('🔍 DEBUG: Security status:', data.security);
+                setStatus(data.security);
 
-                    if (!data.security.is2faEnabled) {
-                        console.log('🔍 DEBUG: 2FA not enabled, redirecting to /security/setup');
-                        router.push('/security/setup');
-                    } else if (data.security.hasPasskey && !autoStarted.current) {
-                        console.log('🔍 DEBUG: Has passkey, auto-triggering passkey auth');
-                        autoStarted.current = true; // 🔒 prevents loop
-                        setMethod('passkey');
-                        setStep('method');
-                        setTimeout(startPasskeyAuth, 100);
-                    } else if (data.security.hasPhone) {
-                        console.log('🔍 DEBUG: Has phone but no passkey, showing selection');
-                        // If no passkey but has phone, maybe default? 
-                        // User only asked for Passkey explicit default.
-                        // We'll leave it at selection or pick the first available if desired.
-                        // For now detailed: Selection unless Passkey.
-                        setStep('selection');
-                    } else {
-                        console.log('🔍 DEBUG: No specific method, showing selection');
-                        setStep('selection');
+                // Check if user is coming from password reset
+                if (typeof window !== 'undefined') {
+                    const resetEmail = localStorage.getItem('reset_password_email');
+                    if (resetEmail) {
+                        console.log('🔍 DEBUG: User is resetting password, email stored:', resetEmail);
                     }
-                } else {
-                    console.log('🔍 DEBUG: No security data in response');
                 }
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('🔍 DEBUG: Error fetching security status:', err);
-                setError("Failed to load security status");
-                setLoading(false);
-            });
-    }, []);
 
-    const startPasskeyAuth = async () => {
+                if (!data.security.is2faEnabled) {
+                    console.log('🔍 DEBUG: 2FA not enabled, redirecting to /security/setup');
+                    router.push('/security/setup');
+                } else if (data.security.hasPasskey && !autoStarted.current) {
+                    console.log('🔍 DEBUG: Has passkey, auto-triggering passkey auth');
+                    autoStarted.current = true;
+                    setMethod('passkey');
+                    setStep('method');
+                    setTimeout(startPasskeyAuth, 100);
+                } else {
+                    console.log('🔍 DEBUG: Showing selection');
+                    setStep('selection');
+                }
+            } else {
+                console.log('🔍 DEBUG: No security data in response');
+            }
+            setLoading(false);
+        })
+        .catch(err => {
+            console.error('🔍 DEBUG: Error fetching security status:', err);
+            setError("Failed to load security status");
+            setLoading(false);
+        });
+}, []);
+
+    const verifyTotp = async () => {
+    setVerifying(true);
+    setError(null);
+    try {
+        const res = await fetch('/api/security/totp/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: totpCode })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error);
+        }
+
+        // Check if we're coming from password reset
+        if (typeof window !== 'undefined') {
+            const resetEmail = localStorage.getItem('reset_password_email');
+            if (resetEmail) {
+                // Redirect back to the page with modal
+                window.location.href = '/?resetPassword=true';
+                return;
+            }
+        }
+
+        router.refresh();
+        router.push(data.redirect || '/');
+    } catch (err: any) {
+        setError(err.message || "Invalid code");
+    } finally {
+        setVerifying(false);
+    }
+};
+
+// In startPasskeyAuth function, update the success part:
+const startPasskeyAuth = async () => {
     setVerifying(true);
     setError(null);
 
@@ -92,7 +128,7 @@ export default function SecurityVerifyPage() {
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}) // logged-in user → empty body is fine
+                body: JSON.stringify({})
             }
         );
 
@@ -103,7 +139,6 @@ export default function SecurityVerifyPage() {
 
         let assertion;
         try {
-            // FIX: Wrap opts in an object with optionsJSON property
             assertion = await startAuthentication({ optionsJSON: opts });
         } catch (e: any) {
             if (e.name === 'NotAllowedError') {
@@ -126,6 +161,16 @@ export default function SecurityVerifyPage() {
             throw new Error(verificationJSON.error || 'Passkey verification failed');
         }
 
+        // Check if we're coming from password reset
+        if (typeof window !== 'undefined') {
+            const resetEmail = localStorage.getItem('reset_password_email');
+            if (resetEmail) {
+                // Redirect back to the page with modal
+                window.location.href = '/?resetPassword=true';
+                return;
+            }
+        }
+
         router.refresh();
         router.push(verificationJSON.redirect || '/');
 
@@ -137,29 +182,8 @@ export default function SecurityVerifyPage() {
     }
 };
 
-    const verifyTotp = async () => {
-        setVerifying(true);
-        setError(null);
-        try {
-            const res = await fetch('/api/security/totp/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: totpCode })
-            });
-            const data = await res.json();
 
-            if (!res.ok) {
-                throw new Error(data.error);
-            }
 
-            router.refresh();
-            router.push(data.redirect || '/');
-        } catch (err: any) {
-            setError(err.message || "Invalid code");
-        } finally {
-            setVerifying(false);
-        }
-    };
 
     const verifyPhone = async () => {
         setVerifying(true);

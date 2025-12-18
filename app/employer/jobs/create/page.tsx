@@ -1,0 +1,224 @@
+"use client"
+
+import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+    Plus, X, GripVertical, Type, Hash, List, CheckSquare,
+    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText
+} from 'lucide-react';
+
+interface FormField {
+    id: string;
+    type: 'text' | 'number' | 'radio' | 'checkbox';
+    label: string;
+    options?: string[];
+    required: boolean;
+}
+
+export default function CreateJobPage() {
+    const router = useRouter();
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [fields, setFields] = useState<FormField[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const addField = (type: FormField['type']) => {
+        const newField: FormField = {
+            id: Math.random().toString(36).substr(2, 9),
+            type,
+            label: '',
+            required: false,
+            options: type === 'radio' || type === 'checkbox' ? ['Option 1'] : undefined
+        };
+        setFields([...fields, newField]);
+    };
+
+    const removeField = (id: string) => {
+        setFields(fields.filter(f => f.id !== id));
+    };
+
+    const updateField = (id: string, updates: Partial<FormField>) => {
+        setFields(fields.map(f => f.id === id ? { ...f, ...updates } : f));
+    };
+
+    const moveField = (index: number, direction: 'up' | 'down') => {
+        const newFields = [...fields];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= fields.length) return;
+
+        [newFields[index], newFields[targetIndex]] = [newFields[targetIndex], newFields[index]];
+        setFields(newFields);
+    };
+
+    const handleSave = async () => {
+        if (!title || !description || fields.length === 0) {
+            alert("Please fill in the job title, description, and at least one form field.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            const res = await fetch('/api/employer/jobs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    formSchema: fields
+                })
+            });
+
+            if (res.ok) {
+                router.push('/employer/home');
+            } else {
+                alert("Failed to save job.");
+            }
+        } catch (error) {
+            console.error("Save error:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    return (
+        <div className="p-8 max-w-5xl mx-auto space-y-8 pb-32">
+            <header className="flex items-center justify-between border-b border-slate-800 pb-8">
+                <div className="text-left">
+                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Create New Job</h1>
+                    <p className="text-slate-400 mt-2">Design your custom application form and set job details.</p>
+                </div>
+                <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-600/20 active:scale-95 disabled:opacity-50"
+                >
+                    <Save size={18} />
+                    <span>{isSaving ? 'Saving...' : 'Publish Job'}</span>
+                </button>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* SETTINGS CARD */}
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <Briefcase size={14} /> Job Title
+                            </label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="e.g. Senior Frontend Engineer"
+                                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <FileText size={14} /> Description
+                            </label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Describe the role, responsibilities, and requirements..."
+                                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all min-h-[200px] text-sm leading-relaxed"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-[32px] space-y-4">
+                        <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest">Add Form Field</h3>
+                        <div className="grid grid-cols-1 gap-2">
+                            <button onClick={() => addField('text')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><Type size={16} /> Short Text</button>
+                            <button onClick={() => addField('number')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><Hash size={16} /> Number Input</button>
+                            <button onClick={() => addField('radio')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><List size={16} /> Multiple Choice</button>
+                            <button onClick={() => addField('checkbox')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><CheckSquare size={16} /> Checkboxes</button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* FORM BUILDER AREA */}
+                <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between px-4">
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                            <Layout size={24} className="text-blue-500" />
+                            Application Form
+                        </h2>
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{fields.length} Fields Added</span>
+                    </div>
+
+                    {fields.length === 0 ? (
+                        <div className="border-2 border-dashed border-slate-800 rounded-[32px] p-20 flex flex-col items-center justify-center text-slate-600 space-y-4">
+                            <Plus size={48} className="opacity-20" />
+                            <p className="font-bold text-sm uppercase tracking-widest">Add your first question to begin</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {fields.map((field, index) => (
+                                <div key={field.id} className="group relative bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] transition-all hover:border-blue-500/30 animate-in slide-in-from-right-4 duration-300">
+                                    <div className="flex items-start justify-between gap-6">
+                                        <div className="p-2 text-slate-700 cursor-grab active:cursor-grabbing"><GripVertical size={20} /></div>
+
+                                        <div className="flex-1 space-y-4">
+                                            <div className="flex items-center gap-4">
+                                                <input
+                                                    type="text"
+                                                    value={field.label}
+                                                    onChange={(e) => updateField(field.id, { label: e.target.value })}
+                                                    placeholder="Enter your question here..."
+                                                    className="flex-1 bg-transparent border-b border-slate-800 text-lg font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                                                />
+                                                <span className="px-3 py-1 bg-slate-900 text-[10px] font-black text-slate-500 uppercase tracking-widest rounded-lg border border-slate-800">{field.type}</span>
+                                            </div>
+
+                                            {(field.type === 'radio' || field.type === 'checkbox') && field.options && (
+                                                <div className="space-y-2 ml-4">
+                                                    {field.options.map((option, optIdx) => (
+                                                        <div key={optIdx} className="flex items-center gap-3">
+                                                            <div className={`w-4 h-4 rounded-full border border-slate-700 ${field.type === 'checkbox' ? 'rounded-sm' : ''}`} />
+                                                            <input
+                                                                type="text"
+                                                                value={option}
+                                                                onChange={(e) => {
+                                                                    const newOptions = [...field.options!];
+                                                                    newOptions[optIdx] = e.target.value;
+                                                                    updateField(field.id, { options: newOptions });
+                                                                }}
+                                                                className="bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 focus:outline-none text-sm text-slate-400 py-1 transition-all"
+                                                            />
+                                                            <button
+                                                                onClick={() => {
+                                                                    const newOptions = field.options!.filter((_, i) => i !== optIdx);
+                                                                    updateField(field.id, { options: newOptions });
+                                                                }}
+                                                                className="p-1 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                    <button
+                                                        onClick={() => updateField(field.id, { options: [...field.options!, `Option ${field.options!.length + 1}`] })}
+                                                        className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2 hover:text-blue-400 transition-all pt-2"
+                                                    >
+                                                        <Plus size={12} /> Add Option
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                            <button onClick={() => moveField(index, 'up')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronUp size={18} /></button>
+                                            <button onClick={() => moveField(index, 'down')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronDown size={18} /></button>
+                                            <button onClick={() => removeField(field.id)} className="p-2 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}

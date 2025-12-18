@@ -61,7 +61,7 @@ export async function POST(req: Request) {
       .sign(secret);
 
     // 6. Return
-    const response = NextResponse.json({ success: true });
+    const response = NextResponse.json({ success: true, redirect: '/employer/home' });
 
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,
