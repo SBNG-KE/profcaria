@@ -20,25 +20,60 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const { data: applications, error } = await supabaseAdmin
+        const { data: applications, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('id, status, created_at, jobs(id, enc_title, employer:users(enc_first_name, enc_last_name, enc_company_name))')
+            .select('id, status, created_at, job_id')
             .eq('user_id', uid)
             .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error('Fetch Applications Error:', error);
-            return NextResponse.json({ error: 'Failed' }, { status: 500 });
+        if (appError) {
+            console.error('Fetch Applications Error:', appError);
+            return NextResponse.json({ error: 'Failed to fetch applications' }, { status: 500 });
         }
 
-        const formattedApps = (applications || []).map((app: any) => ({
-            id: app.id,
-            status: app.status,
-            createdAt: app.created_at,
-            jobTitle: decryptData(app.jobs?.enc_title) || 'Unknown Position',
-            companyName: decryptData(app.jobs?.employer?.enc_company_name) || 'Secure Employer'
-        }));
+        if (!applications || applications.length === 0) {
+            return NextResponse.json({ applications: [] });
+        }
+
+        // Fetch Job Details
+        const jobIds = [...new Set(applications.map(app => app.job_id))];
+        const { data: jobs, error: jobError } = await supabaseAdmin
+            .schema('employer')
+            .from('jobs')
+            .select('id, enc_title, company_id')
+            .in('id', jobIds);
+
+        if (jobError) {
+            console.error('Fetch Jobs Error:', jobError);
+            return NextResponse.json({ error: 'Failed to fetch job details' }, { status: 500 });
+        }
+
+        // Fetch Employer Details
+        const companyIds = [...new Set(jobs?.map(job => job.company_id))];
+        const { data: employers, error: empError } = await supabaseAdmin
+            .schema('employer')
+            .from('companies')
+            .select('id, enc_company_name')
+            .in('id', companyIds);
+
+        if (empError) {
+            console.error('Fetch Employers Error:', empError);
+            return NextResponse.json({ error: 'Failed to fetch employer details' }, { status: 500 });
+        }
+
+        const formattedApps = applications.map((app: any) => {
+            const job = jobs?.find(j => j.id === app.job_id);
+            const employer = employers?.find(e => e.id === job?.company_id);
+
+            return {
+                id: app.id,
+                status: app.status,
+                createdAt: app.created_at,
+                jobTitle: decryptData(job?.enc_title) || 'Unknown Position',
+                companyName: decryptData(employer?.enc_company_name) || 'Secure Employer'
+            };
+        });
 
         return NextResponse.json({ applications: formattedApps });
 

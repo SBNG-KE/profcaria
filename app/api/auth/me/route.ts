@@ -39,7 +39,7 @@ export async function GET(req: Request) {
         if (isProfessional) {
             selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url`;
         } else {
-            selectFields += `, enc_company_name`; // Add employer fields if needed
+            selectFields += `, enc_company_name, enc_logo_url`; // Add employer fields
         }
 
         const { data: user, error } = await supabaseAdmin
@@ -64,7 +64,8 @@ export async function GET(req: Request) {
             };
         } else {
             profile = {
-                companyName: decryptData(user.enc_company_name)
+                companyName: decryptData(user.enc_company_name),
+                logoUrl: decryptData(user.enc_logo_url)
             };
         }
 

@@ -1,68 +1,14 @@
 "use client"
 
-import React, { useState, useRef, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   FileText, Plus, X, Clock,
   Bold, Italic, Underline, Link as LinkIcon,
   Heading1, Heading2, Heading3,
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Image as ImageIcon, Palette,
-  UserCircle, Video, Cable, Calendar, Star, Users, MessageSquare, Share2, Zap, Shield, Check,
-  Building2
+  Shield, Check
 } from 'lucide-react';
-
-// --- Scroll Helpers ---
-const ScrollableContainer = ({ children, className = "" }: { children: ReactNode, className?: string }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [showScrollbar, setShowScrollbar] = useState(false);
-
-  const handleScroll = () => {
-    const element = scrollRef.current;
-    if (!element) return;
-    const { scrollTop, scrollHeight, clientHeight } = element;
-    if (scrollHeight <= clientHeight) {
-      setShowScrollbar(false);
-      return;
-    }
-    setShowScrollbar(true);
-    const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
-    setScrollProgress(scrollPercentage);
-  };
-
-  useEffect(() => {
-    handleScroll();
-    window.addEventListener('resize', handleScroll);
-    return () => window.removeEventListener('resize', handleScroll);
-  }, [children]);
-
-  return (
-    <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col">
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className={`flex-1 overflow-y-auto scrollbar-hide ${className}`}
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {children}
-      </div>
-      {showScrollbar && (
-        <div className="absolute right-1 top-2 bottom-2 w-1 pointer-events-none z-50">
-          <div
-            className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[2px] items-center"
-            style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 24}px)` }}
-          >
-            <div className="w-1 h-1 bg-slate-500/50 rounded-full shadow-sm"></div>
-            <div className="w-1 h-1 bg-slate-500/70 rounded-full shadow-sm"></div>
-            <div className="w-1 h-1 bg-slate-500/90 rounded-full shadow-sm"></div>
-            <div className="w-1 h-1 bg-slate-500/50 rounded-full shadow-sm"></div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 // --- Components ---
 const DocumentCard = ({ title, onClick }: { title: string, onClick: () => void }) => {
@@ -95,23 +41,6 @@ const AddNewCard = ({ onClick }: { onClick: () => void }) => {
     </button>
   );
 }
-
-const ActionCard = ({ icon: Icon, title, subtitle, color = "blue", isActive = false, onClick }: any) => {
-  const colorStyles = {
-    blue: "from-blue-600/20 to-blue-900/20 border-blue-500/30 text-blue-400",
-    emerald: "from-emerald-600/20 to-emerald-900/20 border-emerald-500/30 text-emerald-400",
-    violet: "from-violet-600/20 to-violet-900/20 border-violet-500/30 text-violet-400",
-  };
-  return (
-    <button onClick={onClick} className={`relative group flex flex-col items-start justify-between p-6 h-40 w-full rounded-2xl border bg-gradient-to-br transition-all duration-300 ${isActive ? 'scale-[1.02] shadow-2xl ring-1 ring-offset-1 ring-offset-[#050b14] ring-blue-500/50' : 'hover:scale-[1.02] hover:shadow-xl'} ${colorStyles[color as keyof typeof colorStyles]}`}>
-      <div className={`p-3 rounded-xl bg-[#050b14]/50 shadow-inner text-current`}><Icon size={28} /></div>
-      <div className="text-left">
-        <h3 className="text-lg font-bold text-slate-100">{title}</h3>
-        <p className="text-xs text-slate-400 font-medium">{subtitle}</p>
-      </div>
-    </button>
-  );
-};
 
 const AccessModal = ({ isOpen, onClose, cards, selectedCards, onToggle, onSave }: { isOpen: boolean, onClose: () => void, cards: string[], selectedCards: string[], onToggle: (card: string) => void, onSave: () => void }) => {
   if (!isOpen) return null;
@@ -199,8 +128,6 @@ const SystemPopup = ({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: ()
 };
 
 export default function ProfessionalHome() {
-  const router = useRouter();
-  const [activeSection, setActiveSection] = useState<'profile' | 'interview' | 'connect' | null>(null);
   const [documents, setDocuments] = useState<string[]>(['RESUME', 'CV', 'CERTIFICATES']);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
@@ -224,32 +151,19 @@ export default function ProfessionalHome() {
   });
 
   // --- DATA LOADING & SAVING LOGIC ---
-  const [interviews, setInterviews] = useState<any[]>([]);
-  const [notifications, setNotifications] = useState<any[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  // --- DATA LOADING & SAVING LOGIC ---
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [cardRes, interviewRes, notifRes, accessRes] = await Promise.all([
+        const [cardRes, accessRes] = await Promise.all([
           fetch('/api/professional/cards'),
-          fetch('/api/professional/interviews'),
-          fetch('/api/shared/notifications'),
           fetch('/api/documents?type=access_control')
         ]);
 
         if (cardRes.ok) {
           const data = await cardRes.json();
           if (data.cards) setDocuments(data.cards);
-        }
-        if (interviewRes.ok) {
-          const data = await interviewRes.json();
-          setInterviews(data.interviews || []);
-        }
-        if (notifRes.ok) {
-          const data = await notifRes.json();
-          setNotifications(data.notifications || []);
         }
         if (accessRes.ok) {
           const data = await accessRes.json();
@@ -445,15 +359,6 @@ export default function ProfessionalHome() {
     }
   };
 
-  const toggleSection = (section: 'profile' | 'interview' | 'connect') => {
-    if (activeSection === section) {
-      setActiveSection(null);
-    } else {
-      setActiveSection(section);
-      setActiveDocument(null);
-    }
-  };
-
   const toggleCardAccess = (card: string) => {
     setSelectedCards(prev =>
       prev.includes(card) ? prev.filter(c => c !== card) : [...prev, card]
@@ -462,201 +367,37 @@ export default function ProfessionalHome() {
 
   return (
     <>
-      <ScrollableContainer className="p-8">
+      <div className="p-8">
         <div className="relative z-10 max-w-7xl mx-auto min-h-full">
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            {/* Notifications Bar */}
-            {notifications.length > 0 && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-[28px] flex items-center justify-between group overflow-hidden relative backdrop-blur-md">
-                <div className="flex items-center gap-4 px-2">
-                  <div className="relative">
-                    <Zap size={20} className="text-emerald-400 animate-pulse" />
-                    {notifications.filter(n => !n.is_read).length > 0 && (
-                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#050b14]"></span>
-                    )}
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-1">Live Update</span>
-                    <span className="text-xs font-bold text-white uppercase tracking-tight line-clamp-1">{notifications[0].message}</span>
-                  </div>
+            {/* Access Management Header */}
+            <div className="flex items-center justify-between p-6 bg-blue-900/10 border border-blue-500/20 rounded-[32px] backdrop-blur-md">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-400"><Shield size={24} /></div>
+                <div className="text-left">
+                  <h3 className="text-lg font-bold text-white uppercase tracking-tight">Application Access</h3>
+                  <p className="text-xs text-slate-400">Control which cards are visible to employers when you apply.</p>
                 </div>
-                <button
-                  onClick={() => router.push('/professional/home')}
-                  className="px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-emerald-500/20 mr-1"
-                >
-                  View All ({notifications.length})
-                </button>
               </div>
-            )}
-
-            {/* Top Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-              <ActionCard
-                icon={UserCircle}
-                title="Profile"
-                subtitle="View Details"
-                color="blue"
-                isActive={activeSection === 'profile'}
-                onClick={() => toggleSection('profile')}
-              />
-              <ActionCard
-                icon={Video}
-                title="Interview"
-                subtitle="Practice & Schedule"
-                color="violet"
-                isActive={activeSection === 'interview'}
-                onClick={() => toggleSection('interview')}
-              />
-              <ActionCard
-                icon={Cable}
-                title="Connect"
-                subtitle="Network & Sync"
-                color="emerald"
-                isActive={activeSection === 'connect'}
-                onClick={() => toggleSection('connect')}
-              />
+              <button
+                onClick={() => setIsAccessModalOpen(true)}
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+              >
+                Manage Permissions
+              </button>
             </div>
 
-            {/* Divider Line */}
-            {(activeSection) && <div className="w-full h-px bg-slate-800 my-6 animate-in fade-in duration-300"></div>}
-
-            {/* DYNAMIC CONTENT AREA */}
-            <div className="relative">
-
-              {/* PROFILE CONTENT */}
-              {activeSection === 'profile' && (
-                <div className="w-full animate-in fade-in slide-in-from-bottom-8 duration-500">
-                  {/* Access Management Header */}
-                  <div className="mb-8 flex items-center justify-between p-6 bg-blue-900/10 border border-blue-500/20 rounded-[32px] backdrop-blur-md">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-400"><Shield size={24} /></div>
-                      <div className="text-left">
-                        <h3 className="text-lg font-bold text-white uppercase tracking-tight">Application Access</h3>
-                        <p className="text-xs text-slate-400">Control which cards are visible to employers when you apply.</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setIsAccessModalOpen(true)}
-                      className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
-                    >
-                      Manage Permissions
-                    </button>
-                  </div>
-
-                  <div className="flex flex-wrap items-start justify-start gap-8 pb-12 pr-6 text-left">
-                    {documents.map((doc, index) => (
-                      <DocumentCard key={index} title={doc} onClick={() => setActiveDocument(doc)} />
-                    ))}
-                    <AddNewCard onClick={() => setIsPopupOpen(true)} />
-                  </div>
-                </div>
-              )}
-
-              {/* INTERVIEW CONTENT */}
-              {activeSection === 'interview' && (
-                <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
-                  <header className="flex items-center justify-between">
-                    <div className="text-left">
-                      <h2 className="text-3xl font-black text-white uppercase tracking-tight">Interview Center</h2>
-                      <p className="text-slate-400 mt-2">Manage your interviews, practice sessions, and schedules.</p>
-                    </div>
-                  </header>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="md:col-span-2 space-y-4">
-                      <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <Calendar size={16} /> Scheduled Interviews
-                      </h3>
-                      {interviews.length === 0 ? (
-                        <div className="bg-slate-900/50 border border-slate-800 p-12 rounded-[32px] flex flex-col items-center justify-center text-slate-700 gap-4">
-                          <Video size={48} className="opacity-20" />
-                          <p className="font-bold text-xs uppercase tracking-widest">No interviews scheduled yet</p>
-                        </div>
-                      ) : (
-                        <div className="grid grid-cols-1 gap-4">
-                          {interviews.map((interview) => (
-                            <div key={interview.id} className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] flex items-center justify-between group hover:border-blue-500/30 transition-all">
-                              <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden">
-                                  {interview.companyLogo ? <img src={interview.companyLogo} className="w-full h-full object-cover" /> : <Building2 size={32} className="text-slate-600" />}
-                                </div>
-                                <div className="text-left space-y-1">
-                                  <h4 className="text-xl font-bold text-white uppercase tracking-tighter">{interview.jobTitle}</h4>
-                                  <p className="text-xs text-blue-400 font-bold uppercase tracking-widest">{interview.companyName}</p>
-                                  <div className="flex items-center gap-4 text-[10px] text-slate-500 font-bold uppercase">
-                                    <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(interview.scheduledAt).toLocaleString()}</span>
-                                    <span className="flex items-center gap-1.5 text-emerald-500"><Zap size={12} /> Live Link Ready</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <a href={interview.meetingLink} target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all">Join Session</a>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-6">
-                      <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-left">
-                        <div className="p-3 bg-violet-500/20 text-violet-400 w-fit rounded-xl"><Video size={24} /></div>
-                        <h3 className="text-xl font-bold text-white">Mock Practice</h3>
-                        <p className="text-slate-400 text-sm">Practice with AI-driven mock interviews and get instant feedback.</p>
-                        <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-bold transition-colors">Start Practice</button>
-                      </div>
-                      <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-left">
-                        <div className="p-3 bg-emerald-500/20 text-emerald-400 w-fit rounded-xl"><Star size={24} /></div>
-                        <h3 className="text-xl font-bold text-white">Feedback</h3>
-                        <p className="text-slate-400 text-sm">Review feedback from your past interview sessions.</p>
-                        <button className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-bold transition-colors">View All</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* CONNECT CONTENT */}
-              {activeSection === 'connect' && (
-                <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500 pb-20">
-                  <header className="flex items-center justify-between">
-                    <div className="text-left">
-                      <h2 className="text-3xl font-black text-white uppercase tracking-tight">Connect & Network</h2>
-                      <p className="text-slate-400 mt-2">Grow your professional network and sync with industry leaders.</p>
-                    </div>
-                    <button className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-95">
-                      <Plus size={20} />
-                      <span>New Connection</span>
-                    </button>
-                  </header>
-
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                      <div className="mx-auto p-3 bg-emerald-500/20 text-emerald-400 w-fit rounded-xl"><Users size={24} /></div>
-                      <h3 className="text-2xl font-black text-white">42</h3>
-                      <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Connections</p>
-                    </div>
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                      <div className="mx-auto p-3 bg-blue-500/20 text-blue-400 w-fit rounded-xl"><MessageSquare size={24} /></div>
-                      <h3 className="text-2xl font-black text-white">12</h3>
-                      <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Messages</p>
-                    </div>
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                      <div className="mx-auto p-3 bg-violet-500/20 text-violet-400 w-fit rounded-xl"><Zap size={24} /></div>
-                      <h3 className="text-2xl font-black text-white">8</h3>
-                      <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Leads</p>
-                    </div>
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                      <div className="mx-auto p-3 bg-slate-700/20 text-slate-400 w-fit rounded-xl"><Share2 size={24} /></div>
-                      <h3 className="text-2xl font-black text-white">5</h3>
-                      <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Referrals</p>
-                    </div>
-                  </div>
-                </div>
-              )}
+            {/* Document Cards - Shown directly */}
+            <div className="flex flex-wrap items-start justify-start gap-8 pb-12 pr-6 text-left">
+              {documents.map((doc, index) => (
+                <DocumentCard key={index} title={doc} onClick={() => setActiveDocument(doc)} />
+              ))}
+              <AddNewCard onClick={() => setIsPopupOpen(true)} />
             </div>
           </div>
         </div>
-      </ScrollableContainer>
+      </div>
 
       {/* --- THE SLIDER (OVERLAY) --- */}
       <div
@@ -730,7 +471,7 @@ export default function ProfessionalHome() {
           </button>
         </div>
 
-        <ScrollableContainer className="p-10">
+        <div className="p-10 flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto pb-40">
             <div className="mb-8 border-b border-slate-800 pb-4">
               <h1 className="text-4xl font-black text-white uppercase tracking-tight">{activeDocument || 'Untitled'}</h1>
@@ -766,7 +507,7 @@ export default function ProfessionalHome() {
               }}
             />
           </div>
-        </ScrollableContainer>
+        </div>
       </div>
 
       <AccessModal

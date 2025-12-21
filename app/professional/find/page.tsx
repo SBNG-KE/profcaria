@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, Sparkles } from 'lucide-react';
 
 interface Job {
     id: string;
@@ -44,22 +44,40 @@ export default function FindJobsPage() {
     );
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
-                <div className="text-left">
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Opportunities</h1>
-                    <p className="text-slate-400 mt-2">Discover and apply to secure, encrypted job roles.</p>
+        <div className="p-8 max-w-7xl mx-auto space-y-8 pb-8">
+            <header className="space-y-6 pb-8 border-b border-slate-800">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="text-left">
+                        <div className="flex items-center gap-2 text-blue-400 mb-2">
+                            <Zap size={16} />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Job Discovery</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Find Opportunities</h1>
+                        <p className="text-slate-400 mt-2 text-sm">Discover secure, encrypted job roles that match your profile.</p>
+                    </div>
                 </div>
 
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search by title or company..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#0f172a] border border-slate-800 rounded-2xl pl-12 pr-4 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
-                    />
+                {/* Search Bar - Full Width, Enhanced */}
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+                    <div className="relative flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-4 transition-all">
+                        <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={22} />
+                        <input
+                            type="text"
+                            placeholder="Search jobs by title, company, or keywords..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm"
+                        />
+                        {searchTerm && (
+                            <button 
+                                onClick={() => setSearchTerm('')}
+                                className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 

@@ -10,6 +10,7 @@ import {
 // --- Scroll Helpers ---
 const ScrollableContainer = ({ children, className = "" }: { children: ReactNode, className?: string }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
     const [scrollProgress, setScrollProgress] = useState(0);
     const [showScrollbar, setShowScrollbar] = useState(false);
 
@@ -17,41 +18,62 @@ const ScrollableContainer = ({ children, className = "" }: { children: ReactNode
         const element = scrollRef.current;
         if (!element) return;
         const { scrollTop, scrollHeight, clientHeight } = element;
-        if (scrollHeight <= clientHeight) {
-            setShowScrollbar(false);
-            return;
+
+        const needsScroll = scrollHeight > clientHeight + 1;
+        if (needsScroll !== showScrollbar) {
+            setShowScrollbar(needsScroll);
         }
-        setShowScrollbar(true);
-        const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
-        setScrollProgress(scrollPercentage);
+
+        if (needsScroll) {
+            const scrollPercentage = scrollTop / (scrollHeight - clientHeight);
+            setScrollProgress(scrollPercentage);
+        }
     };
 
     useEffect(() => {
+        const element = scrollRef.current;
+        if (!element) return;
+
+        const resizeObserver = new ResizeObserver(() => {
+            handleScroll();
+        });
+
+        resizeObserver.observe(element);
         handleScroll();
         window.addEventListener('resize', handleScroll);
-        return () => window.removeEventListener('resize', handleScroll);
+        return () => {
+            resizeObserver.disconnect();
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, []);
+
+    useEffect(() => {
+        handleScroll();
     }, [children]);
 
     return (
-        <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col">
+        <div className="relative flex-1 min-h-0 overflow-hidden flex flex-col w-full h-full">
             <div
                 ref={scrollRef}
                 onScroll={handleScroll}
                 className={`flex-1 overflow-y-auto scrollbar-hide ${className}`}
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-                {children}
+                <div ref={contentRef}>
+                    {children}
+                </div>
             </div>
             {showScrollbar && (
-                <div className="absolute right-1 top-2 bottom-2 w-1 pointer-events-none z-50">
+                <div className="absolute right-1.5 top-4 bottom-4 w-1.5 pointer-events-none z-50 flex flex-col justify-start">
                     <div
-                        className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[2px] items-center"
-                        style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 24}px)` }}
+                        className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[3px] items-center"
+                        style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 40}px)` }}
                     >
-                        <div className="w-1 h-1 bg-slate-500/50 rounded-full shadow-sm"></div>
-                        <div className="w-1 h-1 bg-slate-500/70 rounded-full shadow-sm"></div>
-                        <div className="w-1 h-1 bg-slate-500/90 rounded-full shadow-sm"></div>
-                        <div className="w-1 h-1 bg-slate-500/50 rounded-full shadow-sm"></div>
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+                        <div className="w-1 h-1 bg-blue-500/80 rounded-full shadow-sm"></div>
+                        <div className="w-1 h-1 bg-blue-500/60 rounded-full shadow-sm"></div>
+                        <div className="w-1 h-1 bg-blue-500/40 rounded-full shadow-sm"></div>
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
                     </div>
                 </div>
             )}
@@ -64,6 +86,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
     const [userData, setUserData] = useState<any>(null);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [jobStats, setJobStats] = useState({ totalJobs: 0, currentJob: 'None' });
     const pathname = usePathname();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,6 +104,44 @@ export default function ProfessionalLayout({ children }: { children: React.React
             }
         };
         fetchUser();
+    }, []);
+
+    useEffect(() => {
+        const fetchJobStats = async () => {
+            try {
+                // Fetch all applications to count total jobs connected
+                const [connectionsRes, appsRes] = await Promise.all([
+                    fetch('/api/professional/connections'),
+                    fetch('/api/professional/applications')
+                ]);
+                
+                let totalJobs = 0;
+                let currentJob = 'None';
+                
+                if (connectionsRes.ok) {
+                    const data = await connectionsRes.json();
+                    const connections = data.connections || [];
+                    totalJobs = connections.length;
+                    // Current job is the most recent accepted connection
+                    if (connections.length > 0) {
+                        currentJob = connections[0].job?.title || connections[0].company?.name || 'Connected';
+                    }
+                }
+                
+                // Also count applications for total jobs interacted with
+                if (appsRes.ok) {
+                    const data = await appsRes.json();
+                    const apps = data.applications || [];
+                    // Total jobs = connections + pending applications
+                    totalJobs = totalJobs + apps.filter((a: any) => a.status !== 'accepted').length;
+                }
+                
+                setJobStats({ totalJobs, currentJob });
+            } catch (error) {
+                console.error("Error fetching job stats", error);
+            }
+        };
+        fetchJobStats();
     }, []);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,6 +185,24 @@ export default function ProfessionalLayout({ children }: { children: React.React
 
     const activeTab = pathname.split('/').pop() || 'home';
 
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                const res = await fetch('/api/shared/notifications');
+                if (res.ok) {
+                    const data = await res.json();
+                    const count = data.notifications.filter((n: any) => !n.is_read).length;
+                    setUnreadCount(count);
+                }
+            } catch (err) { console.error(err); }
+        };
+        fetchUnread();
+        const interval = setInterval(fetchUnread, 30000); // 30s poll
+        return () => clearInterval(interval);
+    }, []);
+
     const NavItem = ({ id, href, icon: Icon, label, badgeCount }: any) => (
         <button
             onClick={() => router.push(href)}
@@ -131,7 +210,11 @@ export default function ProfessionalLayout({ children }: { children: React.React
         >
             <div className="relative">
                 <Icon size={22} className={activeTab === id ? 'animate-pulse' : ''} />
-                {badgeCount && <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-[#0f172a]">{badgeCount}</span>}
+                {(badgeCount || (id === 'notifications' && unreadCount > 0)) && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white border-2 border-[#0f172a] animate-bounce shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                        {id === 'notifications' ? unreadCount : badgeCount}
+                    </span>
+                )}
             </div>
             {sidebarOpen && <span className="font-medium text-sm transition-all">{label}</span>}
         </button>
@@ -173,11 +256,13 @@ export default function ProfessionalLayout({ children }: { children: React.React
 
                             <div className="grid grid-cols-2 gap-2 w-full">
                                 <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
-                                    <span className="text-2xl font-bold text-emerald-400">3</span>
+                                    <span className="text-2xl font-bold text-emerald-400">{jobStats.totalJobs}</span>
                                     <span className="text-[10px] text-slate-500 uppercase tracking-wider">Jobs</span>
                                 </div>
-                                <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
-                                    <Briefcase size={20} className="text-blue-400 mb-1" />
+                                <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800 flex flex-col items-center overflow-hidden">
+                                    <span className="text-sm font-bold text-blue-400 truncate w-full text-center" title={jobStats.currentJob}>
+                                        {jobStats.currentJob.length > 8 ? jobStats.currentJob.slice(0, 8) + '...' : jobStats.currentJob}
+                                    </span>
                                     <span className="text-[10px] text-slate-500 uppercase tracking-wider">Current</span>
                                 </div>
                             </div>
@@ -185,12 +270,14 @@ export default function ProfessionalLayout({ children }: { children: React.React
                     )}
                 </div>
 
-                <ScrollableContainer className="px-4 space-y-2 pb-4">
+                <div className="px-4 space-y-2 pb-4 overflow-y-auto scrollbar-hide flex-1">
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Menu</div>
                     <NavItem id="home" href="/professional/home" icon={Home} label="Home" />
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Jobs" />
+                    <NavItem id="interview" href="/professional/interview" icon={Video} label="Interviews" />
+                    <NavItem id="connect" href="/professional/connect" icon={Cable} label="Connections" />
                     <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" badgeCount={3} />
-                </ScrollableContainer>
+                </div>
 
                 <div className="p-4 border-t border-slate-800 bg-[#0f172a] shrink-0">
                     <NavItem id="settings" href="/professional/settings" icon={Settings} label="Settings" />
@@ -200,7 +287,9 @@ export default function ProfessionalLayout({ children }: { children: React.React
             {/* MAIN CONTENT */}
             <main className="flex-1 relative flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
-                {children}
+                <ScrollableContainer className="w-full relative z-10">
+                    {children}
+                </ScrollableContainer>
             </main>
 
             {/* PROFILE IMAGE VIEW/EDIT MODAL */}

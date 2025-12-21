@@ -47,7 +47,7 @@ export async function GET(req: Request) {
         const { data: messages, error } = await supabaseAdmin
             .schema('employer')
             .from('messages')
-            .select('*')
+            .select('*, is_read')
             .eq('application_id', applicationId)
             .order('created_at', { ascending: true });
 
@@ -61,6 +61,31 @@ export async function GET(req: Request) {
         return NextResponse.json({ messages: decryptedMessages });
     } catch (error) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: Request) {
+    try {
+        const session = await getSession();
+        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { applicationId } = await req.json();
+        if (!applicationId) return NextResponse.json({ error: 'Missing applicationId' }, { status: 400 });
+
+        // Mark all messages as read WHERE recipient is current user
+        // Note: sender_type !== session.schema means the other party sent it
+        const { error } = await supabaseAdmin
+            .schema('employer')
+            .from('messages')
+            .update({ is_read: true })
+            .eq('application_id', applicationId)
+            .neq('sender_type', session.schema);
+
+        if (error) throw error;
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
     }
 }
 
@@ -96,7 +121,8 @@ export async function POST(req: Request) {
                 application_id: applicationId,
                 sender_id: session.uid,
                 sender_type: session.schema,
-                enc_content: encContent
+                enc_content: encContent,
+                is_read: false
             }])
             .select()
             .single();
@@ -117,7 +143,9 @@ export async function POST(req: Request) {
             .insert([{
                 [recipientField]: recipientId,
                 enc_message: encryptData(`New message from ${senderLabel} regarding ${jobTitle}`),
-                type: 'message'
+                type: 'message',
+                application_id: applicationId,
+                is_read: false
             }]);
 
         return NextResponse.json({

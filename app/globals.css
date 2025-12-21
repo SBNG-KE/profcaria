@@ -24,3 +24,98 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+/* Global custom scrollbar - dots style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    transparent 20%,
+    #3b82f6 20%,
+    #3b82f6 30%,
+    transparent 30%,
+    transparent 40%,
+    #3b82f680 40%,
+    #3b82f680 48%,
+    transparent 48%,
+    transparent 52%,
+    #3b82f660 52%,
+    #3b82f660 60%,
+    transparent 60%,
+    transparent 70%,
+    #3b82f6 70%,
+    #3b82f6 80%,
+    transparent 80%,
+    transparent 100%
+  );
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    transparent 15%,
+    #60a5fa 15%,
+    #60a5fa 30%,
+    transparent 30%,
+    transparent 38%,
+    #60a5fa99 38%,
+    #60a5fa99 50%,
+    transparent 50%,
+    transparent 62%,
+    #60a5fa80 62%,
+    #60a5fa80 75%,
+    transparent 75%,
+    transparent 85%,
+    #60a5fa 85%,
+    #60a5fa 100%
+  );
+}
+
+/* Hide scrollbar for Firefox but keep scrollable */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 transparent;
+}
+
+/* Horizontal scrollbar dots */
+::-webkit-scrollbar-thumb:horizontal {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    transparent 20%,
+    #3b82f6 20%,
+    #3b82f6 30%,
+    transparent 30%,
+    transparent 40%,
+    #3b82f680 40%,
+    #3b82f680 48%,
+    transparent 48%,
+    transparent 52%,
+    #3b82f660 52%,
+    #3b82f660 60%,
+    transparent 60%,
+    transparent 70%,
+    #3b82f6 70%,
+    #3b82f6 80%,
+    transparent 80%,
+    transparent 100%
+  );
+}

@@ -41,9 +41,10 @@ export default function JobApplyPage() {
     useEffect(() => {
         const fetchJobData = async () => {
             try {
-                const [jobRes, cardRes] = await Promise.all([
+                const [jobRes, cardRes, accessRes] = await Promise.all([
                     fetch(`/api/professional/jobs/${id}`),
-                    fetch('/api/professional/cards')
+                    fetch('/api/professional/cards'),
+                    fetch('/api/documents?type=access_control')
                 ]);
 
                 if (jobRes.ok) {
@@ -54,9 +55,26 @@ export default function JobApplyPage() {
                     const data = await cardRes.json();
                     if (data.cards) {
                         setAvailableCards(data.cards);
-                        // Default access (optional)
-                        setAccessList(data.cards.filter((c: string) => c === 'RESUME'));
                     }
+                }
+                // Load saved permissions from home page access control
+                if (accessRes.ok) {
+                    const data = await accessRes.json();
+                    if (data.content) {
+                        try {
+                            const savedPermissions = JSON.parse(data.content);
+                            setAccessList(savedPermissions);
+                        } catch (e) {
+                            console.error("Error parsing access control", e);
+                            // Fallback to RESUME only
+                            setAccessList(['RESUME']);
+                        }
+                    } else {
+                        // Default to RESUME if no permissions saved
+                        setAccessList(['RESUME']);
+                    }
+                } else {
+                    setAccessList(['RESUME']);
                 }
             } catch (error) {
                 console.error("Error fetching job data", error);
@@ -77,12 +95,6 @@ export default function JobApplyPage() {
             ? [...currentOptions, option]
             : currentOptions.filter((o: string) => o !== option);
         setFormData(prev => ({ ...prev, [fieldId]: newOptions }));
-    };
-
-    const toggleCardAccess = (card: string) => {
-        setAccessList(prev =>
-            prev.includes(card) ? prev.filter(c => c !== card) : [...prev, card]
-        );
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -262,38 +274,26 @@ export default function JobApplyPage() {
                             </div>
                         ))}
 
-                        {/* PROFILE ACCESS SELECTION */}
-                        <div className="space-y-6 pt-8 border-t border-slate-800">
+                        {/* PROFILE ACCESS INFO - Auto-applied from home settings */}
+                        <div className="space-y-4 pt-8 border-t border-slate-800">
                             <div className="flex items-center gap-3">
-                                <Shield size={20} className="text-blue-400" />
-                                <h3 className="text-xl font-black text-white uppercase tracking-tight">Profile Access</h3>
+                                <Shield size={20} className="text-emerald-400" />
+                                <h3 className="text-lg font-black text-white uppercase tracking-tight">Profile Access</h3>
                             </div>
-                            <p className="text-xs text-slate-500 font-bold uppercase">Select which profile cards you want to share with this employer.</p>
-
-                            {availableCards.length === 0 ? (
-                                <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-2xl border-dashed">
-                                    <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest text-center">No profile cards found. Go to Dashboard to create some.</p>
+                            <div className="p-5 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+                                <p className="text-xs text-slate-400 mb-3">The following cards will be shared (managed in Home &gt; Manage Permissions):</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {accessList.length === 0 ? (
+                                        <span className="text-xs text-slate-500 italic">No cards selected - go to Home to manage permissions</span>
+                                    ) : (
+                                        accessList.map((card) => (
+                                            <span key={card} className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-lg">
+                                                {card}
+                                            </span>
+                                        ))
+                                    )}
                                 </div>
-                            ) : (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {availableCards.map((card) => {
-                                        const isSelected = accessList.includes(card);
-                                        return (
-                                            <button
-                                                key={card}
-                                                type="button"
-                                                onClick={() => toggleCardAccess(card)}
-                                                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${isSelected ? 'bg-blue-600/10 border-blue-500 text-white shadow-lg' : 'bg-slate-910 border-slate-800 text-slate-500 hover:border-slate-700'}`}
-                                            >
-                                                <span className="text-[10px] font-black uppercase tracking-widest">{card}</span>
-                                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'bg-blue-600 border-blue-500' : 'border-slate-800'}`}>
-                                                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                            </div>
                         </div>
 
                         <button
