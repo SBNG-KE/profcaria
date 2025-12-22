@@ -194,7 +194,11 @@ export default function ViewApplicationsPage() {
                                             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}`}>
                                                 {app.status.replace('_', ' ')}
                                             </span>
-                                            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">{new Date(app.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+                                                {app.createdAt && !isNaN(Date.parse(app.createdAt))
+                                                    ? new Date(app.createdAt).toLocaleDateString()
+                                                    : 'Date N/A'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -256,7 +260,7 @@ export default function ViewApplicationsPage() {
                                             </p>
                                             <div className="p-5 bg-slate-900/50 border border-slate-800 rounded-2xl overflow-auto">
                                                 {typeof value === 'string' && value.includes('<') ? (
-                                                    <div 
+                                                    <div
                                                         className="prose prose-invert max-w-none text-slate-200
                                                             [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-4
                                                             [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mb-3

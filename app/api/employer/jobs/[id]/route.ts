@@ -26,12 +26,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (schema !== 'employer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const body = await req.json();
-        const { isActive } = body;
+        const { isActive, title, description, formSchema } = body;
+
+        const updateData: any = { updated_at: new Date().toISOString() };
+        if (isActive !== undefined) updateData.is_active = isActive;
+        if (title !== undefined) updateData.title = title;
+        if (description !== undefined) updateData.description = description;
+        if (formSchema !== undefined) updateData.form_schema = formSchema;
 
         const { error } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
-            .update({ is_active: isActive, updated_at: new Date().toISOString() })
+            .update(updateData)
             .eq('id', id)
             .eq('company_id', uid);
 
@@ -42,6 +48,10 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     } catch (error: any) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
+}
+
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+    return PATCH(req, { params });
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {

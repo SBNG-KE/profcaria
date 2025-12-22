@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState, useRef, useEffect, ReactNode } from 'react';
+import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, FileText, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, Users, Database, Calendar, Building2, Plus
+    Briefcase, Users, Database, Calendar, Building2, Plus, Shield
 } from 'lucide-react';
 
 // --- Scroll Helpers ---
@@ -93,6 +93,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const activeTab = pathname.split('/').pop() || 'home';
+    const showBackButton = pathname !== '/employer/home';
 
     useEffect(() => {
         const fetchMe = async () => {
@@ -109,7 +110,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
         fetchMe();
     }, []);
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
         setIsUploading(true);
@@ -131,9 +132,9 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
         } finally {
             setIsUploading(false);
         }
-    };
+    }, []);
 
-    const handleImageDelete = async () => {
+    const handleImageDelete = useCallback(async () => {
         if (!confirm("Are you sure you want to remove your company logo?")) return;
         try {
             const res = await fetch('/api/employer/profile/image', { method: 'DELETE' });
@@ -146,7 +147,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
         } catch (error) {
             console.error("Delete failed", error);
         }
-    };
+    }, []);
 
     useEffect(() => {
         const fetchCounts = async () => {
@@ -156,23 +157,25 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                 if (notifRes.ok) {
                     const data = await notifRes.json();
                     const count = data.notifications.filter((n: any) => !n.is_read).length;
-                    setUnreadCount(count);
+                    setUnreadCount(count); // If 0, it will display 0 in blue (handled in NavItem)
                 }
 
                 // Fetch applications count
                 const appRes = await fetch('/api/employer/applications');
                 if (appRes.ok) {
                     const data = await appRes.json();
-                    setApplicationCount(data.applications?.length || 0);
+                    // Only count applications that are NOT rejected
+                    const activeApps = data.applications?.filter((app: any) => app.status !== 'rejected') || [];
+                    setApplicationCount(activeApps.length);
                 }
             } catch (err) { console.error(err); }
         };
         fetchCounts();
-        const interval = setInterval(fetchCounts, 30000);
+        const interval = setInterval(fetchCounts, 2000); // 2s poll for instant updates
         return () => clearInterval(interval);
     }, []);
 
-    const NavItem = ({ id, href, icon: Icon, label, badgeCount }: any) => (
+    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount }: any) => (
         <button
             onClick={() => router.push(href)}
             className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-200 group relative shrink-0 ${activeTab === id || (id === 'home' && activeTab === 'notifications') ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 shadow-lg' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'} ${!sidebarOpen ? 'justify-center' : ''}`}
@@ -180,20 +183,23 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
             <div className="relative">
                 <Icon size={22} className={activeTab === id ? 'animate-pulse' : ''} />
                 {badgeCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white border-2 border-[#0f172a] shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                    <span className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full text-[10px] font-bold text-white border-2 border-[#0f172a] shadow-lg ${id === 'notifications'
+                        ? (badgeCount > 0 ? 'bg-red-500 shadow-red-500/50' : 'bg-blue-500 shadow-blue-500/50')
+                        : 'bg-emerald-500 shadow-emerald-500/50'
+                        }`}>
                         {badgeCount}
                     </span>
                 )}
             </div>
-            {sidebarOpen && <span className="font-medium text-sm transition-all">{label}</span>}
+            {sidebarOpen && <span className="font-medium text-xs transition-all">{label}</span>}
         </button>
-    );
+    ));
 
     return (
-        <div className="flex h-screen bg-[#050b14] text-slate-200 font-sans overflow-hidden selection:bg-emerald-500/30">
+        <div className="flex h-screen bg-[#050b14] text-slate-200 font-sans overflow-hidden selection:bg-emerald-500/30 theme-employer">
 
             {/* SIDEBAR */}
-            <aside className={`relative flex flex-col border-r border-slate-800 bg-[#0f172a]/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-30 ${sidebarOpen ? 'w-72' : 'w-24'}`}>
+            <aside className={`relative flex flex-col border-r border-slate-800 bg-[#0f172a]/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-30 ${sidebarOpen ? 'w-64' : 'w-20'}`}>
                 <button onClick={() => setSidebarOpen(!sidebarOpen)} className="absolute -right-3 top-8 z-40 bg-slate-800 border border-slate-600 rounded-full p-1.5 text-slate-300 hover:text-white shadow-xl">
                     {sidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
                 </button>
@@ -207,7 +213,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                             <img src={employerData.profile.logoUrl} className="w-full h-full object-cover" alt="Logo" />
                         ) : (
                             <div className="absolute inset-0 flex items-center justify-center bg-slate-800 text-slate-600">
-                                <Building2 size={sidebarOpen ? 48 : 24} />
+                                <Building2 size={sidebarOpen ? 32 : 20} />
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -235,10 +241,8 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
 
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-6 px-2">Network</div>
                     <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
+                    <NavItem id="contracts" href="/employer/contracts" icon={FileText} label="Contracts" />
                     <NavItem id="notifications" href="/employer/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
-
-                    <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-6 px-2">System</div>
-                    <NavItem id="backups" href="/employer/backups" icon={Database} label="Backups" />
                 </ScrollableContainer>
 
                 <div className="p-4 border-t border-slate-800 bg-[#0f172a] shrink-0">
@@ -248,6 +252,17 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
 
             {/* MAIN CONTENT */}
             <main className="flex-1 relative h-full overflow-hidden flex flex-col">
+                {showBackButton && (
+                    <div className="absolute top-6 left-8 z-50">
+                        <button
+                            onClick={() => router.back()}
+                            className="bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white p-2.5 rounded-xl backdrop-blur-md transition-all active:scale-95 shadow-lg group flex items-center gap-2"
+                        >
+                            <ChevronLeft size={18} />
+                            <span className="text-xs font-bold uppercase tracking-widest max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">Back</span>
+                        </button>
+                    </div>
+                )}
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
                 <ScrollableContainer className="w-full relative z-10">
                     {children}

@@ -1,6 +1,8 @@
 //lib/supabase.ts
 
 import { createClient } from '@supabase/supabase-js';
+import { createServerClient as createSSRClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Updated Key Name per your request
@@ -19,3 +21,20 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseSecret, {
     persistSession: false
   }
 });
+
+// 3. SERVER-SIDE CLIENT WITH COOKIE-BASED AUTH (Respects RLS)
+// Use this in API routes when you need to authenticate as the current user
+export async function createServerClient(cookieStore: Awaited<ReturnType<typeof cookies>>) {
+  return createSSRClient(supabaseUrl, supabasePublishableKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) =>
+          cookieStore.set(name, value, options)
+        );
+      },
+    },
+  });
+}

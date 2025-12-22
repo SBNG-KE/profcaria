@@ -139,10 +139,10 @@ export default function EmployerProfileViewPage() {
                 {/* Main: Content Rendering */}
                 <div className="lg:col-span-8 flex flex-col space-y-6">
                     {activeDoc ? (
-                        <div className="bg-[#0f172a] border border-emerald-500/10 rounded-[40px] shadow-2xl flex flex-col min-h-[700px] overflow-hidden">
-                            <div className="px-10 py-6 border-b border-slate-800 flex items-center justify-between bg-white/5 backdrop-blur-md">
+                        <div className="flex flex-col min-h-[700px]" >
+                            <div className="py-6 border-b border-slate-800 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <h3 className="text-xl font-black text-white uppercase tracking-tight">{activeDoc.type}</h3>
+                                    <h3 className="text-3xl font-black text-white uppercase tracking-tighter">{activeDoc.type}</h3>
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Updated {new Date(activeDoc.lastUpdated).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -150,9 +150,12 @@ export default function EmployerProfileViewPage() {
                                     <button className="p-2.5 bg-slate-800 text-slate-400 rounded-xl hover:text-white transition-all"><ExternalLink size={18} /></button>
                                 </div>
                             </div>
-                            <div className="flex-1 p-10 overflow-y-auto max-h-[800px] scrollbar-hide text-left">
+                            <div className="flex-1 py-10 text-left w-full max-w-none">
                                 <div
-                                    className="prose prose-invert prose-emerald max-w-none text-slate-300 font-medium leading-relaxed"
+                                    className="prose prose-invert prose-emerald max-w-none text-slate-300 font-medium leading-relaxed
+                                        [&_h1]:text-white [&_h1]:font-black [&_h1]:uppercase [&_h1]:tracking-tight
+                                        [&_p]:break-words [&_pre]:whitespace-pre-wrap [&_pre]:break-words
+                                    "
                                     dangerouslySetInnerHTML={{ __html: activeDoc.content }}
                                 />
                             </div>
@@ -165,6 +168,6 @@ export default function EmployerProfileViewPage() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

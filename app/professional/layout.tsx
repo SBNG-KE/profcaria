@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect, ReactNode } from 'react';
+import React, { useState, useRef, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, Search, FileText, Bell, Settings, ChevronLeft, ChevronRight,
@@ -114,10 +114,10 @@ export default function ProfessionalLayout({ children }: { children: React.React
                     fetch('/api/professional/connections'),
                     fetch('/api/professional/applications')
                 ]);
-                
+
                 let totalJobs = 0;
                 let currentJob = 'None';
-                
+
                 if (connectionsRes.ok) {
                     const data = await connectionsRes.json();
                     const connections = data.connections || [];
@@ -127,7 +127,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
                         currentJob = connections[0].job?.title || connections[0].company?.name || 'Connected';
                     }
                 }
-                
+
                 // Also count applications for total jobs interacted with
                 if (appsRes.ok) {
                     const data = await appsRes.json();
@@ -135,7 +135,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
                     // Total jobs = connections + pending applications
                     totalJobs = totalJobs + apps.filter((a: any) => a.status !== 'accepted').length;
                 }
-                
+
                 setJobStats({ totalJobs, currentJob });
             } catch (error) {
                 console.error("Error fetching job stats", error);
@@ -144,7 +144,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
         fetchJobStats();
     }, []);
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
         setIsUploading(true);
@@ -166,9 +166,9 @@ export default function ProfessionalLayout({ children }: { children: React.React
         } finally {
             setIsUploading(false);
         }
-    };
+    }, []);
 
-    const handleImageDelete = async () => {
+    const handleImageDelete = useCallback(async () => {
         if (!confirm("Are you sure you want to remove your profile photo?")) return;
         try {
             const res = await fetch('/api/professional/profile/image', { method: 'DELETE' });
@@ -181,7 +181,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
         } catch (error) {
             console.error("Delete failed", error);
         }
-    };
+    }, []);
 
     const activeTab = pathname.split('/').pop() || 'home';
 
@@ -199,11 +199,11 @@ export default function ProfessionalLayout({ children }: { children: React.React
             } catch (err) { console.error(err); }
         };
         fetchUnread();
-        const interval = setInterval(fetchUnread, 30000); // 30s poll
+        const interval = setInterval(fetchUnread, 2000); // 2s poll for instant updates
         return () => clearInterval(interval);
     }, []);
 
-    const NavItem = ({ id, href, icon: Icon, label, badgeCount }: any) => (
+    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount }: any) => (
         <button
             onClick={() => router.push(href)}
             className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-200 group relative shrink-0 ${activeTab === id ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20 shadow-lg' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'} ${!sidebarOpen ? 'justify-center' : ''}`}
@@ -218,10 +218,10 @@ export default function ProfessionalLayout({ children }: { children: React.React
             </div>
             {sidebarOpen && <span className="font-medium text-sm transition-all">{label}</span>}
         </button>
-    );
+    ));
 
     return (
-        <div className="flex h-screen bg-[#050b14] text-slate-200 font-sans overflow-hidden selection:bg-blue-500/30">
+        <div className="flex h-screen bg-[#050b14] text-slate-200 font-sans overflow-hidden selection:bg-blue-500/30 theme-professional">
 
             {/* SIDEBAR */}
             <aside className={`relative flex flex-col border-r border-slate-800 bg-[#0f172a]/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-30 ${sidebarOpen ? 'w-72' : 'w-24'}`}>
@@ -270,14 +270,14 @@ export default function ProfessionalLayout({ children }: { children: React.React
                     )}
                 </div>
 
-                <div className="px-4 space-y-2 pb-4 overflow-y-auto scrollbar-hide flex-1">
+                <ScrollableContainer className="px-4 space-y-2 pb-4">
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Menu</div>
                     <NavItem id="home" href="/professional/home" icon={Home} label="Home" />
-                    <NavItem id="find" href="/professional/find" icon={Search} label="Find Jobs" />
                     <NavItem id="interview" href="/professional/interview" icon={Video} label="Interviews" />
                     <NavItem id="connect" href="/professional/connect" icon={Cable} label="Connections" />
-                    <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" badgeCount={3} />
-                </div>
+                    <NavItem id="contracts" href="/professional/contracts" icon={FileText} label="Contracts" />
+                    <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
+                </ScrollableContainer>
 
                 <div className="p-4 border-t border-slate-800 bg-[#0f172a] shrink-0">
                     <NavItem id="settings" href="/professional/settings" icon={Settings} label="Settings" />

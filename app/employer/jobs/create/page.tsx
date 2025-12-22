@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Plus, X, GripVertical, Type, Hash, List, CheckSquare,
@@ -21,6 +21,47 @@ export default function CreateJobPage() {
     const [description, setDescription] = useState('');
     const [fields, setFields] = useState<FormField[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Get jobId from search params
+    const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    const jobId = searchParams.get('id');
+
+    useEffect(() => {
+        if (!jobId) return;
+
+        const fetchJob = async () => {
+            setIsLoading(true);
+            try {
+                // We reuse the public job endpoint or a specific employer get one. 
+                // Since we don't have a single GET employer/job/id endpoint explicitly shown, 
+                // we might need to fetch all and find or add the endpoint.
+                // Assuming /api/employer/jobs returns list, let's try strict ID fetch if available or filter.
+                // Or better: Let's assume we need to fetch it.
+                // For now, I'll use the public one as a fallback or assume we add GET to [id].
+                // Let's assume GET /api/employer/jobs/[id] exists? 
+                // The previous tool check showed PATCH/DELETE. I should probably add GET there too or just filter from list.
+                // Filtering from list is inefficient but safe for now if list endpoint exists.
+                // Actually, I'll try to fetch from /api/employer/jobs/${jobId} if I added GET. I didn't add GET to [id].
+                // So I will fetch list and find.
+                const res = await fetch('/api/employer/jobs');
+                if (res.ok) {
+                    const data = await res.json();
+                    const job = data.jobs.find((j: any) => j.id === jobId);
+                    if (job) {
+                        setTitle(job.title);
+                        setDescription(job.description);
+                        setFields(job.formSchema || []);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching job details", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchJob();
+    }, [jobId]);
 
     const addField = (type: FormField['type']) => {
         const newField: FormField = {
@@ -58,8 +99,11 @@ export default function CreateJobPage() {
 
         setIsSaving(true);
         try {
-            const res = await fetch('/api/employer/jobs', {
-                method: 'POST',
+            const url = jobId ? `/api/employer/jobs/${jobId}` : '/api/employer/jobs';
+            const method = jobId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title,
@@ -84,8 +128,8 @@ export default function CreateJobPage() {
         <div className="p-8 max-w-5xl mx-auto space-y-8 pb-32">
             <header className="flex items-center justify-between border-b border-slate-800 pb-8">
                 <div className="text-left">
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Create New Job</h1>
-                    <p className="text-slate-400 mt-2">Design your custom application form and set job details.</p>
+                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">{jobId ? 'Edit Job Post' : 'Create New Job'}</h1>
+                    <p className="text-slate-400 mt-2">{jobId ? 'Update your job details and application form.' : 'Design your custom application form and set job details.'}</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -93,7 +137,7 @@ export default function CreateJobPage() {
                     className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-600/20 active:scale-95 disabled:opacity-50"
                 >
                     <Save size={18} />
-                    <span>{isSaving ? 'Saving...' : 'Publish Job'}</span>
+                    <span>{isSaving ? 'Saving...' : jobId ? 'Update Job' : 'Publish Job'}</span>
                 </button>
             </header>
 

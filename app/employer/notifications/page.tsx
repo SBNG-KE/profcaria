@@ -16,6 +16,9 @@ export default function EmployerNotifications() {
 
     useEffect(() => {
         fetchInitialData();
+        // Auto-refresh notifications every 2 seconds for near-instant updates
+        const interval = setInterval(fetchInitialData, 2000);
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
@@ -197,29 +200,35 @@ export default function EmployerNotifications() {
                     {/* Conversation list - WhatsApp style */}
                     <div className="pb-4">
                         <h3 className="px-4 py-2 text-[9px] font-black text-slate-600 uppercase tracking-widest">Candidates</h3>
-                        {filteredChannels.map((app) => (
-                            <button
-                                key={app.id}
-                                onClick={() => setActiveConversation(app)}
-                                className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? 'bg-emerald-600/10' : 'hover:bg-slate-800/30'}`}
-                            >
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${activeConversation?.id === app.id ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                                    <User size={20} />
-                                </div>
-                                <div className="flex-1 text-left min-w-0 border-b border-slate-800/50 pb-3">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <h4 className="text-sm font-bold text-white truncate">{app.user?.name || 'Applicant'}</h4>
-                                        <span className="text-[9px] text-slate-500 shrink-0">Now</span>
+                        {filteredChannels.map((app) => {
+                            const hasUnread = notifications.some(n => !n.is_read && n.application_id === app.id);
+                            return (
+                                <button
+                                    key={app.id}
+                                    onClick={() => setActiveConversation(app)}
+                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? 'bg-emerald-600/10' : 'hover:bg-slate-800/30'}`}
+                                >
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative ${activeConversation?.id === app.id ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                        <User size={20} />
+                                        {hasUnread && (
+                                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0b121e] animate-pulse"></div>
+                                        )}
                                     </div>
-                                    <div className="flex items-center justify-between gap-2 mt-1">
-                                        <p className="text-xs text-slate-500 truncate">{app.job?.title || 'Unknown Job'}</p>
-                                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusColor(app.status)}`}>
-                                            {app.status}
-                                        </span>
+                                    <div className="flex-1 text-left min-w-0 border-b border-slate-800/50 pb-3">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <h4 className="text-sm font-bold text-white truncate">{app.user?.name || 'Applicant'}</h4>
+                                            <span className="text-[9px] text-slate-500 shrink-0">Now</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2 mt-1">
+                                            <p className="text-xs text-slate-500 truncate">{app.job?.title || 'Unknown Job'}</p>
+                                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusColor(app.status)}`}>
+                                                {app.status}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </button>
-                        ))}
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
             </aside>

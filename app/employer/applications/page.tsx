@@ -37,12 +37,12 @@ interface ProfileData {
     accessList: string[];
 }
 
-const ApplicationRow = ({ app, onAccept, onReject, onView, onViewJob }: { 
-    app: Application, 
-    onAccept: () => void, 
-    onReject: () => void, 
+const ApplicationRow = ({ app, onAccept, onReject, onView, onViewJob }: {
+    app: Application,
+    onAccept: () => void,
+    onReject: () => void,
     onView: () => void,
-    onViewJob: () => void 
+    onViewJob: () => void
 }) => (
     <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
         <td className="py-5 px-6">
@@ -58,7 +58,7 @@ const ApplicationRow = ({ app, onAccept, onReject, onView, onViewJob }: {
             </div>
         </td>
         <td className="py-5 px-6">
-            <button 
+            <button
                 onClick={onViewJob}
                 className="flex items-center gap-2 text-xs text-slate-300 font-medium hover:text-emerald-400 transition-colors group/job"
             >
@@ -68,13 +68,12 @@ const ApplicationRow = ({ app, onAccept, onReject, onView, onViewJob }: {
             </button>
         </td>
         <td className="py-5 px-6">
-            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                app.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                app.status === 'rejected' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                app.status === 'interview_scheduled' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
-                app.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                'bg-slate-800 text-slate-400 border border-white/5'
-            }`}>
+            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${app.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                    app.status === 'rejected' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                        app.status === 'interview_scheduled' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
+                            app.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                'bg-slate-800 text-slate-400 border border-white/5'
+                }`}>
                 {app.status === 'interview_scheduled' ? 'Interview' : app.status}
             </span>
         </td>
@@ -146,23 +145,8 @@ export default function ApplicationsPage() {
         }
     };
 
-    const handleViewProfile = async (app: Application) => {
-        setSelectedApplicant(app);
-        setIsLoadingProfile(true);
-        setProfileData(null);
-        setActiveDocument(null);
-
-        try {
-            const res = await fetch(`/api/employer/applications/${app.id}/profile`);
-            if (res.ok) {
-                const data = await res.json();
-                setProfileData(data);
-            }
-        } catch (error) {
-            console.error('Error fetching profile:', error);
-        } finally {
-            setIsLoadingProfile(false);
-        }
+    const handleViewProfile = (app: Application) => {
+        router.push(`/employer/applications/${app.id}/profile`);
     };
 
     const handleAccept = async (appId: string) => {
@@ -173,7 +157,7 @@ export default function ApplicationsPage() {
                 body: JSON.stringify({ status: 'accepted' })
             });
             if (res.ok) {
-                setApplications(prev => prev.map(a => 
+                setApplications(prev => prev.map(a =>
                     a.id === appId ? { ...a, status: 'accepted' } : a
                 ));
             }
@@ -190,7 +174,7 @@ export default function ApplicationsPage() {
                 body: JSON.stringify({ status: 'rejected' })
             });
             if (res.ok) {
-                setApplications(prev => prev.map(a => 
+                setApplications(prev => prev.map(a =>
                     a.id === appId ? { ...a, status: 'rejected' } : a
                 ));
             }
@@ -199,15 +183,10 @@ export default function ApplicationsPage() {
         }
     };
 
-    const filteredApps = applications.filter(app => 
+    const filteredApps = applications.filter(app =>
         app.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         app.job.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const getDocumentContent = (docType: string) => {
-        const doc = profileData?.sharedDocuments.find(d => d.type === docType);
-        return doc?.content || '';
-    };
 
     return (
         <div className="p-8 h-full flex flex-col">
@@ -291,122 +270,6 @@ export default function ApplicationsPage() {
                         </div>
                     )}
                 </div>
-
-                {/* Profile Modal */}
-                {selectedApplicant && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => { setSelectedApplicant(null); setActiveDocument(null); }}></div>
-                        <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 flex flex-col">
-                            
-                            {/* Modal Header */}
-                            <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center overflow-hidden">
-                                        {profileData?.profile.profileImageUrl ? (
-                                            <img src={profileData.profile.profileImageUrl} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <User size={32} className="text-blue-400" />
-                                        )}
-                                    </div>
-                                    <div className="text-left">
-                                        <h3 className="text-2xl font-black text-white uppercase tracking-tight">
-                                            {profileData?.profile ? `${profileData.profile.firstName} ${profileData.profile.lastName}` : selectedApplicant.user.name}
-                                        </h3>
-                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">
-                                            {profileData?.profile.role || 'Professional'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <button onClick={() => { setSelectedApplicant(null); setActiveDocument(null); }} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors">
-                                    <X size={28} />
-                                </button>
-                            </div>
-
-                            {/* Modal Content */}
-                            <div className="flex-1 overflow-y-auto">
-                                {isLoadingProfile ? (
-                                    <div className="p-12 text-center">
-                                        <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                                        <p className="text-slate-500">Loading profile data...</p>
-                                    </div>
-                                ) : profileData ? (
-                                    <div className="p-8">
-                                        {/* Access Badge */}
-                                        <div className="flex items-center gap-2 text-emerald-400 mb-6 bg-emerald-500/10 w-fit px-4 py-2 rounded-full border border-emerald-500/20">
-                                            <Shield size={16} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Shared Vault Access Granted</span>
-                                        </div>
-
-                                        {/* Document Cards */}
-                                        {!activeDocument ? (
-                                            <div className="grid grid-cols-2 gap-6">
-                                                {profileData.accessList.map(docType => (
-                                                    <button
-                                                        key={docType}
-                                                        onClick={() => setActiveDocument(docType)}
-                                                        className="p-6 rounded-3xl bg-[#050b14] border border-white/5 hover:border-blue-500/30 transition-all cursor-pointer group text-left"
-                                                    >
-                                                        <div className="flex justify-between items-center">
-                                                            <span className="text-sm font-bold text-slate-300 group-hover:text-blue-400 transition-colors uppercase">{docType}</span>
-                                                            <ExternalLink size={16} className="text-slate-600 group-hover:text-blue-400" />
-                                                        </div>
-                                                        <p className="text-xs text-slate-600 mt-2">Click to view</p>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                <button
-                                                    onClick={() => setActiveDocument(null)}
-                                                    className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm font-bold transition-colors"
-                                                >
-                                                    ← Back to Documents
-                                                </button>
-                                                
-                                                <div className="bg-[#050b14] border border-white/5 rounded-3xl p-6">
-                                                    <h4 className="text-lg font-black text-white uppercase tracking-tight mb-4 pb-4 border-b border-white/5">
-                                                        {activeDocument}
-                                                    </h4>
-                                                    {/* Render HTML content exactly as saved */}
-                                                    <div 
-                                                        className="prose prose-invert max-w-none text-slate-300
-                                                            [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-4
-                                                            [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mb-3
-                                                            [&_h3]:text-lg [&_h3]:font-bold [&_h3]:text-white [&_h3]:mb-2
-                                                            [&_p]:mb-4 [&_p]:leading-relaxed
-                                                            [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4
-                                                            [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4
-                                                            [&_li]:mb-2
-                                                            [&_a]:text-blue-400 [&_a]:underline
-                                                            [&_strong]:font-bold [&_strong]:text-white
-                                                            [&_em]:italic
-                                                            [&_u]:underline
-                                                            [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-4
-                                                            [&_br]:block [&_br]:mb-2
-                                                        "
-                                                        style={{ whiteSpace: 'pre-wrap' }}
-                                                        dangerouslySetInnerHTML={{ __html: getDocumentContent(activeDocument) }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {profileData.accessList.length === 0 && (
-                                            <div className="text-center p-8 bg-slate-900/50 rounded-3xl border border-slate-800">
-                                                <Shield size={32} className="text-slate-600 mx-auto mb-4" />
-                                                <p className="text-slate-500">No documents shared for this application.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="p-12 text-center text-slate-500">
-                                        Failed to load profile data.
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

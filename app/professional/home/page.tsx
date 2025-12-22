@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   FileText, Plus, X, Clock,
   Bold, Italic, Underline, Link as LinkIcon,
@@ -10,20 +10,81 @@ import {
   Shield, Check
 } from 'lucide-react';
 
-// --- Components ---
-const DocumentCard = ({ title, onClick }: { title: string, onClick: () => void }) => {
+// --- ScrollableContainer Component ---
+const ScrollableContainer = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showScrollbar, setShowScrollbar] = useState(false);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const checkScroll = () => {
+      const hasScroll = el.scrollHeight > el.clientHeight;
+      setShowScrollbar(hasScroll);
+      if (hasScroll) {
+        const progress = el.scrollTop / (el.scrollHeight - el.clientHeight);
+        setScrollProgress(progress);
+      }
+    };
+
+    checkScroll();
+    el.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+
+    return () => {
+      el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [children]);
+
   return (
-    <button
-      onClick={onClick}
-      className="group relative flex-shrink-0 w-60 h-52 rounded-[40px] border-t-2 border-l-2 border-blue-500/80 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
-    >
-      <div className="relative z-10 h-full w-full flex items-center justify-center">
-        <h2 className="text-3xl font-black text-slate-200 tracking-tighter group-hover:text-blue-400 transition-colors uppercase">
-          {title}
-        </h2>
+    <div className={`relative flex-1 ${className}`}>
+      <div ref={scrollRef} className="h-full overflow-y-auto scrollbar-hide">
+        {children}
       </div>
-      <div className="absolute top-0 left-0 w-24 h-24 bg-blue-500/10 blur-[40px] pointer-events-none"></div>
-    </button>
+      {showScrollbar && (
+        <div className="absolute right-1.5 top-4 bottom-4 w-1.5 pointer-events-none z-50 flex flex-col justify-start">
+          <div
+            className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[3px] items-center"
+            style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 40}px)` }}
+          >
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+            <div className="w-1 h-1 bg-blue-500/80 rounded-full shadow-sm"></div>
+            <div className="w-1 h-1 bg-blue-500/60 rounded-full shadow-sm"></div>
+            <div className="w-1 h-1 bg-blue-500/40 rounded-full shadow-sm"></div>
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Components ---
+const DocumentCard = ({ title, onClick, onRemove }: { title: string, onClick: () => void, onRemove: () => void }) => {
+  return (
+    <div className="group relative flex-shrink-0 w-60 h-52">
+      <button
+        onClick={onClick}
+        className="w-full h-full rounded-[40px] border-t-2 border-l-2 border-blue-500/80 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] relative z-0"
+      >
+        <div className="relative z-10 h-full w-full flex items-center justify-center">
+          <h2 className="text-3xl font-black text-slate-200 tracking-tighter group-hover:text-blue-400 transition-colors uppercase">
+            {title}
+          </h2>
+        </div>
+        <div className="absolute top-0 left-0 w-24 h-24 bg-blue-500/10 blur-[40px] pointer-events-none"></div>
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); onRemove(); }}
+        className="absolute top-4 right-4 z-20 p-2 bg-slate-900/80 text-slate-500 hover:text-red-400 hover:bg-slate-900 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+        title="Delete Card"
+      >
+        <X size={16} />
+      </button>
+    </div>
   );
 };
 
@@ -133,7 +194,6 @@ export default function ProfessionalHome() {
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [selectedCards, setSelectedCards] = useState<string[]>(['RESUME']);
 
-  // --- EDITOR STATE ---
   const [activeDocument, setActiveDocument] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
@@ -230,7 +290,7 @@ export default function ProfessionalHome() {
     }
   };
 
-  const saveContent = async () => {
+  const saveContent = useCallback(async () => {
     if (!activeDocument || !editorRef.current) return;
 
     setIsSaving(true);
@@ -262,7 +322,7 @@ export default function ProfessionalHome() {
       setIsSaving(false);
       alert("Failed to save to secure storage. Check database permissions.");
     }
-  };
+  }, [activeDocument]);
 
   // --- EDITOR COMMANDS ---
   const checkFormats = () => {
@@ -391,7 +451,16 @@ export default function ProfessionalHome() {
             {/* Document Cards - Shown directly */}
             <div className="flex flex-wrap items-start justify-start gap-8 pb-12 pr-6 text-left">
               {documents.map((doc, index) => (
-                <DocumentCard key={index} title={doc} onClick={() => setActiveDocument(doc)} />
+                <DocumentCard
+                  key={index}
+                  title={doc}
+                  onClick={() => setActiveDocument(doc)}
+                  onRemove={() => {
+                    if (confirm(`Are you sure you want to delete ${doc}?`)) {
+                      setDocuments(prev => prev.filter(d => d !== doc));
+                    }
+                  }}
+                />
               ))}
               <AddNewCard onClick={() => setIsPopupOpen(true)} />
             </div>
@@ -402,7 +471,7 @@ export default function ProfessionalHome() {
       {/* --- THE SLIDER (OVERLAY) --- */}
       <div
         className={`
-                absolute inset-0 z-50 bg-[#050b14]/98 border-l border-slate-700/50 backdrop-blur-2xl flex flex-col
+                absolute inset-0 z-50 bg-[#050b14]/98 border-l border-slate-700/50 backdrop-blur-2xl flex flex-col theme-professional
                 transition-all duration-500 ease-in-out shadow-[-20px_0_50px_rgba(0,0,0,0.7)]
                 ${activeDocument ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}
             `}
@@ -471,7 +540,7 @@ export default function ProfessionalHome() {
           </button>
         </div>
 
-        <div className="p-10 flex-1 overflow-y-auto">
+        <ScrollableContainer className="p-10 flex-1">
           <div className="max-w-4xl mx-auto pb-40">
             <div className="mb-8 border-b border-slate-800 pb-4">
               <h1 className="text-4xl font-black text-white uppercase tracking-tight">{activeDocument || 'Untitled'}</h1>
@@ -507,7 +576,7 @@ export default function ProfessionalHome() {
               }}
             />
           </div>
-        </div>
+        </ScrollableContainer>
       </div>
 
       <AccessModal

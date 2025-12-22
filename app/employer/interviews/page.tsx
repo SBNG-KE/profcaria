@@ -23,13 +23,16 @@ interface Application {
     status: string;
 }
 
-const InterviewCard = ({ interview, onEdit, onJoin }: { interview: Interview, onEdit: () => void, onJoin: () => void }) => {
+const InterviewCard = ({ interview, onEdit, onJoin, onConnect }: { interview: Interview, onEdit: () => void, onJoin: () => void, onConnect: () => void }) => {
     const scheduledDate = new Date(interview.scheduledAt);
     const formattedDate = scheduledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const formattedTime = scheduledDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
+    // Check if interview time has passed (give it a 1 hour buffer maybe, or just immediate)
+    const isPast = new Date() > scheduledDate;
+
     return (
-        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-violet-500/30 transition-all group">
+        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-violet-500/30 transition-all group relative overflow-hidden">
             <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center text-violet-400">
@@ -40,7 +43,7 @@ const InterviewCard = ({ interview, onEdit, onJoin }: { interview: Interview, on
                         <p className="text-xs text-slate-500 font-medium">{interview.jobTitle}</p>
                     </div>
                 </div>
-                <button 
+                <button
                     onClick={onEdit}
                     className="p-2 hover:bg-white/5 rounded-full text-slate-500 hover:text-violet-400 transition-colors"
                 >
@@ -66,22 +69,30 @@ const InterviewCard = ({ interview, onEdit, onJoin }: { interview: Interview, on
             </div>
 
             <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                    interview.status === 'scheduled' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
+                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${interview.status === 'scheduled' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
                     interview.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                    'bg-slate-800 text-slate-400'
-                }`}>
-                    {interview.status}
+                        'bg-slate-800 text-slate-400'
+                    }`}>
+                    {isPast ? 'Ready to Connect' : interview.status}
                 </span>
-                {interview.meetingLink && (
-                    <button 
+
+                {isPast ? (
+                    <button
+                        onClick={onConnect}
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2 animate-pulse"
+                    >
+                        <Users size={12} />
+                        Connect Now
+                    </button>
+                ) : interview.meetingLink ? (
+                    <button
                         onClick={onJoin}
                         className="px-4 py-2 bg-violet-600/10 hover:bg-violet-600 text-violet-400 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl border border-violet-500/20 transition-all flex items-center gap-2"
                     >
                         <ExternalLink size={12} />
                         Open Link
                     </button>
-                )}
+                ) : null}
             </div>
         </div>
     );
@@ -155,7 +166,7 @@ export default function InterviewsPage() {
         if (scheduleMode === 'single') {
             setSelectedApplications([appId]);
         } else {
-            setSelectedApplications(prev => 
+            setSelectedApplications(prev =>
                 prev.includes(appId) ? prev.filter(id => id !== appId) : [...prev, appId]
             );
         }
@@ -212,9 +223,32 @@ export default function InterviewsPage() {
         }
     };
 
+    const handleConnect = async (interview: Interview) => {
+        if (!confirm(`Connect with ${interview.candidateName}? This will move them to your Connections permanently.`)) return;
+
+        try {
+            const res = await fetch('/api/employer/connections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    applicationId: interview.applicationId
+                })
+            });
+
+            if (res.ok) {
+                // Navigate to connections or just refetch
+                window.location.href = '/employer/connections';
+            } else {
+                alert("Failed to connect.");
+            }
+        } catch (error) {
+            console.error("Error connecting:", error);
+        }
+    };
+
     // Get applications that can be scheduled (not already having an interview)
-    const schedulableApps = applications.filter(app => 
-        !interviews.some(i => i.applicationId === app.id) && 
+    const schedulableApps = applications.filter(app =>
+        !interviews.some(i => i.applicationId === app.id) &&
         (app.status === 'pending' || app.status === 'interview_scheduled' || app.status === 'accepted')
     );
 
@@ -233,7 +267,7 @@ export default function InterviewsPage() {
                         <p className="text-slate-500 mt-2 text-sm font-medium">Schedule and manage interviews with candidates.</p>
                     </div>
 
-                    <button 
+                    <button
                         onClick={openScheduleModal}
                         className="px-6 py-3 bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-violet-900/20 transition-all active:scale-95 flex items-center gap-2"
                     >
@@ -255,12 +289,13 @@ export default function InterviewsPage() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {interviews.map(interview => (
-                            <InterviewCard 
-                                key={interview.id} 
+                        {interviews.filter(i => new Date(i.scheduledAt) > new Date() && i.status !== 'completed' && i.status !== 'canceled').map(interview => (
+                            <InterviewCard
+                                key={interview.id}
                                 interview={interview}
                                 onEdit={() => openEditModal(interview)}
                                 onJoin={() => handleJoinCall(interview)}
+                                onConnect={() => handleConnect(interview)}
                             />
                         ))}
                     </div>
@@ -340,11 +375,10 @@ export default function InterviewsPage() {
                                                 setScheduleMode('single');
                                                 setSelectedApplications([]);
                                             }}
-                                            className={`flex-1 p-4 rounded-xl border transition-all flex items-center justify-center gap-3 ${
-                                                scheduleMode === 'single' 
-                                                    ? 'bg-violet-600/10 border-violet-500 text-violet-400' 
-                                                    : 'border-slate-800 text-slate-500 hover:border-slate-700'
-                                            }`}
+                                            className={`flex-1 p-4 rounded-xl border transition-all flex items-center justify-center gap-3 ${scheduleMode === 'single'
+                                                ? 'bg-violet-600/10 border-violet-500 text-violet-400'
+                                                : 'border-slate-800 text-slate-500 hover:border-slate-700'
+                                                }`}
                                         >
                                             <User size={18} />
                                             <span className="text-xs font-black uppercase tracking-widest">One Person</span>
@@ -354,11 +388,10 @@ export default function InterviewsPage() {
                                                 setScheduleMode('multiple');
                                                 setSelectedApplications([]);
                                             }}
-                                            className={`flex-1 p-4 rounded-xl border transition-all flex items-center justify-center gap-3 ${
-                                                scheduleMode === 'multiple' 
-                                                    ? 'bg-violet-600/10 border-violet-500 text-violet-400' 
-                                                    : 'border-slate-800 text-slate-500 hover:border-slate-700'
-                                            }`}
+                                            className={`flex-1 p-4 rounded-xl border transition-all flex items-center justify-center gap-3 ${scheduleMode === 'multiple'
+                                                ? 'bg-violet-600/10 border-violet-500 text-violet-400'
+                                                : 'border-slate-800 text-slate-500 hover:border-slate-700'
+                                                }`}
                                         >
                                             <Users size={18} />
                                             <span className="text-xs font-black uppercase tracking-widest">Multiple People</span>
@@ -383,11 +416,10 @@ export default function InterviewsPage() {
                                                 <button
                                                     key={app.id}
                                                     onClick={() => handleApplicationToggle(app.id)}
-                                                    className={`w-full p-4 rounded-xl border transition-all flex items-center justify-between ${
-                                                        selectedApplications.includes(app.id)
-                                                            ? 'bg-violet-600/10 border-violet-500 text-white'
-                                                            : 'border-slate-800 text-slate-400 hover:border-slate-700'
-                                                    }`}
+                                                    className={`w-full p-4 rounded-xl border transition-all flex items-center justify-between ${selectedApplications.includes(app.id)
+                                                        ? 'bg-violet-600/10 border-violet-500 text-white'
+                                                        : 'border-slate-800 text-slate-400 hover:border-slate-700'
+                                                        }`}
                                                 >
                                                     <div className="flex items-center gap-3 text-left">
                                                         <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center">
@@ -398,11 +430,10 @@ export default function InterviewsPage() {
                                                             <span className="text-xs text-slate-500">{app.job.title}</span>
                                                         </div>
                                                     </div>
-                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                                        selectedApplications.includes(app.id)
-                                                            ? 'border-violet-500 bg-violet-500'
-                                                            : 'border-slate-700'
-                                                    }`}>
+                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedApplications.includes(app.id)
+                                                        ? 'border-violet-500 bg-violet-500'
+                                                        : 'border-slate-700'
+                                                        }`}>
                                                         {selectedApplications.includes(app.id) && <Check size={12} className="text-white" />}
                                                     </div>
                                                 </button>
