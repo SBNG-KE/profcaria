@@ -39,7 +39,7 @@ export async function GET(req: Request) {
             .from('applications')
             .select('*')
             .in('job_id', jobIds)
-            .in('status', ['accepted', 'hired', 'pending_termination', 'terminated'])
+            .in('status', ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'terminated'])
             .order('created_at', { ascending: false });
 
         if (appError) throw appError;
@@ -118,6 +118,18 @@ export async function PATCH(req: Request) {
                 .schema('employer')
                 .from('applications')
                 .update({ status: 'terminated' })
+                .eq('id', applicationId);
+
+            if (updateError) throw updateError;
+            return NextResponse.json({ success: true });
+        }
+
+        if (action === 'disapprove') {
+            // Revert status to employed (or whatever the active state was)
+            const { error: updateError } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .update({ status: 'employed' })
                 .eq('id', applicationId);
 
             if (updateError) throw updateError;

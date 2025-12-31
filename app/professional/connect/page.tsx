@@ -49,17 +49,17 @@ const ConnectionCard = ({ connection, onRequestTermination }: { connection: Conn
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                            connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                'bg-slate-800 text-slate-400 border border-white/5'
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${['accepted', 'hired', 'employed', 'offered'].includes(connection.status) ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                        connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-800 text-slate-400 border border-white/5'
                         }`}>
-                        {connection.status === 'accepted' ? 'Active' :
-                            connection.status === 'pending_termination' ? 'Pending Termination' : connection.status}
+                        {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) ? 'Active' :
+                            connection.status === 'pending_termination' ? 'Pending Termination' : connection.status.replace(/_/g, ' ')}
                     </span>
                 </div>
             </div>
 
-            {connection.status === 'accepted' && (
+            {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) && (
                 <div className="mt-4 pt-4 border-t border-white/5">
                     {!showConfirm ? (
                         <button
@@ -159,7 +159,7 @@ export default function ConnectPage() {
         }
     };
 
-    const activeConnections = connections.filter(c => c.status === 'accepted');
+    const activeConnections = connections.filter(c => ['accepted', 'hired', 'employed', 'offered'].includes(c.status));
     const pendingTerminations = connections.filter(c => c.status === 'pending_termination');
 
     return (
@@ -248,8 +248,8 @@ export default function ConnectPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {connections
                                 .filter(c => {
-                                    if (viewMode === 'current') return ['accepted', 'hired', 'pending_termination'].includes(c.status);
-                                    if (viewMode === 'past') return ['terminated', 'rejected'].includes(c.status); // Include rejected if desired, but user said 'terminated'
+                                    if (viewMode === 'current') return ['accepted', 'hired', 'employed', 'offered', 'pending_termination'].includes(c.status);
+                                    if (viewMode === 'past') return ['terminated', 'rejected', 'declined'].includes(c.status);
                                     return false;
                                 })
                                 .map(connection => (

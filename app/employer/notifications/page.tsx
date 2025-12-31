@@ -33,7 +33,6 @@ export default function EmployerNotifications() {
     }, [messages]);
 
     const fetchInitialData = async () => {
-        setLoading(true);
         try {
             const [notifRes, appChannelsRes] = await Promise.all([
                 fetch('/api/shared/notifications'),
@@ -42,7 +41,25 @@ export default function EmployerNotifications() {
 
             if (notifRes.ok) {
                 const data = await notifRes.json();
-                setNotifications(data.notifications || []);
+                const newNotifs = data.notifications || [];
+
+                // Browser Push Notification for new unread notifications
+                if (notifications.length > 0) {
+                    const latestOldNotif = notifications[0];
+                    const latestNewNotif = newNotifs[0];
+                    if (latestNewNotif && !latestNewNotif.is_read && latestNewNotif.id !== latestOldNotif.id) {
+                        requestNotificationPermission().then(granted => {
+                            if (granted) {
+                                new Notification("New Candidate Activity - Profcaria", {
+                                    body: latestNewNotif.message,
+                                    icon: "/logo.png"
+                                });
+                            }
+                        });
+                    }
+                }
+
+                setNotifications(newNotifs);
             }
 
             if (appChannelsRes.ok) {
@@ -56,12 +73,25 @@ export default function EmployerNotifications() {
         }
     };
 
+    const requestNotificationPermission = async () => {
+        if (!("Notification" in window)) return false;
+        if (Notification.permission === "granted") return true;
+        if (Notification.permission !== "denied") {
+            const permission = await Notification.requestPermission();
+            return permission === "granted";
+        }
+        return false;
+    };
+
     const fetchMessages = async (appId: string) => {
         try {
             const res = await fetch(`/api/shared/messages?applicationId=${appId}`);
             if (res.ok) {
                 const data = await res.json();
-                setMessages(data.messages || []);
+                const newMessages = data.messages || [];
+                if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
+                    setMessages(newMessages);
+                }
             }
         } catch (error) {
             console.error("Error fetching messages", error);
@@ -166,7 +196,7 @@ export default function EmployerNotifications() {
                 </div>
 
                 {/* List Area - Scrollable */}
-                <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+                <div className="flex-1 overflow-y-auto px-2" style={{ scrollbarWidth: 'none' }}>
                     {/* Unread notifications - compact */}
                     {notifications.filter(n => !n.is_read).length > 0 && (
                         <div className="px-3 py-3">
@@ -208,8 +238,12 @@ export default function EmployerNotifications() {
                                     onClick={() => setActiveConversation(app)}
                                     className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? 'bg-emerald-600/10' : 'hover:bg-slate-800/30'}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative ${activeConversation?.id === app.id ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                                        <User size={20} />
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.id === app.id ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                        {app.user?.profileImageUrl ? (
+                                            <img src={app.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <User size={20} />
+                                        )}
                                         {hasUnread && (
                                             <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0b121e] animate-pulse"></div>
                                         )}
@@ -222,7 +256,7 @@ export default function EmployerNotifications() {
                                         <div className="flex items-center justify-between gap-2 mt-1">
                                             <p className="text-xs text-slate-500 truncate">{app.job?.title || 'Unknown Job'}</p>
                                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusColor(app.status)}`}>
-                                                {app.status}
+                                                {app.status.replace(/_/g, ' ')}
                                             </span>
                                         </div>
                                     </div>
@@ -248,8 +282,12 @@ export default function EmployerNotifications() {
                         {/* Chat header - Fixed */}
                         <header className="px-6 py-4 border-b border-slate-800 bg-[#0b121e]/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                                    <User size={20} />
+                                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center overflow-hidden shrink-0">
+                                    {activeConversation.user?.profileImageUrl ? (
+                                        <img src={activeConversation.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User size={20} />
+                                    )}
                                 </div>
                                 <div className="text-left">
                                     <h2 className="text-base font-bold text-white">{activeConversation.user?.name || 'Candidate'}</h2>

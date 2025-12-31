@@ -101,11 +101,16 @@ export async function POST(req: Request) {
         const { data: application, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('user_id, jobs(company_id, enc_title)')
+            .select('status, user_id, jobs(company_id, enc_title)')
             .eq('id', applicationId)
             .single();
 
         if (appError || !application) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+
+        // Block if terminated
+        if (application.status === 'terminated') {
+            return NextResponse.json({ error: 'Connection terminated. Cannot send messages.' }, { status: 403 });
+        }
 
         const isAuthorized = (session.schema === 'professional' && session.uid === application.user_id) ||
             (session.schema === 'employer' && session.uid === (application.jobs as any).company_id);

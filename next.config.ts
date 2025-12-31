@@ -15,6 +15,19 @@ const nextConfig: NextConfig = {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react'],
   },
+  // Optimize webpack for faster compilation
+  webpack: (config, { dev, isServer }) => {
+    if (dev) {
+      // Faster development builds
+      config.optimization = {
+        ...config.optimization,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

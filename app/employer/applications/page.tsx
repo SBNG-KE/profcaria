@@ -383,6 +383,27 @@ export default function ApplicationsPage() {
                                                 </div>
                                             )}
 
+                                            {/* Contact Information */}
+                                            {(selectedApp.user as any).email || (selectedApp.user as any).phone ? (
+                                                <div className="space-y-4 pt-6">
+                                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Contact Information</h3>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {(selectedApp.user as any).email && (
+                                                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
+                                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Email</p>
+                                                                <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).email}</p>
+                                                            </div>
+                                                        )}
+                                                        {(selectedApp.user as any).phone && (
+                                                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
+                                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Phone</p>
+                                                                <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).phone}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : null}
+
                                             {/* Artifacts (Profile Data) */}
                                             {selectedApp.artifacts && selectedApp.artifacts.length > 0 && (
                                                 <div className="space-y-6 pt-6 animate-in slide-in-from-bottom-4 duration-500">

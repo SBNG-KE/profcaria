@@ -184,6 +184,8 @@ export default function ProfessionalLayout({ children }: { children: React.React
     }, []);
 
     const activeTab = pathname.split('/').pop() || 'home';
+    const showBackButton = pathname !== '/professional/home';
+
 
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -254,16 +256,10 @@ export default function ProfessionalLayout({ children }: { children: React.React
                                 <p className="text-xs text-blue-400 font-medium">{userData?.profile?.role || '---'}</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 w-full">
+                            <div className="grid grid-cols-1 gap-2 w-full">
                                 <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
                                     <span className="text-2xl font-bold text-emerald-400">{jobStats.totalJobs}</span>
-                                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">Jobs</span>
-                                </div>
-                                <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800 flex flex-col items-center overflow-hidden">
-                                    <span className="text-sm font-bold text-blue-400 truncate w-full text-center" title={jobStats.currentJob}>
-                                        {jobStats.currentJob.length > 8 ? jobStats.currentJob.slice(0, 8) + '...' : jobStats.currentJob}
-                                    </span>
-                                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">Current</span>
+                                    <span className="text-[10px] text-slate-500 uppercase tracking-wider">Total Jobs</span>
                                 </div>
                             </div>
                         </div>
@@ -274,6 +270,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Menu</div>
                     <NavItem id="home" href="/professional/home" icon={Home} label="Home" />
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />
+                    <NavItem id="roles-jobs" href="/professional/roles-jobs" icon={Briefcase} label="Role & Jobs" />
                     <NavItem id="connect" href="/professional/connect" icon={Cable} label="Connections" />
 
                     <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
@@ -286,6 +283,17 @@ export default function ProfessionalLayout({ children }: { children: React.React
 
             {/* MAIN CONTENT */}
             <main className="flex-1 relative flex flex-col h-full overflow-hidden">
+                {showBackButton && (
+                    <div className="absolute top-6 left-8 z-50">
+                        <button
+                            onClick={() => router.back()}
+                            className="bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white p-2.5 rounded-xl backdrop-blur-md transition-all active:scale-95 shadow-lg group flex items-center gap-2"
+                        >
+                            <ChevronLeft size={18} />
+                            <span className="text-xs font-bold uppercase tracking-widest max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">Back</span>
+                        </button>
+                    </div>
+                )}
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
                 {pathname.includes('/notifications') || pathname.includes('/messages') ? (
                     <div className="w-full h-full relative z-10">{children}</div>

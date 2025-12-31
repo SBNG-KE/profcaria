@@ -11,6 +11,7 @@ interface Job {
     id: string;
     title: string;
     description: string;
+    location_type?: string;
     isActive: boolean;
     createdAt: string;
     applicantCount?: number;
@@ -20,13 +21,18 @@ export default function EmployerJobsPage() {
     const router = useRouter();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState<'all' | 'active' | 'closed'>('all');
 
     const fetchJobs = async () => {
         try {
             const res = await fetch('/api/employer/jobs');
             if (res.ok) {
                 const data = await res.json();
-                setJobs(data.jobs);
+                // Sort by newest first
+                const sortedJobs = (data.jobs || []).sort((a: Job, b: Job) =>
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+                setJobs(sortedJobs);
             }
         } catch (error) {
             console.error("Error fetching jobs", error);
@@ -63,6 +69,12 @@ export default function EmployerJobsPage() {
         }
     };
 
+    const filteredJobs = jobs.filter(job => {
+        if (filter === 'active') return job.isActive;
+        if (filter === 'closed') return !job.isActive;
+        return true;
+    });
+
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-8 pb-32">
             <header className="flex items-center justify-between border-b border-slate-800 pb-8">
@@ -79,19 +91,52 @@ export default function EmployerJobsPage() {
                 </button>
             </header>
 
+            {/* Filter Buttons */}
+            <div className="flex gap-3">
+                <button
+                    onClick={() => setFilter('all')}
+                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                >
+                    All ({jobs.length})
+                </button>
+                <button
+                    onClick={() => setFilter('active')}
+                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'active'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                >
+                    Active ({jobs.filter(j => j.isActive).length})
+                </button>
+                <button
+                    onClick={() => setFilter('closed')}
+                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'closed'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        }`}
+                >
+                    Closed ({jobs.filter(j => !j.isActive).length})
+                </button>
+            </div>
+
             {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-4">
                     <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
                     <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Loading job architecture...</p>
                 </div>
-            ) : jobs.length === 0 ? (
+            ) : filteredJobs.length === 0 ? (
                 <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4">
                     <Briefcase size={64} className="opacity-10" />
-                    <p className="font-bold text-sm uppercase tracking-widest">No jobs posted yet</p>
+                    <p className="font-bold text-sm uppercase tracking-widest">
+                        {filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs`}
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-4">
-                    {jobs.map((job) => (
+                    {filteredJobs.map((job) => (
                         <div key={job.id} className={`group relative bg-[#0f172a] border rounded-[32px] overflow-hidden transition-all duration-300 ${job.isActive ? 'border-slate-800 hover:border-emerald-500/30' : 'border-slate-800 opacity-60 hover:opacity-100'}`}>
 
 
@@ -108,7 +153,6 @@ export default function EmployerJobsPage() {
                                         <span className="flex items-center gap-1.5 text-blue-400"><Users size={12} /> {job.applicantCount || 0} Applicants</span>
                                         {job.isActive && <span className="flex items-center gap-1.5 text-emerald-400"><Zap size={12} /> Live on Board</span>}
                                     </div>
-                                    <p className="text-slate-400 text-sm line-clamp-2 max-w-2xl">{job.description}</p>
                                 </div>
 
                                 <div className="flex items-center gap-3">

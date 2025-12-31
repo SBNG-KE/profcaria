@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Plus, X, GripVertical, Type, Hash, List, CheckSquare,
-    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText
+    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText, MapPin
 } from 'lucide-react';
 
 interface FormField {
@@ -19,6 +19,7 @@ export default function CreateJobPage() {
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
     const [fields, setFields] = useState<FormField[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +52,7 @@ export default function CreateJobPage() {
                     if (job) {
                         setTitle(job.title);
                         setDescription(job.description);
+                        setLocationType(job.location_type || 'remote');
                         setFields(job.formSchema || []);
                     }
                 }
@@ -108,6 +110,7 @@ export default function CreateJobPage() {
                 body: JSON.stringify({
                     title,
                     description,
+                    location_type: locationType,
                     formSchema: fields
                 })
             });
@@ -134,7 +137,7 @@ export default function CreateJobPage() {
                 <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-600/20 active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
                 >
                     <Save size={18} />
                     <span>{isSaving ? 'Saving...' : jobId ? 'Update Job' : 'Publish Job'}</span>
@@ -167,6 +170,29 @@ export default function CreateJobPage() {
                                 placeholder="Describe the role, responsibilities, and requirements..."
                                 className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all min-h-[200px] text-sm leading-relaxed"
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <MapPin size={14} /> Location Type
+                            </label>
+                            <div className="space-y-2">
+                                {(['remote', 'onsite', 'hybrid'] as const).map((type) => (
+                                    <button
+                                        key={type}
+                                        onClick={() => setLocationType(type)}
+                                        className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${locationType === type
+                                            ? 'bg-emerald-600/20 border-emerald-500/50 text-white'
+                                            : 'bg-slate-900/50 border-slate-700/50 text-slate-400 hover:border-slate-600'
+                                            }`}
+                                    >
+                                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${locationType === type ? 'border-emerald-500' : 'border-slate-600'
+                                            }`}>
+                                            {locationType === type && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
+                                        </div>
+                                        <span className="font-bold text-sm capitalize">{type}</span>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 

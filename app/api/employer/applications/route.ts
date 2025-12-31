@@ -48,7 +48,7 @@ export async function GET(req: Request) {
         const { data: professionals, error: profError } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('id, enc_first_name, enc_last_name')
+            .select('id, enc_first_name, enc_last_name, enc_profile_image_url')
             .in('id', professionalIds);
 
         if (profError) {
@@ -69,7 +69,8 @@ export async function GET(req: Request) {
                 },
                 user: {
                     id: app.user_id,
-                    name: prof ? `${decryptData(prof.enc_first_name)} ${decryptData(prof.enc_last_name)}` : 'Candidate'
+                    name: prof ? `${decryptData(prof.enc_first_name)} ${decryptData(prof.enc_last_name)}` : 'Candidate',
+                    profileImageUrl: (prof && prof.enc_profile_image_url) ? decryptData(prof.enc_profile_image_url) : null
                 }
             };
         });

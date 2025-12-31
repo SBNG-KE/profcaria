@@ -27,7 +27,7 @@ export async function GET(req: Request) {
             .from('applications')
             .select('*, jobs(id, enc_title, company_id)')
             .eq('user_id', uid)
-            .in('status', ['accepted', 'hired', 'pending_termination', 'terminated'])
+            .in('status', ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'terminated'])
             .order('created_at', { ascending: false });
 
         if (appError) throw appError;

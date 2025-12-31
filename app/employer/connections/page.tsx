@@ -45,10 +45,11 @@ interface ProfileData {
     accessList: string[];
 }
 
-const ConnectionCard = ({ connection, onViewProfile, onTerminate, onConnect }: {
+const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, onConnect }: {
     connection: Connection,
     onViewProfile: () => void,
     onTerminate: () => void,
+    onDisapprove: () => void,
     onConnect: () => void
 }) => {
     const [showConfirm, setShowConfirm] = useState(false);
@@ -111,32 +112,17 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onConnect }: {
 
             {/* Actions */}
             <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-2">
-                <button
-                    onClick={onViewProfile}
-                    className="flex-1 py-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/20 hover:border-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-                >
-                    <ExternalLink size={14} />
-                    Profile
-                </button>
-
-                <button
-                    onClick={onConnect}
-                    className="flex-1 py-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/20 hover:border-emerald-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-                >
-                    <Cable size={14} />
-                    Connect
-                </button>
-
-                {connection.status === 'accepted' && !showConfirm && (
+                {connection.status !== 'terminated' && (
                     <button
-                        onClick={() => setShowConfirm(true)}
-                        className="py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-500/20"
+                        onClick={onViewProfile}
+                        className="flex-1 py-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/20 hover:border-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                     >
-                        <XCircle size={14} />
+                        <ExternalLink size={14} />
+                        Profile
                     </button>
                 )}
 
-                {connection.status === 'hired' && !showConfirm && ( // Handle hired status too
+                {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) && !showConfirm && (
                     <button
                         onClick={() => setShowConfirm(true)}
                         className="py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-500/20"
@@ -146,12 +132,20 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onConnect }: {
                 )}
 
                 {connection.status === 'pending_termination' && (
-                    <button
-                        onClick={onTerminate}
-                        className="py-3 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
-                    >
-                        Approve
-                    </button>
+                    <div className="flex-1 flex gap-2">
+                        <button
+                            onClick={onTerminate}
+                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                        >
+                            Approve
+                        </button>
+                        <button
+                            onClick={onDisapprove}
+                            className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-white/5"
+                        >
+                            Disapprove
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -190,6 +184,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onConnect }: {
 
 export default function ConnectionsPage() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [filter, setFilter] = useState<'all' | 'connected' | 'terminated'>('all');
     const [connections, setConnections] = useState<Connection[]>([]);
     const [contracts, setContracts] = useState<any[]>([]); // Store contracts
     const [isLoading, setIsLoading] = useState(true);
@@ -308,25 +303,42 @@ export default function ConnectionsPage() {
     };
 
     const handleTerminate = async (applicationId: string) => {
-        if (!confirm("Terminate connection?")) return;
         try {
             const res = await fetch('/api/employer/connections', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ applicationId, action: 'terminate' })
             });
-            if (res.ok) setConnections(prev => prev.filter(c => c.applicationId !== applicationId));
+            if (res.ok) fetchConnections(); // Refresh list to reflect changes
+        } catch (error) { console.error(error); }
+    };
+
+    const handleDisapprove = async (applicationId: string) => {
+        try {
+            const res = await fetch('/api/employer/connections', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ applicationId, action: 'disapprove' })
+            });
+            if (res.ok) fetchConnections(); // Refresh list to reflect changes
         } catch (error) { console.error(error); }
     };
 
     const getDocumentContent = (docType: string) => profileData?.sharedDocuments.find(d => d.type === docType)?.content || '';
 
-    const filteredConnections = connections.filter(c =>
-        (c.professional?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.job?.title || '').toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const activeConnections = filteredConnections.filter(c => c.status === 'accepted');
-    const pendingTerminations = filteredConnections.filter(c => c.status === 'pending_termination');
+    const filteredConnections = connections.filter(c => {
+        const matchesSearch = (c.professional?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.job?.title || '').toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesFilter =
+            filter === 'all' ? true :
+                filter === 'connected' ? ['accepted', 'hired'].includes(c.status) :
+                    filter === 'terminated' ? c.status === 'terminated' : true;
+
+        return matchesSearch && matchesFilter;
+    });
+    const activeConnections = connections.filter(c => c.status === 'accepted');
+    const pendingTerminations = connections.filter(c => c.status === 'pending_termination');
 
     return (
         <div className="p-8 h-full flex flex-col pb-32">
@@ -340,6 +352,37 @@ export default function ConnectionsPage() {
                         <p className="text-slate-500 mt-2 text-sm font-medium">Manage your connected employees and contracts.</p>
                     </div>
                 </header>
+
+                {/* Filter Buttons */}
+                <div className="flex gap-3">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        All ({connections.length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('connected')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'connected'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        Connected ({connections.filter(c => ['accepted', 'hired'].includes(c.status)).length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('terminated')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'terminated'
+                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        Terminated ({connections.filter(c => c.status === 'terminated').length})
+                    </button>
+                </div>
 
                 {/* Connections Grid with Contract Button */}
                 {/* ... Search ... */}
@@ -357,6 +400,7 @@ export default function ConnectionsPage() {
                             connection={connection}
                             onViewProfile={() => handleViewProfile(connection)}
                             onTerminate={() => handleTerminate(connection.applicationId)}
+                            onDisapprove={() => handleDisapprove(connection.applicationId)}
                             onConnect={() => setContactConnection(connection)}
                         />
                     ))}

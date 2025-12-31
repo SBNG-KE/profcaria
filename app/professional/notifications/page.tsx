@@ -33,7 +33,6 @@ export default function NotificationsPage() {
     }, [messages]);
 
     const fetchInitialData = async () => {
-        setIsLoading(true);
         try {
             const [notifRes, appRes] = await Promise.all([
                 fetch('/api/shared/notifications'),
@@ -41,7 +40,25 @@ export default function NotificationsPage() {
             ]);
             if (notifRes.ok) {
                 const data = await notifRes.json();
-                setNotifications(data.notifications || []);
+                const newNotifs = data.notifications || [];
+
+                // Browser Push Notification for new unread notifications
+                if (notifications.length > 0) {
+                    const latestOldNotif = notifications[0];
+                    const latestNewNotif = newNotifs[0];
+                    if (latestNewNotif && !latestNewNotif.is_read && latestNewNotif.id !== latestOldNotif.id) {
+                        requestNotificationPermission().then(granted => {
+                            if (granted) {
+                                new Notification("New Message - Profcaria", {
+                                    body: latestNewNotif.message,
+                                    icon: "/logo.png" // Replace with actual app logo if available
+                                });
+                            }
+                        });
+                    }
+                }
+
+                setNotifications(newNotifs);
             }
             if (appRes.ok) {
                 const data = await appRes.json();
@@ -54,12 +71,26 @@ export default function NotificationsPage() {
         }
     };
 
+    const requestNotificationPermission = async () => {
+        if (!("Notification" in window)) return false;
+        if (Notification.permission === "granted") return true;
+        if (Notification.permission !== "denied") {
+            const permission = await Notification.requestPermission();
+            return permission === "granted";
+        }
+        return false;
+    };
+
     const fetchMessages = async (appId: string) => {
         try {
             const res = await fetch(`/api/shared/messages?applicationId=${appId}`);
             if (res.ok) {
                 const data = await res.json();
-                setMessages(data.messages || []);
+                const newMessages = data.messages || [];
+                // Only update if messages actually changed to avoid jitter
+                if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
+                    setMessages(newMessages);
+                }
             }
         } catch (error) {
             console.error("Error fetching messages", error);
@@ -205,8 +236,12 @@ export default function NotificationsPage() {
                                     onClick={() => setActiveConversation(app)}
                                     className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? 'bg-blue-600/10' : 'hover:bg-slate-800/30'}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative ${activeConversation?.id === app.id ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                                        <Building2 size={20} />
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.id === app.id ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                        {app.companyLogoUrl ? (
+                                            <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Building2 size={20} />
+                                        )}
                                         {hasUnread && (
                                             <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 rounded-full border-2 border-[#0b121e] animate-pulse"></div>
                                         )}
@@ -245,8 +280,12 @@ export default function NotificationsPage() {
                         {/* Chat header - Fixed */}
                         <header className="px-6 py-4 border-b border-slate-800 bg-[#0b121e]/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center">
-                                    <Building2 size={20} />
+                                <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center overflow-hidden shrink-0">
+                                    {activeConversation.companyLogoUrl ? (
+                                        <img src={activeConversation.companyLogoUrl} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Building2 size={20} />
+                                    )}
                                 </div>
                                 <div className="text-left">
                                     <h2 className="text-base font-bold text-white">{activeConversation.companyName}</h2>

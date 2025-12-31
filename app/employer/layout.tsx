@@ -236,7 +236,6 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Management</div>
                     <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
                     <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" />
-                    <NavItem id="applications" href="/employer/applications" icon={FileText} label="Applications" badgeCount={applicationCount} />
 
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-6 px-2">Network</div>
                     <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
