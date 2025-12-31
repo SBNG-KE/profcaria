@@ -27,7 +27,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Only professionals can browse jobs' }, { status: 403 });
         }
 
-        // Fetch active jobs with company details
+        // Fetch jobs and LEFT JOIN applications for this user to check status
         const { data: jobs, error } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
@@ -37,6 +37,11 @@ export async function GET(req: Request) {
                     id,
                     enc_company_name,
                     enc_logo_url
+                ),
+                applications(
+                    id,
+                    status,
+                    user_id
                 )
             `)
             .eq('is_active', true)
@@ -47,18 +52,25 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
         }
 
-        // Decrypt job and company info
-        const decryptedJobs = (jobs || []).map((job: any) => ({
-            id: job.id,
-            title: decryptData(job.enc_title),
-            description: decryptData(job.enc_description),
-            company: {
-                id: job.company?.id,
-                name: decryptData(job.company?.enc_company_name),
-                logoUrl: decryptData(job.company?.enc_logo_url)
-            },
-            createdAt: job.created_at
-        }));
+        const { uid: userId } = payload;
+
+        // Decrypt job, company, and attach application status
+        const decryptedJobs = (jobs || []).map((job: any) => {
+            const myApp = job.applications?.find((app: any) => app.user_id === userId);
+            return {
+                id: job.id,
+                title: decryptData(job.enc_title),
+                description: decryptData(job.enc_description),
+                company: {
+                    id: job.company?.id,
+                    name: decryptData(job.company?.enc_company_name),
+                    logoUrl: decryptData(job.company?.enc_logo_url)
+                },
+                createdAt: job.created_at,
+                applicationStatus: myApp?.status || null,
+                applicationId: myApp?.id || null
+            };
+        });
 
         return NextResponse.json({ jobs: decryptedJobs });
 

@@ -27,7 +27,7 @@ export async function GET(req: Request) {
             .from('applications')
             .select('*, jobs(id, enc_title, company_id)')
             .eq('user_id', uid)
-            .eq('status', 'accepted')
+            .in('status', ['accepted', 'hired', 'pending_termination', 'terminated'])
             .order('created_at', { ascending: false });
 
         if (appError) throw appError;
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
 
         // Get company details
         const companyIds = [...new Set(applications.map((app: any) => app.jobs?.company_id).filter(Boolean))];
-        
+
         const { data: companies, error: compError } = await supabaseAdmin
             .schema('employer')
             .from('companies')

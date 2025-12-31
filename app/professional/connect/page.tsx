@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { 
-    Cable, Building2, Briefcase, Clock, AlertTriangle, 
+import {
+    Cable, Building2, Briefcase, Clock, AlertTriangle,
     CheckCircle2, XCircle, X, ExternalLink
 } from 'lucide-react';
 
@@ -24,7 +24,7 @@ interface Connection {
 
 const ConnectionCard = ({ connection, onRequestTermination }: { connection: Connection, onRequestTermination: (id: string) => void }) => {
     const [showConfirm, setShowConfirm] = useState(false);
-    
+
     return (
         <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-emerald-500/30 transition-all group">
             <div className="flex items-start gap-4">
@@ -49,13 +49,12 @@ const ConnectionCard = ({ connection, onRequestTermination }: { connection: Conn
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                        connection.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                        connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                        'bg-slate-800 text-slate-400 border border-white/5'
-                    }`}>
-                        {connection.status === 'accepted' ? 'Active' : 
-                         connection.status === 'pending_termination' ? 'Pending Termination' : connection.status}
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                'bg-slate-800 text-slate-400 border border-white/5'
+                        }`}>
+                        {connection.status === 'accepted' ? 'Active' :
+                            connection.status === 'pending_termination' ? 'Pending Termination' : connection.status}
                     </span>
                 </div>
             </div>
@@ -111,6 +110,7 @@ const ConnectionCard = ({ connection, onRequestTermination }: { connection: Conn
 
 export default function ConnectPage() {
     const [connections, setConnections] = useState<Connection[]>([]);
+    const [viewMode, setViewMode] = useState<'current' | 'past'>('current');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -145,9 +145,9 @@ export default function ConnectPage() {
 
             if (res.ok) {
                 // Update local state
-                setConnections(prev => prev.map(c => 
-                    c.applicationId === applicationId 
-                        ? { ...c, status: 'pending_termination' } 
+                setConnections(prev => prev.map(c =>
+                    c.applicationId === applicationId
+                        ? { ...c, status: 'pending_termination' }
                         : c
                 ));
             } else {
@@ -165,16 +165,31 @@ export default function ConnectPage() {
     return (
         <div className="p-8">
             <div className="relative z-10 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                
-                {/* Header */}
-                <header className="flex items-center justify-between">
+
+                <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
                         <div className="flex items-center gap-2 text-emerald-400 mb-2">
                             <Cable size={16} />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Employment Network</span>
                         </div>
                         <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Connections</h1>
-                        <p className="text-slate-500 mt-2 text-sm font-medium">Your active employment connections with companies.</p>
+                        <p className="text-slate-500 mt-2 text-sm font-medium">Your employment history and active connections.</p>
+                    </div>
+
+                    {/* Filter Buttons */}
+                    <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800 shrink-0">
+                        <button
+                            onClick={() => setViewMode('current')}
+                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'current' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            Current
+                        </button>
+                        <button
+                            onClick={() => setViewMode('past')}
+                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'past' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            Past
+                        </button>
                     </div>
                 </header>
 
@@ -208,7 +223,7 @@ export default function ConnectPage() {
                 {/* Connection List */}
                 <div className="space-y-4">
                     <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Your Connections</h2>
-                    
+
                     {isLoading ? (
                         <div className="bg-[#0f172a] border border-slate-800 rounded-[40px] p-12 text-center">
                             <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -231,13 +246,19 @@ export default function ConnectPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {connections.map(connection => (
-                                <ConnectionCard 
-                                    key={connection.id} 
-                                    connection={connection}
-                                    onRequestTermination={handleRequestTermination}
-                                />
-                            ))}
+                            {connections
+                                .filter(c => {
+                                    if (viewMode === 'current') return ['accepted', 'hired', 'pending_termination'].includes(c.status);
+                                    if (viewMode === 'past') return ['terminated', 'rejected'].includes(c.status); // Include rejected if desired, but user said 'terminated'
+                                    return false;
+                                })
+                                .map(connection => (
+                                    <ConnectionCard
+                                        key={connection.id}
+                                        connection={connection}
+                                        onRequestTermination={handleRequestTermination}
+                                    />
+                                ))}
                         </div>
                     )}
                 </div>

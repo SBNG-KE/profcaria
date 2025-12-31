@@ -132,9 +132,9 @@ export default function NotificationsPage() {
     );
 
     return (
-        <div className="flex h-full bg-[#050b14] text-slate-200 overflow-hidden font-sans">
+        <div className="flex h-full w-full bg-[#050b14] text-slate-200 overflow-hidden font-sans">
             {/* LEFT SIDEBAR - Fixed, doesn't scroll with content */}
-            <aside className="w-[380px] border-r border-slate-800 flex flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0">
+            <aside className="w-[380px] h-full border-r border-slate-800 flex flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0">
                 <header className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#0f172a]/80 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white">
@@ -213,11 +213,11 @@ export default function NotificationsPage() {
                                     </div>
                                     <div className="flex-1 text-left min-w-0 border-b border-slate-800/50 pb-3">
                                         <div className="flex items-center justify-between gap-2">
-                                            <h4 className="text-sm font-bold text-white truncate">{app.jobTitle}</h4>
+                                            <h4 className="text-sm font-bold text-white truncate">{app.companyName}</h4>
                                             <span className="text-[9px] text-slate-500 shrink-0">Now</span>
                                         </div>
                                         <div className="flex items-center justify-between gap-2 mt-1">
-                                            <p className="text-xs text-slate-500 truncate">{app.companyName}</p>
+                                            <p className="text-xs text-slate-500 truncate">{app.jobTitle}</p>
                                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusColor(app.status)}`}>
                                                 {app.status.replace(/_/g, ' ')}
                                             </span>
@@ -249,8 +249,8 @@ export default function NotificationsPage() {
                                     <Building2 size={20} />
                                 </div>
                                 <div className="text-left">
-                                    <h2 className="text-base font-bold text-white">{activeConversation.jobTitle}</h2>
-                                    <p className="text-xs text-blue-400">{activeConversation.companyName}</p>
+                                    <h2 className="text-base font-bold text-white">{activeConversation.companyName}</h2>
+                                    <p className="text-xs text-blue-400">{activeConversation.jobTitle}</p>
                                 </div>
                             </div>
                             <button onClick={() => setActiveConversation(null)} className="p-2 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-all">

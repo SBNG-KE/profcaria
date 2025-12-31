@@ -164,14 +164,14 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                 const appRes = await fetch('/api/employer/applications');
                 if (appRes.ok) {
                     const data = await appRes.json();
-                    // Only count applications that are NOT rejected
-                    const activeApps = data.applications?.filter((app: any) => app.status !== 'rejected') || [];
+                    // Only count applications that are 'pending' (unread/actionable)
+                    const activeApps = data.applications?.filter((app: any) => app.status === 'pending') || [];
                     setApplicationCount(activeApps.length);
                 }
             } catch (err) { console.error(err); }
         };
         fetchCounts();
-        const interval = setInterval(fetchCounts, 2000); // 2s poll for instant updates
+        const interval = setInterval(fetchCounts, 30000); // 30s poll to reduce load
         return () => clearInterval(interval);
     }, []);
 
@@ -237,11 +237,10 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                     <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
                     <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" />
                     <NavItem id="applications" href="/employer/applications" icon={FileText} label="Applications" badgeCount={applicationCount} />
-                    <NavItem id="interviews" href="/employer/interviews" icon={Calendar} label="Interviews" />
 
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-6 px-2">Network</div>
                     <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
-                    <NavItem id="contracts" href="/employer/contracts" icon={FileText} label="Contracts" />
+
                     <NavItem id="notifications" href="/employer/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
                 </ScrollableContainer>
 
@@ -264,9 +263,13 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                     </div>
                 )}
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
-                <ScrollableContainer className="w-full relative z-10">
-                    {children}
-                </ScrollableContainer>
+                {pathname.includes('/notifications') || pathname.includes('/messages') ? (
+                    <div className="w-full h-full relative z-10">{children}</div>
+                ) : (
+                    <ScrollableContainer className="w-full relative z-10">
+                        {children}
+                    </ScrollableContainer>
+                )}
             </main>
 
             {/* LOGO IMAGE VIEW/EDIT MODAL */}

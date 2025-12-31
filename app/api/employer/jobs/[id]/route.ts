@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
+import { encryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
@@ -30,9 +31,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
         const updateData: any = { updated_at: new Date().toISOString() };
         if (isActive !== undefined) updateData.is_active = isActive;
-        if (title !== undefined) updateData.title = title;
-        if (description !== undefined) updateData.description = description;
-        if (formSchema !== undefined) updateData.form_schema = formSchema;
+        if (title !== undefined) updateData.enc_title = encryptData(title);
+        if (description !== undefined) updateData.enc_description = encryptData(description);
+        if (formSchema !== undefined) updateData.enc_form_schema = encryptData(JSON.stringify(formSchema));
 
         const { error } = await supabaseAdmin
             .schema('employer')

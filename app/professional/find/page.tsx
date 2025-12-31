@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, Sparkles } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, Sparkles, CheckCircle2, Trash2 } from 'lucide-react';
 
 interface Job {
     id: string;
@@ -13,6 +13,8 @@ interface Job {
         logoUrl?: string;
     };
     createdAt: string;
+    applicationStatus?: string | null;
+    applicationId?: string | null;
 }
 
 export default function FindJobsPage() {
@@ -20,28 +22,55 @@ export default function FindJobsPage() {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [viewMode, setViewMode] = useState<'find' | 'applied'>('find');
 
     useEffect(() => {
-        const fetchJobs = async () => {
-            try {
-                const res = await fetch('/api/professional/jobs');
-                if (res.ok) {
-                    const data = await res.json();
-                    setJobs(data.jobs);
-                }
-            } catch (error) {
-                console.error("Error fetching jobs", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchJobs();
     }, []);
 
-    const filteredJobs = jobs.filter(job =>
-        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const fetchJobs = async () => {
+        try {
+            const res = await fetch('/api/professional/jobs');
+            if (res.ok) {
+                const data = await res.json();
+                setJobs(data.jobs || []);
+            }
+        } catch (error) {
+            console.error("Error fetching jobs", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRetract = async (applicationId: string) => {
+        if (!confirm('Are you sure you want to retract your application? You can apply again later.')) return;
+
+        try {
+            const res = await fetch(`/api/professional/applications/${applicationId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                // Refresh to update status
+                fetchJobs();
+            } else {
+                alert('Could not retract application. It may have already been processed.');
+            }
+        } catch (error) {
+            console.error('Error retracting:', error);
+        }
+    };
+
+    const filteredJobs = jobs.filter(job => {
+        const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            job.company.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const matchesMode = viewMode === 'find'
+            ? !job.applicationStatus // Show only filtered/unapplied
+            : !!job.applicationStatus; // Show only applied
+
+        return matchesSearch && matchesMode;
+    });
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8 pb-8">
@@ -57,26 +86,46 @@ export default function FindJobsPage() {
                     </div>
                 </div>
 
-                {/* Search Bar - Full Width, Enhanced */}
-                <div className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
-                    <div className="relative flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-4 transition-all">
-                        <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={22} />
-                        <input
-                            type="text"
-                            placeholder="Search jobs by title, company, or keywords..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm"
-                        />
-                        {searchTerm && (
-                            <button 
-                                onClick={() => setSearchTerm('')}
-                                className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors"
-                            >
-                                ×
-                            </button>
-                        )}
+                {/* Tabs & Search */}
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                    {/* Tabs */}
+                    <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800">
+                        <button
+                            onClick={() => setViewMode('find')}
+                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'find' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            Find Work
+                        </button>
+                        <button
+                            onClick={() => setViewMode('applied')}
+                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'applied' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            Applied
+                            <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.applicationStatus).length}</span>
+                        </button>
+                    </div>
+
+                    {/* Search Bar - Full Width, Enhanced */}
+                    <div className="relative group flex-1 w-full">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
+                        <div className="relative flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-3 transition-all">
+                            <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={20} />
+                            <input
+                                type="text"
+                                placeholder={`Search ${viewMode === 'find' ? 'jobs' : 'applications'}...`}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm"
+                            />
+                            {searchTerm && (
+                                <button
+                                    onClick={() => setSearchTerm('')}
+                                    className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors"
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </header>
@@ -89,14 +138,15 @@ export default function FindJobsPage() {
             ) : filteredJobs.length === 0 ? (
                 <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4">
                     <Briefcase size={64} className="opacity-10" />
-                    <p className="font-bold text-sm uppercase tracking-widest">No matching jobs found</p>
+                    <p className="font-bold text-sm uppercase tracking-widest">
+                        {viewMode === 'find' ? 'No open roles found matching your search' : 'You haven\'t applied to any jobs yet'}
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredJobs.map((job) => (
-                        <button
+                        <div
                             key={job.id}
-                            onClick={() => router.push(`/professional/jobs/${job.id}`)}
                             className="group relative flex flex-col text-left bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10"
                         >
                             <div className="p-8 space-y-6 flex-1">
@@ -108,8 +158,18 @@ export default function FindJobsPage() {
                                             <Building2 size={24} className="text-slate-500" />
                                         )}
                                     </div>
-                                    <div className="px-3 py-1 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest rounded-lg border border-emerald-500/20 flex items-center gap-2">
-                                        <Zap size={10} /> Active Now
+                                    <div className="flex flex-col items-end gap-2">
+                                        <div className="px-3 py-1 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest rounded-lg border border-emerald-500/20 flex items-center gap-2">
+                                            <Zap size={10} /> Active
+                                        </div>
+                                        {job.applicationStatus && (
+                                            <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                                job.applicationStatus === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                                    'bg-slate-800 text-slate-500 border-slate-700'
+                                                }`}>
+                                                <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -126,9 +186,36 @@ export default function FindJobsPage() {
                                     <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
                                     <span className="flex items-center gap-1.5"><MapPin size={12} /> Remote</span>
                                 </div>
-                                <div className="text-blue-500 group-hover:translate-x-1 transition-transform"><ChevronRight size={20} /></div>
+
+                                {job.applicationStatus === 'pending' ? (
+                                    <button
+                                        onClick={() => handleRetract(job.applicationId!)}
+                                        className="text-red-500 hover:text-red-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors z-20"
+                                    >
+                                        <Trash2 size={14} /> Retract
+                                    </button>
+                                ) : !job.applicationStatus ? (
+                                    <button
+                                        onClick={() => router.push(`/professional/jobs/${job.id}`)}
+                                        className="text-blue-500 group-hover:translate-x-1 transition-transform z-20"
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                ) : (
+                                    <span className="text-slate-600 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                                        <CheckCircle2 size={14} /> Applied
+                                    </span>
+                                )}
                             </div>
-                        </button>
+
+                            {/* Clickable Area Overlay for details (if not interacting with buttons) */}
+                            {!job.applicationStatus && (
+                                <button
+                                    className="absolute inset-0 z-10"
+                                    onClick={() => router.push(`/professional/jobs/${job.id}`)}
+                                />
+                            )}
+                        </div>
                     ))}
                 </div>
             )}

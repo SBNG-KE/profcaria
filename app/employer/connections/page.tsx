@@ -23,6 +23,8 @@ interface Connection {
         name: string;
         role: string;
         profileImageUrl: string | null;
+        email?: string | null;
+        phone?: string | null;
     };
     accessList: string[];
 }
@@ -43,10 +45,11 @@ interface ProfileData {
     accessList: string[];
 }
 
-const ConnectionCard = ({ connection, onViewProfile, onTerminate }: {
+const ConnectionCard = ({ connection, onViewProfile, onTerminate, onConnect }: {
     connection: Connection,
     onViewProfile: () => void,
-    onTerminate: () => void
+    onTerminate: () => void,
+    onConnect: () => void
 }) => {
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -80,8 +83,8 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate }: {
 
                 <div className="flex flex-col items-end gap-2">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                            connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                'bg-slate-800 text-slate-400 border border-white/5'
+                        connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-slate-800 text-slate-400 border border-white/5'
                         }`}>
                         {connection.status === 'accepted' ? 'Active' :
                             connection.status === 'pending_termination' ? 'Termination Requested' : connection.status}
@@ -107,13 +110,21 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate }: {
             )}
 
             {/* Actions */}
-            <div className="mt-4 pt-4 border-t border-white/5 flex gap-3">
+            <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-2">
                 <button
                     onClick={onViewProfile}
-                    className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/20 hover:border-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                 >
                     <ExternalLink size={14} />
-                    View Profile
+                    Profile
+                </button>
+
+                <button
+                    onClick={onConnect}
+                    className="flex-1 py-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/20 hover:border-emerald-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                >
+                    <Cable size={14} />
+                    Connect
                 </button>
 
                 {connection.status === 'accepted' && !showConfirm && (
@@ -121,7 +132,16 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate }: {
                         onClick={() => setShowConfirm(true)}
                         className="py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-500/20"
                     >
-                        Terminate
+                        <XCircle size={14} />
+                    </button>
+                )}
+
+                {connection.status === 'hired' && !showConfirm && ( // Handle hired status too
+                    <button
+                        onClick={() => setShowConfirm(true)}
+                        className="py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-500/20"
+                    >
+                        <XCircle size={14} />
                     </button>
                 )}
 
@@ -130,7 +150,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate }: {
                         onClick={onTerminate}
                         className="py-3 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                     >
-                        Approve Termination
+                        Approve
                     </button>
                 )}
             </div>
@@ -177,6 +197,7 @@ export default function ConnectionsPage() {
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const [activeDocument, setActiveDocument] = useState<string | null>(null);
+    const [contactConnection, setContactConnection] = useState<Connection | null>(null); // For Connect Modal
 
     // Contract Upload State
     const [isUploadingContract, setIsUploadingContract] = useState(false);
@@ -331,34 +352,41 @@ export default function ConnectionsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredConnections.map(connection => (
-                        <div key={connection.id} className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-emerald-500/30 transition-all group">
-                            <div className="flex items-start gap-4">
-                                <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center text-slate-500 overflow-hidden shrink-0">
-                                    {connection.professional.profileImageUrl ? <img src={connection.professional.profileImageUrl} className="w-full h-full object-cover" /> : <User size={28} />}
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <h3 className="text-lg font-bold text-white uppercase tracking-tight">{connection.professional.name}</h3>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">{connection.professional.role || 'Professional'}</p>
-                                    <div className="flex items-center gap-2 text-blue-400 text-xs font-bold"><Briefcase size={12} /><span>{connection.job.title}</span></div>
-                                </div>
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400'}`}>{connection.status}</span>
-                            </div>
-
-                            <div className="mt-6 flex gap-3">
-                                <button onClick={() => handleViewProfile(connection)} className="flex-1 py-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/20 hover:border-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                                    <ExternalLink size={14} /> Profile
-                                </button>
-                                <button onClick={() => setContractConnection(connection)} className="flex-1 py-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/20 hover:border-emerald-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                                    <Shield size={14} /> Contracts
-                                </button>
-                                {connection.status === 'accepted' && (
-                                    <button onClick={() => handleTerminate(connection.applicationId)} className="py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"><XCircle size={14} /></button>
-                                )}
-                            </div>
-                        </div>
+                        <ConnectionCard
+                            key={connection.id}
+                            connection={connection}
+                            onViewProfile={() => handleViewProfile(connection)}
+                            onTerminate={() => handleTerminate(connection.applicationId)}
+                            onConnect={() => setContactConnection(connection)}
+                        />
                     ))}
                 </div>
             </div>
+
+            {/* Contact Modal */}
+            {contactConnection && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setContactConnection(null)}></div>
+                    <div className="relative w-full max-w-sm bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
+                        <h3 className="text-xl font-black text-white uppercase tracking-tight mb-6">Contact Info</h3>
+
+                        <div className="space-y-4">
+                            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Email</label>
+                                <p className="text-white font-medium select-all">{contactConnection.professional.email || 'Not available'}</p>
+                            </div>
+                            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Phone</label>
+                                <p className="text-white font-medium select-all">{contactConnection.professional.phone || 'Not available'}</p>
+                            </div>
+                        </div>
+
+                        <button onClick={() => setContactConnection(null)} className="w-full mt-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Contract Modal */}
             {contractConnection && (
@@ -401,6 +429,8 @@ export default function ConnectionsPage() {
                 </div>
             )}
 
+
+
             {/* Profile Modal (Reused) */}
             {selectedConnection && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -409,6 +439,15 @@ export default function ConnectionsPage() {
                         <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-4">
                                 <h3 className="text-2xl font-black text-white uppercase">{selectedConnection.professional.name}</h3>
+                                <div className="flex flex-col">
+                                    <span className="text-xs text-blue-400 font-bold">{selectedConnection.professional.role}</span>
+                                    {(selectedConnection.professional.email || selectedConnection.professional.phone) && (
+                                        <div className="flex gap-4 mt-1">
+                                            {selectedConnection.professional.email && <span className="text-[10px] text-slate-500">{selectedConnection.professional.email}</span>}
+                                            {selectedConnection.professional.phone && <span className="text-[10px] text-slate-500">{selectedConnection.professional.phone}</span>}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <button onClick={() => setSelectedConnection(null)}><X size={24} className="text-slate-500" /></button>
                         </div>

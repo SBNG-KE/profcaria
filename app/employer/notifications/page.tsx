@@ -133,9 +133,9 @@ export default function EmployerNotifications() {
     );
 
     return (
-        <div className="flex h-full bg-[#050b14] text-slate-200 overflow-hidden font-sans">
+        <div className="flex h-full w-full bg-[#050b14] text-slate-200 overflow-hidden font-sans">
             {/* LEFT SIDEBAR - Fixed, doesn't scroll with content */}
-            <aside className="w-[380px] border-r border-slate-800 flex flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0">
+            <aside className="w-[380px] h-full border-r border-slate-800 flex flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0">
                 <header className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#1e293b]/20 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white">

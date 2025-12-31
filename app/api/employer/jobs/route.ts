@@ -101,12 +101,33 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
         }
 
+        // Fetch application counts for these jobs
+        const jobIds = jobs?.map(j => j.id) || [];
+        let applicationCounts: Record<string, number> = {};
+
+        if (jobIds.length > 0) {
+            const { data: appData, error: appError } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .select('job_id')
+                .in('job_id', jobIds);
+
+            if (!appError && appData) {
+                appData.forEach((app: any) => {
+                    applicationCounts[app.job_id] = (applicationCounts[app.job_id] || 0) + 1;
+                });
+            }
+        }
+
         // Decrypt job info for the employer
         const decryptedJobs = (jobs || []).map((job: any) => ({
-            ...job,
+            id: job.id,
             title: decryptData(job.enc_title),
             description: decryptData(job.enc_description),
-            formSchema: JSON.parse(decryptData(job.enc_form_schema) || '[]')
+            formSchema: JSON.parse(decryptData(job.enc_form_schema) || '[]'),
+            isActive: job.is_active,
+            createdAt: job.created_at,
+            applicantCount: applicationCounts[job.id] || 0
         }));
 
         return NextResponse.json({ jobs: decryptedJobs });

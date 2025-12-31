@@ -271,16 +271,16 @@ export default function ProfessionalHome() {
 
   const savePermissions = async () => {
     try {
-      const res = await fetch('/api/documents', {
+      const res = await fetch('/api/professional/permissions/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          docType: 'access_control',
-          content: JSON.stringify(selectedCards)
+          permissions: selectedCards
         })
       });
       if (res.ok) {
         setIsAccessModalOpen(false);
+        alert("Permissions updated and synced with active applications.");
       } else {
         alert("Failed to save permissions.");
       }

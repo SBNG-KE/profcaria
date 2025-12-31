@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Plus, X, GripVertical, Type, Hash, List, CheckSquare,
     ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText
@@ -24,7 +24,7 @@ export default function CreateJobPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     // Get jobId from search params
-    const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    const searchParams = useSearchParams();
     const jobId = searchParams.get('id');
 
     useEffect(() => {

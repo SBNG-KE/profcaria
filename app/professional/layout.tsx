@@ -273,9 +273,9 @@ export default function ProfessionalLayout({ children }: { children: React.React
                 <ScrollableContainer className="px-4 space-y-2 pb-4">
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Menu</div>
                     <NavItem id="home" href="/professional/home" icon={Home} label="Home" />
-                    <NavItem id="interview" href="/professional/interview" icon={Video} label="Interviews" />
+                    <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />
                     <NavItem id="connect" href="/professional/connect" icon={Cable} label="Connections" />
-                    <NavItem id="contracts" href="/professional/contracts" icon={FileText} label="Contracts" />
+
                     <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
                 </ScrollableContainer>
 
@@ -287,9 +287,13 @@ export default function ProfessionalLayout({ children }: { children: React.React
             {/* MAIN CONTENT */}
             <main className="flex-1 relative flex flex-col h-full overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
-                <ScrollableContainer className="w-full relative z-10">
-                    {children}
-                </ScrollableContainer>
+                {pathname.includes('/notifications') || pathname.includes('/messages') ? (
+                    <div className="w-full h-full relative z-10">{children}</div>
+                ) : (
+                    <ScrollableContainer className="w-full relative z-10">
+                        {children}
+                    </ScrollableContainer>
+                )}
             </main>
 
             {/* PROFILE IMAGE VIEW/EDIT MODAL */}

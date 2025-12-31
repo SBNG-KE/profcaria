@@ -91,10 +91,10 @@ export default function EmployerHome() {
                     if (notif.type === 'interview') return '/employer/interviews';
                     return '/employer/notifications';
                   };
-                  
+
                   return (
-                    <button 
-                      key={notif.id} 
+                    <button
+                      key={notif.id}
                       onClick={() => router.push(getActivityRoute())}
                       className="w-full flex items-start gap-4 p-5 rounded-2xl hover:bg-emerald-500/5 border border-transparent hover:border-emerald-500/20 transition-all group cursor-pointer text-left"
                     >
@@ -104,7 +104,7 @@ export default function EmployerHome() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors capitalize">{notif.type} Update</h4>
-                          <span className="text-[10px] text-slate-500 font-mono">{new Date(notif.created_at).toLocaleTimeString()}</span>
+                          <span className="text-[10px] text-slate-500 font-mono">{new Date(notif.created_at).toLocaleString()}</span>
                         </div>
                         <p className="text-xs text-slate-400 line-clamp-1">{notif.message}</p>
                       </div>

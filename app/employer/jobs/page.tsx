@@ -119,7 +119,7 @@ export default function EmployerJobsPage() {
                                         <Edit3 size={14} /> Edit
                                     </button>
                                     <button
-                                        onClick={() => router.push(`/employer/jobs/${job.id}/applications`)}
+                                        onClick={() => router.push(`/employer/applications?jobId=${job.id}`)}
                                         className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
                                     >
                                         <Users size={14} /> View Applicants
