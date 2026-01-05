@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   // Reduce bundle size
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
     optimizePackageImports: ['lucide-react'],
   },
   // Optimize webpack for faster compilation
