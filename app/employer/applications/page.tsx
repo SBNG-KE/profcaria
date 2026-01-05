@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -25,7 +25,7 @@ interface Application {
     artifacts?: { type: string, content: string }[];
 }
 
-export default function ApplicationsPage() {
+function ApplicationsPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const jobIdFilter = searchParams.get('jobId');
@@ -525,5 +525,13 @@ export default function ApplicationsPage() {
                 </div>
             </div >
         </div >
+    );
+}
+
+export default function ApplicationsPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500 uppercase tracking-widest text-xs">Loading Workspace...</div>}>
+            <ApplicationsPageContent />
+        </Suspense>
     );
 }

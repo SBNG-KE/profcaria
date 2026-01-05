@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -16,7 +16,7 @@ interface FormField {
     required: boolean;
 }
 
-export default function CreateJobPage() {
+function CreateJobPageContent() {
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -310,5 +310,13 @@ export default function CreateJobPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function CreateJobPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-slate-500 uppercase tracking-widest text-xs">Initializing Editor...</div>}>
+            <CreateJobPageContent />
+        </Suspense>
     );
 }
