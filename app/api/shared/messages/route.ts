@@ -53,7 +53,7 @@ export async function GET(req: Request) {
 
         if (error) return NextResponse.json({ error: 'Fetch Error' }, { status: 500 });
 
-        const decryptedMessages = (messages || []).map(m => ({
+        const decryptedMessages = (messages || []).map((m: { enc_content: string; }) => ({
             ...m,
             content: decryptData(m.enc_content)
         }));

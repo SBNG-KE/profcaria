@@ -33,7 +33,7 @@ export async function GET(req: Request) {
         const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
 
         // Decrypt DB cards
-        const dbCards = data.map(c => decryptData(c.enc_title)).filter(Boolean) as string[];
+        const dbCards = data.map((c: { enc_title: string; }) => decryptData(c.enc_title)).filter(Boolean) as string[];
 
         // De-duplicate if necessary
         const allCards = Array.from(new Set([...baseCards, ...dbCards]));

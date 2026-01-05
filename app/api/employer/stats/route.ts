@@ -21,7 +21,7 @@ export async function GET(req: Request) {
 
         // Fetch counts using job filters
         const { data: jobs } = await supabaseAdmin.schema('employer').from('jobs').select('id').eq('company_id', uid);
-        const jobIds = (jobs || []).map(j => j.id);
+        const jobIds = (jobs || []).map((j: { id: any; }) => j.id);
 
         const [
             { count: jobsCount },

@@ -37,7 +37,7 @@ export async function GET(req: Request) {
         if (jobsError) throw jobsError;
         if (!jobs || jobs.length === 0) return NextResponse.json({ interviews: [] });
 
-        const jobIds = jobs.map(j => j.id);
+        const jobIds = jobs.map((j: { id: any; }) => j.id);
 
         // Get all applications for these jobs
         const { data: applications, error: appError } = await supabaseAdmin
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
         if (appError) throw appError;
         if (!applications || applications.length === 0) return NextResponse.json({ interviews: [] });
 
-        const applicationIds = applications.map(a => a.id);
+        const applicationIds = applications.map((a: { id: any; }) => a.id);
 
         // Get all interviews for these applications
         const { data: interviews, error: intError } = await supabaseAdmin
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
         if (intError) throw intError;
 
         // Get professional details
-        const professionalIds = [...new Set(applications.map(app => app.user_id))];
+        const professionalIds = [...new Set(applications.map((app: { user_id: any; }) => app.user_id))];
         const { data: professionals } = await supabaseAdmin
             .schema('professional')
             .from('users')
@@ -70,9 +70,9 @@ export async function GET(req: Request) {
             .in('id', professionalIds);
 
         const formattedInterviews = (interviews || []).map((interview: any) => {
-            const application = applications.find(a => a.id === interview.application_id);
-            const job = jobs.find(j => j.id === application?.job_id);
-            const prof = professionals?.find(p => p.id === application?.user_id);
+            const application = applications.find((a: { id: any; }) => a.id === interview.application_id);
+            const job = jobs.find((j: { id: any; }) => j.id === application?.job_id);
+            const prof = professionals?.find((p: { id: any; }) => p.id === application?.user_id);
 
             return {
                 id: interview.id,

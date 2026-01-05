@@ -38,7 +38,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Failed' }, { status: 500 });
         }
 
-        const decryptedNotifications = (notifications || []).map(notif => ({
+        const decryptedNotifications = (notifications || []).map((notif: { enc_message: string; }) => ({
             ...notif,
             message: decryptData(notif.enc_message)
         }));

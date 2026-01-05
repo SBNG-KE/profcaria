@@ -42,7 +42,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         }
 
         // Fetch professional details for each applicant
-        const applicantIds = [...new Set(applications?.map(app => app.user_id) || [])];
+        const applicantIds = [...new Set(applications?.map((app: { user_id: any; }) => app.user_id) || [])];
         const { data: users, error: userError } = await supabaseAdmin
             .schema('professional')
             .from('users')
@@ -58,7 +58,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return acc;
         }, {});
 
-        const decryptedApplications = applications?.map(app => ({
+        const decryptedApplications = applications?.map((app: { enc_form_data: string; user_id: string | number; }) => ({
             ...app,
             formData: JSON.parse(decryptData(app.enc_form_data) || '{}'),
             applicant: usersMap[app.user_id] || { firstName: 'Unknown', lastName: 'User' }

@@ -105,7 +105,7 @@ export async function GET(req: Request) {
         }
 
         // Fetch application counts for these jobs
-        const jobIds = jobs?.map(j => j.id) || [];
+        const jobIds = jobs?.map((j: { id: any; }) => j.id) || [];
         let applicationCounts: Record<string, number> = {};
 
         if (jobIds.length > 0) {

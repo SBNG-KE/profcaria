@@ -30,7 +30,7 @@ export async function GET(req: Request) {
         if (jobsError) throw jobsError;
         if (!jobs || jobs.length === 0) return NextResponse.json({ connections: [] });
 
-        const jobIds = jobs.map(j => j.id);
+        const jobIds = jobs.map((j: { id: any; }) => j.id);
 
         // 2. Get applications (connections)
         // We consider 'accepted', 'hired', 'pending_termination', 'terminated' as connections (active or past)
@@ -47,7 +47,7 @@ export async function GET(req: Request) {
 
         // 3. Get Professional Details (Auth + Profile)
         const connections = await Promise.all(applications.map(async (app: any) => {
-            const job = jobs.find(j => j.id === app.job_id);
+            const job = jobs.find((j: { id: any; }) => j.id === app.job_id);
 
             // Fetch Auth Data (Email/Phone)
             const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.admin.getUserById(app.user_id);

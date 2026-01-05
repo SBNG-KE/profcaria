@@ -30,7 +30,7 @@ export async function GET(req: Request) {
         if (jobsError) throw jobsError;
         if (!jobs || jobs.length === 0) return NextResponse.json({ applications: [] });
 
-        const jobIds = jobs.map(j => j.id);
+        const jobIds = jobs.map((j: { id: any; }) => j.id);
 
         // 2. Get all applications for these jobs
         const { data: applications, error: appError } = await supabaseAdmin
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
         if (!applications || applications.length === 0) return NextResponse.json({ applications: [] });
 
         // 3. Get Professional Details for these applications
-        const professionalIds = [...new Set(applications.map(app => app.user_id))];
+        const professionalIds = [...new Set(applications.map((app: { user_id: any; }) => app.user_id))];
         const { data: professionals, error: profError } = await supabaseAdmin
             .schema('professional')
             .from('users')
@@ -56,8 +56,8 @@ export async function GET(req: Request) {
         }
 
         const formattedApps = applications.map((app: any) => {
-            const job = jobs.find(j => j.id === app.job_id);
-            const prof = professionals?.find(p => p.id === app.user_id);
+            const job = jobs.find((j: { id: any; }) => j.id === app.job_id);
+            const prof = professionals?.find((p: { id: any; }) => p.id === app.user_id);
 
             return {
                 id: app.id,

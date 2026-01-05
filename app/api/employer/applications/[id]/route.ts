@@ -82,7 +82,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 .in('doc_type', accessList);
 
             if (documents) {
-                documents.forEach(doc => {
+                documents.forEach((doc: { enc_content: string; doc_type: string; }) => {
                     const content = decryptData(doc.enc_content);
                     if (content) existingDocsMap.set(doc.doc_type, content);
                 });

@@ -33,7 +33,7 @@ export async function POST() {
             return NextResponse.json({ error: 'Failed to load credentials' }, { status: 500 });
         }
 
-        const allowCredentials = creds?.map(c => ({
+        const allowCredentials = creds?.map((c: { credential_id: any; transports: string; }) => ({
             id: c.credential_id,
             transports: c.transports ? c.transports.split(',') : undefined,
         }));

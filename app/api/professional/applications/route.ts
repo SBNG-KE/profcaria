@@ -37,7 +37,7 @@ export async function GET(req: Request) {
         }
 
         // Fetch Job Details
-        const jobIds = [...new Set(applications.map(app => app.job_id))];
+        const jobIds = [...new Set(applications.map((app: { job_id: any; }) => app.job_id))];
         const { data: jobs, error: jobError } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
         }
 
         // Fetch Employer Details
-        const companyIds = [...new Set(jobs?.map(job => job.company_id))];
+        const companyIds = [...new Set(jobs?.map((job: { company_id: any; }) => job.company_id))];
         const { data: employers, error: empError } = await supabaseAdmin
             .schema('employer')
             .from('companies')
@@ -63,8 +63,8 @@ export async function GET(req: Request) {
         }
 
         const formattedApps = applications.map((app: any) => {
-            const job = jobs?.find(j => j.id === app.job_id);
-            const employer = employers?.find(e => e.id === job?.company_id);
+            const job = jobs?.find((j: { id: any; }) => j.id === app.job_id);
+            const employer = employers?.find((e: { id: any; }) => e.id === job?.company_id);
 
             return {
                 id: app.id,

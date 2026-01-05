@@ -48,7 +48,7 @@ export async function GET(req: Request) {
 
         const connections = applications.map((app: any) => {
             const job = app.jobs;
-            const company = companies?.find(c => c.id === job?.company_id);
+            const company = companies?.find((c: { id: any; }) => c.id === job?.company_id);
 
             return {
                 id: app.id,

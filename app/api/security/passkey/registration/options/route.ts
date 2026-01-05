@@ -63,7 +63,7 @@ export async function GET(req: Request) {
                 userVerification: 'preferred',
                 authenticatorAttachment: 'platform',
             },
-            excludeCredentials: userCredentials?.map(cred => ({
+            excludeCredentials: userCredentials?.map((cred: { credential_id: any; }) => ({
                 id: cred.credential_id,
                 transports: ['internal'], // Optional hint
             })) || [],
