@@ -13,6 +13,7 @@ const PUBLIC_PATHS = [
     '/employer/login',
     '/employer/signup',
     '/',
+    '/auth',
     '/api/auth', // public auth endpoints
     '/api/employer/login',
     '/api/employer/signup',
@@ -83,24 +84,24 @@ export default async function proxy(req: NextRequest) {
         // Prevent Professional from accessing Employer routes
         if (isEmployerRoute && userSchema !== 'employer') {
             if (DEBUG) console.log(`🔐 [MIDDLEWARE] Professional trying to access employer route`);
-            return NextResponse.redirect(new URL('/professional/dashboard', req.url));
+            return NextResponse.redirect(new URL('/professional/home', req.url));
         }
 
         // Prevent Employer from accessing Professional routes
         if (isProfessionalRoute && userSchema !== 'professional') {
             if (DEBUG) console.log(`🔐 [MIDDLEWARE] Employer trying to access professional route`);
-            return NextResponse.redirect(new URL('/employer/dashboard', req.url));
+            return NextResponse.redirect(new URL('/employer/home', req.url));
         }
 
         // Handle Redirects for Logged-In Users visiting Public Pages
         if (path === '/professional/login' || path === '/professional/signup') {
             if (userSchema === 'professional') {
-                return NextResponse.redirect(new URL('/professional/dashboard', req.url));
+                return NextResponse.redirect(new URL('/professional/home', req.url));
             }
         }
         if (path === '/employer/login' || path === '/employer/signup') {
             if (userSchema === 'employer') {
-                return NextResponse.redirect(new URL('/employer/dashboard', req.url));
+                return NextResponse.redirect(new URL('/employer/home', req.url));
             }
         }
 
@@ -108,7 +109,7 @@ export default async function proxy(req: NextRequest) {
         // Allow navigation between setup and verify pages freely
         if (isSetupPath || isVerifyPath) {
             if (DEBUG) console.log(`🔐 [MIDDLEWARE] Allowing access to security page`);
-            
+
             // Add user info to headers
             const requestHeaders = new Headers(req.headers);
             requestHeaders.set('x-user-id', payload.uid as string);
@@ -126,11 +127,11 @@ export default async function proxy(req: NextRequest) {
             // Check if user has any 2FA method configured
             // We need to check both hasTotp from JWT AND check for passkeys
             const hasAny2FA = hasTotp || (payload.has_passkey as boolean) || false;
-            
+
             if (DEBUG) {
                 console.log(`🔐 [MIDDLEWARE] hasAny2FA: ${hasAny2FA}`);
             }
-            
+
             if (hasAny2FA) {
                 // User has 2FA configured, must verify (AAL 2) to access protected routes
                 if (aal < 2) {
