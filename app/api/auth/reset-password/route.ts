@@ -2,13 +2,15 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 import { hashForIndex } from '@/lib/security';
 import * as argon2 from 'argon2';
 
 export async function POST(req: Request) {
   try {
     const { email, newPassword, userType } = await req.json();
-    
+
     if (!email || !newPassword || !userType) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
