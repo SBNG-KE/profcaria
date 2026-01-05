@@ -80,12 +80,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             .eq('user_id', professionalId)
             .in('doc_type', accessList);
 
-        const sharedDocuments = (documents || []).map(doc => ({
+        // Explicitly type doc as 'any' to satisfy the compiler
+        const sharedDocuments = (documents || []).map((doc: any) => ({
             type: doc.doc_type,
             content: decryptData(doc.enc_content),
             lastUpdated: doc.last_updated
         }));
-
+        
         return NextResponse.json({
             profile,
             sharedDocuments,
