@@ -6,7 +6,7 @@ import { decryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const cookieStore = await cookies();
@@ -45,6 +45,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             id: job.id,
             title: decryptData(job.enc_title),
             description: decryptData(job.enc_description),
+            location: decryptData(job.enc_location),
+            location_type: job.location_type || 'remote',
             formSchema: JSON.parse(decryptData(job.enc_form_schema) || '[]'),
             company: {
                 id: job.company?.id,

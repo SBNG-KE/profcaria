@@ -61,6 +61,8 @@ export async function GET(req: Request) {
                 id: job.id,
                 title: decryptData(job.enc_title),
                 description: decryptData(job.enc_description),
+                location: decryptData(job.enc_location),
+                location_type: job.location_type || 'remote',
                 company: {
                     id: job.company?.id,
                     name: decryptData(job.company?.enc_company_name),

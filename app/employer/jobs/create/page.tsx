@@ -20,6 +20,7 @@ export default function CreateJobPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
+    const [location, setLocation] = useState('');
     const [fields, setFields] = useState<FormField[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +54,7 @@ export default function CreateJobPage() {
                         setTitle(job.title);
                         setDescription(job.description);
                         setLocationType(job.location_type || 'remote');
+                        setLocation(job.location || '');
                         setFields(job.formSchema || []);
                     }
                 }
@@ -111,6 +113,7 @@ export default function CreateJobPage() {
                     title,
                     description,
                     location_type: locationType,
+                    location: location,
                     formSchema: fields
                 })
             });
@@ -194,6 +197,22 @@ export default function CreateJobPage() {
                                 ))}
                             </div>
                         </div>
+
+                        {locationType !== 'remote' && (
+                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <MapPin size={14} /> Physical Location
+                                </label>
+                                <input
+                                    type="text"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    placeholder="e.g. London, UK or 123 Street Ave"
+                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                />
+                                <p className="text-[10px] text-slate-500 font-medium italic">Required for Onsite/Hybrid roles</p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-[32px] space-y-4">

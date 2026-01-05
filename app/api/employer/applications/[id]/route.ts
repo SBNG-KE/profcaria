@@ -7,7 +7,7 @@ import { encryptData, decryptData } from '@/lib/security';
 export const runtime = 'nodejs';
 
 // GET: Fetch single application details
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id: applicationId } = await params;
         const cookieStore = await cookies();
@@ -138,7 +138,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 // PATCH: Update application status
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id: applicationId } = await params;
         const cookieStore = await cookies();

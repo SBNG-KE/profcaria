@@ -8,6 +8,7 @@ interface Job {
     id: string;
     title: string;
     description: string;
+    location?: string;
     location_type?: string;
     company: {
         name: string;
@@ -184,8 +185,11 @@ export default function FindJobsPage() {
 
                             <div className="px-8 py-5 bg-slate-900/50 border-t border-slate-800 flex items-center justify-between group-hover:bg-blue-600/5 transition-colors">
                                 <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                    <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
-                                    <span className="flex items-center gap-1.5"><MapPin size={12} /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Not specified'}</span>
+                                    <span className="flex items-center gap-1.5 shrink-0"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
+                                    <span className="flex items-center gap-1.5 shrink-0"><MapPin size={12} className="text-blue-500" /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
+                                    {job.location && (
+                                        <span className="text-slate-400 truncate max-w-[120px]">— {job.location}</span>
+                                    )}
                                 </div>
 
                                 {job.applicationStatus === 'pending' ? (

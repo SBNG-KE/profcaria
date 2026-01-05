@@ -6,7 +6,7 @@ import { encryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const cookieStore = await cookies();
@@ -27,13 +27,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         if (schema !== 'employer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const body = await req.json();
-        const { isActive, title, description, formSchema } = body;
+        const { isActive, title, description, formSchema, location_type, location } = body;
 
         const updateData: any = { updated_at: new Date().toISOString() };
         if (isActive !== undefined) updateData.is_active = isActive;
         if (title !== undefined) updateData.enc_title = encryptData(title);
         if (description !== undefined) updateData.enc_description = encryptData(description);
         if (formSchema !== undefined) updateData.enc_form_schema = encryptData(JSON.stringify(formSchema));
+        if (location_type !== undefined) updateData.location_type = location_type;
+        if (location !== undefined) updateData.enc_location = location ? encryptData(location) : null;
 
         const { error } = await supabaseAdmin
             .schema('employer')
@@ -51,11 +53,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     return PATCH(req, { params });
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params;
         const cookieStore = await cookies();

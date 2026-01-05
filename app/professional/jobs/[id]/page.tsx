@@ -19,6 +19,8 @@ interface Job {
     id: string;
     title: string;
     description: string;
+    location?: string;
+    location_type?: string;
     formSchema: FormField[];
     company: {
         id: string;
@@ -175,8 +177,11 @@ export default function JobApplyPage() {
                         <h1 className="text-5xl font-black text-white leading-none uppercase tracking-tighter">{job.title}</h1>
                         <div className="flex flex-wrap items-center gap-6 text-slate-500 text-xs font-bold uppercase tracking-widest">
                             <span className="flex items-center gap-2 text-blue-400"><Building2 size={16} /> {job.company.name}</span>
-                            <span className="flex items-center gap-2"><MapPin size={16} /> Remote</span>
-                            <span className="flex items-center gap-2"><Calendar size={16} /> Full-time</span>
+                            <span className="flex items-center gap-2">
+                                <MapPin size={16} />
+                                {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}
+                                {job.location && <span className="text-slate-400"> — {job.location}</span>}
+                            </span>
                         </div>
                     </div>
                 </div>

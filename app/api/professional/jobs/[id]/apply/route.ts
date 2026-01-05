@@ -6,7 +6,7 @@ import { encryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id: jobId } = await params;
         const cookieStore = await cookies();

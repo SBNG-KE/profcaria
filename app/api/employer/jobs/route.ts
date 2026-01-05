@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { title, description, formSchema } = body;
+        const { title, description, formSchema, location_type, location } = body;
 
         if (!title || !description || !formSchema) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
         const encTitle = encryptData(title);
         const encDescription = encryptData(description);
         const encFormSchema = encryptData(JSON.stringify(formSchema));
+        const encLocation = location ? encryptData(location) : null;
 
         const { data, error } = await supabaseAdmin
             .schema('employer')
@@ -48,6 +49,8 @@ export async function POST(req: Request) {
                     enc_title: encTitle,
                     enc_description: encDescription,
                     enc_form_schema: encFormSchema,
+                    location_type: location_type || 'remote',
+                    enc_location: encLocation,
                     is_active: true
                 }
             ])
@@ -124,6 +127,8 @@ export async function GET(req: Request) {
             id: job.id,
             title: decryptData(job.enc_title),
             description: decryptData(job.enc_description),
+            location: decryptData(job.enc_location),
+            location_type: job.location_type,
             formSchema: JSON.parse(decryptData(job.enc_form_schema) || '[]'),
             isActive: job.is_active,
             createdAt: job.created_at,
