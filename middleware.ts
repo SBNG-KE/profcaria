@@ -22,7 +22,8 @@ const PUBLIC_PATHS = [
 ];
 
 // DEBUG: Log all requests in development
-const DEBUG = process.env.NODE_ENV === 'development';
+const DEBUG = false;
+
 
 export default async function proxy(req: NextRequest) {
     const path = req.nextUrl.pathname;
