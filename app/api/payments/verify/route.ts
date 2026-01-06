@@ -6,35 +6,24 @@ import { Paystack } from '@/lib/paystack';
 
 export const runtime = 'nodejs';
 
-async function getEmployerId() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('profcaria_session')?.value;
-    if (!token) return null;
-    try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-        const { payload } = await jwtVerify(token, secret);
-        if (payload.schema !== 'employer') return null;
-        return payload.uid as string;
-    } catch {
-        return null;
-    }
-}
-
 export async function POST(req: Request) {
     try {
-        const companyId = await getEmployerId();
-        if (!companyId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
         const { reference } = await req.json();
         if (!reference) return NextResponse.json({ error: 'Missing reference' }, { status: 400 });
 
-        // 1. Verify with Paystack
+        // 1. Verify with Paystack (Source of Truth)
         const response = await Paystack.verifyTransaction(reference);
         if (!response.status || response.data.status !== 'success') {
             return NextResponse.json({ error: 'Transaction verification failed' }, { status: 400 });
         }
 
         const data = response.data;
+        // TRUST Paystack Metadata for ID
+        const companyId = data.metadata?.companyId;
+
+        if (!companyId) {
+            return NextResponse.json({ error: 'Transaction missing metadata' }, { status: 400 });
+        }
 
         // 2. Update DB (Idempotent - Upsert)
         // Log Payment

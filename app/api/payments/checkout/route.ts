@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         const response = await Paystack.initializeTransaction(
             email,
             amount,
-            `${origin}/employer/settings?tab=billing`, // Redirect back to settings page
+            `${origin}/payment/callback`, // Redirect to dedicated callback page
             { companyId },
             plan
         );
