@@ -199,16 +199,12 @@ export default function LandingPage() {
 
               <div className="pt-4 flex items-center gap-6">
                 <div className="flex -space-x-4">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-12 h-12 rounded-full border-4 border-[#050b14] bg-slate-800 overflow-hidden">
-                      <Image src={`https://i.pravatar.cc/150?u=${i}`} alt="user" width={48} height={48} className="grayscale" unoptimized />
-                    </div>
-                  ))}
+                  {/* Avatars removed as requested */}
                   <div className="w-12 h-12 rounded-full border-4 border-[#050b14] bg-blue-600 flex items-center justify-center text-[10px] font-bold">
-                    +12k
+                    soon
                   </div>
                 </div>
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Trusted by elite professionals worldwide</div>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Will be trusted by millions once completely done</div>
               </div>
             </div>
           </ScrollReveal>
@@ -243,10 +239,10 @@ export default function LandingPage() {
             </div>
           </ScrollReveal>
         </div>
-      </section>
+      </section >
 
       {/* Footer */}
-      <footer className="py-20 px-6 border-t border-white/5 relative z-10 bg-[#02060c]">
+      < footer className="py-20 px-6 border-t border-white/5 relative z-10 bg-[#02060c]" >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="space-y-4 text-center md:text-left">
             <h2 className="text-xl font-black text-white tracking-widest">PROFCARIA</h2>
@@ -259,10 +255,10 @@ export default function LandingPage() {
             <a href="#" className="hover:text-blue-500 transition-colors">Security Audit</a>
           </div>
         </div>
-      </footer>
+      </footer >
 
       {/* Aesthetic styles */}
-      <style jsx global>{`
+      < style jsx global > {`
         @keyframes fade-up {
           from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
           to { opacity: 1; transform: translateY(0); filter: blur(0); }
@@ -270,7 +266,7 @@ export default function LandingPage() {
         .reveal {
           animation: fade-up 1s forwards;
         }
-      `}</style>
-    </div>
+      `}</style >
+    </div >
   );
 }
