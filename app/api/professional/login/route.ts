@@ -65,8 +65,24 @@ export async function POST(req: Request) {
     // 6a. Log Activity (Security)
     // Safe logging - does not block flow
     try {
-      const ip = req.headers.get('x-forwarded-for') || 'Unknown IP';
+      const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
       const userAgent = req.headers.get('user-agent') || 'Unknown UA';
+
+      let locationString = 'Unknown Location';
+      try {
+        // IP Geolocation (Server-side)
+        if (ip && ip.length > 7 && !ip.includes('127.0.0.1') && !ip.includes('localhost')) {
+          const geoRes = await fetch(`http://ip-api.com/json/${ip.split(',')[0].trim()}`);
+          if (geoRes.ok) {
+            const geo = await geoRes.json();
+            if (geo.status === 'success') {
+              locationString = `${geo.city}, ${geo.country}`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Geo Lookup Failed:', err);
+      }
 
       await supabaseAdmin
         .schema('professional')
@@ -76,7 +92,7 @@ export async function POST(req: Request) {
           enc_action: encryptData('LOGIN'),
           enc_ip_address: encryptData(ip),
           user_agent: userAgent,
-          enc_location_details: null // Login doesn't provide new location data usually
+          enc_location_details: encryptData(locationString)
         }]);
     } catch (e) {
       console.error('Login Log Error:', e);
@@ -88,8 +104,9 @@ export async function POST(req: Request) {
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
+      expires: new Date(Date.now() + 60 * 60 * 24 * 30 * 1000), // Explicit expiry
       path: '/',
     });
 

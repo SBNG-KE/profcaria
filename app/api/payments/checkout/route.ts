@@ -28,7 +28,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { plan, amount = 4999 } = await req.json(); // plan code (PLN_...) or amount
+        const { plan } = await req.json(); // plan: 'pro' | 'enterprise'
+
+        const exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+        let amount = 0;
+
+        // Calculate amount in lowest currency unit (presumably KES/ZAR cents if rate > 1, or USD cents if rate = 1)
+        // If rate is ~129 (KES), $25 becomes ~3225. Paystack expects kobo/cents, so * 100.
+        // Formula: USD_Price * Exchange_Rate * 100
+
+        if (plan === 'pro') {
+            amount = Math.round(25 * exchangeRate * 100);
+        } else if (plan === 'enterprise') {
+            amount = Math.round(150 * exchangeRate * 100);
+        } else {
+            return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
+        }
 
         // 1. Fetch Company Details
         const { data: company } = await supabaseAdmin
@@ -53,12 +68,24 @@ export async function POST(req: Request) {
         const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com';
 
         // 3. Initialize Paystack Transaction
+        // Pass "amount" directly because we already calculated it in cents/kobo above.
+        // We need to slightly adjust the Paystack.initializeTransaction signature or usage 
+        // because it multiplies by 100 inside.
+        // Let's modify usage here to pass the raw value and adjust the lib if needed, 
+        // OR easier: Divide by 100 here so the lib multiplies it back, 
+        // BUT the lib might be used elsewhere. 
+        // Let's check lib/paystack.ts content again. 
+        // Line 5: amount: amount * 100. 
+        // So we should pass the "Display Amount" (e.g. 3225) and let lib turn it into 322500 cents.
+
+        const finalAmount = amount / 100;
+
         const response = await Paystack.initializeTransaction(
             email,
-            amount,
+            finalAmount,
             `${origin}/payment/callback`, // Redirect to dedicated callback page
-            { companyId },
-            plan
+            { companyId, plan }, // Store plan in metadata
+            undefined // We are doing one-time payment for now to simulate sub, or we can pass plan code if created on Paystack. For now, manual handling.
         );
 
         if (!response.status) {

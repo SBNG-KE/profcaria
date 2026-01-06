@@ -138,8 +138,11 @@ export default function FindJobsPage() {
 
                     {/* Search Bar - Full Width, Enhanced */}
                     <div className="relative group flex-1 w-full flex items-center gap-2">
+                        {/* Glow Effect (Moved to top so it's behind if z-index is managed or just structural) */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"></div>
+
                         {/* Type Toggle */}
-                        <div className="flex bg-slate-900 rounded-full p-1 border border-slate-800 shrink-0">
+                        <div className="relative z-10 flex bg-slate-900 rounded-full p-1 border border-slate-800 shrink-0">
                             <button
                                 onClick={() => setSearchType('job')}
                                 className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'job' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'}`}
@@ -154,8 +157,7 @@ export default function FindJobsPage() {
                             </button>
                         </div>
 
-                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
-                        <div className="relative flex-1 flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-3 transition-all">
+                        <div className="relative z-10 flex-1 flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-3 transition-all">
                             <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={20} />
                             <input
                                 type="text"

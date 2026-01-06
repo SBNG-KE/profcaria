@@ -43,9 +43,12 @@ export async function GET(req: Request) {
             .order('created_at', { ascending: false })
             .limit(10);
 
+        const exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+
         return NextResponse.json({
             subscription: subscription || null,
-            payments: payments || []
+            payments: payments || [],
+            exchangeRate
         });
 
     } catch (error) {

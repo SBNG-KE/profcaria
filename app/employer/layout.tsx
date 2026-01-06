@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'reac
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, FileText, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, Users, Database, Calendar, Building2, Plus, Shield
+    Briefcase, Users, Database, Calendar, Building2, Plus, Shield, Power
 } from 'lucide-react';
 
 // --- Scroll Helpers ---
@@ -241,10 +241,20 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                     <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
 
                     <NavItem id="notifications" href="/employer/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
+                    <NavItem id="settings" href="/employer/settings" icon={Settings} label="Settings" />
                 </ScrollableContainer>
 
                 <div className="p-4 border-t border-slate-800 bg-[#0f172a] shrink-0">
-                    <NavItem id="settings" href="/employer/settings" icon={Settings} label="Settings" />
+                    <button
+                        onClick={async () => {
+                            await fetch('/api/auth/logout', { method: 'POST' });
+                            router.push('/auth');
+                        }}
+                        className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-200 group relative shrink-0 text-red-500 hover:bg-red-500/10 ${!sidebarOpen ? 'justify-center' : ''}`}
+                    >
+                        <Power size={22} />
+                        {sidebarOpen && <span className="font-bold text-xs uppercase tracking-wider transition-all">Log Out</span>}
+                    </button>
                 </div>
             </aside>
 

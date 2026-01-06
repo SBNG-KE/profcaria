@@ -73,6 +73,7 @@ function SettingsContent() {
     // Billing State
     const [subscription, setSubscription] = useState<any | null>(null);
     const [payments, setPayments] = useState<any[]>([]);
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
 
     useEffect(() => {
         fetchProfile();
@@ -125,21 +126,20 @@ function SettingsContent() {
                 const data = await res.json();
                 setSubscription(data.subscription);
                 setPayments(data.payments);
+                if (data.exchangeRate) setExchangeRate(data.exchangeRate);
             }
         } catch (error) {
             console.error('Error fetching billing:', error);
         }
     };
 
-    const handleSubscribe = async () => {
+    const handleSubscribe = async (plan: 'pro' | 'enterprise') => {
         setIsLoading(true);
         try {
-            // One-Time Payment of $10 (1000 cents)
-            // Paystack expects amount in lowest currency unit (kobo/cents)
             const res = await fetch('/api/payments/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: 1000 }) // $10.00
+                body: JSON.stringify({ plan })
             });
             const data = await res.json();
             if (data.url) {
@@ -155,7 +155,7 @@ function SettingsContent() {
     };
 
     const handlePortal = async () => {
-        alert('To manage your subscription, please check your email for the link from Paystack or contact support to cancel.');
+        alert('To manage your subscription, please check your email for the link from Paystack or contact support to cancel/pause.');
     };
 
     const handleProfileSave = async () => {
@@ -235,6 +235,19 @@ function SettingsContent() {
             console.error(error);
         }
     };
+
+    // Currency Formatter
+    const formatCurrency = (usdAmount: number) => {
+        if (exchangeRate === 1) return `$${usdAmount}`;
+        // Approx conversion logic for display
+        const converted = Math.round(usdAmount * exchangeRate);
+        // We can just show generic symbol or assume KES/ZAR etc based on deployment context, 
+        // but for now let's just show the number with a note.
+        // Or better: "KES 3,225"
+        return `${new Intl.NumberFormat().format(converted)}`;
+    };
+
+    const currencyCode = exchangeRate === 1 ? 'USD' : (exchangeRate > 100 ? 'KES' : 'ZAR'); // Simple heuristic for now or generic
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8 pb-32">
@@ -501,68 +514,137 @@ function SettingsContent() {
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
                             <CreditCard className="text-purple-500" size={24} /> Billing & Subscription
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Current Plan */}
-                            <div className="bg-slate-900/30 border border-slate-800 p-6 rounded-2xl space-y-4">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className="font-black text-lg text-white">
-                                            {subscription ? 'Pro Plan' : 'Free Tier'}
-                                        </h4>
-                                        <p className="text-slate-400 text-sm">
-                                            {subscription ? `Renews on ${new Date(subscription.current_period_end).toLocaleDateString()}` : 'Limited access'}
-                                        </p>
-                                    </div>
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold border ${subscription && subscription.status === 'active' ? 'bg-purple-500/20 text-purple-400 border-purple-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
-                                        {subscription ? subscription.status.toUpperCase() : 'INACTIVE'}
-                                    </span>
-                                </div>
-                                <div className="text-3xl font-black text-white">
-                                    {subscription ? '$499' : '$0'}
-                                    <span className="text-sm font-normal text-slate-500">/month</span>
-                                </div>
 
-                                {subscription ? (
-                                    <button
-                                        onClick={handlePortal}
-                                        disabled={isLoading}
-                                        className="w-full py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-all border border-slate-700"
-                                    >
-                                        Manage Subscription
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleSubscribe}
-                                        disabled={isLoading}
-                                        className="w-full py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-all"
-                                    >
-                                        Upgrade to Pro
-                                    </button>
-                                )}
+                        {exchangeRate > 1 && (
+                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl flex items-center gap-3 text-xs text-slate-400">
+                                <Activity size={16} />
+                                <span>Prices are converted from USD and may vary slightly depending on current economic exchange rates.</span>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Free Tier Card */}
+                            <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] flex flex-col relative overflow-hidden group hover:border-slate-700 transition-colors">
+                                <div className="space-y-4 flex-1">
+                                    <h4 className="font-black text-2xl text-white">Free</h4>
+                                    <div className="text-4xl font-black text-slate-500">{currencyCode} 0<span className="text-sm text-slate-600 font-bold ml-1">/mo</span></div>
+                                    <div className="pt-4 space-y-3">
+                                        <div className="flex items-center gap-3 text-sm text-slate-300 font-medium">
+                                            <CheckCircle size={16} className="text-slate-500" /> 1 Active Job Post
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-300 font-medium">
+                                            <CheckCircle size={16} className="text-slate-500" /> Basic Search
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-300 font-medium">
+                                            <CheckCircle size={16} className="text-slate-500" /> Standard Support
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-8 border-t border-slate-800">
+                                    {!subscription ? (
+                                        <div className="w-full py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-center text-xs uppercase tracking-widest cursor-default">
+                                            Current Plan
+                                        </div>
+                                    ) : (
+                                        <div className="w-full py-3 bg-transparent text-slate-600 font-bold rounded-xl text-center text-xs uppercase tracking-widest cursor-default">
+                                            Included
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Features / Payment Info */}
-                            <div className="bg-slate-900/30 border border-slate-800 p-6 rounded-2xl space-y-4">
-                                <h4 className="font-black text-lg text-white">Plan Features</h4>
-                                <ul className="space-y-3">
-                                    <li className="flex items-center gap-3 text-sm text-slate-300">
-                                        <CheckCircle size={16} className={`text-emerald-500 ${!subscription && 'opacity-50'}`} /> Unlimited Job Posts
-                                    </li>
-                                    <li className="flex items-center gap-3 text-sm text-slate-300">
-                                        <CheckCircle size={16} className={`text-emerald-500 ${!subscription && 'opacity-50'}`} /> Advanced Matching
-                                    </li>
-                                    <li className="flex items-center gap-3 text-sm text-slate-300">
-                                        <CheckCircle size={16} className={`text-emerald-500 ${!subscription && 'opacity-50'}`} /> Detailed Analytics
-                                    </li>
-                                </ul>
-                                {subscription && (
-                                    <button
-                                        onClick={handlePortal}
-                                        className="w-full py-3 bg-transparent border border-slate-700 text-slate-400 font-bold rounded-xl hover:bg-slate-800 transition-all text-xs uppercase tracking-widest"
-                                    >
-                                        Update Payment Method via Portal
-                                    </button>
+                            {/* Pro Tier Card */}
+                            <div className="bg-slate-900/20 border border-emerald-500/20 p-8 rounded-[32px] flex flex-col relative overflow-hidden shadow-lg shadow-emerald-900/5">
+                                {subscription?.plan === 'pro' && (
+                                    <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                        Current
+                                    </div>
                                 )}
+                                <div className="space-y-4 flex-1">
+                                    <h4 className="font-black text-2xl text-white">Pro</h4>
+                                    <div className="text-4xl font-black text-emerald-400">
+                                        <span className="text-lg text-emerald-600 font-bold mr-1">{currencyCode}</span>
+                                        {formatCurrency(25)}
+                                        <span className="text-sm text-emerald-600/70 font-bold ml-1">/mo</span>
+                                    </div>
+                                    <div className="pt-4 space-y-3">
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-emerald-500 shrink-0" /> 5 Job Posts / Mo
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-emerald-500 shrink-0" /> Featured Listings
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-emerald-500 shrink-0" /> Partial Analytics
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-8 border-t border-emerald-500/20">
+                                    {subscription?.status === 'active' && subscription.plan === 'pro' ? (
+                                        <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
+                                            Manage Subscription
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleSubscribe('pro')}
+                                            disabled={isLoading}
+                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+                                        >
+                                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : 'Upgrade to Pro'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Enterprise Tier Card */}
+                            <div className="bg-gradient-to-br from-purple-950/20 to-[#0f172a] border border-purple-500/20 p-8 rounded-[32px] flex flex-col relative overflow-hidden shadow-2xl shadow-purple-900/10">
+                                {subscription?.plan === 'enterprise' && (
+                                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                        Current
+                                    </div>
+                                )}
+                                <div className="space-y-4 flex-1">
+                                    <h4 className="font-black text-2xl text-white flex items-center gap-2">
+                                        Enterprise <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 text-[10px] border border-purple-500/20">BEST VALUE</span>
+                                    </h4>
+                                    <div className="text-4xl font-black text-purple-400">
+                                        <span className="text-lg text-purple-600 font-bold mr-1">{currencyCode}</span>
+                                        {formatCurrency(145)}
+                                        <span className="text-sm text-purple-600/70 font-bold ml-1">/mo</span>
+                                    </div>
+                                    <div className="pt-4 space-y-3">
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Unlimited Job Posts
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Full AI & Analytics
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Pause Subscription
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Voting Rights
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
+                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> 24/7 Priority Support
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-8 border-t border-purple-500/20">
+                                    {subscription?.status === 'active' && subscription.plan === 'enterprise' ? (
+                                        <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
+                                            Manage Subscription
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleSubscribe('enterprise')}
+                                            disabled={isLoading}
+                                            className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2"
+                                        >
+                                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : 'Get Enterprise'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
