@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax', // Must be 'lax' to allow redirects from external sites (Paystack)
       maxAge: 60 * 60 * 24 * 30, // 30 days
       path: '/',
     });
