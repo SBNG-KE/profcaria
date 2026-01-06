@@ -37,9 +37,9 @@ export async function GET(req: Request) {
         let selectFields = `has_passkey, has_totp, has_phone_otp, requires_2fa, created_at, ${emailField}`;
 
         if (isProfessional) {
-            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url`;
+            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number`;
         } else {
-            selectFields += `, enc_company_name, enc_logo_url`; // Add employer fields
+            selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email`; // Add employer fields
         }
 
         const { data: user, error } = await supabaseAdmin
@@ -60,13 +60,61 @@ export async function GET(req: Request) {
                 firstName: decryptData(user.enc_first_name),
                 lastName: decryptData(user.enc_last_name),
                 role: decryptData(user.enc_current_role),
-                profileImageUrl: decryptData(user.enc_profile_image_url)
+                profileImageUrl: decryptData(user.enc_profile_image_url),
+                email: decryptData(user.enc_email) || payload.email || '',
+                phone: decryptData(user.enc_phone_number) || ''
             };
+
+            // Fetch Latest Location from Activity Logs
+            const { data: latestLog } = await supabaseAdmin
+                .schema('professional')
+                .from('activity_logs')
+                .select('enc_location_details')
+                .eq('user_id', uid)
+                .neq('enc_location_details', null) // Only logs with location
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (latestLog?.enc_location_details) {
+                try {
+                    const locationData = JSON.parse(decryptData(latestLog.enc_location_details) || '{}');
+                    profile.country = locationData.country || '';
+                    profile.city = locationData.city || '';
+                    profile.address = locationData.address || '';
+                } catch (e) {
+                    console.error('Failed to parse location log', e);
+                }
+            }
         } else {
             profile = {
                 companyName: decryptData(user.enc_company_name),
-                logoUrl: decryptData(user.enc_logo_url)
+                logoUrl: decryptData(user.enc_logo_url),
+                website: decryptData(user.enc_website), // Assuming website might be needed
+                email: decryptData(user.enc_work_email) || payload.email || ''
             };
+
+            // Fetch Latest Location from Employer Activity Logs
+            const { data: latestLog } = await supabaseAdmin
+                .schema('employer')
+                .from('activity_logs')
+                .select('enc_location_details')
+                .eq('user_id', uid)
+                .neq('enc_location_details', null)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (latestLog?.enc_location_details) {
+                try {
+                    const locationData = JSON.parse(decryptData(latestLog.enc_location_details) || '{}');
+                    profile.country = locationData.country || '';
+                    profile.city = locationData.city || '';
+                    profile.address = locationData.address || '';
+                } catch (e) {
+                    console.error('Failed to parse employer location log', e);
+                }
+            }
         }
 
         return NextResponse.json({

@@ -233,7 +233,7 @@ export default function ViewApplicationsPage() {
                                             Message
                                         </button>
                                         <button
-                                            onClick={() => router.push(`/employer/applications/${selectedApp.id}/profile`)}
+                                            onClick={() => window.open(`/employer/applications/${selectedApp.id}/view`, '_blank')}
                                             className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-slate-700 whitespace-nowrap"
                                         >
                                             <Eye size={12} className="inline mr-1.5" />

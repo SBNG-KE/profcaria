@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
-import { decryptData, encryptData } from '@/lib/security';
+import { encryptData, decryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
@@ -37,9 +37,9 @@ export async function GET(req: Request) {
         const { data: applications, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('*')
+            .select('*, jobs(enc_title)')
             .in('job_id', jobIds)
-            .in('status', ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'terminated'])
+            .in('status', ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'pending_resignation', 'terminated', 'resigned', 'rejected', 'declined'])
             .order('created_at', { ascending: false });
 
         if (appError) throw appError;
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
 
             const firstName = prof ? decryptData(prof.enc_first_name) : '';
             const lastName = prof ? decryptData(prof.enc_last_name) : '';
-            const name = firstName && lastName ? `${firstName} ${lastName}` : 'Unknown Professional';
+            const name = firstName && lastName ? `${firstName} ${lastName} ` : 'Unknown Professional';
             const role = prof ? decryptData(prof.enc_current_role) : 'Professional';
             const profileImageUrl = prof ? decryptData(prof.enc_profile_image_url) : null;
 
@@ -71,7 +71,10 @@ export async function GET(req: Request) {
                 applicationId: app.id,
                 userId: app.user_id,
                 status: app.status,
+                terminationType: app.termination_type,
                 connectedAt: app.created_at,
+                terminatedAt: app.terminated_at,
+                connectionFileUrl: app.connection_file_url,
                 job: {
                     id: job?.id,
                     title: decryptData(job?.enc_title) || 'Unknown Job'
@@ -110,26 +113,73 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const { applicationId, action } = await req.json();
+        const { applicationId, action, reason } = await req.json();
 
-        if (action === 'terminate') {
-            // Update status to terminated
+        if (action === 'involuntary_terminate') {
+            const enc_reason = reason ? encryptData(reason) : null;
+
+            // Create Snapshot
+            const snapshotData = await createSnapshot(applicationId);
+
             const { error: updateError } = await supabaseAdmin
                 .schema('employer')
                 .from('applications')
-                .update({ status: 'terminated' })
+                .update({
+                    status: 'terminated',
+                    termination_type: 'involuntary',
+                    termination_initiated_by: 'employer',
+                    enc_termination_reason: enc_reason,
+                    terminated_at: new Date().toISOString(),
+                    snapshot_data: snapshotData // Save snapshot
+                })
                 .eq('id', applicationId);
 
             if (updateError) throw updateError;
             return NextResponse.json({ success: true });
         }
 
-        if (action === 'disapprove') {
-            // Revert status to employed (or whatever the active state was)
+        if (action === 'approve_resignation') {
+            const snapshotData = await createSnapshot(applicationId);
             const { error: updateError } = await supabaseAdmin
                 .schema('employer')
                 .from('applications')
-                .update({ status: 'employed' })
+                .update({
+                    status: 'resigned',
+                    termination_type: 'resignation',
+                    terminated_at: new Date().toISOString(),
+                    snapshot_data: snapshotData
+                })
+                .eq('id', applicationId);
+
+            if (updateError) throw updateError;
+            return NextResponse.json({ success: true });
+        }
+
+        if (action === 'approve_mutual_termination') {
+            const snapshotData = await createSnapshot(applicationId);
+            const { error: updateError } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .update({
+                    status: 'terminated',
+                    termination_type: 'mutual',
+                    terminated_at: new Date().toISOString(),
+                    snapshot_data: snapshotData
+                })
+                .eq('id', applicationId);
+
+            if (updateError) throw updateError;
+            return NextResponse.json({ success: true });
+        }
+
+        if (action === 'disapprove_termination' || action === 'disapprove') {
+            // Revert status to employed/hired
+            const { error: updateError } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .update({
+                    status: 'employed',
+                })
                 .eq('id', applicationId);
 
             if (updateError) throw updateError;
@@ -142,4 +192,67 @@ export async function PATCH(req: Request) {
         console.error('Employer Connections PATCH Error:', error);
         return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
     }
+}
+
+// Helper to create profile snapshot
+async function createSnapshot(applicationId: string) {
+    // 1. Fetch Application + Access List
+    const { data: application, error: appError } = await supabaseAdmin
+        .schema('employer')
+        .from('applications')
+        .select(`
+            user_id,
+            enc_access_list
+        `)
+        .eq('id', applicationId)
+        .single();
+
+    if (appError || !application) throw new Error('Snapshot: Application not found');
+
+    const { user_id: professionalId, enc_access_list: encAccessList } = application;
+    const accessList: string[] = JSON.parse(decryptData(encAccessList) || '[]');
+
+    // 2. Fetch Professional Profile
+    const { data: prof, error: profError } = await supabaseAdmin
+        .schema('professional')
+        .from('users')
+        .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+        .eq('id', professionalId)
+        .single();
+
+    // Fetch Auth Data (Email/Phone)
+    const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.admin.getUserById(professionalId);
+
+    if (profError || !prof) throw new Error('Snapshot: Profile not found');
+
+    const profile = {
+        id: professionalId,
+        firstName: decryptData(prof.enc_first_name),
+        lastName: decryptData(prof.enc_last_name),
+        role: decryptData(prof.enc_current_role),
+        profileImageUrl: decryptData(prof.enc_profile_image_url),
+        phone: authUser?.phone || null,
+        email: authUser?.email || null
+    };
+
+    // 3. Fetch Shared Documents Content
+    const { data: documents, error: docError } = await supabaseAdmin
+        .schema('professional')
+        .from('documents')
+        .select('doc_type, enc_content, last_updated')
+        .eq('user_id', professionalId)
+        .in('doc_type', accessList);
+
+    const sharedDocuments = (documents || []).map((doc: any) => ({
+        type: doc.doc_type,
+        content: decryptData(doc.enc_content),
+        lastUpdated: doc.last_updated
+    }));
+
+    return {
+        profile,
+        sharedDocuments,
+        accessList,
+        snapshottedAt: new Date().toISOString()
+    };
 }

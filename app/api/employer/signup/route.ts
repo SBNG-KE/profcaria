@@ -64,6 +64,8 @@ export async function POST(req: Request) {
           password_hash: passwordHash,
           enc_company_name: encCompanyName,
           enc_logo_url: encLogo,
+          enc_work_email: encryptData(workEmail),
+          enc_phone_number: phone ? encryptData(phone) : null,
           // Default security settings
           requires_2fa: true,
           allow_passkeys: true

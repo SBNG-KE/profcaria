@@ -24,23 +24,34 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const applicationId = searchParams.get('applicationId');
-        if (!applicationId) return NextResponse.json({ error: 'Missing applicationId' }, { status: 400 });
+        const applicationIdsParam = searchParams.get('applicationIds');
+
+        if (!applicationId && !applicationIdsParam) return NextResponse.json({ error: 'Missing applicationId(s)' }, { status: 400 });
 
         const session = await getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // Verify user is authorized for this application
-        const { data: application, error: appError } = await supabaseAdmin
+        // Parse IDs (prioritize multiple IDs if present)
+        const targetAppIds = applicationIdsParam
+            ? applicationIdsParam.split(',').filter(Boolean)
+            : [applicationId!];
+
+        // Verify authorization for ALL requested applications
+        const { data: applications, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('user_id, jobs(company_id)')
-            .eq('id', applicationId)
-            .single();
+            .select('id, user_id, jobs(company_id)')
+            .in('id', targetAppIds);
 
-        if (appError || !application) return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+        if (appError || !applications || applications.length === 0) {
+            return NextResponse.json({ error: 'Applications not found' }, { status: 404 });
+        }
 
-        const isAuthorized = (session.schema === 'professional' && session.uid === application.user_id) ||
-            (session.schema === 'employer' && session.uid === (application.jobs as any).company_id);
+        // Check ownership for each application found
+        const isAuthorized = applications.every((app: any) => {
+            return (session.schema === 'professional' && session.uid === app.user_id) ||
+                (session.schema === 'employer' && session.uid === (app.jobs as any).company_id);
+        });
 
         if (!isAuthorized) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
@@ -48,7 +59,7 @@ export async function GET(req: Request) {
             .schema('employer')
             .from('messages')
             .select('*, is_read')
-            .eq('application_id', applicationId)
+            .in('application_id', targetAppIds)
             .order('created_at', { ascending: true });
 
         if (error) return NextResponse.json({ error: 'Fetch Error' }, { status: 500 });
@@ -69,16 +80,19 @@ export async function PATCH(req: Request) {
         const session = await getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const { applicationId } = await req.json();
-        if (!applicationId) return NextResponse.json({ error: 'Missing applicationId' }, { status: 400 });
+        const { applicationId, applicationIds } = await req.json();
 
-        // Mark all messages as read WHERE recipient is current user
-        // Note: sender_type !== session.schema means the other party sent it
+        // Determine target IDs
+        const targetIds = applicationIds || (applicationId ? [applicationId] : []);
+
+        if (targetIds.length === 0) return NextResponse.json({ error: 'Missing applicationId(s)' }, { status: 400 });
+
+        // Mark all messages as read WHERE recipient is current user for ALL target applications
         const { error } = await supabaseAdmin
             .schema('employer')
             .from('messages')
             .update({ is_read: true })
-            .eq('application_id', applicationId)
+            .in('application_id', targetIds)
             .neq('sender_type', session.schema);
 
         if (error) throw error;

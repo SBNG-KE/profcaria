@@ -23,10 +23,16 @@ export default function NotificationsPage() {
 
     useEffect(() => {
         if (activeConversation) {
-            fetchMessages(activeConversation.id);
-            markMessagesAsRead(activeConversation.id);
+            // Find all application IDs for this company
+            const companyAppIds = applications
+                .filter(app => app.companyName === activeConversation.companyName)
+                .filter(app => app.companyId === activeConversation.companyId)
+                .map(app => app.id);
+
+            fetchMessages(companyAppIds);
+            markMessagesAsRead(companyAppIds);
         }
-    }, [activeConversation]);
+    }, [activeConversation, applications]);
 
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -81,9 +87,10 @@ export default function NotificationsPage() {
         return false;
     };
 
-    const fetchMessages = async (appId: string) => {
+    const fetchMessages = async (appIds: string[]) => {
         try {
-            const res = await fetch(`/api/shared/messages?applicationId=${appId}`);
+            const idsParam = appIds.join(',');
+            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}`);
             if (res.ok) {
                 const data = await res.json();
                 const newMessages = data.messages || [];
@@ -103,6 +110,7 @@ export default function NotificationsPage() {
         setNewMessage('');
         setIsSending(true);
         try {
+            // Send to the specifically selected application (the most recent one or the one clicked)
             const res = await fetch('/api/shared/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -135,12 +143,12 @@ export default function NotificationsPage() {
         }
     };
 
-    const markMessagesAsRead = async (appId: string) => {
+    const markMessagesAsRead = async (appIds: string[]) => {
         try {
             await fetch('/api/shared/messages', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ applicationId: appId })
+                body: JSON.stringify({ applicationIds: appIds })
             });
         } catch (error) {
             console.error("Error marking messages as read", error);
@@ -228,15 +236,24 @@ export default function NotificationsPage() {
                     {/* Conversation list - WhatsApp style */}
                     <div className="pb-4">
                         <h3 className="px-4 py-2 text-[9px] font-black text-slate-600 uppercase tracking-widest">Conversations</h3>
-                        {filteredConversations.map((app) => {
+                        {Object.values(
+                            filteredConversations.reduce((acc, app) => {
+                                // Group by company ID
+                                const existing = acc[app.companyId];
+                                if (!existing) {
+                                    acc[app.companyId] = app;
+                                }
+                                return acc;
+                            }, {} as Record<string, any>)
+                        ).map((app: any) => {
                             const hasUnread = notifications.some(n => !n.is_read && n.application_id === app.id);
                             return (
                                 <button
-                                    key={app.id}
+                                    key={app.companyId}
                                     onClick={() => setActiveConversation(app)}
-                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? 'bg-blue-600/10' : 'hover:bg-slate-800/30'}`}
+                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.companyId === app.companyId ? 'bg-blue-600/10' : 'hover:bg-slate-800/30'}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.id === app.id ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.companyId === app.companyId ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
                                         {app.companyLogoUrl ? (
                                             <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
@@ -253,9 +270,6 @@ export default function NotificationsPage() {
                                         </div>
                                         <div className="flex items-center justify-between gap-2 mt-1">
                                             <p className="text-xs text-slate-500 truncate">{app.jobTitle}</p>
-                                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusColor(app.status)}`}>
-                                                {app.status.replace(/_/g, ' ')}
-                                            </span>
                                         </div>
                                     </div>
                                 </button>

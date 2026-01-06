@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { hashForIndex } from '@/lib/security';
+import { hashForIndex, encryptData } from '@/lib/security';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
 
@@ -46,6 +46,25 @@ export async function POST(req: Request) {
       .from('companies')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', company.id);
+
+    // 4a. Log Activity (Security)
+    try {
+      const ip = req.headers.get('x-forwarded-for') || 'Unknown IP';
+      const userAgent = req.headers.get('user-agent') || 'Unknown UA';
+
+      await supabaseAdmin
+        .schema('employer')
+        .from('activity_logs')
+        .insert([{
+          user_id: company.id,
+          enc_action: encryptData('LOGIN'),
+          enc_ip_address: encryptData(ip),
+          user_agent: userAgent,
+          enc_location_details: null
+        }]);
+    } catch (e) {
+      console.error('Login Log Error:', e);
+    }
 
     // 5. Generate Session Token
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);

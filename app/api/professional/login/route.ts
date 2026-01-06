@@ -1,10 +1,9 @@
-//app/api/professional/login/route.ts
-
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { hashForIndex } from '@/lib/security';
+import { hashForIndex, encryptData } from '@/lib/security';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
+
 
 // Force Node.js runtime for Argon2 support
 export const runtime = 'nodejs';
@@ -62,6 +61,26 @@ export async function POST(req: Request) {
       .setIssuedAt()
       .setExpirationTime('30d')
       .sign(secret);
+
+    // 6a. Log Activity (Security)
+    // Safe logging - does not block flow
+    try {
+      const ip = req.headers.get('x-forwarded-for') || 'Unknown IP';
+      const userAgent = req.headers.get('user-agent') || 'Unknown UA';
+
+      await supabaseAdmin
+        .schema('professional')
+        .from('activity_logs')
+        .insert([{
+          user_id: user.id,
+          enc_action: encryptData('LOGIN'),
+          enc_ip_address: encryptData(ip),
+          user_agent: userAgent,
+          enc_location_details: null // Login doesn't provide new location data usually
+        }]);
+    } catch (e) {
+      console.error('Login Log Error:', e);
+    }
 
     // 7. Set Cookie & Return
     const response = NextResponse.json({ success: true, redirect: '/professional/home' });

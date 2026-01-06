@@ -405,50 +405,26 @@ function ApplicationsPageContent() {
                                                 </div>
                                             ) : null}
 
-                                            {/* Artifacts (Profile Data) */}
-                                            {selectedApp.artifacts && selectedApp.artifacts.length > 0 && (
-                                                <div className="space-y-6 pt-6 animate-in slide-in-from-bottom-4 duration-500">
-                                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Candidate Profile</h3>
+                                            {/* Candidate Profile Link */}
+                                            <div className="space-y-4 pt-6 animate-in slide-in-from-bottom-4 duration-500">
+                                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Candidate Profile</h3>
 
-                                                    {/* Artifact Selection Buttons */}
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {selectedApp.artifacts.map((art) => (
-                                                            <button
-                                                                key={art.type}
-                                                                onClick={() => setViewingArtifact(viewingArtifact === art.type ? null : art.type)}
-                                                                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${viewingArtifact === art.type
-                                                                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                                                                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white hover:border-slate-600'
-                                                                    }`}
-                                                            >
-                                                                {art.type}
-                                                            </button>
-                                                        ))}
+                                                <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 flex flex-col items-center text-center space-y-4">
+                                                    <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                                                        <FileText size={32} />
                                                     </div>
-
-                                                    {/* Viewer */}
-                                                    {viewingArtifact && (
-                                                        <div className="animate-in fade-in zoom-in-95 duration-300">
-                                                            <div className="bg-slate-900/30 rounded-2xl p-6 border border-slate-800/50 text-slate-300 text-sm overflow-hidden">
-                                                                <div className="flex items-center justify-between mb-4 border-b border-slate-800/50 pb-4">
-                                                                    <h4 className="text-sm font-black text-white uppercase tracking-tighter">{viewingArtifact}</h4>
-                                                                    <button onClick={() => setViewingArtifact(null)} className="text-slate-500 hover:text-white"><XCircle size={14} /></button>
-                                                                </div>
-                                                                <div
-                                                                    className="prose prose-invert prose-sm max-w-none text-slate-300
-                                                                    [&_h1]:text-white [&_h1]:font-black [&_h1]:uppercase
-                                                                    [&_h2]:text-slate-200 [&_h2]:font-bold
-                                                                    [&_a]:text-blue-400 [&_a]:underline
-                                                                    "
-                                                                    dangerouslySetInnerHTML={{
-                                                                        __html: selectedApp.artifacts.find(a => a.type === viewingArtifact)?.content || ''
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    <div>
+                                                        <h4 className="text-white font-bold uppercase tracking-tight">Full Profile Snapshot</h4>
+                                                        <p className="text-xs text-slate-500 mt-1">View the professional's profile and shared documents.</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => window.open(`/employer/applications/${selectedApp.id}/view`, '_blank')}
+                                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+                                                    >
+                                                        <ExternalLink size={16} /> View Candidate Profile
+                                                    </button>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                         <div className="pt-4 border-t border-slate-800">
                                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-2">

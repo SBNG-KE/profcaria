@@ -72,6 +72,8 @@ export async function POST(req: Request) {
           enc_first_name: encFirstName,
           enc_last_name: encLastName,
           enc_current_role: encRole,
+          enc_email: encryptData(email),
+          enc_phone_number: phone ? encryptData(phone) : null,
           // Default security
           requires_2fa: false
         }

@@ -25,9 +25,9 @@ export async function GET(req: Request) {
         const { data: applications, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('*, jobs(id, enc_title, company_id)')
+            .select('*, jobs(id, enc_title, company_id, location_type)')
             .eq('user_id', uid)
-            .in('status', ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'terminated'])
+            .in('status', ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'terminated', 'resigned', 'rejected', 'declined'])
             .order('created_at', { ascending: false });
 
         if (appError) throw appError;
@@ -54,10 +54,15 @@ export async function GET(req: Request) {
                 id: app.id,
                 applicationId: app.id,
                 status: app.status,
-                connectedAt: app.created_at,
+                terminationType: app.termination_type,
+                terminationReason: app.enc_termination_reason ? decryptData(app.enc_termination_reason) : null,
+                created_at: app.created_at,
+                terminated_at: app.terminated_at,
+                connectionFileUrl: app.connection_file_url, // New Field
                 job: {
                     id: job?.id,
-                    title: decryptData(job?.enc_title) || 'Unknown Job'
+                    title: decryptData(job?.enc_title) || 'Unknown Job',
+                    location_type: job?.location_type // Ensure this is selected in the query too if needed, but it wasn't in the original select *, keys might be different
                 },
                 company: {
                     id: company?.id,
@@ -90,30 +95,86 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const { applicationId, action } = await req.json();
+        const { applicationId, action, reason, fileUrl } = await req.json();
 
-        if (!applicationId || action !== 'request_termination') {
-            return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
-        }
-
-        // Verify ownership
-        const { data: app, error: appError } = await supabaseAdmin
+        // Fetch application to verify ownership and get current status
+        const { data: app, error: fetchError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('id, user_id, jobs(company_id)')
+            .select('*, jobs(company_id)')
             .eq('id', applicationId)
             .eq('user_id', uid)
             .single();
 
-        if (appError || !app) {
+        if (fetchError || !app) {
             return NextResponse.json({ error: 'Application not found' }, { status: 404 });
         }
 
-        // Update status to pending_termination (requires employer approval)
+        if (action === 'update_file') {
+            // Ensure connection is active to allow edits? User said active only. But logic handled in frontend?
+            // Backend should verify status is not terminated?
+            // "whenever resigned or mutual or involuntary termination that file becomes an open only"
+            // So if status is terminated/resigned, disallow update.
+
+            if (app.status === 'terminated' || app.status === 'resigned' || app.status === 'rejected' || app.status === 'declined') {
+                return NextResponse.json({ error: 'Cannot edit file for terminated connection' }, { status: 403 });
+            }
+
+            const { error: updateError } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .update({ connection_file_url: fileUrl })
+                .eq('id', applicationId);
+
+            if (updateError) throw updateError;
+            return NextResponse.json({ success: true });
+        }
+
+        if (action === 'remove_file') {
+            if (app.status === 'terminated' || app.status === 'resigned') {
+                return NextResponse.json({ error: 'Cannot remove file for terminated connection' }, { status: 403 });
+            }
+            const { error: updateError } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .update({ connection_file_url: null })
+                .eq('id', applicationId);
+
+            if (updateError) throw updateError;
+            return NextResponse.json({ success: true });
+        }
+
+        if (!['request_termination', 'request_resignation', 'request_mutual_termination'].includes(action)) {
+            return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+        }
+
+        const enc_reason = reason ? encryptData(reason) : null;
+        let updateData: any = {
+            termination_initiated_by: 'professional',
+            enc_termination_reason: enc_reason
+        };
+        let notifMessage = '';
+
+        if (action === 'request_resignation') {
+            updateData.status = 'pending_resignation';
+            notifMessage = 'An employee has submitted a formal resignation.';
+        } else if (action === 'request_mutual_termination') {
+            updateData.status = 'pending_termination';
+            updateData.termination_type = 'mutual';
+            notifMessage = 'An employee has requested a mutual termination of their contract.';
+        } else {
+            // Fallback for legacy 'request_termination' call -> assume mutual if not specified? 
+            // Or just leave as pending_termination without type. Let's Map to Mutual for now as user said professional requests usually meant mutual before.
+            updateData.status = 'pending_termination';
+            updateData.termination_type = 'mutual';
+            notifMessage = 'An employee has requested to terminate their employment connection.';
+        }
+
+        // Update status
         const { error: updateError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .update({ status: 'pending_termination' })
+            .update(updateData)
             .eq('id', applicationId);
 
         if (updateError) throw updateError;
@@ -126,12 +187,12 @@ export async function PATCH(req: Request) {
                 .from('notifications')
                 .insert([{
                     company_id: jobData.company_id,
-                    enc_message: encryptData('A connected professional has requested to terminate their employment connection.'),
+                    enc_message: encryptData(notifMessage),
                     type: 'connection'
                 }]);
         }
 
-        return NextResponse.json({ success: true, message: 'Termination request sent to employer for approval.' });
+        return NextResponse.json({ success: true, message: 'Request sent to employer.' });
 
     } catch (error: any) {
         console.error('Request Termination Error:', error);

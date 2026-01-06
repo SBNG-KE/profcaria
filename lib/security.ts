@@ -43,19 +43,31 @@ export const encryptData = (text: string) => {
 export const decryptData = (encryptedString: string) => {
   if (!encryptedString) return null;
 
-  const [ivHex, authTagHex, encryptedHex] = encryptedString.split(':');
+  const parts = encryptedString.split(':');
 
-  const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'hex');
-  const ivBuffer = Buffer.from(ivHex, 'hex');
-  const authTagBuffer = Buffer.from(authTagHex, 'hex');
+  // Handle legacy/plaintext data (prevents crash on old logs)
+  if (parts.length !== 3) {
+    return encryptedString;
+  }
 
-  const decipher = createDecipheriv(ALGORITHM, keyBuffer, ivBuffer);
-  decipher.setAuthTag(authTagBuffer);
+  const [ivHex, authTagHex, encryptedHex] = parts;
 
-  let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
+  try {
+    const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'hex');
+    const ivBuffer = Buffer.from(ivHex, 'hex');
+    const authTagBuffer = Buffer.from(authTagHex, 'hex');
 
-  return decrypted;
+    const decipher = createDecipheriv(ALGORITHM, keyBuffer, ivBuffer);
+    decipher.setAuthTag(authTagBuffer);
+
+    let decrypted = decipher.update(encryptedHex, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+
+    return decrypted;
+  } catch (error) {
+    console.error('Decryption failed:', error);
+    return null; // Or return encryptedString if you prefer
+  }
 };
 
 /**

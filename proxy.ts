@@ -39,7 +39,7 @@ export default async function middleware(req: NextRequest) {
     const isProfessionalRoute = path.startsWith('/professional') && !PUBLIC_PATHS.includes(path);
     const isEmployerRoute = path.startsWith('/employer') && !PUBLIC_PATHS.includes(path);
     const isSecurityRoute = path.startsWith('/security');
-    
+
     // Explicitly allow navigation within security flow
     const isSetupOrVerify = path.startsWith('/security/setup') || path.startsWith('/security/verify');
 
@@ -61,7 +61,7 @@ export default async function middleware(req: NextRequest) {
             // You might want to redirect to a specific login page based on the route
             if (path.startsWith('/employer')) return NextResponse.redirect(new URL('/employer/login', req.url));
             if (path.startsWith('/professional')) return NextResponse.redirect(new URL('/professional/login', req.url));
-            
+
             return NextResponse.redirect(new URL('/', req.url));
         }
         // Allow access to public paths
@@ -93,21 +93,21 @@ export default async function middleware(req: NextRequest) {
 
         // 2. Auth Page Redirect (If already logged in, move them to dashboard)
         if (path === '/professional/login' || path === '/professional/signup') {
-             return NextResponse.redirect(new URL('/professional/home', req.url));
+            return NextResponse.redirect(new URL('/professional/home', req.url));
         }
         if (path === '/employer/login' || path === '/employer/signup') {
-             return NextResponse.redirect(new URL('/employer/home', req.url));
+            return NextResponse.redirect(new URL('/employer/home', req.url));
         }
 
         // 3. 2FA / Security Enforcement
         // We ONLY enforce this loop if the user is NOT on a public page (unless you want to block public viewing for partial users)
         // OR if they are currently inside the security flow (to allow them to complete it)
-        
+
         const isProtectedContext = isProfessionalRoute || isEmployerRoute || isSecurityRoute;
-        
+
         // Allow access to setup/verify pages to prevent infinite redirects
         if (isSetupOrVerify) {
-             return NextResponse.next({ request: { headers: requestHeaders } });
+            return NextResponse.next({ request: { headers: requestHeaders } });
         }
 
         // If we are in a protected context, we enforce 2FA

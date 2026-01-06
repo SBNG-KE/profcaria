@@ -93,7 +93,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const activeTab = pathname.split('/').pop() || 'home';
-    const showBackButton = pathname !== '/employer/home';
+    const showBackButton = pathname !== '/employer/home' && !pathname.endsWith('/view');
 
     useEffect(() => {
         const fetchMe = async () => {

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Plus, X, GripVertical, Type, Hash, List, CheckSquare,
-    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText, MapPin
+    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText, MapPin, Clock
 } from 'lucide-react';
 
 interface FormField {
@@ -21,6 +21,7 @@ function CreateJobPageContent() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
+    const [employmentType, setEmploymentType] = useState<'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'>('full-time');
     const [location, setLocation] = useState('');
     const [fields, setFields] = useState<FormField[]>([]);
     const [isSaving, setIsSaving] = useState(false);
@@ -54,7 +55,9 @@ function CreateJobPageContent() {
                     if (job) {
                         setTitle(job.title);
                         setDescription(job.description);
+                        setDescription(job.description);
                         setLocationType(job.location_type || 'remote');
+                        setEmploymentType(job.employment_type || 'full-time');
                         setLocation(job.location || '');
                         setFields(job.formSchema || []);
                     }
@@ -114,6 +117,7 @@ function CreateJobPageContent() {
                     title,
                     description,
                     location_type: locationType,
+                    employment_type: employmentType,
                     location: location,
                     formSchema: fields
                 })
@@ -198,116 +202,140 @@ function CreateJobPageContent() {
                                 ))}
                             </div>
                         </div>
-
-                        {locationType !== 'remote' && (
-                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                    <MapPin size={14} /> Physical Location
-                                </label>
-                                <input
-                                    type="text"
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    placeholder="e.g. London, UK or 123 Street Ave"
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
-                                />
-                                <p className="text-[10px] text-slate-500 font-medium italic">Required for Onsite/Hybrid roles</p>
-                            </div>
-                        )}
                     </div>
 
-                    <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-[32px] space-y-4">
-                        <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest">Add Form Field</h3>
-                        <div className="grid grid-cols-1 gap-2">
-                            <button onClick={() => addField('text')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><Type size={16} /> Short Text</button>
-                            <button onClick={() => addField('number')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><Hash size={16} /> Number Input</button>
-                            <button onClick={() => addField('radio')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><List size={16} /> Multiple Choice</button>
-                            <button onClick={() => addField('checkbox')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><CheckSquare size={16} /> Checkboxes</button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* FORM BUILDER AREA */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between px-4">
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-                            <Layout size={24} className="text-blue-500" />
-                            Application Form
-                        </h2>
-                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{fields.length} Fields Added</span>
-                    </div>
-
-                    {fields.length === 0 ? (
-                        <div className="border-2 border-dashed border-slate-800 rounded-[32px] p-20 flex flex-col items-center justify-center text-slate-600 space-y-4">
-                            <Plus size={48} className="opacity-20" />
-                            <p className="font-bold text-sm uppercase tracking-widest">Add your first question to begin</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {fields.map((field, index) => (
-                                <div key={field.id} className="group relative bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] transition-all hover:border-blue-500/30 animate-in slide-in-from-right-4 duration-300">
-                                    <div className="flex items-start justify-between gap-6">
-                                        <div className="p-2 text-slate-700 cursor-grab active:cursor-grabbing"><GripVertical size={20} /></div>
-
-                                        <div className="flex-1 space-y-4">
-                                            <div className="flex items-center gap-4">
-                                                <input
-                                                    type="text"
-                                                    value={field.label}
-                                                    onChange={(e) => updateField(field.id, { label: e.target.value })}
-                                                    placeholder="Enter your question here..."
-                                                    className="flex-1 bg-transparent border-b border-slate-800 text-lg font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
-                                                />
-                                                <span className="px-3 py-1 bg-slate-900 text-[10px] font-black text-slate-500 uppercase tracking-widest rounded-lg border border-slate-800">{field.type}</span>
-                                            </div>
-
-                                            {(field.type === 'radio' || field.type === 'checkbox') && field.options && (
-                                                <div className="space-y-2 ml-4">
-                                                    {field.options.map((option, optIdx) => (
-                                                        <div key={optIdx} className="flex items-center gap-3">
-                                                            <div className={`w-4 h-4 rounded-full border border-slate-700 ${field.type === 'checkbox' ? 'rounded-sm' : ''}`} />
-                                                            <input
-                                                                type="text"
-                                                                value={option}
-                                                                onChange={(e) => {
-                                                                    const newOptions = [...field.options!];
-                                                                    newOptions[optIdx] = e.target.value;
-                                                                    updateField(field.id, { options: newOptions });
-                                                                }}
-                                                                className="bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 focus:outline-none text-sm text-slate-400 py-1 transition-all"
-                                                            />
-                                                            <button
-                                                                onClick={() => {
-                                                                    const newOptions = field.options!.filter((_, i) => i !== optIdx);
-                                                                    updateField(field.id, { options: newOptions });
-                                                                }}
-                                                                className="p-1 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                                                            >
-                                                                <X size={14} />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                    <button
-                                                        onClick={() => updateField(field.id, { options: [...field.options!, `Option ${field.options!.length + 1}`] })}
-                                                        className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2 hover:text-blue-400 transition-all pt-2"
-                                                    >
-                                                        <Plus size={12} /> Add Option
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex flex-col gap-2">
-                                            <button onClick={() => moveField(index, 'up')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronUp size={18} /></button>
-                                            <button onClick={() => moveField(index, 'down')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronDown size={18} /></button>
-                                            <button onClick={() => removeField(field.id)} className="p-2 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
-                                        </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <Clock size={14} /> Employment Type
+                        </label>
+                        <div className="space-y-2">
+                            {(['full-time', 'part-time', 'contract', 'internship', 'temporary'] as const).map((type) => (
+                                <button
+                                    key={type}
+                                    onClick={() => setEmploymentType(type)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${employmentType === type
+                                        ? 'bg-purple-600/20 border-purple-500/50 text-white'
+                                        : 'bg-slate-900/50 border-slate-700/50 text-slate-400 hover:border-slate-600'
+                                        }`}
+                                >
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${employmentType === type ? 'border-purple-500' : 'border-slate-600'
+                                        }`}>
+                                        {employmentType === type && <div className="w-2 h-2 rounded-full bg-purple-500" />}
                                     </div>
-                                </div>
+                                    <span className="font-bold text-sm capitalize">{type}</span>
+                                </button>
                             ))}
+                        </div>
+                    </div>
+
+                    {locationType !== 'remote' && (
+                        <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <MapPin size={14} /> Physical Location
+                            </label>
+                            <input
+                                type="text"
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                placeholder="e.g. London, UK or 123 Street Ave"
+                                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                            />
+                            <p className="text-[10px] text-slate-500 font-medium italic">Required for Onsite/Hybrid roles</p>
                         </div>
                     )}
                 </div>
+
+                <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-[32px] space-y-4">
+                    <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest">Add Form Field</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                        <button onClick={() => addField('text')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><Type size={16} /> Short Text</button>
+                        <button onClick={() => addField('number')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><Hash size={16} /> Number Input</button>
+                        <button onClick={() => addField('radio')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><List size={16} /> Multiple Choice</button>
+                        <button onClick={() => addField('checkbox')} className="flex items-center gap-3 p-3 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-slate-300 text-xs font-bold transition-all"><CheckSquare size={16} /> Checkboxes</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* FORM BUILDER AREA */}
+            <div className="lg:col-span-2 space-y-4">
+                <div className="flex items-center justify-between px-4">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                        <Layout size={24} className="text-blue-500" />
+                        Application Form
+                    </h2>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{fields.length} Fields Added</span>
+                </div>
+
+                {fields.length === 0 ? (
+                    <div className="border-2 border-dashed border-slate-800 rounded-[32px] p-20 flex flex-col items-center justify-center text-slate-600 space-y-4">
+                        <Plus size={48} className="opacity-20" />
+                        <p className="font-bold text-sm uppercase tracking-widest">Add your first question to begin</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {fields.map((field, index) => (
+                            <div key={field.id} className="group relative bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] transition-all hover:border-blue-500/30 animate-in slide-in-from-right-4 duration-300">
+                                <div className="flex items-start justify-between gap-6">
+                                    <div className="p-2 text-slate-700 cursor-grab active:cursor-grabbing"><GripVertical size={20} /></div>
+
+                                    <div className="flex-1 space-y-4">
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="text"
+                                                value={field.label}
+                                                onChange={(e) => updateField(field.id, { label: e.target.value })}
+                                                placeholder="Enter your question here..."
+                                                className="flex-1 bg-transparent border-b border-slate-800 text-lg font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                                            />
+                                            <span className="px-3 py-1 bg-slate-900 text-[10px] font-black text-slate-500 uppercase tracking-widest rounded-lg border border-slate-800">{field.type}</span>
+                                        </div>
+
+                                        {(field.type === 'radio' || field.type === 'checkbox') && field.options && (
+                                            <div className="space-y-2 ml-4">
+                                                {field.options.map((option, optIdx) => (
+                                                    <div key={optIdx} className="flex items-center gap-3">
+                                                        <div className={`w-4 h-4 rounded-full border border-slate-700 ${field.type === 'checkbox' ? 'rounded-sm' : ''}`} />
+                                                        <input
+                                                            type="text"
+                                                            value={option}
+                                                            onChange={(e) => {
+                                                                const newOptions = [...field.options!];
+                                                                newOptions[optIdx] = e.target.value;
+                                                                updateField(field.id, { options: newOptions });
+                                                            }}
+                                                            className="bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 focus:outline-none text-sm text-slate-400 py-1 transition-all"
+                                                        />
+                                                        <button
+                                                            onClick={() => {
+                                                                const newOptions = field.options!.filter((_, i) => i !== optIdx);
+                                                                updateField(field.id, { options: newOptions });
+                                                            }}
+                                                            className="p-1 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    onClick={() => updateField(field.id, { options: [...field.options!, `Option ${field.options!.length + 1}`] })}
+                                                    className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2 hover:text-blue-400 transition-all pt-2"
+                                                >
+                                                    <Plus size={12} /> Add Option
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => moveField(index, 'up')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronUp size={18} /></button>
+                                        <button onClick={() => moveField(index, 'down')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronDown size={18} /></button>
+                                        <button onClick={() => removeField(field.id)} className="p-2 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

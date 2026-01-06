@@ -23,10 +23,15 @@ export default function EmployerNotifications() {
 
     useEffect(() => {
         if (activeConversation) {
-            fetchMessages(activeConversation.id);
-            markMessagesAsRead(activeConversation.id);
+            // Find all application IDs for this candidate (user)
+            const candidateAppIds = channels
+                .filter(c => c.user?.id === activeConversation.user?.id)
+                .map(c => c.id);
+
+            fetchMessages(candidateAppIds);
+            markMessagesAsRead(candidateAppIds);
         }
-    }, [activeConversation]);
+    }, [activeConversation, channels]);
 
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,9 +88,10 @@ export default function EmployerNotifications() {
         return false;
     };
 
-    const fetchMessages = async (appId: string) => {
+    const fetchMessages = async (appIds: string[]) => {
         try {
-            const res = await fetch(`/api/shared/messages?applicationId=${appId}`);
+            const idsParam = appIds.join(',');
+            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}`);
             if (res.ok) {
                 const data = await res.json();
                 const newMessages = data.messages || [];
@@ -136,12 +142,12 @@ export default function EmployerNotifications() {
         }
     };
 
-    const markMessagesAsRead = async (appId: string) => {
+    const markMessagesAsRead = async (appIds: string[]) => {
         try {
             await fetch('/api/shared/messages', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ applicationId: appId })
+                body: JSON.stringify({ applicationIds: appIds })
             });
         } catch (error) {
             console.error("Error marking messages as read", error);
@@ -230,15 +236,24 @@ export default function EmployerNotifications() {
                     {/* Conversation list - WhatsApp style */}
                     <div className="pb-4">
                         <h3 className="px-4 py-2 text-[9px] font-black text-slate-600 uppercase tracking-widest">Candidates</h3>
-                        {filteredChannels.map((app) => {
+                        {Object.values(
+                            filteredChannels.reduce((acc, app) => {
+                                // Group by user ID (Candidate)
+                                const userId = app.user?.id;
+                                if (userId && !acc[userId]) {
+                                    acc[userId] = app;
+                                }
+                                return acc;
+                            }, {} as Record<string, any>)
+                        ).map((app: any) => {
                             const hasUnread = notifications.some(n => !n.is_read && n.application_id === app.id);
                             return (
                                 <button
-                                    key={app.id}
+                                    key={app.user?.id}
                                     onClick={() => setActiveConversation(app)}
-                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? 'bg-emerald-600/10' : 'hover:bg-slate-800/30'}`}
+                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.user?.id === app.user?.id ? 'bg-emerald-600/10' : 'hover:bg-slate-800/30'}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.id === app.id ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.user?.id === app.user?.id ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
                                         {app.user?.profileImageUrl ? (
                                             <img src={app.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
@@ -255,9 +270,6 @@ export default function EmployerNotifications() {
                                         </div>
                                         <div className="flex items-center justify-between gap-2 mt-1">
                                             <p className="text-xs text-slate-500 truncate">{app.job?.title || 'Unknown Job'}</p>
-                                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusColor(app.status)}`}>
-                                                {app.status.replace(/_/g, ' ')}
-                                            </span>
                                         </div>
                                     </div>
                                 </button>

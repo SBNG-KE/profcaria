@@ -25,6 +25,7 @@ export default function FindJobsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'find' | 'applied'>('find');
+    const [searchType, setSearchType] = useState<'job' | 'company'>('job');
 
     useEffect(() => {
         fetchJobs();
@@ -32,7 +33,8 @@ export default function FindJobsPage() {
 
     const fetchJobs = async () => {
         try {
-            const res = await fetch('/api/professional/jobs');
+            // Use Smart Feed
+            const res = await fetch('/api/professional/jobs/feed');
             if (res.ok) {
                 const data = await res.json();
                 setJobs(data.jobs || []);
@@ -63,9 +65,18 @@ export default function FindJobsPage() {
         }
     };
 
+
     const filteredJobs = jobs.filter(job => {
-        const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            job.company.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const term = searchTerm.toLowerCase();
+        let matchesSearch = false;
+
+        if (searchType === 'company') {
+            matchesSearch = job.company.name.toLowerCase().includes(term);
+        } else {
+            matchesSearch = job.title.toLowerCase().includes(term) ||
+                job.company.name.toLowerCase().includes(term) ||
+                (job.description || '').toLowerCase().includes(term);
+        }
 
         const matchesMode = viewMode === 'find'
             ? !job.applicationStatus // Show only filtered/unapplied
@@ -73,6 +84,24 @@ export default function FindJobsPage() {
 
         return matchesSearch && matchesMode;
     });
+
+    // Search History Logging (Debounced)
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (searchTerm.trim().length > 2) {
+                fetch('/api/professional/search/history', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: searchTerm,
+                        filters: { type: searchType }
+                    })
+                });
+            }
+        }, 2000); // 2 second debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, searchType]);
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8 pb-8">
@@ -108,13 +137,29 @@ export default function FindJobsPage() {
                     </div>
 
                     {/* Search Bar - Full Width, Enhanced */}
-                    <div className="relative group flex-1 w-full">
+                    <div className="relative group flex-1 w-full flex items-center gap-2">
+                        {/* Type Toggle */}
+                        <div className="flex bg-slate-900 rounded-full p-1 border border-slate-800 shrink-0">
+                            <button
+                                onClick={() => setSearchType('job')}
+                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'job' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'}`}
+                            >
+                                Jobs
+                            </button>
+                            <button
+                                onClick={() => setSearchType('company')}
+                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'company' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-white'}`}
+                            >
+                                Companies
+                            </button>
+                        </div>
+
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity"></div>
-                        <div className="relative flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-3 transition-all">
+                        <div className="relative flex-1 flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-3 transition-all">
                             <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={20} />
                             <input
                                 type="text"
-                                placeholder={`Search ${viewMode === 'find' ? 'jobs' : 'applications'}...`}
+                                placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : 'applications'}...`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm"

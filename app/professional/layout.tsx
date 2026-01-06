@@ -132,8 +132,8 @@ export default function ProfessionalLayout({ children }: { children: React.React
                 if (appsRes.ok) {
                     const data = await appsRes.json();
                     const apps = data.applications || [];
-                    // Total jobs = connections + pending applications
-                    totalJobs = totalJobs + apps.filter((a: any) => a.status !== 'accepted').length;
+                    // Total jobs = connections only (Roles)
+                    // totalJobs remains as connections.length
                 }
 
                 setJobStats({ totalJobs, currentJob });
@@ -258,7 +258,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
 
                             <div className="grid grid-cols-1 gap-2 w-full">
                                 <div className="bg-slate-900/50 p-3 rounded-xl border border-slate-800 flex flex-col items-center">
-                                    <span className="text-2xl font-bold text-emerald-400">{jobStats.totalJobs}</span>
+                                    <span className="text-2xl font-bold text-blue-400">{jobStats.totalJobs}</span>
                                     <span className="text-[10px] text-slate-500 uppercase tracking-wider">Total Jobs</span>
                                 </div>
                             </div>
