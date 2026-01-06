@@ -30,19 +30,25 @@ export async function POST(req: Request) {
                 const companyId = data.metadata?.companyId;
 
                 if (companyId) {
-                    // Update Customer Code if new
-                    const { data: company } = await supabaseAdmin.schema('employer').from('companies').select('enc_paystack_customer_code').eq('id', companyId).single();
-                    if (company && !company.enc_paystack_customer_code) {
-                        // We can encrypt and store data.customer.customer_code here if needed
-                    }
-
-                    // Log Payment
+                    // 1. Log Payment
                     await supabaseAdmin.schema('employer').from('payments').insert({
                         company_id: companyId,
                         paystack_reference: data.reference,
                         amount: data.amount,
                         currency: data.currency,
                         status: data.status
+                    });
+
+                    // 2. Grant 30 Days Access (Mock Subscription for One-Time Payment)
+                    const thirtyDaysFromNow = new Date();
+                    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+                    await supabaseAdmin.schema('employer').from('subscriptions').upsert({
+                        company_id: companyId,
+                        status: 'active',
+                        current_period_end: thirtyDaysFromNow.toISOString(),
+                        paystack_subscription_code: 'one_time_' + data.reference, // Dummy code for one-time
+                        paystack_email_token: 'one_time'
                     });
                 }
                 break;
