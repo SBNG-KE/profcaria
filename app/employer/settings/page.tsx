@@ -606,3 +606,11 @@ function SettingsContent() {
         </div>
     );
 }
+
+export default function EmployerSettingsPage() {
+    return (
+        <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#020617]"><Loader2 className="text-emerald-500 animate-spin" size={48} /></div>}>
+            <SettingsContent />
+        </Suspense>
+    );
+}
