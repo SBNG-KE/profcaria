@@ -48,13 +48,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Could not decrypt company email' }, { status: 400 });
         }
 
-        // 2. Initialize Paystack Transaction
+        // 2. Determine Callback URL
+        // Use the request origin (what the user is visiting) to ensure we redirect back to the correct domain.
+        const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com';
+
+        // 3. Initialize Paystack Transaction
         const response = await Paystack.initializeTransaction(
             email,
             amount,
-            `${process.env.NEXT_PUBLIC_APP_URL}/employer/settings/billing?status=verifying`, // Callback
+            `${origin}/employer/settings?tab=billing`, // Redirect back to settings page
             { companyId },
-            plan // Optional: if provided, it's a subscription
+            plan
         );
 
         if (!response.status) {

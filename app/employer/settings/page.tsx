@@ -1,9 +1,50 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2 } from 'lucide-react';
 
 export default function EmployerSettingsPage() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Check for Paystack redirect
+    useEffect(() => {
+        const reference = searchParams.get('reference');
+        const tab = searchParams.get('tab');
+
+        if (tab === 'billing') setActiveTab('billing');
+
+        if (reference) {
+            verifyPayment(reference);
+        }
+    }, [searchParams]);
+
+    const verifyPayment = async (reference: string) => {
+        setIsLoading(true);
+        setMessage({ type: 'success', text: 'Verifying payment...' });
+        try {
+            const res = await fetch('/api/payments/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reference })
+            });
+            if (res.ok) {
+                setMessage({ type: 'success', text: 'Payment confirmed! Pro features active.' });
+                fetchBilling(); // Refresh data
+                // Clear URL params
+                router.replace('/employer/settings?tab=billing');
+            } else {
+                setMessage({ type: 'error', text: 'Payment verification failed.' });
+            }
+        } catch (error) {
+            console.error(error);
+            setMessage({ type: 'error', text: 'Error verifying payment.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'billing'>('profile');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
