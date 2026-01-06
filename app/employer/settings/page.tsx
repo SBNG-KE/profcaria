@@ -93,12 +93,12 @@ export default function EmployerSettingsPage() {
     const handleSubscribe = async () => {
         setIsLoading(true);
         try {
-            // Paystack Plan Code (PLN_...) or Amount
-            const plan = 'PLN_yourcode'; // TODO: User needs to set this via env or config
+            // One-Time Payment of $10 (1000 cents)
+            // Paystack expects amount in lowest currency unit (kobo/cents)
             const res = await fetch('/api/payments/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan, amount: 4999 }) // Amount in Kobo? No API expects amount in main unit or sub unit? Logic says sub unit usually.
+                body: JSON.stringify({ amount: 1000 }) // $10.00
             });
             const data = await res.json();
             if (data.url) {
