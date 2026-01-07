@@ -5,9 +5,9 @@ import { jwtVerify } from 'jose';
 
 export const runtime = 'nodejs';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
-        const jobId = params.id;
+        const { id: jobId } = await params;
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
 
