@@ -33,14 +33,21 @@ export async function GET(req: Request) {
         const processedLogs = logs.map((log: any) => {
             let location = 'N/A';
             if (log.enc_location_details) {
+                let decryptedStr: string | null = null;
                 try {
-                    const decryptedStr = decryptData(log.enc_location_details as string);
+                    decryptedStr = decryptData(log.enc_location_details as string);
                     if (decryptedStr) {
-                        const dec = JSON.parse(decryptedStr);
-                        const parts = [];
-                        if (dec.city) parts.push(dec.city);
-                        if (dec.country) parts.push(dec.country);
-                        location = parts.join(', ') || 'Updated';
+                        // Try parsing as JSON first
+                        try {
+                            const dec = JSON.parse(decryptedStr);
+                            const parts = [];
+                            if (dec.city) parts.push(dec.city);
+                            if (dec.country) parts.push(dec.country);
+                            location = parts.join(', ') || decryptedStr; // Fallback to full string if parts empty
+                        } catch (jsonError) {
+                            // If not JSON, assume it's a plain string location
+                            location = decryptedStr;
+                        }
                     }
                 } catch (e) {
                     location = 'Encrypted Data';

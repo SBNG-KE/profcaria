@@ -3,10 +3,16 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2 } from 'lucide-react';
+import { useCurrency } from '@/app/hooks/useCurrency';
 
 function SettingsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    // Currency Hook
+    const { currency: currencyCode, symbol: currencySymbol, rate: exchangeRate, loading: currencyLoading } = useCurrency();
+
+    // ... rest of imports and component setup
 
     // Check for Paystack redirect
     useEffect(() => {
@@ -73,7 +79,6 @@ function SettingsContent() {
     // Billing State
     const [subscription, setSubscription] = useState<any | null>(null);
     const [payments, setPayments] = useState<any[]>([]);
-    const [exchangeRate, setExchangeRate] = useState<number>(1);
 
     // Pricing Config State
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -135,7 +140,7 @@ function SettingsContent() {
                 const data = await res.json();
                 setSubscription(data.subscription);
                 setPayments(data.payments);
-                if (data.exchangeRate) setExchangeRate(data.exchangeRate);
+                // Exchange rate is now handled by client-side hook
 
                 setPricing({
                     basic: data.basic || 25,
@@ -254,16 +259,10 @@ function SettingsContent() {
 
     // Currency Formatter
     const formatCurrency = (usdAmount: number) => {
-        if (exchangeRate === 1) return `$${usdAmount}`;
-        // Approx conversion logic for display
+        if (currencyLoading) return '...';
         const converted = Math.round(usdAmount * exchangeRate);
-        // We can just show generic symbol or assume KES/ZAR etc based on deployment context, 
-        // but for now let's just show the number with a note.
-        // Or better: "KES 3,225"
-        return `${new Intl.NumberFormat().format(converted)}`;
+        return `${currencySymbol}${new Intl.NumberFormat().format(converted)}`;
     };
-
-    const currencyCode = exchangeRate === 1 ? 'USD' : (exchangeRate > 100 ? 'KES' : 'ZAR'); // Simple heuristic for now or generic
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8 pb-32">
