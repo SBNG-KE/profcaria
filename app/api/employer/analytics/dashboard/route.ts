@@ -137,7 +137,6 @@ export async function GET(req: Request) {
                 totalJobs,
                 activeJobs,
                 totalApplications: applications.length,
-                totalApplications: applications.length,
                 interviewRate: applications.length > 0 ? Math.round((employed / applications.length) * 100) : 0
             },
             geoHeatmap: Object.entries(countryStats)
