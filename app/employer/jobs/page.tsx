@@ -96,8 +96,8 @@ export default function EmployerJobsPage() {
                 <button
                     onClick={() => setFilter('all')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                         }`}
                 >
                     All ({jobs.length})
@@ -105,8 +105,8 @@ export default function EmployerJobsPage() {
                 <button
                     onClick={() => setFilter('active')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'active'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                         }`}
                 >
                     Active ({jobs.filter(j => j.isActive).length})
@@ -114,8 +114,8 @@ export default function EmployerJobsPage() {
                 <button
                     onClick={() => setFilter('closed')}
                     className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'closed'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                         }`}
                 >
                     Closed ({jobs.filter(j => !j.isActive).length})
@@ -167,6 +167,12 @@ export default function EmployerJobsPage() {
                                         className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
                                     >
                                         <Users size={14} /> View Applicants
+                                    </button>
+                                    <button
+                                        onClick={() => router.push(`/employer/jobs/${job.id}/matches`)}
+                                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center gap-2"
+                                    >
+                                        <Zap size={14} className="text-yellow-300" /> Top Matches
                                     </button>
                                     <button
                                         onClick={() => toggleStatus(job.id, job.isActive)}

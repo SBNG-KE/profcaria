@@ -30,7 +30,23 @@ export async function POST(req: Request) {
 
         const { plan, billingCycle = 'monthly' } = await req.json(); // plan: 'basic' | 'pro' | 'enterprise'
 
-        const exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+        let exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+        const merchantCurrency = process.env.MERCHANT_CURRENCY; // e.g., 'KES', 'NGN'
+
+        // Fetch live rate only if a specific merchant currency is defined and not USD
+        if (merchantCurrency && merchantCurrency !== 'USD') {
+            try {
+                const res = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.rates[merchantCurrency]) {
+                        exchangeRate = data.rates[merchantCurrency];
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch live backend rate, falling back to static env var:', error);
+            }
+        }
 
         // Base Prices (Monthly USD)
         const prices: Record<string, number> = {

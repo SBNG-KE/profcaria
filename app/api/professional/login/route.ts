@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { hashForIndex, encryptData } from '@/lib/security';
+import { detectVPN, getRealIp } from '@/lib/vpn';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
 
@@ -63,9 +64,13 @@ export async function POST(req: Request) {
       .sign(secret);
 
     // 6a. Log Activity (Security)
-    // Safe logging - does not block flow
     try {
-      const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+      const { isVPN, reason } = await detectVPN(req.headers.get('x-forwarded-for') || '');
+      if (isVPN) {
+        return NextResponse.json({ error: `Security Check Failed: ${reason}. Please disable VPN/Proxy.` }, { status: 403 });
+      }
+
+      const ip = await getRealIp();
       const userAgent = req.headers.get('user-agent') || 'Unknown UA';
 
       let locationString = 'Unknown Location';

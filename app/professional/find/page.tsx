@@ -71,10 +71,10 @@ export default function FindJobsPage() {
         let matchesSearch = false;
 
         if (searchType === 'company') {
-            matchesSearch = job.company.name.toLowerCase().includes(term);
+            matchesSearch = job.company?.name?.toLowerCase().includes(term);
         } else {
-            matchesSearch = job.title.toLowerCase().includes(term) ||
-                job.company.name.toLowerCase().includes(term) ||
+            matchesSearch = job.title?.toLowerCase().includes(term) ||
+                job.company?.name?.toLowerCase().includes(term) ||
                 (job.description || '').toLowerCase().includes(term);
         }
 
@@ -201,7 +201,7 @@ export default function FindJobsPage() {
                             <div className="p-8 space-y-6 flex-1">
                                 <div className="flex items-center justify-between">
                                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shadow-lg">
-                                        {job.company.logoUrl ? (
+                                        {job.company?.logoUrl ? (
                                             <img src={job.company.logoUrl} alt={job.company.name} className="w-full h-full object-cover" />
                                         ) : (
                                             <Building2 size={24} className="text-slate-500" />
@@ -224,7 +224,7 @@ export default function FindJobsPage() {
 
                                 <div className="space-y-2">
                                     <h2 className="text-2xl font-black text-white leading-tight group-hover:text-blue-400 transition-colors uppercase tracking-tighter line-clamp-2">{job.title}</h2>
-                                    <p className="text-blue-400 font-bold text-sm tracking-tight">{job.company.name}</p>
+                                    <p className="text-blue-400 font-bold text-sm tracking-tight">{job.company?.name || 'Unknown Company'}</p>
                                 </div>
 
                                 <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">{job.description}</p>

@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { decryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 async function getUserId() {
     const cookieStore = await cookies();
@@ -31,7 +33,64 @@ export async function GET(req: Request) {
             .from('preferences')
             .select('*')
             .eq('user_id', auth.uid)
+            .eq('user_id', auth.uid)
             .single();
+
+        // 2. Fetch User's Real IP Location (from latest activity log)
+        const { data: latestLog } = await supabaseAdmin
+            .schema('professional')
+            .from('activity_logs')
+            .select('enc_location_details')
+            .eq('user_id', auth.uid)
+            .neq('enc_location_details', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .limit(1)
+            .single();
+
+        // 2a. Fetch User's Invites
+        const { data: invites } = await supabaseAdmin
+            .schema('employer')
+            .from('job_invites')
+            .select('job_id')
+            .eq('professional_id', auth.uid)
+            .eq('status', 'pending');
+
+        const invitedJobIds = invites?.map((inv: any) => inv.job_id) || [];
+
+        // 2b. Fetch User's Applications (to prevent re-applying)
+        const { data: userApps } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .select('job_id, status, id')
+            .eq('user_id', auth.uid);
+
+        const appMap: Record<string, any> = {};
+        userApps?.forEach((app: any) => {
+            appMap[app.job_id] = { status: app.status, id: app.id };
+        });
+
+
+        // Derive "Real Country" from IP logs
+        let userRealCountry = '';
+        if (latestLog?.enc_location_details) {
+            try {
+                // Decrypt
+                const plainStr = decryptData(latestLog.enc_location_details);
+                if (plainStr) {
+                    // Attempt JSON parse or fallback
+                    if (plainStr.trim().startsWith('{')) {
+                        const parsed = JSON.parse(plainStr);
+                        userRealCountry = parsed.country || '';
+                    } else {
+                        // If string is "Nairobi, Kenya", naively grab last part
+                        userRealCountry = plainStr.split(',').pop()?.trim() || '';
+                    }
+                }
+            } catch (e) {
+                // Fallback to empty if decryption fails
+            }
+        }
 
         // 2. Fetch User's "Browser Location" (if passed via query) or last known location
         // For now, we will use the preferences primarily.
@@ -41,12 +100,32 @@ export async function GET(req: Request) {
         let query = supabaseAdmin
             .schema('employer')
             .from('jobs')
-            .select('*, company:companies(name:company_name, logoUrl:logo_url, enc_company_name, enc_logo_url)')
-            .eq('status', 'open')
+            .select('*, company:companies(enc_company_name, enc_logo_url)')
+            .eq('is_active', true)
             .order('created_at', { ascending: false })
             .limit(100); // Limit to top 100 recent for now to sort
 
         const { data: jobs, error } = await query;
+
+        // 3a. Fetch Application Counts for Max Apps Logic
+        // Ideally this should be a view or a counter cache, but for now we aggregate.
+        const jobIds = jobs?.map((j: any) => j.id) || [];
+        let jobAppCounts: Record<string, number> = {};
+
+        if (jobIds.length > 0) {
+            const { data: apps } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .select('job_id')
+                .in('job_id', jobIds);
+
+            if (apps) {
+                apps.forEach((app: any) => {
+                    jobAppCounts[app.job_id] = (jobAppCounts[app.job_id] || 0) + 1;
+                });
+            }
+        }
+
 
         if (error) {
             console.error('Job Fetch Error:', error);
@@ -106,10 +185,85 @@ export async function GET(req: Request) {
             // Included implicitly by the stable sort of initial fetch, 
             // but we can add small point for "New" (< 2 days)
             const daysOld = (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24);
+            const secondsOld = (Date.now() - new Date(job.created_at).getTime()) / 1000;
+
             if (daysOld < 3) score += 3;
 
-            return { ...job, _score: score };
-        });
+            // --- G. ADVANCED ALGORITHM: SPEED & RESTRICTIONS ---
+
+            // 1. Strict Restricted Jobs
+            if (job.is_restricted) {
+                // Check against PLAIN TEXT `allowed_country_codes` (if available) or skip if not strictly enforced yet
+                if (job.allowed_country_codes && Array.isArray(job.allowed_country_codes)) {
+                    // Normalize
+                    const allowed = job.allowed_country_codes.map((c: string) => c.toLowerCase());
+                    const userCountryLower = userRealCountry.toLowerCase();
+
+                    // If we have a real country and it's NOT in allowed list -> HIDE
+                    // Note: If we can't detect user country, we err on side of caution? Or allow?
+                    // User prompted "Strict", so if country unknown, maybe block? 
+                    // Let's block if country known and mismatch.
+                    if (userRealCountry && !allowed.some((ac: string) => userCountryLower.includes(ac))) {
+                        return null;
+                    }
+                }
+            }
+
+            // 2. "Speed" Logic - The "Head Start" based on REAL IP
+            if (!job.is_restricted && secondsOld < 30 && job.speed_boost_location) {
+                const jobOrigin = job.speed_boost_location || '';
+
+                // Strict Check: User's REAL DETECTED country must match job origin
+                const isLocalReal = userRealCountry && jobOrigin.toLowerCase().includes(userRealCountry.toLowerCase());
+
+                if (!isLocalReal) {
+                    // DELAY! User is remote (or undetected), so they don't see it yet.
+                    return null;
+                }
+            }
+
+            // 3. Max Applications Check
+            if (job.max_applications) {
+                const currentApps = jobAppCounts[job.id] || 0;
+                if (currentApps >= job.max_applications) {
+                    return null; // Job is full/closed
+                }
+            }
+
+            // 4. Invite Boost
+            if (invitedJobIds.includes(job.id)) {
+                score += 1000; // Massive boost to ensure it's at the top
+            }
+
+            // Decrypt Company Info
+            const companyName = job.company?.enc_company_name ? decryptData(job.company.enc_company_name) : 'Confidential';
+            const companyLogo = job.company?.enc_logo_url ? decryptData(job.company.enc_logo_url) : null;
+
+            // Decrypt Job Info
+            const title = decryptData(job.enc_title) || 'Untitled Role';
+            const description = decryptData(job.enc_description) || '';
+            const location = decryptData(job.enc_location) || '';
+
+            // Check Application Status
+            const userApp = appMap[job.id];
+
+            return {
+                ...job,
+                title,
+                description,
+                location,
+                company: {
+                    name: companyName,
+                    logoUrl: companyLogo
+                },
+                createdAt: job.created_at,
+                applicationStatus: userApp ? userApp.status : null,
+                applicationId: userApp ? userApp.id : null,
+                _score: score
+            };
+        }).filter((j: any) => j !== null); // Remove filter-out jobs
+
+        console.log(`[Feed API] Returning ${scoredJobs.length} jobs. Auth: ${auth.uid}`);
 
         // 5. Sort by Score
         scoredJobs.sort((a: any, b: any) => b._score - a._score);

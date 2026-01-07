@@ -6,6 +6,7 @@ import {
     Home, Search, FileText, Bell, Settings, ChevronLeft, ChevronRight,
     Briefcase, UserCircle, Video, Cable, Plus, Power
 } from 'lucide-react';
+import ImageCropper from '@/app/components/ImageCropper';
 
 // --- Scroll Helpers ---
 const ScrollableContainer = ({ children, className = "" }: { children: ReactNode, className?: string }) => {
@@ -91,6 +92,8 @@ export default function ProfessionalLayout({ children }: { children: React.React
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [cropSource, setCropSource] = useState<File | string | null>(null);
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -144,15 +147,31 @@ export default function ProfessionalLayout({ children }: { children: React.React
         fetchJobStats();
     }, []);
 
-    const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
-        const file = e.target.files[0];
+        setCropSource(e.target.files[0]);
+        // Close main modal to focus on cropper
+        setIsImageModalOpen(false);
+    };
+
+    const handleEditCurrent = () => {
+        if (userData?.profile?.profileImageUrl) {
+            setCropSource(userData.profile.profileImageUrl);
+            setIsImageModalOpen(false);
+        }
+    };
+
+    const handleCropSave = async (blob: Blob) => {
         setIsUploading(true);
+        setCropSource(null); // Close cropper
+
+        const formData = new FormData();
+        formData.append('file', blob, 'profile-image.jpg');
 
         try {
-            const res = await fetch(`/api/professional/profile/image?filename=${file.name}`, {
+            const res = await fetch(`/api/professional/profile/image?filename=profile.jpg`, {
                 method: 'POST',
-                body: file
+                body: blob
             });
             if (res.ok) {
                 const { url } = await res.json();
@@ -166,7 +185,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
         } finally {
             setIsUploading(false);
         }
-    }, []);
+    };
 
     const handleImageDelete = useCallback(async () => {
         if (!confirm("Are you sure you want to remove your profile photo?")) return;
@@ -191,6 +210,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
 
     useEffect(() => {
         const fetchUnread = async () => {
+            // ... notification logic
             try {
                 const res = await fetch('/api/shared/notifications');
                 if (res.ok) {
@@ -201,7 +221,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
             } catch (err) { console.error(err); }
         };
         fetchUnread();
-        const interval = setInterval(fetchUnread, 2000); // 2s poll for instant updates
+        const interval = setInterval(fetchUnread, 2000);
         return () => clearInterval(interval);
     }, []);
 
@@ -227,6 +247,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
 
             {/* SIDEBAR */}
             <aside className={`relative flex flex-col border-r border-slate-800 bg-[#0f172a]/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-30 ${sidebarOpen ? 'w-72' : 'w-24'}`}>
+                {/* ... existing sidebar content ... */}
                 <button onClick={() => setSidebarOpen(!sidebarOpen)} className="absolute -right-3 top-8 z-40 bg-slate-800 border border-slate-600 rounded-full p-1.5 text-slate-300 hover:text-white shadow-xl">
                     {sidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
                 </button>
@@ -234,7 +255,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
                 <div className="flex flex-col items-center pt-8 px-4 shrink-0">
                     <button
                         onClick={() => setIsImageModalOpen(true)}
-                        className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 shadow-2xl border border-slate-700 transition-all duration-300 hover:scale-105 active:scale-95 ${sidebarOpen ? 'w-full aspect-square mb-4' : 'w-14 h-14 mb-6'}`}
+                        className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 shadow-2xl border border-slate-700 transition-all duration-300 hover:scale-105 active:scale-95 ${sidebarOpen ? 'w-32 aspect-square mb-4' : 'w-12 h-12 mb-6'}`}
                     >
                         {userData?.profile?.profileImageUrl ? (
                             <img src={userData.profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
@@ -244,7 +265,7 @@ export default function ProfessionalLayout({ children }: { children: React.React
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Plus className="text-white" size={sidebarOpen ? 32 : 16} />
+                            <Plus className="text-white" size={sidebarOpen ? 24 : 16} />
                         </div>
                     </button>
                     {sidebarOpen && (
@@ -338,12 +359,22 @@ export default function ProfessionalLayout({ children }: { children: React.React
                                 disabled={isUploading}
                                 className="flex-1 py-4 bg-blue-600 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20 active:scale-95 disabled:opacity-50"
                             >
-                                {isUploading ? 'Uploading...' : userData?.profile?.profileImageUrl ? 'Edit Photo' : 'Add Photo'}
+                                {isUploading ? 'Uploading...' : userData?.profile?.profileImageUrl ? 'Replace Photo' : 'Add Photo'}
                             </button>
+
+                            {userData?.profile?.profileImageUrl && (
+                                <button
+                                    onClick={handleEditCurrent}
+                                    className="px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95"
+                                >
+                                    Edit
+                                </button>
+                            )}
+
                             {userData?.profile?.profileImageUrl && (
                                 <button
                                     onClick={handleImageDelete}
-                                    className="flex-1 py-4 bg-red-600/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-red-500/20 transition-all active:scale-95"
+                                    className="px-6 py-4 bg-red-600/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-red-500/20 transition-all active:scale-95"
                                 >
                                     Remove
                                 </button>
@@ -360,11 +391,20 @@ export default function ProfessionalLayout({ children }: { children: React.React
                             ref={fileInputRef}
                             type="file"
                             accept="image/*"
-                            onChange={handleImageUpload}
+                            onChange={handleFileSelect}
                             className="hidden"
                         />
                     </div>
                 </div>
+            )}
+
+            {/* CROPPER OVERLAY */}
+            {cropSource && (
+                <ImageCropper
+                    imageOrUrl={cropSource}
+                    onCrop={handleCropSave}
+                    onCancel={() => setCropSource(null)}
+                />
             )}
         </div>
     );

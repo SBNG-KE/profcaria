@@ -39,6 +39,7 @@ export async function POST(req: Request) {
         const encDescription = encryptData(description);
         const encFormSchema = encryptData(JSON.stringify(formSchema));
         const encLocation = location ? encryptData(location) : null;
+        const encTargetLocations = body.target_locations ? encryptData(JSON.stringify(body.target_locations)) : null;
 
         const { data, error } = await supabaseAdmin
             .schema('employer')
@@ -49,8 +50,13 @@ export async function POST(req: Request) {
                     enc_title: encTitle,
                     enc_description: encDescription,
                     enc_form_schema: encFormSchema,
-                    location_type: location_type || 'remote',
+
                     enc_location: encLocation,
+                    enc_target_locations: encTargetLocations,
+                    allowed_country_codes: body.target_locations || [], // Save plain text for strict filtering
+                    is_restricted: body.is_restricted || false,
+                    speed_boost_location: location ? location.split(',').pop()?.trim() : null, // Store "UK" or "Kenya" plain for speed algo
+                    max_applications: body.max_applications ? parseInt(body.max_applications) : null,
                     is_active: true
                 }
             ])

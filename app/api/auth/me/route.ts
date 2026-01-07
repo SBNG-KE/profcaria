@@ -77,13 +77,40 @@ export async function GET(req: Request) {
                 .single();
 
             if (latestLog?.enc_location_details) {
-                try {
-                    const locationData = JSON.parse(decryptData(latestLog.enc_location_details) || '{}');
-                    profile.country = locationData.country || '';
-                    profile.city = locationData.city || '';
-                    profile.address = locationData.address || '';
-                } catch (e) {
-                    console.error('Failed to parse location log', e);
+                const decryptedLoc = decryptData(latestLog.enc_location_details);
+                if (decryptedLoc) {
+                    try {
+                        if (decryptedLoc.trim().startsWith('{')) {
+                            const locationData = JSON.parse(decryptedLoc);
+                            profile.country = locationData.country || '';
+                            profile.city = locationData.city || '';
+                            profile.address = locationData.address || '';
+                            // Legacy/Plain string case (JSON block ends, but inner legacy check was redundant/wrong)
+                        } else {
+                            // Legacy/Plain string case (Not JSON)
+                            if (decryptedLoc.includes(',')) {
+                                const parts = decryptedLoc.split(',').map(s => s.trim());
+                                const country = parts.pop();
+                                const city = parts.join(', ');
+                                profile.country = country || '';
+                                profile.city = city || '';
+                                profile.address = '';
+                            } else {
+                                profile.address = decryptedLoc;
+                            }
+                        }
+                    } catch (e) {
+                        // Same fallback logic for error
+                        if (decryptedLoc.includes(',')) {
+                            const parts = decryptedLoc.split(',').map(s => s.trim());
+                            const country = parts.pop();
+                            const city = parts.join(', ');
+                            profile.country = country || '';
+                            profile.city = city || '';
+                        } else {
+                            profile.address = decryptedLoc;
+                        }
+                    }
                 }
             }
         } else {
@@ -106,13 +133,51 @@ export async function GET(req: Request) {
                 .single();
 
             if (latestLog?.enc_location_details) {
-                try {
-                    const locationData = JSON.parse(decryptData(latestLog.enc_location_details) || '{}');
-                    profile.country = locationData.country || '';
-                    profile.city = locationData.city || '';
-                    profile.address = locationData.address || '';
-                } catch (e) {
-                    console.error('Failed to parse employer location log', e);
+                const decryptedLoc = decryptData(latestLog.enc_location_details);
+                if (decryptedLoc) {
+                    try {
+                        // Check if it looks like JSON
+                        if (decryptedLoc.trim().startsWith('{')) {
+                            const locationData = JSON.parse(decryptedLoc);
+                            profile.country = locationData.country || '';
+                            profile.city = locationData.city || '';
+                            profile.address = locationData.address || '';
+                            // Legacy/Plain string case
+                            if (decryptedLoc.includes(',')) {
+                                const parts = decryptedLoc.split(',').map(s => s.trim());
+                                const country = parts.pop();
+                                const city = parts.join(', ');
+                                profile.country = country || '';
+                                profile.city = city || '';
+                                profile.address = '';
+                            } else {
+                                profile.address = decryptedLoc;
+                            }
+                        } else {
+                            // Legacy/Plain string case (Not JSON)
+                            if (decryptedLoc.includes(',')) {
+                                const parts = decryptedLoc.split(',').map(s => s.trim());
+                                const country = parts.pop();
+                                const city = parts.join(', ');
+                                profile.country = country || '';
+                                profile.city = city || '';
+                                profile.address = '';
+                            } else {
+                                profile.address = decryptedLoc;
+                            }
+                        }
+                    } catch (e) {
+                        // Same fallback logic for error
+                        if (decryptedLoc.includes(',')) {
+                            const parts = decryptedLoc.split(',').map(s => s.trim());
+                            const country = parts.pop();
+                            const city = parts.join(', ');
+                            profile.country = country || '';
+                            profile.city = city || '';
+                        } else {
+                            profile.address = decryptedLoc;
+                        }
+                    }
                 }
             }
         }

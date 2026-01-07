@@ -4,14 +4,16 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Briefcase, Plus, ChevronRight,
-  TrendingUp, MessageSquare, Calendar
+  TrendingUp, MessageSquare, Calendar, Activity, BarChart2
 } from 'lucide-react';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 export default function EmployerHome() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [employerData, setEmployerData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'activity' | 'analytics'>('activity');
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +49,9 @@ export default function EmployerHome() {
           <div className="text-left">
             <div className="flex items-center gap-2 text-emerald-400 mb-2">
               <TrendingUp size={16} />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Live Workspace</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">
+                {viewMode === 'activity' ? 'Live Workspace' : 'Strategic Insights'}
+              </span>
             </div>
             <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">
               {employerData?.profile?.companyName ? `${employerData.profile.companyName} HQ` : 'Command Center'}
@@ -66,56 +70,84 @@ export default function EmployerHome() {
           </div>
         </header>
 
-        {/* Recent Activity / Feed */}
-        <div className="bg-[#0f172a]/30 border border-slate-800/50 rounded-[32px] overflow-hidden">
-          <div className="px-8 py-6 border-b border-slate-800/50 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-3">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-              Recent Activity
-            </h3>
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-              Latest 3
-            </span>
-          </div>
-          <div className="p-8">
-            {loading ? (
-              <div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>
-            ) : notifications.length === 0 ? (
-              <p className="text-xs font-bold text-slate-600 uppercase tracking-widest text-center py-10">No recent activity found</p>
-            ) : (
-              <div className="space-y-4">
-                {notifications.map((notif) => {
-                  const getActivityRoute = () => {
-                    if (notif.type === 'application') return '/employer/applications';
-                    if (notif.type === 'message') return '/employer/notifications';
-                    if (notif.type === 'interview') return '/employer/interviews';
-                    return '/employer/notifications';
-                  };
-
-                  return (
-                    <button
-                      key={notif.id}
-                      onClick={() => router.push(getActivityRoute())}
-                      className="w-full flex items-start gap-4 p-5 rounded-2xl hover:bg-emerald-500/5 border border-transparent hover:border-emerald-500/20 transition-all group cursor-pointer text-left"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center text-slate-500 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors">
-                        {notif.type === 'application' ? <Briefcase size={20} /> : notif.type === 'message' ? <MessageSquare size={20} /> : <Calendar size={20} />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors capitalize">{notif.type} Update</h4>
-                          <span className="text-[10px] text-slate-500 font-mono">{new Date(notif.created_at).toLocaleString()}</span>
-                        </div>
-                        <p className="text-xs text-slate-400 line-clamp-1">{notif.message}</p>
-                      </div>
-                      <ChevronRight size={16} className="text-slate-700 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all mt-4 shrink-0" />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+        {/* MODE TOGGLE */}
+        <div className="flex justify-center">
+          <div className="bg-[#0f172a] p-1 rounded-2xl border border-slate-800 inline-flex">
+            <button
+              onClick={() => setViewMode('activity')}
+              className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${viewMode === 'activity'
+                  ? 'bg-slate-800 text-white shadow-lg'
+                  : 'text-slate-500 hover:text-slate-300'
+                }`}
+            >
+              <Activity size={14} /> Activity Feed
+            </button>
+            <button
+              onClick={() => setViewMode('analytics')}
+              className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${viewMode === 'analytics'
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                  : 'text-slate-500 hover:text-slate-300'
+                }`}
+            >
+              <BarChart2 size={14} /> Analytics Map
+            </button>
           </div>
         </div>
+
+        {viewMode === 'analytics' ? (
+          <AnalyticsDashboard />
+        ) : (
+          <div className="bg-[#0f172a]/30 border border-slate-800/50 rounded-[32px] overflow-hidden">
+            {/* Existing Activity Feed Content */}
+            <div className="px-8 py-6 border-b border-slate-800/50 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-3">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                Recent Activity
+              </h3>
+              <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                Latest 3
+              </span>
+            </div>
+            <div className="p-8">
+              {loading ? (
+                <div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>
+              ) : notifications.length === 0 ? (
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest text-center py-10">No recent activity found</p>
+              ) : (
+                <div className="space-y-4">
+                  {notifications.map((notif) => {
+                    const getActivityRoute = () => {
+                      if (notif.type === 'application') return '/employer/applications';
+                      if (notif.type === 'message') return '/employer/notifications';
+                      if (notif.type === 'interview') return '/employer/interviews';
+                      return '/employer/notifications';
+                    };
+
+                    return (
+                      <button
+                        key={notif.id}
+                        onClick={() => router.push(getActivityRoute())}
+                        className="w-full flex items-start gap-4 p-5 rounded-2xl hover:bg-emerald-500/5 border border-transparent hover:border-emerald-500/20 transition-all group cursor-pointer text-left"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center text-slate-500 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors">
+                          {notif.type === 'application' ? <Briefcase size={20} /> : notif.type === 'message' ? <MessageSquare size={20} /> : <Calendar size={20} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors capitalize">{notif.type} Update</h4>
+                            <span className="text-[10px] text-slate-500 font-mono">{new Date(notif.created_at).toLocaleString()}</span>
+                          </div>
+                          <p className="text-xs text-slate-400 line-clamp-1">{notif.message}</p>
+                        </div>
+                        <ChevronRight size={16} className="text-slate-700 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all mt-4 shrink-0" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

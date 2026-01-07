@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         // 1. Upload to Vercel Blob
         const blob = await put(filename, request.body!, {
             access: 'public',
+            addRandomSuffix: true
         });
 
         // 2. Encrypt the URL and save to DB

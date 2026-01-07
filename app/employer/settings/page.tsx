@@ -12,7 +12,7 @@ function SettingsContent() {
     // Currency Hook
     const { currency: currencyCode, symbol: currencySymbol, rate: exchangeRate, loading: currencyLoading } = useCurrency();
 
-    // ... rest of imports and component setup
+
 
     // Check for Paystack redirect
     useEffect(() => {
@@ -358,7 +358,7 @@ function SettingsContent() {
                         <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2"><Globe size={12} /> Country</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2"><Globe size={12} /> Country <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                     <input
                                         type="text"
                                         value={country}
@@ -368,7 +368,7 @@ function SettingsContent() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">City</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">City <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                     <input
                                         type="text"
                                         value={city}
@@ -379,7 +379,7 @@ function SettingsContent() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Office Address</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">Office Address <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                 <input
                                     type="text"
                                     value={address}

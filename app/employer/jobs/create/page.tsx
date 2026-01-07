@@ -20,9 +20,13 @@ function CreateJobPageContent() {
     const router = useRouter();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [maxApplications, setMaxApplications] = useState<number | ''>('');
     const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
     const [employmentType, setEmploymentType] = useState<'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'>('full-time');
     const [location, setLocation] = useState('');
+    const [isRestricted, setIsRestricted] = useState(false);
+    const [targetLocations, setTargetLocations] = useState<string[]>([]);
+    const [targetLocInput, setTargetLocInput] = useState('');
     const [fields, setFields] = useState<FormField[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -44,9 +48,13 @@ function CreateJobPageContent() {
                     if (job) {
                         setTitle(job.title);
                         setDescription(job.description);
+                        if (job.max_applications) setMaxApplications(job.max_applications);
                         setLocationType(job.location_type || 'remote');
                         setEmploymentType(job.employment_type || 'full-time');
                         setLocation(job.location || '');
+                        setIsRestricted(job.is_restricted || false);
+                        // Decrypting target locations is done in API but returned as plain array in GET
+                        setTargetLocations(job.target_locations || []);
                         setFields(job.formSchema || []);
                     }
                 }
@@ -104,9 +112,12 @@ function CreateJobPageContent() {
                 body: JSON.stringify({
                     title,
                     description,
+                    max_applications: maxApplications,
                     location_type: locationType,
                     employment_type: employmentType,
                     location: location,
+                    is_restricted: isRestricted,
+                    target_locations: targetLocations,
                     formSchema: fields
                 })
             });
@@ -167,6 +178,24 @@ function CreateJobPageContent() {
                 </div>
             </div>
 
+            {/* MAX APPLICATIONS (NEW) */}
+            <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <Hash size={14} /> Max Applications (Optional)
+                    </label>
+                    <p className="text-xs text-slate-500">Auto-close the job after this many applications. Leave empty for unlimited.</p>
+                    <input
+                        type="number"
+                        min="1"
+                        value={maxApplications}
+                        onChange={(e) => setMaxApplications(e.target.value ? parseInt(e.target.value) : '')}
+                        placeholder="e.g. 100"
+                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-lg"
+                    />
+                </div>
+            </div>
+
             {/* LOCATION & EMPLOYMENT GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Location Card */}
@@ -206,6 +235,63 @@ function CreateJobPageContent() {
                             placeholder={locationType === 'remote' ? "e.g. Worldwide or New York (HQ)" : "e.g. London, UK"}
                             className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
                         />
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 space-y-4">
+                        <label className="flex items-center justify-between cursor-pointer group">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 group-hover:text-blue-400 transition-colors">
+                                    <MapPin size={14} /> Restricted Area?
+                                </span>
+                                <span className="text-[10px] text-slate-600 font-medium mt-1">
+                                    Only visible to candidates in specific locations.
+                                </span>
+                            </div>
+                            <div className={`w-10 h-6 rounded-full p-1 transition-all ${isRestricted ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                                <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-all transform ${isRestricted ? 'translate-x-4' : 'translate-x-0'}`} />
+                            </div>
+                            <input type="checkbox" checked={isRestricted} onChange={(e) => setIsRestricted(e.target.checked)} className="hidden" />
+                        </label>
+
+                        {isRestricted && (
+                            <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={targetLocInput}
+                                        onChange={(e) => setTargetLocInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && targetLocInput) {
+                                                e.preventDefault();
+                                                setTargetLocations([...targetLocations, targetLocInput]);
+                                                setTargetLocInput('');
+                                            }
+                                        }}
+                                        placeholder="Add Allowed Country (e.g. Kenya)"
+                                        className="flex-1 bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-2 text-white text-xs font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            if (targetLocInput) {
+                                                setTargetLocations([...targetLocations, targetLocInput]);
+                                                setTargetLocInput('');
+                                            }
+                                        }}
+                                        className="p-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all"
+                                    >
+                                        <Plus size={16} />
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {targetLocations.map((loc, i) => (
+                                        <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                                            {loc}
+                                            <button onClick={() => setTargetLocations(targetLocations.filter((_, idx) => idx !== i))} className="hover:text-red-400"><X size={12} /></button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

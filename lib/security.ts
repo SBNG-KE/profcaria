@@ -52,6 +52,12 @@ export const decryptData = (encryptedString: string) => {
 
   const [ivHex, authTagHex, encryptedHex] = parts;
 
+  // Validate hex lengths (IV=16 bytes=32 hex, AuthTag=16 bytes=32 hex)
+  // If these don't match, it's likely a structured plain text string that happens to have colons
+  if (ivHex.length !== 32 || authTagHex.length !== 32) {
+    return encryptedString;
+  }
+
   try {
     const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'hex');
     const ivBuffer = Buffer.from(ivHex, 'hex');
@@ -65,8 +71,8 @@ export const decryptData = (encryptedString: string) => {
 
     return decrypted;
   } catch (error) {
-    console.error('Decryption failed:', error);
-    return null; // Or return encryptedString if you prefer
+    console.warn('Decryption failed for string:', encryptedString.substring(0, 20) + '...');
+    return null;
   }
 };
 

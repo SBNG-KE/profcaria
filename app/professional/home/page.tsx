@@ -7,8 +7,32 @@ import {
   Heading1, Heading2, Heading3,
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Image as ImageIcon, Palette,
-  Shield, Check
+  Shield, Check, ChevronDown, Type
 } from 'lucide-react';
+
+const FONTS = [
+  "Default", "Arial", "Verdana", "Tahoma", "Trebuchet MS", "Times New Roman",
+  "Georgia", "Garamond", "Courier New", "Brush Script MT", "Impact",
+  "Roboto", "Open Sans", "Lato", "Montserrat", "Poppins"
+];
+
+const COLORS = [
+  "#cbd5e1", // Default Slate 300
+  "#000000", "#444444", "#666666", "#999999", "#CCCCCC", "#FFFFFF",
+  "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e",
+  "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1",
+  "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#713f12"
+];
+
+const FONT_SIZES = [
+  { label: "10px", value: "1" },
+  { label: "13px", value: "2" },
+  { label: "16px", value: "3" },
+  { label: "18px", value: "4" },
+  { label: "24px", value: "5" },
+  { label: "32px", value: "6" },
+  { label: "48px", value: "7" }
+];
 
 // --- ScrollableContainer Component ---
 const ScrollableContainer = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => {
@@ -33,9 +57,14 @@ const ScrollableContainer = ({ children, className = '' }: { children: React.Rea
     el.addEventListener('scroll', checkScroll);
     window.addEventListener('resize', checkScroll);
 
+    // Watch for content changes (images loading, typing)
+    const observer = new MutationObserver(checkScroll);
+    observer.observe(el, { childList: true, subtree: true, attributes: true });
+
     return () => {
       el.removeEventListener('scroll', checkScroll);
       window.removeEventListener('resize', checkScroll);
+      observer.disconnect();
     };
   }, [children]);
 
@@ -198,6 +227,11 @@ export default function ProfessionalHome() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState(16);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showFontPicker, setShowFontPicker] = useState(false);
+  const [showFontSizePicker, setShowFontSizePicker] = useState(false);
+  const [currentFont, setCurrentFont] = useState('Default');
+  const [currentFontSize, setCurrentFontSize] = useState('3'); // Default 16px
 
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -340,6 +374,14 @@ export default function ProfessionalHome() {
       orderedList: document.queryCommandState('insertOrderedList'),
       unorderedList: document.queryCommandState('insertUnorderedList'),
     });
+
+    // Check font
+    const fontValue = document.queryCommandValue('fontName');
+    if (fontValue) setCurrentFont(fontValue.replace(/"/g, ''));
+
+    // Check size
+    const sizeValue = document.queryCommandValue('fontSize');
+    if (sizeValue) setCurrentFontSize(sizeValue);
   };
 
   const execCommand = (command: string, value: string | undefined = undefined) => {
@@ -497,6 +539,77 @@ export default function ProfessionalHome() {
               <button onClick={() => execCommand('insertUnorderedList')} className={`p-2 transition-colors rounded ${formats.unorderedList ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><List size={18} /></button>
             </div>
 
+            {/* FONT SELECTOR */}
+            <div className="relative z-50 hidden md:block">
+              <div className="flex items-center gap-2">
+                {/* Font Family */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFontPicker(!showFontPicker)}
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-800 rounded-lg text-slate-400 hover:text-white hover:border-slate-700 transition-all min-w-[140px]"
+                  >
+                    <Type size={16} />
+                    <span className="text-xs font-bold truncate flex-1 text-left">{currentFont}</span>
+                    <ChevronDown size={14} />
+                  </button>
+                  {showFontPicker && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowFontPicker(false)}></div>
+                      <div className="absolute top-full left-0 mt-2 w-48 max-h-64 overflow-y-auto bg-[#0f172a] border border-slate-700 rounded-xl shadow-2xl z-50 py-2 scrollbar-hide">
+                        {FONTS.map(font => (
+                          <button
+                            key={font}
+                            onClick={() => {
+                              execCommand('fontName', font === 'Default' ? 'inherit' : font);
+                              setCurrentFont(font);
+                              setShowFontPicker(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-blue-600/20 hover:text-blue-400 transition-colors"
+                            style={{ fontFamily: font === 'Default' ? 'inherit' : font }}
+                          >
+                            {font}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Font Size */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowFontSizePicker(!showFontSizePicker)}
+                    className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-800 rounded-lg text-slate-400 hover:text-white hover:border-slate-700 transition-all min-w-[70px]"
+                  >
+                    <span className="text-xs font-bold truncate flex-1 text-center">
+                      {FONT_SIZES.find(s => s.value === currentFontSize)?.label || "Size"}
+                    </span>
+                    <ChevronDown size={14} />
+                  </button>
+                  {showFontSizePicker && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowFontSizePicker(false)}></div>
+                      <div className="absolute top-full left-0 mt-2 w-24 bg-[#0f172a] border border-slate-700 rounded-xl shadow-2xl z-50 py-2">
+                        {FONT_SIZES.map(size => (
+                          <button
+                            key={size.value}
+                            onClick={() => {
+                              execCommand('fontSize', size.value);
+                              setCurrentFontSize(size.value);
+                              setShowFontSizePicker(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-blue-600/20 hover:text-blue-400 transition-colors"
+                          >
+                            {size.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center gap-1 bg-slate-900/50 rounded-lg p-1 border border-slate-800 hidden md:flex">
               <button onClick={() => toggleHeading('H1')} className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${formats.h1 ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500 hover:text-white'}`}><Heading1 size={20} /><span className="text-xs font-bold uppercase hidden lg:inline">Title</span></button>
               <button onClick={() => toggleHeading('H2')} className={`flex items-center gap-2 px-3 py-2 rounded transition-colors ${formats.h2 ? 'bg-blue-500/20 text-blue-400' : 'text-slate-500 hover:text-white'}`}><Heading2 size={18} /><span className="text-xs font-bold uppercase hidden lg:inline">Sub</span></button>
@@ -509,12 +622,34 @@ export default function ProfessionalHome() {
               <button onClick={() => execCommand('underline')} className={`p-2 transition-colors rounded ${formats.underline ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><Underline size={18} /></button>
 
               <div className="relative group p-2">
-                <Palette size={18} className="text-slate-500 group-hover:text-blue-400 cursor-pointer" />
-                <input
-                  type="color"
-                  onChange={handleColorChange}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                />
+                <button
+                  onClick={() => setShowColorPicker(!showColorPicker)}
+                  className="text-slate-500 hover:text-blue-400 transition-colors"
+                >
+                  <Palette size={18} />
+                </button>
+
+                {showColorPicker && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowColorPicker(false)}></div>
+                    <div className="absolute top-full right-0 mt-2 p-3 bg-[#0f172a] border border-slate-700 rounded-xl shadow-2xl z-50 w-[200px]">
+                      <div className="grid grid-cols-6 gap-2">
+                        {COLORS.map(color => (
+                          <button
+                            key={color}
+                            onClick={() => {
+                              execCommand('foreColor', color);
+                              setShowColorPicker(false);
+                            }}
+                            className="w-6 h-6 rounded-full border border-slate-700 hover:scale-110 transition-transform"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="relative group p-2">
@@ -560,7 +695,7 @@ export default function ProfessionalHome() {
                             w-full text-slate-300 focus:outline-none 
                             empty:before:content-['Start_typing...'] empty:before:text-slate-700 empty:before:pointer-events-none
                             [&_ol]:list-decimal [&_ol]:ml-4 [&_ul]:list-disc [&_ul]:ml-4
-                            [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-4 [&_img]:shadow-lg
+                            [&_img]:max-w-full [&_img]:max-h-[400px] [&_img]:object-contain [&_img]:rounded-xl [&_img]:my-4 [&_img]:shadow-lg
                         "
               style={{
                 minHeight: '1000px',

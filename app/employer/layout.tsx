@@ -6,6 +6,7 @@ import {
     Home, FileText, Bell, Settings, ChevronLeft, ChevronRight,
     Briefcase, Users, Database, Calendar, Building2, Plus, Shield, Power
 } from 'lucide-react';
+import ImageCropper from '@/app/components/ImageCropper';
 
 // --- Scroll Helpers ---
 const ScrollableContainer = ({ children, className = "" }: { children: ReactNode, className?: string }) => {
@@ -91,6 +92,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
     const [applicationCount, setApplicationCount] = useState(0);
     const [unreadCount, setUnreadCount] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [cropSource, setCropSource] = useState<File | string | null>(null);
 
     const activeTab = pathname.split('/').pop() || 'home';
     const showBackButton = pathname !== '/employer/home' && !pathname.endsWith('/view');
@@ -110,15 +112,30 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
         fetchMe();
     }, []);
 
-    const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
-        const file = e.target.files[0];
+        setCropSource(e.target.files[0]);
+        setIsImageModalOpen(false);
+    };
+
+    const handleEditCurrent = () => {
+        if (employerData?.profile?.logoUrl) {
+            setCropSource(employerData.profile.logoUrl);
+            setIsImageModalOpen(false);
+        }
+    };
+
+    const handleCropSave = async (blob: Blob) => {
         setIsUploading(true);
+        setCropSource(null);
+
+        const formData = new FormData();
+        formData.append('file', blob, 'logo.jpg');
 
         try {
-            const res = await fetch(`/api/employer/profile/image?filename=${file.name}`, {
+            const res = await fetch(`/api/employer/profile/image?filename=logo.jpg`, {
                 method: 'POST',
-                body: file
+                body: blob
             });
             if (res.ok) {
                 const { url } = await res.json();
@@ -132,7 +149,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
         } finally {
             setIsUploading(false);
         }
-    }, []);
+    };
 
     const handleImageDelete = useCallback(async () => {
         if (!confirm("Are you sure you want to remove your company logo?")) return;
@@ -207,7 +224,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                 <div className="flex flex-col items-center pt-8 px-4 shrink-0">
                     <button
                         onClick={() => setIsImageModalOpen(true)}
-                        className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 shadow-2xl border border-emerald-700/50 transition-all duration-300 hover:scale-105 active:scale-95 ${sidebarOpen ? 'w-full aspect-square mb-4' : 'w-14 h-14 mb-6'}`}
+                        className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 shadow-2xl border border-emerald-700/50 transition-all duration-300 hover:scale-105 active:scale-95 ${sidebarOpen ? 'w-32 aspect-square mb-4' : 'w-12 h-12 mb-6'}`}
                     >
                         {employerData?.profile?.logoUrl ? (
                             <img src={employerData.profile.logoUrl} className="w-full h-full object-cover" alt="Logo" />
@@ -217,7 +234,7 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Plus className="text-white" size={sidebarOpen ? 32 : 16} />
+                            <Plus className="text-white" size={sidebarOpen ? 24 : 16} />
                         </div>
                     </button>
                     {sidebarOpen && (
@@ -305,12 +322,22 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                                 disabled={isUploading}
                                 className="flex-1 py-4 bg-emerald-600 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
                             >
-                                {isUploading ? 'Uploading...' : employerData?.profile?.logoUrl ? 'Edit Logo' : 'Add Logo'}
+                                {isUploading ? 'Uploading...' : employerData?.profile?.logoUrl ? 'Replace Logo' : 'Add Logo'}
                             </button>
+
+                            {employerData?.profile?.logoUrl && (
+                                <button
+                                    onClick={handleEditCurrent}
+                                    className="px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95"
+                                >
+                                    Edit
+                                </button>
+                            )}
+
                             {employerData?.profile?.logoUrl && (
                                 <button
                                     onClick={handleImageDelete}
-                                    className="flex-1 py-4 bg-red-600/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-red-500/20 transition-all active:scale-95"
+                                    className="px-6 py-4 bg-red-600/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-red-500/20 transition-all active:scale-95"
                                 >
                                     Remove
                                 </button>
@@ -327,11 +354,20 @@ export default function EmployerLayout({ children }: { children: React.ReactNode
                             ref={fileInputRef}
                             type="file"
                             accept="image/*"
-                            onChange={handleImageUpload}
+                            onChange={handleFileSelect}
                             className="hidden"
                         />
                     </div>
                 </div>
+            )}
+
+            {/* CROPPER OVERLAY */}
+            {cropSource && (
+                <ImageCropper
+                    imageOrUrl={cropSource}
+                    onCrop={handleCropSave}
+                    onCancel={() => setCropSource(null)}
+                />
             )}
         </div>
     );

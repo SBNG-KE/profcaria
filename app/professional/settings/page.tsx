@@ -241,6 +241,16 @@ export default function ProfessionalSettingsPage() {
                         <span>{isLoading ? 'Saving...' : 'Save Changes'}</span>
                     </button>
                 )}
+                {activeTab === 'preferences' && (
+                    <button
+                        onClick={handlePreferencesSave}
+                        disabled={isLoading}
+                        className="flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-50"
+                    >
+                        <Save size={18} />
+                        <span>{isLoading ? 'Saving...' : 'Save Preferences'}</span>
+                    </button>
+                )}
             </header>
 
             {/* Tabs */}
@@ -269,18 +279,7 @@ export default function ProfessionalSettingsPage() {
                 or we can change the header button to be dynamic based on activeTab.
                 Currently header button only shows for 'profile'. Let's add for preferences.
             */}
-            {activeTab === 'preferences' && (
-                <div className="fixed bottom-8 right-8 z-50">
-                    <button
-                        onClick={handlePreferencesSave}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-purple-600/20 active:scale-95 disabled:opacity-50"
-                    >
-                        <Save size={18} />
-                        <span>{isLoading ? 'Saving...' : 'Save Preferences'}</span>
-                    </button>
-                </div>
-            )}
+
 
             {message && (
                 <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
@@ -516,36 +515,34 @@ export default function ProfessionalSettingsPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2"><Globe size={12} /> Country</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2"><Globe size={12} /> Country <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                     <input
                                         type="text"
                                         value={country}
-                                        onChange={(e) => setCountry(e.target.value)}
-                                        placeholder="e.g. USA"
-                                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                        readOnly
+                                        className="w-full bg-slate-900/20 border border-slate-800/50 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed font-bold focus:outline-none"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">City</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">City <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                     <input
                                         type="text"
                                         value={city}
-                                        onChange={(e) => setCity(e.target.value)}
-                                        placeholder="e.g. New York"
-                                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                        readOnly
+                                        className="w-full bg-slate-900/20 border border-slate-800/50 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed font-bold focus:outline-none"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Town / Address</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">Region / ISP Location <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                 <input
                                     type="text"
                                     value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="e.g. 123 Tech Lane"
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                    readOnly
+                                    className="w-full bg-slate-900/20 border border-slate-800/50 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed font-bold focus:outline-none"
                                 />
                             </div>
+                            <p className="text-[10px] text-slate-600 italic mt-2 flex items-center gap-1.5"><Shield size={10} /> Location is securely verified via your connection info.</p>
                         </div>
                     </div>
                 </div>
