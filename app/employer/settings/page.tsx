@@ -79,6 +79,7 @@ function SettingsContent() {
     // Billing State
     const [subscription, setSubscription] = useState<any | null>(null);
     const [payments, setPayments] = useState<any[]>([]);
+    const [derivedPlan, setDerivedPlan] = useState<string | null>(null);
 
     // Pricing Config State
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -140,6 +141,40 @@ function SettingsContent() {
                 const data = await res.json();
                 setSubscription(data.subscription);
                 setPayments(data.payments);
+
+                // Infer Plan from latest payment because DB might lack 'plan' column
+                if (data.subscription?.plan) {
+                    setDerivedPlan(data.subscription.plan);
+                } else if (data.payments && data.payments.length > 0 && data.subscription?.status === 'active') {
+                    // Heuristic: Check latest payment amount vs USD pricing (approx)
+                    const latest = data.payments[0];
+                    // Convert back to USD roughly to guess
+                    const exRate = parseFloat(process.env.NEXT_PUBLIC_USD_EXCHANGE_RATE || '130');
+                    // Or just compare relative magnitudes since we don't know rate at time of purchase
+                    // Pro is ~4x Basic. Enterprise is ~2.5x Pro.
+                    // Basic ~$25, Pro ~$99, Ent ~$250
+
+                    // We can't know for sure without the rate, but usually:
+                    // < $60 value -> Basic
+                    // < $180 value -> Pro
+                    // > $180 value -> Enterprise
+
+                    // Use current rate for estimation (not perfect but better than nothing)
+                    // Amount is in cents/subunits? Wait, payment.amount from Paystack is usually base unit if using USD? 
+                    // No, verification route saved `data.amount`. Paystack is usually subunits (kobo/cents).
+                    // But let's check recent payment table: `payment.amount / 100`. So it is subunits.
+
+                    // Rough check:
+                    // 25 * 100 * 100 = 250,000 (roughly KES 3,250 * 100) -> 325,000
+                    // 99 * 100 * 100 = 990,000 (roughly KES 12,800 * 100) -> 1,280,000
+
+                    // Simply:
+                    const amount = latest.amount;
+                    if (amount > 2000000) setDerivedPlan('enterprise'); // > 20k KES 
+                    else if (amount > 800000) setDerivedPlan('pro');   // > 8k KES
+                    else setDerivedPlan('basic');
+                }
+
                 // Exchange rate is now handled by client-side hook
 
                 setPricing({
@@ -599,7 +634,7 @@ function SettingsContent() {
 
                             {/* Basic Tier ($25) */}
                             <div className="bg-slate-900/30 border border-blue-500/20 p-6 rounded-[24px] flex flex-col relative overflow-hidden hover:border-blue-500/40 transition-colors">
-                                {subscription?.plan === 'basic' && (
+                                {derivedPlan === 'basic' && (
                                     <div className="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
@@ -630,10 +665,15 @@ function SettingsContent() {
                                     </div>
                                 </div>
                                 <div className="mt-8 pt-6 border-t border-blue-500/20">
-                                    {subscription?.status === 'active' && subscription.plan === 'basic' ? (
-                                        <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
-                                            Manage Subscription
-                                        </button>
+                                    {subscription?.status === 'active' && derivedPlan === 'basic' ? (
+                                        <div className="text-center">
+                                            <div className="w-full py-2 bg-blue-500/10 text-blue-500 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-2 border border-blue-500/20">
+                                                Active
+                                            </div>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe('basic')}
@@ -685,10 +725,15 @@ function SettingsContent() {
                                     </div>
                                 </div>
                                 <div className="mt-8 pt-6 border-t border-emerald-500/20">
-                                    {subscription?.status === 'active' && subscription.plan === 'pro' ? (
-                                        <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
-                                            Manage Subscription
-                                        </button>
+                                    {subscription?.status === 'active' && derivedPlan === 'pro' ? (
+                                        <div className="text-center">
+                                            <div className="w-full py-2 bg-emerald-500/10 text-emerald-500 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-2 border border-emerald-500/20">
+                                                Active
+                                            </div>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe('pro')}
@@ -702,8 +747,8 @@ function SettingsContent() {
                             </div>
 
                             {/* Enterprise Tier ($250) */}
-                            <div className="bg-gradient-to-br from-purple-950/20 to-[#0f172a] border border-purple-500/20 p-6 rounded-[24px] flex flex-col relative overflow-hidden shadow-2xl shadow-purple-900/10 hover:border-purple-500/40 transition-colors">
-                                {subscription?.plan === 'enterprise' && (
+                            <div className={`bg-gradient-to-br from-purple-950/20 to-[#0f172a] border p-6 rounded-[24px] flex flex-col relative overflow-hidden transition-colors ${derivedPlan === 'enterprise' ? 'border-purple-500 shadow-2xl shadow-purple-900/10' : 'border-purple-500/20 hover:border-purple-500/40'}`}>
+                                {derivedPlan === 'enterprise' && (
                                     <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
@@ -740,10 +785,15 @@ function SettingsContent() {
                                     </div>
                                 </div>
                                 <div className="mt-8 pt-6 border-t border-purple-500/20">
-                                    {subscription?.status === 'active' && subscription.plan === 'enterprise' ? (
-                                        <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
-                                            Manage Subscription
-                                        </button>
+                                    {subscription?.status === 'active' && derivedPlan === 'enterprise' ? (
+                                        <div className="text-center">
+                                            <div className="w-full py-2 bg-purple-500/10 text-purple-500 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-2 border border-purple-500/20">
+                                                Active
+                                            </div>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe('enterprise')}

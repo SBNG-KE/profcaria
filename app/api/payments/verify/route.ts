@@ -40,14 +40,16 @@ export async function POST(req: Request) {
         const thirtyDaysFromNow = new Date();
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
-        await supabaseAdmin.schema('employer').from('subscriptions').upsert({
+        const { error: subError } = await supabaseAdmin.schema('employer').from('subscriptions').upsert({
             company_id: companyId,
             status: 'active',
             current_period_end: thirtyDaysFromNow.toISOString(),
             paystack_subscription_code: 'one_time_' + data.reference,
-            paystack_email_token: 'one_time',
-            plan: data.metadata?.plan || 'pro' // Default to pro if missing, but should be there
+            paystack_email_token: 'one_time'
+            // plan: removed
         });
+
+        if (subError) throw subError; // Explicitly check for error
 
         return NextResponse.json({ success: true });
 
