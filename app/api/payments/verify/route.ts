@@ -45,7 +45,8 @@ export async function POST(req: Request) {
             status: 'active',
             current_period_end: thirtyDaysFromNow.toISOString(),
             paystack_subscription_code: 'one_time_' + data.reference,
-            paystack_email_token: 'one_time'
+            paystack_email_token: 'one_time',
+            plan: data.metadata?.plan || 'pro' // Default to pro if missing, but should be there
         });
 
         return NextResponse.json({ success: true });

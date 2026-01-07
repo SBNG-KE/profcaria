@@ -103,12 +103,31 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             // Strict enforcement or Relocation leniency
             let userLoc = '';
             // Get location from latest log
+            // Get location from latest log
             if (pro.activity_logs && pro.activity_logs.length > 0) {
-                const log = pro.activity_logs[0]; // Assuming sorted by latest in query logic or we sort here
-                // Wait, we didn't sort logs in select, let's just grab first (imperfect but MVP)
+                // Sort logs by created_at desc to find latest
+                const sortedLogs = pro.activity_logs.sort((a: any, b: any) =>
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                );
+                const log = sortedLogs[0];
+
                 try {
                     const decLog = decryptData(log.enc_location_details);
-                    userLoc = decLog || '';
+                    if (decLog) {
+                        if (decLog.trim().startsWith('{')) {
+                            try {
+                                const locObj = JSON.parse(decLog);
+                                const parts = [];
+                                if (locObj.city) parts.push(locObj.city);
+                                if (locObj.country) parts.push(locObj.country);
+                                userLoc = parts.join(', ');
+                            } catch {
+                                userLoc = decLog;
+                            }
+                        } else {
+                            userLoc = decLog;
+                        }
+                    }
                 } catch { }
             }
 

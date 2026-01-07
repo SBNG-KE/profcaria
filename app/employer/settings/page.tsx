@@ -569,7 +569,7 @@ function SettingsContent() {
                                 <div className="space-y-4 flex-1">
                                     <h4 className="font-black text-xl text-white">Free</h4>
                                     <div className="text-3xl font-black text-slate-500">
-                                        {currencyCode} 0
+                                        {formatCurrency(0)}
                                         <span className="text-xs text-slate-600 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
                                     <div className="pt-4 space-y-3">
@@ -711,7 +711,7 @@ function SettingsContent() {
                                 <div className="space-y-4 flex-1">
                                     <h4 className="font-black text-xl text-white">Enterprise</h4>
                                     <div className="text-3xl font-black text-purple-400">
-                                        <span className="text-sm text-purple-600 font-bold mr-1">{currencyCode}</span>
+                                        {/* Currency code removed, formatCurrency handles it */}
                                         {(() => {
                                             let price = pricing.enterprise;
                                             if (billingCycle === 'yearly') {
@@ -779,7 +779,9 @@ function SettingsContent() {
                                         {payments.map((payment, i) => (
                                             <tr key={payment.id} className="hover:bg-slate-800/30 transition-colors">
                                                 <td className="p-4">{new Date(payment.created_at).toLocaleDateString()}</td>
-                                                <td className="p-4 font-mono font-bold text-white">${(payment.amount / 100).toFixed(2)}</td>
+                                                <td className="p-4 font-mono font-bold text-white">
+                                                    {formatCurrency(payment.amount / 100)}
+                                                </td>
                                                 <td className="p-4">
                                                     <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase rounded-md border border-emerald-500/20">
                                                         {payment.status}
