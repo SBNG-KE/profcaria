@@ -43,12 +43,20 @@ export async function GET(req: Request) {
             .order('created_at', { ascending: false })
             .limit(10);
 
-        const exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+        // Pricing Configuration (Read from Env or Defaults)
+        // Basic: $25, Pro: $99, Enterprise: $250
+        const pricingConfig = {
+            exchangeRate: parseFloat(process.env.USD_EXCHANGE_RATE || '1'),
+            basic: parseFloat(process.env.PRICE_BASIC_MONTHLY || '25'),
+            pro: parseFloat(process.env.PRICE_PRO_MONTHLY || '99'),
+            enterprise: parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250'),
+            yearlyDiscountPercent: parseFloat(process.env.YEARLY_DISCOUNT_PERCENT || '20')
+        };
 
         return NextResponse.json({
             subscription: subscription || null,
             payments: payments || [],
-            exchangeRate
+            ...pricingConfig
         });
 
     } catch (error) {

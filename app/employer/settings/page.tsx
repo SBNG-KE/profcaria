@@ -75,6 +75,15 @@ function SettingsContent() {
     const [payments, setPayments] = useState<any[]>([]);
     const [exchangeRate, setExchangeRate] = useState<number>(1);
 
+    // Pricing Config State
+    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+    const [pricing, setPricing] = useState({
+        basic: 25,
+        pro: 99,
+        enterprise: 250,
+        yearlyDiscountPercent: 0
+    });
+
     useEffect(() => {
         fetchProfile();
         if (activeTab === 'security') fetchActivityLogs();
@@ -127,19 +136,26 @@ function SettingsContent() {
                 setSubscription(data.subscription);
                 setPayments(data.payments);
                 if (data.exchangeRate) setExchangeRate(data.exchangeRate);
+
+                setPricing({
+                    basic: data.basic || 25,
+                    pro: data.pro || 99,
+                    enterprise: data.enterprise || 250,
+                    yearlyDiscountPercent: data.yearlyDiscountPercent || 0
+                });
             }
         } catch (error) {
             console.error('Error fetching billing:', error);
         }
     };
 
-    const handleSubscribe = async (plan: 'pro' | 'enterprise') => {
+    const handleSubscribe = async (plan: 'basic' | 'pro' | 'enterprise') => {
         setIsLoading(true);
         try {
             const res = await fetch('/api/payments/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan })
+                body: JSON.stringify({ plan, billingCycle })
             });
             const data = await res.json();
             if (data.url) {
@@ -510,10 +526,36 @@ function SettingsContent() {
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                     {/* Billing Details */}
-                    <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <CreditCard className="text-purple-500" size={24} /> Billing & Subscription
-                        </h3>
+                    <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <CreditCard className="text-purple-500" size={24} /> Billing & Subscription
+                                </h3>
+                                <p className="text-slate-400 text-sm mt-1">Choose the plan that fits your hiring needs.</p>
+                            </div>
+
+                            {/* Billing Cycle Toggle */}
+                            <div className="flex items-center gap-4 bg-slate-900/50 p-1.5 rounded-xl border border-slate-800 self-start md:self-auto">
+                                <button
+                                    onClick={() => setBillingCycle('monthly')}
+                                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${billingCycle === 'monthly' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    Monthly
+                                </button>
+                                <button
+                                    onClick={() => setBillingCycle('yearly')}
+                                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${billingCycle === 'yearly' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                    Yearly
+                                    {pricing.yearlyDiscountPercent > 0 && (
+                                        <span className="bg-white/20 text-white px-1.5 py-0.5 rounded text-[9px] font-black">
+                                            -{pricing.yearlyDiscountPercent}%
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
 
                         {exchangeRate > 1 && (
                             <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl flex items-center gap-3 text-xs text-slate-400">
@@ -522,64 +564,128 @@ function SettingsContent() {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Free Tier Card */}
-                            <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] flex flex-col relative overflow-hidden group hover:border-slate-700 transition-colors">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                            {/* Free Tier */}
+                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px] flex flex-col relative overflow-hidden group hover:border-slate-700 transition-colors">
                                 <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-2xl text-white">Free</h4>
-                                    <div className="text-4xl font-black text-slate-500">{currencyCode} 0<span className="text-sm text-slate-600 font-bold ml-1">/mo</span></div>
+                                    <h4 className="font-black text-xl text-white">Free</h4>
+                                    <div className="text-3xl font-black text-slate-500">
+                                        {currencyCode} 0
+                                        <span className="text-xs text-slate-600 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                    </div>
                                     <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-sm text-slate-300 font-medium">
-                                            <CheckCircle size={16} className="text-slate-500" /> 1 Active Job Post
+                                        <div className="flex items-center gap-3 text-xs text-slate-300 font-medium">
+                                            <CheckCircle size={14} className="text-slate-500" /> 1 Active Job Post
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-300 font-medium">
-                                            <CheckCircle size={16} className="text-slate-500" /> Basic Search
+                                        <div className="flex items-center gap-3 text-xs text-slate-300 font-medium">
+                                            <CheckCircle size={14} className="text-slate-500" /> Basic Search
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-300 font-medium">
-                                            <CheckCircle size={16} className="text-slate-500" /> Standard Support
+                                        <div className="flex items-center gap-3 text-xs text-slate-300 font-medium">
+                                            <CheckCircle size={14} className="text-slate-500" /> Standard Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-8 border-t border-slate-800">
+                                <div className="mt-8 pt-6 border-t border-slate-800">
                                     {!subscription ? (
-                                        <div className="w-full py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-center text-xs uppercase tracking-widest cursor-default">
+                                        <div className="w-full py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default">
                                             Current Plan
                                         </div>
                                     ) : (
-                                        <div className="w-full py-3 bg-transparent text-slate-600 font-bold rounded-xl text-center text-xs uppercase tracking-widest cursor-default">
+                                        <div className="w-full py-3 bg-transparent text-slate-600 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default">
                                             Included
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Pro Tier Card */}
-                            <div className="bg-slate-900/20 border border-emerald-500/20 p-8 rounded-[32px] flex flex-col relative overflow-hidden shadow-lg shadow-emerald-900/5">
-                                {subscription?.plan === 'pro' && (
-                                    <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                            {/* Basic Tier ($25) */}
+                            <div className="bg-slate-900/30 border border-blue-500/20 p-6 rounded-[24px] flex flex-col relative overflow-hidden hover:border-blue-500/40 transition-colors">
+                                {subscription?.plan === 'basic' && (
+                                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
                                 <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-2xl text-white">Pro</h4>
-                                    <div className="text-4xl font-black text-emerald-400">
-                                        <span className="text-lg text-emerald-600 font-bold mr-1">{currencyCode}</span>
-                                        {formatCurrency(25)}
-                                        <span className="text-sm text-emerald-600/70 font-bold ml-1">/mo</span>
+                                    <h4 className="font-black text-xl text-white">Basic</h4>
+                                    <div className="text-3xl font-black text-blue-400">
+                                        <span className="text-sm text-blue-600 font-bold mr-1">{currencyCode}</span>
+                                        {(() => {
+                                            let price = pricing.basic;
+                                            if (billingCycle === 'yearly') {
+                                                price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
+                                            }
+                                            return formatCurrency(price);
+                                        })()}
+                                        <span className="text-xs text-blue-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
                                     <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-emerald-500 shrink-0" /> 5 Job Posts / Mo
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-blue-500 shrink-0" /> 5 Job Posts / Mo
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-emerald-500 shrink-0" /> Featured Listings
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-blue-500 shrink-0" /> Basic Analytics
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-emerald-500 shrink-0" /> Partial Analytics
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-blue-500 shrink-0" /> Email Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-8 border-t border-emerald-500/20">
+                                <div className="mt-8 pt-6 border-t border-blue-500/20">
+                                    {subscription?.status === 'active' && subscription.plan === 'basic' ? (
+                                        <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
+                                            Manage Subscription
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleSubscribe('basic')}
+                                            disabled={isLoading}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
+                                        >
+                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : 'Get Basic'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Pro Tier ($99) - BEST OFFER */}
+                            <div className="bg-gradient-to-b from-emerald-900/20 to-[#0f172a] border border-emerald-500/40 p-6 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl shadow-emerald-900/10 scale-105 z-10">
+                                <div className="absolute top-0 inset-x-0 h-1 bg-emerald-500"></div>
+                                {subscription?.plan === 'pro' && (
+                                    <div className="absolute top-1 right-0 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                        Current
+                                    </div>
+                                )}
+                                <div className="space-y-4 flex-1">
+                                    <h4 className="font-black text-xl text-white flex items-center gap-2">
+                                        Pro <span className="px-2 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-bold">BEST OFFER</span>
+                                    </h4>
+                                    <div className="text-3xl font-black text-emerald-400">
+                                        <span className="text-sm text-emerald-600 font-bold mr-1">{currencyCode}</span>
+                                        {(() => {
+                                            let price = pricing.pro;
+                                            if (billingCycle === 'yearly') {
+                                                price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
+                                            }
+                                            return formatCurrency(price);
+                                        })()}
+                                        <span className="text-xs text-emerald-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                    </div>
+                                    <div className="pt-4 space-y-3">
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">50 Job Posts / Mo</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Featured Listings
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Advanced Analytics
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Priority Support
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-6 border-t border-emerald-500/20">
                                     {subscription?.status === 'active' && subscription.plan === 'pro' ? (
                                         <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
                                             Manage Subscription
@@ -590,47 +696,51 @@ function SettingsContent() {
                                             disabled={isLoading}
                                             className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : 'Upgrade to Pro'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : 'Get Pro'}
                                         </button>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Enterprise Tier Card */}
-                            <div className="bg-gradient-to-br from-purple-950/20 to-[#0f172a] border border-purple-500/20 p-8 rounded-[32px] flex flex-col relative overflow-hidden shadow-2xl shadow-purple-900/10">
+                            {/* Enterprise Tier ($250) */}
+                            <div className="bg-gradient-to-br from-purple-950/20 to-[#0f172a] border border-purple-500/20 p-6 rounded-[24px] flex flex-col relative overflow-hidden shadow-2xl shadow-purple-900/10 hover:border-purple-500/40 transition-colors">
                                 {subscription?.plan === 'enterprise' && (
-                                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
                                 <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-2xl text-white flex items-center gap-2">
-                                        Enterprise <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 text-[10px] border border-purple-500/20">BEST VALUE</span>
-                                    </h4>
-                                    <div className="text-4xl font-black text-purple-400">
-                                        <span className="text-lg text-purple-600 font-bold mr-1">{currencyCode}</span>
-                                        {formatCurrency(145)}
-                                        <span className="text-sm text-purple-600/70 font-bold ml-1">/mo</span>
+                                    <h4 className="font-black text-xl text-white">Enterprise</h4>
+                                    <div className="text-3xl font-black text-purple-400">
+                                        <span className="text-sm text-purple-600 font-bold mr-1">{currencyCode}</span>
+                                        {(() => {
+                                            let price = pricing.enterprise;
+                                            if (billingCycle === 'yearly') {
+                                                price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
+                                            }
+                                            return formatCurrency(price);
+                                        })()}
+                                        <span className="text-xs text-purple-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
                                     <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Unlimited Job Posts
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Job Posts
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Full AI & Analytics
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Full AI & Analytics
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Pause Subscription
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Pause Subscription
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> Voting Rights
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Voting Rights
                                         </div>
-                                        <div className="flex items-center gap-3 text-sm text-slate-200 font-medium">
-                                            <CheckCircle size={16} className="text-purple-500 shrink-0" /> 24/7 Priority Support
+                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
+                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> 24/7 Priority Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-8 border-t border-purple-500/20">
+                                <div className="mt-8 pt-6 border-t border-purple-500/20">
                                     {subscription?.status === 'active' && subscription.plan === 'enterprise' ? (
                                         <button onClick={handlePortal} className="w-full py-2 text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">
                                             Manage Subscription
@@ -639,9 +749,9 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('enterprise')}
                                             disabled={isLoading}
-                                            className="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : 'Get Enterprise'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : 'Get Enterprise'}
                                         </button>
                                     )}
                                 </div>

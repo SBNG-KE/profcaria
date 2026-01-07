@@ -28,22 +28,36 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { plan } = await req.json(); // plan: 'pro' | 'enterprise'
+        const { plan, billingCycle = 'monthly' } = await req.json(); // plan: 'basic' | 'pro' | 'enterprise'
 
         const exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
-        let amount = 0;
 
-        // Calculate amount in lowest currency unit (presumably KES/ZAR cents if rate > 1, or USD cents if rate = 1)
-        // If rate is ~129 (KES), $25 becomes ~3225. Paystack expects kobo/cents, so * 100.
-        // Formula: USD_Price * Exchange_Rate * 100
+        // Base Prices (Monthly USD)
+        const prices: Record<string, number> = {
+            basic: parseFloat(process.env.PRICE_BASIC_MONTHLY || '25'),
+            pro: parseFloat(process.env.PRICE_PRO_MONTHLY || '99'),
+            enterprise: parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250'),
+        };
 
-        if (plan === 'pro') {
-            amount = Math.round(25 * exchangeRate * 100);
-        } else if (plan === 'enterprise') {
-            amount = Math.round(150 * exchangeRate * 100);
-        } else {
+        const discountPercent = parseFloat(process.env.YEARLY_DISCOUNT_PERCENT || '20');
+
+        if (!prices[plan]) {
             return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
         }
+
+        let amountUSD = prices[plan];
+
+        // Calculate USD Amount with Discount if Yearly
+        if (billingCycle === 'yearly') {
+            const yearlyTotal = amountUSD * 12;
+            const discountAmount = yearlyTotal * (discountPercent / 100);
+            amountUSD = yearlyTotal - discountAmount;
+        }
+
+        // Convert to Display Units (e.g. 25.00 or 3225.00)
+        // Paystack initializes with "Display Amount", library handles *100 if needed
+        const displayAmount = amountUSD * exchangeRate;
+        const finalDisplayAmount = Math.round(displayAmount * 100) / 100;
 
         // 1. Fetch Company Details
         const { data: company } = await supabaseAdmin
@@ -78,14 +92,12 @@ export async function POST(req: Request) {
         // Line 5: amount: amount * 100. 
         // So we should pass the "Display Amount" (e.g. 3225) and let lib turn it into 322500 cents.
 
-        const finalAmount = amount / 100;
-
         const response = await Paystack.initializeTransaction(
             email,
-            finalAmount,
-            `${origin}/payment/callback`, // Redirect to dedicated callback page
-            { companyId, plan }, // Store plan in metadata
-            undefined // We are doing one-time payment for now to simulate sub, or we can pass plan code if created on Paystack. For now, manual handling.
+            finalDisplayAmount,
+            `${origin}/payment/callback`,
+            { companyId, plan, billingCycle },
+            undefined
         );
 
         if (!response.status) {
