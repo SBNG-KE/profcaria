@@ -780,7 +780,7 @@ function SettingsContent() {
                                             <tr key={payment.id} className="hover:bg-slate-800/30 transition-colors">
                                                 <td className="p-4">{new Date(payment.created_at).toLocaleDateString()}</td>
                                                 <td className="p-4 font-mono font-bold text-white">
-                                                    {formatCurrency(payment.amount / 100)}
+                                                    {payment.currency} {new Intl.NumberFormat().format(payment.amount / 100)}
                                                 </td>
                                                 <td className="p-4">
                                                     <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase rounded-md border border-emerald-500/20">
