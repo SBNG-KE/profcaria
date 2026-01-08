@@ -72,7 +72,8 @@ export async function GET(req: Request) {
                 createdAt: app.created_at,
                 jobTitle: decryptData(job?.enc_title) || 'Unknown Position',
                 companyName: decryptData(employer?.enc_company_name) || 'Secure Employer',
-                companyLogoUrl: employer?.enc_logo_url ? decryptData(employer.enc_logo_url) : null
+                companyLogoUrl: employer?.enc_logo_url ? decryptData(employer.enc_logo_url) : null,
+                companyId: employer?.id || job?.company_id
             };
         });
 

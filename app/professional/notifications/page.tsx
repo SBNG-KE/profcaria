@@ -2,102 +2,111 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, MessageSquare, ChevronRight, Zap, Send, Shield, Clock, X, Building2, UserCircle, Search, CheckCheck } from 'lucide-react';
+import { useNotificationContext } from '@/app/context/NotificationContext';
 
 export default function NotificationsPage() {
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [applications, setApplications] = useState<any[]>([]);
+    // Consume Global Context
+    const { notifications, applications, loading, refresh, markAsRead } = useNotificationContext();
+
+    // Local State
     const [activeConversation, setActiveConversation] = useState<any>(null);
     const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
     const [isSending, setIsSending] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const messageEndRef = useRef<HTMLDivElement>(null);
+    const lastMessageCountRef = useRef(0);
+    const lastFetchTimeRef = useRef(0);
 
+    // Initial Scroll
     useEffect(() => {
-        fetchInitialData();
-        // Auto-refresh notifications every 2 seconds for near-instant updates
-        const interval = setInterval(fetchInitialData, 2000);
-        return () => clearInterval(interval);
-    }, []);
-
-    useEffect(() => {
-        if (activeConversation) {
-            // Find all application IDs for this company
-            const companyAppIds = applications
-                .filter(app => app.companyName === activeConversation.companyName)
-                .filter(app => app.companyId === activeConversation.companyId)
-                .map(app => app.id);
-
-            fetchMessages(companyAppIds);
-            markMessagesAsRead(companyAppIds);
+        if (messages.length > lastMessageCountRef.current) {
+            messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            lastMessageCountRef.current = messages.length;
         }
-    }, [activeConversation, applications]);
-
-    useEffect(() => {
-        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const fetchInitialData = async () => {
-        try {
-            const [notifRes, appRes] = await Promise.all([
-                fetch('/api/shared/notifications'),
-                fetch('/api/professional/applications')
-            ]);
-            if (notifRes.ok) {
-                const data = await notifRes.json();
-                const newNotifs = data.notifications || [];
+    // 1. Fetch Messages when Active Conversation Changes
+    useEffect(() => {
+        if (activeConversation) {
+            // Find all application IDs for this company (conversation grouping logic)
+            const companyAppIds = getCompanyAppIds(activeConversation);
+            fetchMessages(companyAppIds);
+        } else {
+            setMessages([]);
+        }
+    }, [activeConversation]); // Dependency: only when switch conversation
 
-                // Browser Push Notification for new unread notifications
-                if (notifications.length > 0) {
-                    const latestOldNotif = notifications[0];
-                    const latestNewNotif = newNotifs[0];
-                    if (latestNewNotif && !latestNewNotif.is_read && latestNewNotif.id !== latestOldNotif.id) {
-                        requestNotificationPermission().then(granted => {
-                            if (granted) {
-                                new Notification("New Message - Profcaria", {
-                                    body: latestNewNotif.message,
-                                    icon: "/logo.png" // Replace with actual app logo if available
-                                });
-                            }
-                        });
-                    }
+    // 2. Notification-Driven Updates (The "Real-time" substitution)
+    // If a new notification arrives for the active conversation, fetch messages!
+    useEffect(() => {
+        if (!activeConversation) return;
+
+        const companyAppIds = getCompanyAppIds(activeConversation);
+
+        // check if any unread notification belongs to one of these app IDs
+        const hasRelevantNotification = notifications.some(n =>
+            !n.is_read && n.application_id && companyAppIds.includes(n.application_id)
+        );
+
+        if (hasRelevantNotification) {
+            fetchMessages(companyAppIds);
+
+            // Mark these notifications as read immediately so we don't re-fetch endlessly?
+            // Or rely on `fetchMessages` to mark messages as read?
+            // The Logic: If we see a notification, we fetch the messages.
+            // But we should also clear the notification badge.
+            notifications.forEach(n => {
+                if (!n.is_read && n.application_id && companyAppIds.includes(n.application_id)) {
+                    markAsRead(n.id);
                 }
-
-                setNotifications(newNotifs);
-            }
-            if (appRes.ok) {
-                const data = await appRes.json();
-                setApplications(data.applications || []);
-            }
-        } catch (error) {
-            console.error("Error fetching data", error);
-        } finally {
-            setIsLoading(false);
+            });
         }
-    };
+    }, [notifications, activeConversation]);
 
-    const requestNotificationPermission = async () => {
-        if (!("Notification" in window)) return false;
-        if (Notification.permission === "granted") return true;
-        if (Notification.permission !== "denied") {
-            const permission = await Notification.requestPermission();
-            return permission === "granted";
-        }
-        return false;
+    // 3. Failsafe Polling (3s)
+    // Ensures messages are synchronized even if notification trigger is missed
+    useEffect(() => {
+        if (!activeConversation) return;
+        const companyAppIds = getCompanyAppIds(activeConversation);
+
+        const interval = setInterval(() => {
+            fetchMessages(companyAppIds);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [activeConversation, applications]);
+
+    // Helper to get grouped IDs
+    const getCompanyAppIds = (conv: any) => {
+        return applications
+            .filter(app => app.companyName === conv.companyName) // Ensure consistent grouping
+            .filter(app => app.company?.id === conv.company?.id || app.companyId === conv.companyId) // fallback for prop names
+            .map(app => app.id);
     };
 
     const fetchMessages = async (appIds: string[]) => {
         try {
+            const requestTime = Date.now();
+            lastFetchTimeRef.current = requestTime;
+
             const idsParam = appIds.join(',');
-            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}`);
+            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}&t=${requestTime}`, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
+
+                // Race Condition Guard: If a newer request has started/finished, ignore this one
+                if (requestTime < lastFetchTimeRef.current) return;
+
                 const newMessages = data.messages || [];
-                // Only update if messages actually changed to avoid jitter
-                if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
-                    setMessages(newMessages);
-                }
+
+                setMessages(prev => {
+                    // Safe replace
+                    return newMessages;
+                });
+
+                // Also mark messages as read in DB
+                markMessagesAsRead(appIds);
             }
         } catch (error) {
             console.error("Error fetching messages", error);
@@ -110,7 +119,7 @@ export default function NotificationsPage() {
         setNewMessage('');
         setIsSending(true);
         try {
-            // Send to the specifically selected application (the most recent one or the one clicked)
+            // Send to the specifically selected application
             const res = await fetch('/api/shared/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -121,25 +130,19 @@ export default function NotificationsPage() {
             });
             if (res.ok) {
                 const data = await res.json();
-                setMessages(prev => [...prev, { ...data.message, content: msgContent }]);
+                // Optimistic append with safe check
+                setMessages(prev => {
+                    if (prev.some(m => m.id === data.message.id)) return prev;
+                    return [...prev, { ...data.message, content: msgContent }];
+                });
+
+                // Trigger global refresh to update "Last Message" snippets if we had them or just consistency
+                refresh();
             }
         } catch (error) {
             console.error("Error sending message", error);
         } finally {
             setIsSending(false);
-        }
-    };
-
-    const markNotificationAsRead = async (id: string) => {
-        try {
-            await fetch('/api/shared/notifications', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notificationId: id })
-            });
-            setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-        } catch (error) {
-            console.error("Error marking notif as read", error);
         }
     };
 
@@ -155,19 +158,25 @@ export default function NotificationsPage() {
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'applied': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
-            case 'interview_scheduled': return 'text-violet-400 bg-violet-500/10 border-violet-500/20';
-            case 'offered': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
-            case 'rejected': return 'text-red-400 bg-red-500/10 border-red-500/20';
-            default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
-        }
-    };
-
+    // Filter Logic for Sidebar
     const filteredConversations = applications.filter(app =>
-        app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.companyName.toLowerCase().includes(searchQuery.toLowerCase())
+        (app.jobTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (app.companyName || '').toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Group apps by Company for the Sidebar List
+    const groupedConversations = Object.values(
+        filteredConversations.reduce((acc, app) => {
+            // Group by company ID
+            const key = app.companyId || app.company?.id; // Handle variance
+            if (!key) return acc;
+
+            const existing = acc[key];
+            if (!existing) {
+                acc[key] = app;
+            }
+            return acc;
+        }, {} as Record<string, any>)
     );
 
     return (
@@ -213,7 +222,7 @@ export default function NotificationsPage() {
                                 <button
                                     key={notif.id}
                                     onClick={() => {
-                                        markNotificationAsRead(notif.id);
+                                        markAsRead(notif.id);
                                         if (notif.application_id) {
                                             const app = applications.find(a => a.id === notif.application_id);
                                             if (app) setActiveConversation(app);
@@ -236,24 +245,24 @@ export default function NotificationsPage() {
                     {/* Conversation list - WhatsApp style */}
                     <div className="pb-4">
                         <h3 className="px-4 py-2 text-[9px] font-black text-slate-600 uppercase tracking-widest">Conversations</h3>
-                        {Object.values(
-                            filteredConversations.reduce((acc, app) => {
-                                // Group by company ID
-                                const existing = acc[app.companyId];
-                                if (!existing) {
-                                    acc[app.companyId] = app;
-                                }
-                                return acc;
-                            }, {} as Record<string, any>)
-                        ).map((app: any) => {
-                            const hasUnread = notifications.some(n => !n.is_read && n.application_id === app.id);
+                        {groupedConversations.map((app: any) => {
+                            const companyId = app.companyId || app.company?.id;
+                            // Check internal notifications state for badges
+                            const hasUnread = notifications.some(n =>
+                                !n.is_read && n.application_id &&
+                                // Check if notification app ID matches any app for this company
+                                getCompanyAppIds(app).includes(n.application_id)
+                            );
+
                             return (
                                 <button
-                                    key={app.companyId}
+                                    key={companyId}
                                     onClick={() => setActiveConversation(app)}
-                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.companyId === app.companyId ? 'bg-blue-600/10' : 'hover:bg-slate-800/30'}`}
+                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId)
+                                        ? 'bg-blue-600/10' : 'hover:bg-slate-800/30'}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.companyId === app.companyId ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId)
+                                        ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
                                         {app.companyLogoUrl ? (
                                             <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
@@ -313,7 +322,9 @@ export default function NotificationsPage() {
 
                         {/* Chat messages - Scrollable independently */}
                         <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ scrollbarWidth: 'none' }}>
-                            {messages.map((msg) => {
+                            {messages.filter((msg, index, self) =>
+                                index === self.findIndex((t) => (t.id === msg.id))
+                            ).map((msg) => {
                                 const isMe = msg.sender_type === 'professional';
                                 return (
                                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>

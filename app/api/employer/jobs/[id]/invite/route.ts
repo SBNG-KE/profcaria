@@ -33,33 +33,67 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ error: 'Professional ID required' }, { status: 400 });
         }
 
-        // Check if already invited
+        // Check if already applied or invited (in applications table)
         const { data: existing } = await supabaseAdmin
             .schema('employer')
-            .from('job_invites')
-            .select('id')
+            .from('applications')
+            .select('id, status')
             .eq('job_id', jobId)
-            .eq('professional_id', professionalId)
+            .eq('user_id', professionalId)
             .single();
 
         if (existing) {
-            return NextResponse.json({ success: true, message: 'Already invited' });
+            // If already exists, we could arguably ensure it's not 'rejected' or update status?
+            // For now, let's just return success to imply "Connection Exists"
+            return NextResponse.json({ success: true, message: 'Connection already exists' });
         }
 
-        // Insert Invite
-        const { error } = await supabaseAdmin
+        // Encrypt empty defaults for form data
+        const { encryptData } = require('@/lib/security'); // Lazy import or move to top if needed. 
+        // Note: Function imports should be at top. I will update imports in tool call.
+
+        // Insert Application with 'invited' status
+        const { data: appData, error } = await supabaseAdmin
             .schema('employer')
-            .from('job_invites')
+            .from('applications')
             .insert([{
                 job_id: jobId,
-                professional_id: professionalId,
-                status: 'pending'
-            }]);
+                user_id: professionalId,
+                status: 'invited',
+                enc_form_data: (await import('@/lib/security')).encryptData('{}'), // Dynamic import or consistent top import
+                enc_access_list: (await import('@/lib/security')).encryptData('[]')
+            }])
+            .select()
+            .single();
 
         if (error) {
-            console.error('Invite Error:', error);
+            console.error('Invite/Create Application Error:', error);
             return NextResponse.json({ error: 'Failed to send invite' }, { status: 500 });
         }
+
+        // Send Notification to Professional
+        // Need Company Data for the message
+        const { data: job } = await supabaseAdmin
+            .schema('employer')
+            .from('jobs')
+            .select('company_id, enc_title, companies(enc_company_name)')
+            .eq('id', jobId)
+            .single();
+
+        const { decryptData, encryptData: enc } = await import('@/lib/security');
+        const jobTitle = job?.enc_title ? decryptData(job.enc_title) : 'a job';
+        const companyName = job?.companies?.enc_company_name ? decryptData(job.companies.enc_company_name) : 'A company';
+
+        await supabaseAdmin
+            .schema('professional')
+            .from('notifications')
+            .insert([{
+                user_id: professionalId,
+                type: 'invite',
+                enc_message: enc(`${companyName} has invited you to apply for ${jobTitle}`),
+                application_id: appData.id,
+                is_read: false
+            }]);
 
         return NextResponse.json({ success: true });
 

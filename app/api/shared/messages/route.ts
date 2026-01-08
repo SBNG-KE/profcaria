@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 async function getSession() {
     const cookieStore = await cookies();
