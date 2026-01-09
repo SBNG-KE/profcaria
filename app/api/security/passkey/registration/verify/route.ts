@@ -32,10 +32,16 @@ export async function POST(req: Request) {
         const { uid, schema } = payload;
         const body = await req.json();
 
+        // Allow both www and non-www in production
+        const origin = req.headers.get('origin');
+        const validOrigins = process.env.NODE_ENV === 'production'
+            ? ['https://profcaria.com', 'https://www.profcaria.com']
+            : ['http://localhost:3000'];
+
         const verification = await verifyRegistrationResponse({
             response: body,
             expectedChallenge: challenge,
-            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://profcaria.com' : 'http://localhost:3000'),
+            expectedOrigin: validOrigins,
             expectedRPID: process.env.RP_ID || (process.env.NODE_ENV === 'production' ? 'profcaria.com' : 'localhost'),
         });
 
@@ -88,8 +94,16 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ error: 'Verification failed', verified: false }, { status: 400 });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Passkey Verify Error:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error("Passkey Verify Error Details:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
