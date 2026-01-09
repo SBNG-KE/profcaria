@@ -115,16 +115,23 @@ export async function sendJobInvite(to: string, jobTitle: string, companyName: s
         </p>
     `;
 
+    if (!resend) {
+        console.error('Email Error: Resend client not initialized. Check RESEND_API_KEY.');
+        throw new Error('Email service unavailable');
+    }
+
     try {
-        await resend.emails.send({
+        console.log(`[EMAIL] Attempting to send invite to ${to} via Resend...`);
+        const data = await resend.emails.send({
             from: 'Profcaria Talent <talent@profcaria.com>',
             to,
             subject: `Invited: ${jobTitle} at ${companyName}`,
             html: EmailWrapper(content)
         });
+        console.log('[EMAIL] Resend Response:', data);
         return { success: true };
     } catch (e: any) {
-        console.error('Email Error:', e);
+        console.error('Email Error Details:', JSON.stringify(e, null, 2));
         throw e;
     }
 }
