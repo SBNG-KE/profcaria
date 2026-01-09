@@ -139,37 +139,20 @@ function SettingsContent() {
                     setIsAutoRenew(!data.subscription.cancel_at_period_end);
                 }
 
-                // Infer Plan from latest payment because DB might lack 'plan' column
-                if (data.subscription?.plan) {
-                    setDerivedPlan(data.subscription.plan);
-                } else if (data.payments && data.payments.length > 0 && data.subscription?.status === 'active') {
-                    // Heuristic: Check latest payment amount vs USD pricing (approx)
+                // Use the plan returned by the API (which calls getCompanyPlan)
+                if (data.plan) {
+                    setDerivedPlan(data.plan.toLowerCase());
+                } else if (data.subscription?.plan_type) {
+                    setDerivedPlan(data.subscription.plan_type.toLowerCase());
+                } else if (!data.subscription && data.payments && data.payments.length > 0) {
+                    // Fallback heuristics for legacy data without subscription
                     const latest = data.payments[0];
-                    // Convert back to USD roughly to guess
-                    const exRate = parseFloat(process.env.NEXT_PUBLIC_USD_EXCHANGE_RATE || '130');
-                    // Or just compare relative magnitudes since we don't know rate at time of purchase
-                    // Pro is ~4x Basic. Enterprise is ~2.5x Pro.
-                    // Basic ~$25, Pro ~$99, Ent ~$250
-
-                    // We can't know for sure without the rate, but usually:
-                    // < $60 value -> Basic
-                    // < $180 value -> Pro
-                    // > $180 value -> Enterprise
-
-                    // Use current rate for estimation (not perfect but better than nothing)
-                    // Amount is in cents/subunits? Wait, payment.amount from Paystack is usually base unit if using USD? 
-                    // No, verification route saved `data.amount`. Paystack is usually subunits (kobo/cents).
-                    // But let's check recent payment table: `payment.amount / 100`. So it is subunits.
-
-                    // Rough check:
-                    // 25 * 100 * 100 = 250,000 (roughly KES 3,250 * 100) -> 325,000
-                    // 99 * 100 * 100 = 990,000 (roughly KES 12,800 * 100) -> 1,280,000
-
-                    // Simply:
                     const amount = latest.amount;
-                    if (amount > 2000000) setDerivedPlan('enterprise'); // > 20k KES 
-                    else if (amount > 800000) setDerivedPlan('pro');   // > 8k KES
+                    if (amount > 2000000) setDerivedPlan('enterprise');
+                    else if (amount > 800000) setDerivedPlan('pro');
                     else setDerivedPlan('basic');
+                } else {
+                    setDerivedPlan('free');
                 }
 
                 // Exchange rate is now handled by client-side hook
