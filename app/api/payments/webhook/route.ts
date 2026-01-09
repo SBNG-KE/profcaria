@@ -42,11 +42,48 @@ export async function POST(req: Request) {
                 }
 
                 const companyId = metadata?.companyId;
-                const plan = metadata?.plan || 'basic'; // Fallback if missing
+                let plan = metadata?.plan || 'basic'; // Fallback if missing
                 const billingCycle = metadata?.billingCycle || 'monthly';
 
+                // FALBACK: Infer Plan from Amount if usage falls back to 'basic'
+                // This protects against missing metadata by checking if the amount matches Pro/Enterprise prices
+                if (plan === 'basic') {
+                    try {
+                        const rate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+                        const paidAmount = data.amount; // in kobo/cents
+
+                        const getExpectedAmount = (priceEnv: string | undefined) => {
+                            const p = parseFloat(priceEnv || '0');
+                            if (p <= 0) return -1;
+                            // Checkout logic: Math.round(Math.round(p * rate * 100) / 100 * 100) ... wait
+                            // Checkout: display = p * rate. finalDisplay = round(display*100)/100. Paystack = finalDisplay * 100.
+                            // Effectively: Math.round( (Math.round(p * rate * 100)/100) * 100 )
+                            const display = p * rate;
+                            const finalDisplay = Math.round(display * 100) / 100;
+                            return Math.round(finalDisplay * 100);
+                        };
+
+                        const proOffer = getExpectedAmount(process.env.PRICE_PRO_MONTHLY_OFFER);
+                        const proReg = getExpectedAmount(process.env.PRICE_PRO_MONTHLY);
+                        const entOffer = getExpectedAmount(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER);
+                        const entReg = getExpectedAmount(process.env.PRICE_ENTERPRISE_MONTHLY);
+
+                        console.log(`Amount Inference Check: Paid ${paidAmount} vs Pro(${proOffer}/${proReg}) Ent(${entOffer}/${entReg})`);
+
+                        if (paidAmount === entOffer || paidAmount === entReg) {
+                            plan = 'enterprise';
+                            console.log('Inferring Plan: ENTERPRISE');
+                        } else if (paidAmount === proOffer || paidAmount === proReg) {
+                            plan = 'pro';
+                            console.log('Inferring Plan: PRO');
+                        }
+                    } catch (e) {
+                        console.error('Inference Error:', e);
+                    }
+                }
+
                 console.log('Parsed CompanyId:', companyId);
-                console.log('Parsed Plan:', plan);
+                console.log('Final Plan:', plan);
 
                 if (companyId) {
                     // 1. Log Payment
@@ -84,8 +121,8 @@ export async function POST(req: Request) {
                         plan_type: plan,
                         billing_cycle: billingCycle,
                         current_period_end: endDate.toISOString(),
-                        paystack_subscription_code: 'one_time_' + data.reference,
-                        paystack_email_token: 'one_time',
+                        paystack_subscription_code: data.subscription_code || ('one_time_' + data.reference),
+                        paystack_email_token: data.email_token || 'one_time',
                         // Reset usage on new payment
                         usage_jobs: 0,
                         usage_connections: 0,
@@ -97,29 +134,24 @@ export async function POST(req: Request) {
 
             case 'subscription.create': {
                 const data = event.data;
-                const companyId = data.metadata?.companyId; // Might persist from initial charge metadata?
+                const companyId = data.metadata?.companyId;
 
-                // If metadata is sparse in sub events, we might need a lookup via customer_code (which implies we stored it previously)
-                // For simplified flow, let's assume we can match via customer email or stored code.
+                // We MUST NOT insert a new row here because we lack Plan Metadata.
+                // This event often races with charge.success. 
+                // We strictly use this to ENRICH the existing active subscription with codes if needed.
 
-                // For now, let's upsert based on subscription code
-                // We might need to find companyId by email if metadata missing
                 let targetCompanyId = companyId;
 
-                if (!targetCompanyId && data.customer?.email) {
-                    // Find company by blind index email? Or just wait for associated charge.success to handle logging.
-                    // Subscriptions are trickier to link without metadata.
-                    // Paystack does usually carry over metadata if initial transaction had it.
-                }
-
                 if (targetCompanyId) {
-                    await supabaseAdmin.schema('employer').from('subscriptions').upsert({
-                        company_id: targetCompanyId,
-                        paystack_subscription_code: data.subscription_code,
-                        paystack_email_token: data.email_token,
-                        status: data.status,
-                        current_period_end: data.next_payment_date // Paystack sends ISO date usually
-                    });
+                    await supabaseAdmin.schema('employer')
+                        .from('subscriptions')
+                        .update({
+                            paystack_subscription_code: data.subscription_code,
+                            paystack_email_token: data.email_token,
+                            current_period_end: data.next_payment_date
+                        })
+                        .eq('company_id', targetCompanyId)
+                        .eq('status', 'active');
                 }
                 break;
             }

@@ -29,6 +29,12 @@ export async function GET(req: Request) {
         // Fetch Plan Details using our robust helper
         const { plan, subscription } = await getCompanyPlan(companyId);
 
+        console.log('--- BILLING API DEBUG ---');
+        console.log('Company:', companyId);
+        console.log('Fetched Subscription:', subscription);
+        console.log('Derived Plan:', plan?.name);
+        console.log('-------------------------');
+
         // Also fetch pricing config to return to frontend
         const { BILLING_PLANS } = await import('@/lib/billing-config');
 
