@@ -79,11 +79,9 @@ export async function POST(req: Request) {
                 .schema(schema)
                 .from(schema === 'professional' ? 'users' : 'companies')
                 .update({
+                    has_passkey: true,
                     requires_2fa: true
-                }) // We don't have 'has_passkey' column yet, relying on creds table check later
-                // Wait, I did NOT ask user to add 'has_passkey' column to user table, only the creds table.
-                // I should probably SKIP updating the user table for 'has_passkey' unless I know it exists.
-                // But I DO need to set 'requires_2fa: true' if this is their first method.
+                })
                 .eq('id', uid);
 
             // Cleanup challenge
