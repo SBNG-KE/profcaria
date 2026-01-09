@@ -11,8 +11,6 @@ export async function getCompanyPlan(companyId: string) {
         .select('*')
         .eq('company_id', companyId)
         .eq('status', 'active')
-        .eq('company_id', companyId)
-        .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();

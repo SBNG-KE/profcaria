@@ -27,7 +27,26 @@ export async function POST(req: Request) {
         switch (event.event) {
             case 'charge.success': {
                 const data = event.data;
-                const companyId = data.metadata?.companyId;
+                console.log('--- WEBHOOK CHARGE.SUCCESS ---');
+                console.log('Reference:', data.reference);
+                console.log('Raw Metadata:', data.metadata);
+
+                // Handle Metadata (Paystack sometimes sends it as a string if stringified on init, or object)
+                let metadata = data.metadata;
+                if (typeof metadata === 'string') {
+                    try {
+                        metadata = JSON.parse(metadata);
+                    } catch (e) {
+                        console.error('Failed to parse (double) stringified metadata:', e);
+                    }
+                }
+
+                const companyId = metadata?.companyId;
+                const plan = metadata?.plan || 'basic'; // Fallback if missing
+                const billingCycle = metadata?.billingCycle || 'monthly';
+
+                console.log('Parsed CompanyId:', companyId);
+                console.log('Parsed Plan:', plan);
 
                 if (companyId) {
                     // 1. Log Payment
@@ -39,9 +58,17 @@ export async function POST(req: Request) {
                         status: data.status
                     });
 
-                    // 2. Grant Access (Upsert Subscription with Plan)
-                    const plan = data.metadata?.plan || 'basic'; // Fallback if missing
-                    const billingCycle = data.metadata?.billingCycle || 'monthly';
+                    // 2. Invalidate Previous Active Subscriptions (Strict Upgrade/Downgrade)
+                    // This ensures the new one we are about to insert is the ONLY active one.
+                    await supabaseAdmin
+                        .schema('employer')
+                        .from('subscriptions')
+                        .update({ status: 'replaced' })
+                        .eq('company_id', companyId)
+                        .eq('status', 'active');
+
+                    // 3. Grant Access (Insert New Subscription)
+                    // Use the parsed variables from above, do not redeclare.
 
                     // Calculate end date based on cycle
                     const endDate = new Date();
