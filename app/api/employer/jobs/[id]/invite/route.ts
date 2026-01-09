@@ -21,6 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const companyId = payload.uid as string;
 
         const { professionalId } = await req.json();
+        console.log(`[INVITE] Request for Job ${jobId} to Professional ${professionalId}`);
 
         // 1. Get Job Details & Verify Ownership
         const { data: job } = await supabaseAdmin
@@ -56,6 +57,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             // Generate Short Link
             const link = await createShortLink(longLink);
 
+            console.log(`[INVITE] Sending email to ${professional.email} for job ${job.title}`);
+
             // 4. Send Email
             await sendJobInvite(
                 professional.email,
@@ -63,6 +66,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 company?.company_name || 'Profcaria Employer',
                 link
             );
+        } else {
+            console.warn(`[INVITE] Professional ${professionalId} has no email or not found. Data:`, professional);
         }
 
         // 5. Create Notification record (Existing logic)
