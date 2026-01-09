@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         console.log(`[INVITE] Request for Job ${jobId} to Professional ${professionalId}`);
 
         // 1. Get Job Details & Verify Ownership
-        const { data: job } = await supabaseAdmin
+        const { data: job, error: jobError } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
             .select('title')
@@ -32,7 +32,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             .eq('company_id', companyId)
             .single();
 
-        if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+        if (jobError || !job) {
+            console.error('Job Fetch Error:', jobError);
+            return NextResponse.json({
+                error: `Job not found. JobID: ${jobId}, MyCompanyID: ${companyId}, DBError: ${jobError?.message || 'None'}`
+            }, { status: 404 });
+        }
 
         // 2. Get Professional Details (Email)
         const { data: professional } = await supabaseAdmin
