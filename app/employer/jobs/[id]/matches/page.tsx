@@ -52,11 +52,18 @@ export default function JobMatchesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ professionalId: candidateId })
             });
-            if (res.ok) {
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
                 setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, invited: true } : c));
+            } else {
+                alert(`Failed to send invite: ${data.error || 'Unknown error'}`);
+                console.error("Invite response error", data);
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error("Invite error", e);
+            alert(`Network error: ${e.message}`);
         } finally {
             setInvitingId(null);
         }
