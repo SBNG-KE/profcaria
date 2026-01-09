@@ -47,22 +47,33 @@ export default function FindJobsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token })
             });
+
             if (res.ok) {
                 const data = await res.json();
                 if (data.jobId) {
                     setLinkedJobId(data.jobId);
-                    fetchJobs(); // Fetch all, we will filter in render or effect
-                } else {
-                    fetchJobs();
+
+                    // Fetch THIS specific job to ensure it exists in the list
+                    // (The general feed might not include it depending on algos)
+                    const jobRes = await fetch(`/api/professional/jobs/${data.jobId}`);
+                    if (jobRes.ok) {
+                        const { job } = await jobRes.json();
+                        if (job) {
+                            setJobs([job]); // Show ONLY this job initially
+                            setLoading(false);
+                            return;
+                        }
+                    }
                 }
-            } else {
-                fetchJobs();
             }
+            // Fallback if verification fails or job fetch fails
+            fetchJobs();
         } catch (e) {
-            console.error(e);
+            console.error('Link verification error', e);
             fetchJobs();
         }
     };
+
 
     const fetchJobs = async () => {
         try {

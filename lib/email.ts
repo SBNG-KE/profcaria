@@ -47,12 +47,12 @@ const EmailWrapper = (content: string) => `
                     </div>
 
                     <!-- Footer -->
-                    <div style="text-align: center; margin-top: 32px; color: #475569; font-size: 13px;">
-                        <p style="margin: 0;">&copy; ${new Date().getFullYear()} Profcaria. All rights reserved.</p>
-                        <p style="margin: 8px 0 0 0;">You received this because you are part of our network.</p>
-                    </div>
+                <div style="text-align: center; margin-top: 32px; color: #64748b; font-size: 12px;">
+                    <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Profcaria. All rights reserved.</p>
+                    <p style="margin: 0;">Nairobi, Kenya</p>
                 </div>
-            </td>
+            </div>
+        </td>
         </tr>
     </table>
 </body>
@@ -97,12 +97,9 @@ export async function sendJobInvite(to: string, jobTitle: string, companyName: s
     }
 
     const content = `
-        <div style="text-align: center;">
-            <div style="display: inline-block; background-color: #3b82f6; color: #ffffff; width: 48px; height: 48px; border-radius: 50%; line-height: 48px; font-size: 24px; margin-bottom: 24px;">🚀</div>
-        </div>
         <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">You're Invited!</h1>
         <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
-            <strong>${companyName}</strong> thinks you'd be a great fit for their open role:
+            <strong>${companyName}</strong> has invited you to apply for their open role:
         </p>
         <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
             <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
