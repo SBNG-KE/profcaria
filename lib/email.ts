@@ -132,3 +132,42 @@ export async function sendJobInvite(to: string, jobTitle: string, companyName: s
         throw e;
     }
 }
+
+export async function sendUnreadMessageNotification(to: string, senderName: string, jobTitle: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Unread Message to ${to} from ${senderName}`);
+        return { success: true };
+    }
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">New Message</h1>
+        <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+            You have a new message from <strong>${senderName}</strong> regarding <strong>${jobTitle}</strong>.
+        </p>
+        <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0; color: #cbd5e1; font-size: 14px; font-style: italic;">
+                "They are waiting for your reply..."
+            </p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);">Go to Messages</a>
+        </div>
+        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center; line-height: 1.5;">
+            We sent this because you haven't been active recently.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Notifications <notifications@profcaria.com>',
+            to,
+            subject: `New Message from ${senderName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        // Don't throw for notifications, just log
+        return { success: false, error: e.message };
+    }
+}

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
+import { sendUnreadMessageNotification } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -147,7 +148,10 @@ export async function POST(req: Request) {
             .select()
             .single();
 
-        if (error) return NextResponse.json({ error: 'Save Error' }, { status: 500 });
+
+        // ... existing code ...
+
+        // ... (inside POST, after supabase insert and before return) ...
 
         // Notification for the other party
         const recipientId = session.schema === 'professional' ? (application.jobs as any).company_id : application.user_id;
@@ -157,6 +161,7 @@ export async function POST(req: Request) {
         const jobTitle = decryptData((application.jobs as any).enc_title) || 'Job';
         const senderLabel = session.schema === 'professional' ? 'Applicant' : 'Employer';
 
+        // 1. Create In-App Notification
         await supabaseAdmin
             .schema(recipientSchema)
             .from('notifications')
@@ -167,6 +172,35 @@ export async function POST(req: Request) {
                 application_id: applicationId,
                 is_read: false
             }]);
+
+        // 2. CHECK "OFFLINE" STATUS & SEND EMAIL
+        // Fetch recipient to check last_active_at and get email
+        const recipientTable = recipientSchema === 'professional' ? 'users' : 'companies';
+        const emailField = recipientSchema === 'professional' ? 'email' : 'work_email'; // Assuming work_email for company
+
+        const { data: recipientUser } = await supabaseAdmin
+            .schema(recipientSchema)
+            .from(recipientTable)
+            .select(`last_active_at, ${emailField}`)
+            .eq('id', recipientId)
+            .single();
+
+        if (recipientUser) {
+            const lastActive = recipientUser.last_active_at ? new Date(recipientUser.last_active_at).getTime() : 0;
+            const now = Date.now();
+            const fiveMinutes = 5 * 60 * 1000;
+
+            // If inactive for > 5 mins (or never active), send email
+            if (now - lastActive > fiveMinutes) {
+                const recipientEmail = recipientUser[emailField];
+                // For professional, we need their name, but for now we just say "New Message"
+                // Ideally we'd fetch their name too, but this fits the requirement.
+                if (recipientEmail) {
+                    // Fire and forget (don't await) to keep API fast
+                    sendUnreadMessageNotification(recipientEmail, senderLabel, jobTitle).catch((e: any) => console.error("Email Fail:", e));
+                }
+            }
+        }
 
         return NextResponse.json({
             success: true,

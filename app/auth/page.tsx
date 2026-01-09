@@ -842,7 +842,6 @@ function AuthContent() {
                     setForgotPasswordOpen(false);
                     setForgotPasswordSuccess(false);
                     setForgotPasswordError(null);
-                    setStep('email');
                 }}
                 userType={forgotPasswordType}
                 email={forgotPasswordEmail}
