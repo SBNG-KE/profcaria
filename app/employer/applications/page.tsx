@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, Suspense } from 'react';
 export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, Send, UserCircle, Building2
+    FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, Send, UserCircle, Building2, ChevronLeft
 } from 'lucide-react';
 
 interface Application {
@@ -171,7 +171,7 @@ function ApplicationsPageContent() {
     };
 
     return (
-        <div className="p-8 h-screen flex flex-col overflow-hidden">
+        <div className="p-4 md:p-8 h-screen flex flex-col overflow-hidden">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 shrink-0 mb-8">
                 <div className="text-left">
                     <div className="flex items-center gap-2 text-emerald-400 mb-2">
@@ -195,7 +195,7 @@ function ApplicationsPageContent() {
 
             <div className="flex gap-6 flex-1 min-h-0">
                 {/* LEFT LIST PANEL */}
-                <div className="w-full lg:w-1/3 flex flex-col bg-[#0f172a]/50 border border-slate-800 rounded-[32px] overflow-hidden">
+                <div className={`w-full lg:w-1/3 flex-col bg-[#0f172a]/50 border border-slate-800 rounded-[32px] overflow-hidden ${selectedApp ? 'hidden lg:flex' : 'flex'}`}>
                     <div className="p-4 border-b border-slate-800 space-y-4">
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
@@ -268,9 +268,16 @@ function ApplicationsPageContent() {
                 </div>
 
                 {/* RIGHT DETAIL PANEL */}
-                <div className="flex-1 bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden flex flex-col relative w-full h-full">
+                <div className={`flex-1 bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden flex-col relative w-full h-full ${selectedApp ? 'flex' : 'hidden lg:flex'}`}>
                     {selectedApp ? (
                         <div className="flex-1 flex flex-col h-full overflow-hidden">
+                            {/* Mobile Back Button */}
+                            <div className="lg:hidden p-4 border-b border-slate-800 flex items-center gap-2 bg-slate-900/50">
+                                <button onClick={() => setSelectedApp(null)} className="p-2 -ml-2 text-slate-400 hover:text-white">
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <span className="font-bold text-white">Back to List</span>
+                            </div>
                             {/* Header */}
                             <div className="p-8 border-b border-slate-800 shrink-0 flex items-start justify-between bg-slate-900/30">
                                 <div className="flex items-center gap-6">

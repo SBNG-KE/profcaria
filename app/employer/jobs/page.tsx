@@ -76,8 +76,9 @@ export default function EmployerJobsPage() {
     });
 
     return (
-        <div className="p-8 max-w-6xl mx-auto space-y-8 pb-32">
-            <header className="flex items-center justify-between border-b border-slate-800 pb-8">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
+            {/* Header Section */}
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
                 <div className="text-left">
                     <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Job Management</h1>
                     <p className="text-slate-400 mt-2">Manage your active postings and review candidates.</p>

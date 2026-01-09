@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
+import { checkLimit, incrementUsage } from '@/lib/billing';
 
 export const runtime = 'nodejs';
 
@@ -27,11 +28,25 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Only employers can create jobs' }, { status: 403 });
         }
 
+        // Check Limits
+        const canPostJob = await checkLimit(uid as string, 'jobs');
+        if (!canPostJob) {
+            return NextResponse.json({ error: 'Job posting limit reached for your current plan.' }, { status: 403 });
+        }
+
         const body = await req.json();
         const { title, description, formSchema, location_type, location } = body;
 
         if (!title || !description || !formSchema) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Check Restricted Location Access
+        if (body.is_restricted) {
+            const { plan } = await import('@/lib/billing').then(m => m.getCompanyPlan(uid as string));
+            if (!plan.limits.restrictedLocations) {
+                return NextResponse.json({ error: 'Restricted locations require a Basic plan or higher.' }, { status: 403 });
+            }
         }
 
         // Encrypt everything
@@ -69,6 +84,9 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ success: true, jobId: data.id });
+
+        // Asynchronously update usage
+        await incrementUsage(uid as string, 'jobs');
 
     } catch (error: any) {
         console.error('API Error:', error);

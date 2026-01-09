@@ -518,11 +518,11 @@ export default function ProfessionalHome() {
                 ${activeDocument ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}
             `}
       >
-        <div className="flex flex-wrap items-center justify-between p-6 gap-4 border-b border-slate-800/50 shrink-0 z-10 bg-[#050b14]/50 backdrop-blur-md sticky top-0">
-          <div className="flex flex-wrap items-center gap-4 md:gap-6">
+        <div className="flex flex-wrap items-center gap-4 p-4 md:p-6 border-b border-slate-800/50 shrink-0 z-10 bg-[#050b14]/50 backdrop-blur-md sticky top-0 justify-between">
+          <div className="flex flex-wrap items-center gap-3 md:gap-6">
             <button
               onClick={saveContent}
-              className={`relative flex items-center justify-center w-12 h-12 rounded-full border border-slate-700/30 bg-slate-800/50 transition-all duration-300 group ${isSaving ? 'scale-90 bg-blue-500/20' : 'hover:scale-110 active:scale-95'}`}
+              className={`relative flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full border border-slate-700/30 bg-slate-800/50 transition-all duration-300 group ${isSaving ? 'scale-90 bg-blue-500/20' : 'hover:scale-110 active:scale-95'}`}
             >
               {isSaving && <span className="absolute inset-0 rounded-full animate-ping bg-blue-400/30"></span>}
               <span className={`text-[10px] font-bold text-slate-500 group-hover:text-blue-400 transition-colors opacity-30 group-hover:opacity-100 ${isSaving ? 'text-blue-400 opacity-100' : ''}`}>SAVE</span>
@@ -530,11 +530,11 @@ export default function ProfessionalHome() {
 
             <div className="w-px h-8 bg-slate-800 hidden sm:block"></div>
 
-            <div className="flex items-center gap-1 bg-slate-900/50 rounded-lg p-1 border border-slate-800">
+            <div className="flex items-center gap-1 bg-slate-900/50 rounded-lg p-1 border border-slate-800 overflow-x-auto max-w-[200px] md:max-w-none scrollbar-hide">
               <button onClick={() => execCommand('justifyLeft')} className={`p-2 transition-colors rounded ${formats.alignLeft ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><AlignLeft size={18} /></button>
               <button onClick={() => execCommand('justifyCenter')} className={`p-2 transition-colors rounded ${formats.alignCenter ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><AlignCenter size={18} /></button>
               <button onClick={() => execCommand('justifyRight')} className={`p-2 transition-colors rounded ${formats.alignRight ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><AlignRight size={18} /></button>
-              <div className="w-px h-4 bg-slate-700 mx-1"></div>
+              <div className="w-px h-4 bg-slate-700 mx-1 shrink-0"></div>
               <button onClick={() => execCommand('insertOrderedList')} className={`p-2 transition-colors rounded ${formats.orderedList ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><ListOrdered size={18} /></button>
               <button onClick={() => execCommand('insertUnorderedList')} className={`p-2 transition-colors rounded ${formats.unorderedList ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-blue-400'}`}><List size={18} /></button>
             </div>
@@ -675,7 +675,7 @@ export default function ProfessionalHome() {
           </button>
         </div>
 
-        <ScrollableContainer className="p-10 flex-1">
+        <ScrollableContainer className="p-4 md:p-8 flex-1">
           <div className="max-w-4xl mx-auto pb-40">
             <div className="mb-8 border-b border-slate-800 pb-4">
               <h1 className="text-4xl font-black text-white uppercase tracking-tight">{activeDocument || 'Untitled'}</h1>

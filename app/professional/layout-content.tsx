@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'reac
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, Search, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, UserCircle, Cable, Plus, Power
+    Briefcase, UserCircle, Cable, Plus, Power, Menu, X
 } from 'lucide-react';
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
@@ -84,7 +84,7 @@ const ScrollableContainer = ({ children, className = "" }: { children: ReactNode
 };
 
 export default function ProfessionalLayoutContent({ children }: { children: React.ReactNode }) {
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false); // Default to closed (mobile first)
     const [userData, setUserData] = useState<any>(null);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -96,6 +96,13 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
 
     // Consume Context
     const { unreadCount } = useNotificationContext();
+
+    // Initialize sidebar state based on screen size
+    useEffect(() => {
+        if (window.innerWidth >= 768) {
+            setSidebarOpen(true);
+        }
+    }, []);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -140,6 +147,13 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
         };
         fetchJobStats();
     }, []);
+
+    // Auto-close sidebar on mobile when navigating
+    useEffect(() => {
+        if (window.innerWidth < 768) {
+            setSidebarOpen(false);
+        }
+    }, [pathname]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -217,10 +231,35 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
 
     return (
         <div className="flex h-screen bg-[#050b14] text-slate-200 font-sans overflow-hidden selection:bg-blue-500/30 theme-professional">
+
+
+            {/* SIDEBAR BACKDROP (Mobile) */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99] md:hidden animate-in fade-in duration-200"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* SIDEBAR */}
-            <aside className={`relative flex flex-col border-r border-slate-800 bg-[#0f172a]/80 backdrop-blur-xl transition-all duration-300 ease-in-out z-30 ${sidebarOpen ? 'w-72' : 'w-24'}`}>
-                <button onClick={() => setSidebarOpen(!sidebarOpen)} className="absolute -right-3 top-8 z-40 bg-slate-800 border border-slate-600 rounded-full p-1.5 text-slate-300 hover:text-white shadow-xl">
+            <aside className={`
+                fixed md:relative inset-y-0 left-0 h-full
+                flex flex-col border-r border-slate-800 bg-[#0f172a]/95 backdrop-blur-xl transition-all duration-300 ease-in-out z-[100]
+                ${sidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full md:translate-x-0 md:w-24'}
+            `}>
+                <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="absolute -right-3 top-8 z-40 bg-slate-800 border border-slate-600 rounded-full p-1.5 text-slate-300 hover:text-white shadow-xl hidden md:flex"
+                >
                     {sidebarOpen ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+                </button>
+
+                {/* Mobile Close Button inside Sidebar */}
+                <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="absolute right-4 top-3 p-1.5 bg-slate-800/50 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors md:hidden border border-slate-700/50"
+                >
+                    <X size={16} />
                 </button>
 
                 <div className="flex flex-col items-center pt-8 px-4 shrink-0">
@@ -285,20 +324,34 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
 
             {/* MAIN CONTENT */}
             <main className="flex-1 relative flex flex-col h-full overflow-hidden">
-                {showBackButton && (
-                    <div className="absolute top-6 left-8 z-50">
+                <div className={`w-full px-4 md:px-8 pt-6 pb-2 z-50 shrink-0 flex items-center justify-between sticky top-0 ${!showBackButton ? 'md:hidden' : ''}`}>
+                    {/* MOBILE MENU ISLAND (In Flow) */}
+                    <div className="md:hidden flex items-center gap-3 p-1.5 pr-4 bg-[#0f172a]/90 backdrop-blur-xl border border-slate-700/50 rounded-full shadow-lg">
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="p-2 bg-slate-800 rounded-full text-slate-300 hover:text-white border border-slate-700 active:scale-95 transition-all"
+                        >
+                            <Menu size={16} />
+                        </button>
+                        <span className="font-bold text-white text-sm tracking-tight pl-1">Profcaria</span>
+                    </div>
+
+                    {/* DESKTOP BACK BUTTON */}
+                    {showBackButton && (
                         <button
                             onClick={() => router.back()}
-                            className="bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 text-slate-400 hover:text-white p-2.5 rounded-xl backdrop-blur-md transition-all active:scale-95 shadow-lg group flex items-center gap-2"
+                            className="hidden md:flex items-center gap-2 text-slate-400 hover:text-white transition-colors group w-fit"
                         >
-                            <ChevronLeft size={18} />
-                            <span className="text-xs font-bold uppercase tracking-widest max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">Back</span>
+                            <div className="p-2 rounded-full bg-slate-800/50 group-hover:bg-slate-800 transition-colors">
+                                <ChevronLeft size={16} />
+                            </div>
+                            <span className="text-sm font-medium">Back</span>
                         </button>
-                    </div>
-                )}
+                    )}
+                </div>
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
                 {pathname.includes('/notifications') || pathname.includes('/messages') ? (
-                    <div className="w-full h-full relative z-10">{children}</div>
+                    <div className="w-full flex-1 min-h-0 relative z-10">{children}</div>
                 ) : (
                     <ScrollableContainer className="w-full relative z-10">
                         {children}

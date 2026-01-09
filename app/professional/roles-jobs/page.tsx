@@ -98,10 +98,10 @@ export default function RolesJobsPage() {
     });
 
     return (
-        <div className="p-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="mb-8">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
+            {/* Header Section */}
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
+                <div className="text-left">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="p-4 bg-blue-500/20 rounded-2xl text-blue-400">
                             <Briefcase size={32} />
@@ -111,59 +111,60 @@ export default function RolesJobsPage() {
                             <p className="text-slate-400 text-sm mt-1">View your career history and current positions</p>
                         </div>
                     </div>
-
-                    {/* Filter Buttons */}
-                    <div className="flex gap-3 flex-wrap">
-                        <button
-                            onClick={() => setFilter('all')}
-                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                                }`}
-                        >
-                            All ({connections.length})
-                        </button>
-                        <button
-                            onClick={() => setFilter('current')}
-                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'current'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                                }`}
-                        >
-                            Current ({connections.filter(c => !isTerminated(c)).length})
-                        </button>
-                        <button
-                            onClick={() => setFilter('resigned')}
-                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'resigned'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                                }`}
-                        >
-                            Resigned ({connections.filter(c => c.status === 'resigned').length})
-                        </button>
-                        <button
-                            onClick={() => setFilter('involuntary')}
-                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'involuntary'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                                }`}
-                        >
-                            Involuntary ({connections.filter(c => c.status === 'involuntary' || c.status === 'terminated').length})
-                        </button>
-                        <button
-                            onClick={() => setFilter('mutual')}
-                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'mutual'
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                                }`}
-                        >
-                            Mutual ({connections.filter(c => c.status === 'mutual').length})
-                        </button>
-                    </div>
                 </div>
+                {/* Filter Buttons */}
+                <div className="flex gap-3 flex-wrap">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        All ({connections.length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('current')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'current'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        Current ({connections.filter(c => !isTerminated(c)).length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('resigned')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'resigned'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        Resigned ({connections.filter(c => c.status === 'resigned').length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('involuntary')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'involuntary'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        Involuntary ({connections.filter(c => c.status === 'involuntary' || c.status === 'terminated').length})
+                    </button>
+                    <button
+                        onClick={() => setFilter('mutual')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'mutual'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            }`}
+                    >
+                        Mutual ({connections.filter(c => c.status === 'mutual').length})
+                    </button>
+                </div >
+            </header>
 
-                {/* Jobs Grid */}
-                {isLoading ? (
+            {/* Jobs Grid */}
+            {
+                isLoading ? (
                     <div className="text-center py-20 text-slate-500 animate-pulse">Loading positions...</div>
                 ) : filteredConnections.length === 0 ? (
                     <div className="text-center py-20">
@@ -237,8 +238,8 @@ export default function RolesJobsPage() {
                             );
                         })}
                     </div>
-                )}
-            </div>
-        </div>
+                )
+            }
+        </div >
     );
 }

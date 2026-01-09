@@ -52,7 +52,7 @@ export default function AnalyticsDashboard() {
         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
 
             {/* 1. TOP STATS ROW */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                     <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
                         <Users size={14} className="text-blue-500" /> Total Applicants
@@ -88,7 +88,7 @@ export default function AnalyticsDashboard() {
             </div>
 
             {/* 2. THE WAR ROOM MAP & TRENDS */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
 
                 {/* GEOGRAPHIC HEATMAP (Simple Bar for MVP, Map Visual Planned) */}
                 <div className="lg:col-span-2 bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] min-h-[400px]">

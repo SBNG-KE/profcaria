@@ -210,12 +210,28 @@ function SettingsContent() {
     const handleToggleAutoRenew = async () => {
         const newState = !isAutoRenew;
         setIsAutoRenew(newState);
-        // await fetch('/api/employer/billing/autorenew', { body: JSON.stringify({ active: newState }) ... });
+        try {
+            const res = await fetch('/api/employer/billing/autorenew', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active: newState })
+            });
 
-        if (newState) {
-            setMessage({ type: 'success', text: 'Automatic payments enabled. Subscription will auto-renew.' });
-        } else {
-            setMessage({ type: 'success', text: 'Switched to manual payments. Subscription will expire at term end.' });
+            if (!res.ok) {
+                const data = await res.json();
+                setIsAutoRenew(!newState); // Revert
+                setMessage({ type: 'error', text: data.error || 'Failed to update subscription status.' });
+                return;
+            }
+
+            if (newState) {
+                setMessage({ type: 'success', text: 'Automatic payments enabled. Subscription will auto-renew.' });
+            } else {
+                setMessage({ type: 'success', text: 'Switched to manual payments. Subscription will expire at term end.' });
+            }
+        } catch (error) {
+            setIsAutoRenew(!newState); // Revert
+            setMessage({ type: 'error', text: 'Connection failed.' });
         }
     };
 

@@ -28,6 +28,13 @@ export async function GET(req: Request) {
 
         const employerId = auth.uid;
 
+
+        // Check Plan Limits for Analytics
+        const { plan } = await import('@/lib/billing').then(m => m.getCompanyPlan(employerId as string));
+        const historyYears = plan.limits.analyticsHistoryYears || 1;
+        const minDate = new Date();
+        minDate.setFullYear(minDate.getFullYear() - historyYears);
+
         // 1. Fetch Key Stats
         // A. Total Jobs (Active vs Closed)
         const { data: jobs } = await supabaseAdmin
@@ -53,6 +60,7 @@ export async function GET(req: Request) {
                 .from('applications')
                 .select('user_id, created_at, status, job_id')
                 .in('job_id', jobIds)
+                .gte('created_at', minDate.toISOString()) // Apply Date Limit
                 .order('created_at', { ascending: false })
                 .limit(500);
 
@@ -83,16 +91,34 @@ export async function GET(req: Request) {
             try {
                 const plain = decryptData(p.enc_location_details);
                 if (plain) {
-                    let country = '';
+                    let country = 'Unknown';
+
                     if (plain.trim().startsWith('{')) {
-                        const parsed = JSON.parse(plain);
-                        country = parsed.country || 'Unknown';
+                        try {
+                            const parsed = JSON.parse(plain);
+                            // Prioritize country, then city if country missing
+                            country = parsed.country || parsed.city || 'Unknown';
+                        } catch (e) {
+                            // If JSON parse fails, treat as string
+                            country = plain.split(',').pop()?.trim() || 'Unknown';
+                        }
                     } else {
-                        country = plain.split(',').pop()?.trim() || 'Unknown';
+                        // Legacy string format: "City, Country" or just "Address"
+                        const parts = plain.split(',');
+                        if (parts.length > 1) {
+                            country = parts.pop()?.trim() || 'Unknown';
+                        } else {
+                            country = plain.trim() || 'Unknown';
+                        }
                     }
 
-                    userLocationMap[p.user_id] = country;
-                    countryStats[country] = (countryStats[country] || 0) + 1;
+                    // Clean up country name if needed (e.g. remove trailing periods)
+                    country = country.replace(/\.$/, '');
+
+                    if (country && country !== 'null' && country !== 'undefined') {
+                        userLocationMap[p.user_id] = country;
+                        countryStats[country] = (countryStats[country] || 0) + 1;
+                    }
                 }
             } catch { }
         });

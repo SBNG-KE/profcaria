@@ -41,5 +41,17 @@ export const Paystack = {
             body: JSON.stringify({ code, token })
         });
         return res.json();
+    },
+
+    enableSubscription: async (code: string, token: string) => {
+        const res = await fetch('https://api.paystack.co/subscription/enable', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ code, token })
+        });
+        return res.json();
     }
 };

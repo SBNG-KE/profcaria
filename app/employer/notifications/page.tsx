@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, MessageSquare, ChevronRight, Zap, Send, Shield, Clock, X, Briefcase, UserCircle, Search, CheckCheck, User } from 'lucide-react';
+import { Bell, MessageSquare, ChevronRight, ChevronLeft, Zap, Send, Shield, Clock, X, Briefcase, UserCircle, Search, CheckCheck, User } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 
 export default function EmployerNotifications() {
@@ -194,7 +194,7 @@ export default function EmployerNotifications() {
     return (
         <div className="flex h-full w-full bg-[#050b14] text-slate-200 overflow-hidden font-sans">
             {/* LEFT SIDEBAR - Fixed, doesn't scroll with content */}
-            <aside className="w-[380px] h-full border-r border-slate-800 flex flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0">
+            <aside className={`md:w-[380px] h-full border-r border-slate-800 flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0 w-full ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 <header className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#1e293b]/20 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white">
@@ -300,7 +300,7 @@ export default function EmployerNotifications() {
             </aside>
 
             {/* MAIN CHAT AREA - Separate scroll context */}
-            <main className="flex-1 flex flex-col relative bg-[#050b14] min-w-0">
+            <main className={`flex-1 flex-col relative bg-[#050b14] min-w-0 ${activeConversation ? 'flex' : 'hidden md:flex'} w-full`}>
                 {!activeConversation ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                         <div className="w-24 h-24 bg-[#0b121e] border border-slate-800 rounded-full flex items-center justify-center mb-6">
@@ -314,6 +314,12 @@ export default function EmployerNotifications() {
                         {/* Chat header - Fixed */}
                         <header className="px-6 py-4 border-b border-slate-800 bg-[#0b121e]/80 backdrop-blur-md flex items-center justify-between shrink-0 z-10">
                             <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => setActiveConversation(null)}
+                                    className="md:hidden p-2 -ml-2 text-slate-400 hover:text-white"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
                                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center overflow-hidden shrink-0">
                                     {activeConversation.user?.profileImageUrl ? (
                                         <img src={activeConversation.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
@@ -326,7 +332,7 @@ export default function EmployerNotifications() {
                                     <p className="text-xs text-emerald-400">{activeConversation.job?.title || 'Job Thread'}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setActiveConversation(null)} className="p-2 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-all">
+                            <button onClick={() => setActiveConversation(null)} className="hidden md:flex p-2 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-all">
                                 <X size={20} />
                             </button>
                         </header>

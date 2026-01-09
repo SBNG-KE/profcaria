@@ -39,16 +39,30 @@ export async function POST(req: Request) {
                         status: data.status
                     });
 
-                    // 2. Grant 30 Days Access (Mock Subscription for One-Time Payment)
-                    const thirtyDaysFromNow = new Date();
-                    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+                    // 2. Grant Access (Upsert Subscription with Plan)
+                    const plan = data.metadata?.plan || 'basic'; // Fallback if missing
+                    const billingCycle = data.metadata?.billingCycle || 'monthly';
+
+                    // Calculate end date based on cycle
+                    const endDate = new Date();
+                    if (billingCycle === 'yearly') {
+                        endDate.setFullYear(endDate.getFullYear() + 1);
+                    } else {
+                        endDate.setMonth(endDate.getMonth() + 1);
+                    }
 
                     await supabaseAdmin.schema('employer').from('subscriptions').upsert({
                         company_id: companyId,
                         status: 'active',
-                        current_period_end: thirtyDaysFromNow.toISOString(),
-                        paystack_subscription_code: 'one_time_' + data.reference, // Dummy code for one-time
-                        paystack_email_token: 'one_time'
+                        plan_type: plan,
+                        billing_cycle: billingCycle,
+                        current_period_end: endDate.toISOString(),
+                        paystack_subscription_code: 'one_time_' + data.reference,
+                        paystack_email_token: 'one_time',
+                        // Reset usage on new payment
+                        usage_jobs: 0,
+                        usage_connections: 0,
+                        usage_top_matches: 0
                     });
                 }
                 break;
