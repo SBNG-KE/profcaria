@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Plus, Briefcase, Users, Edit3, Trash2, Power,
-    MoreHorizontal, ChevronRight, Layout, Zap, Clock
+    MoreHorizontal, ChevronRight, Layout, Zap, Clock, Share2
 } from 'lucide-react';
 
 interface Job {
@@ -22,6 +22,7 @@ export default function EmployerJobsPage() {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'active' | 'closed'>('all');
+    const [copiedId, setCopiedId] = useState<string | null>(null);
 
     const fetchJobs = async () => {
         try {
@@ -157,6 +158,34 @@ export default function EmployerJobsPage() {
                                 </div>
 
                                 <div className="flex items-center gap-3">
+                                    {/* Share Button (Active Only) */}
+                                    {/* Share Button (Active Only) */}
+                                    {job.isActive && (
+                                        <div className="flex items-center gap-2">
+                                            {copiedId === job.id && (
+                                                <span className="text-emerald-400 text-[10px] font-bold uppercase animate-in fade-in slide-in-from-right-2">Link Copied!</span>
+                                            )}
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const res = await fetch(`/api/employer/jobs/${job.id}/share`);
+                                                        const data = await res.json();
+                                                        if (data.link) {
+                                                            navigator.clipboard.writeText(data.link);
+                                                            setCopiedId(job.id);
+                                                            setTimeout(() => setCopiedId(null), 2500);
+                                                        }
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                    }
+                                                }}
+                                                className={`p-3 rounded-xl transition-all ${copiedId === job.id ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
+                                                title="Copy Share Link"
+                                            >
+                                                <Share2 size={18} />
+                                            </button>
+                                        </div>
+                                    )}
                                     <button
                                         onClick={() => router.push(`/employer/jobs/create?id=${job.id}`)}
                                         className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"

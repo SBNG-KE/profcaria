@@ -1,111 +1,130 @@
 
 import { Resend } from 'resend';
 
-// Initialize Resend with API Key (Production) or Mock (Development)
+// Initialize Resend
 const resend = process.env.RESEND_API_KEY
     ? new Resend(process.env.RESEND_API_KEY)
     : null;
 
-interface EmailConfig {
-    to: string;
-    code: string;
-}
+// --- RESPONSIVE EMAIL TEMPLATE BUILDER ---
 
-/**
- * Sends a Secure OTP via Resend.
- * Uses official Resend SDK for best-in-class delivery and security.
- */
+const getBaseStyles = () => `
+    @media only screen and (max-width: 600px) {
+        .container { padding: 0 !important; }
+        .content { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; border: none !important; }
+        .card { padding: 32px 20px !important; }
+        .title { font-size: 20px !important; }
+        .code { font-size: 32px !important; letter-spacing: 8px !important; }
+    }
+`;
+
+const EmailWrapper = (content: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background-color: #020617; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        ${getBaseStyles()}
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #020617;">
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #020617;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <div class="container" style="max-width: 600px; width: 100%; margin: 0 auto;">
+                    <!-- Logo -->
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <span style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -1px; text-transform: uppercase;">profcaria</span>
+                    </div>
+                    
+                    <!-- Content Card -->
+                    <div class="content" style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; overflow: hidden;">
+                        <div class="card" style="padding: 48px;">
+                            ${content}
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="text-align: center; margin-top: 32px; color: #475569; font-size: 13px;">
+                        <p style="margin: 0;">&copy; ${new Date().getFullYear()} Profcaria. All rights reserved.</p>
+                        <p style="margin: 8px 0 0 0;">You received this because you are part of our network.</p>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+`;
+
 export async function sendEmailOTP(to: string, code: string) {
-    // 1. MOCK MODE (Development / No Key)
     if (!resend) {
-        console.log('\n📧 [MOCK RESEND EMAIL]');
-        console.log(`   To: ${to}`);
-        console.log(`   Code: ${code}`);
-        console.log('   Status: MOCKED (Set RESEND_API_KEY to enable real sending)\n');
-        return { success: true, id: 'mock-id' };
+        console.log(`[MOCK EMAIL] OTP to ${to}: ${code}`);
+        return { success: true };
     }
 
-    // 2. PRODUCTION MODE (Real Send)
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Verification Code</title>
-        <style>
-            body { margin: 0; padding: 0; background-color: #020617; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-            .container { width: 100%; max-width: 100%; min-height: 100vh; background-color: #020617; display: grid; place-items: center; }
-            .content { max-width: 600px; margin: 0 auto; padding: 40px 20px; text-align: center; }
-            .logo { font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px; margin-bottom: 40px; text-transform: uppercase; }
-            .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 24px; padding: 48px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-            .title { font-size: 24px; font-weight: 600; color: #ffffff; margin-bottom: 32px; letter-spacing: -0.5px; }
-            .code-container { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; margin: 32px 0; }
-            .code { font-family: 'Courier New', monospace; font-size: 42px; font-weight: 700; color: #3b82f6; letter-spacing: 12px; line-height: 1; }
-            .text { color: #94a3b8; line-height: 1.6; margin-bottom: 8px; }
-            .footer { margin-top: 40px; color: #64748b; font-size: 13px; text-align: center; }
-        </style>
-    </head>
-    <body>
-        <div style="background-color: #020617; width: 100%; min-height: 100vh;">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td align="center" style="padding: 40px 20px;">
-                        <!-- Logo -->
-                        <div style="font-family: sans-serif; font-size: 28px; font-weight: 800; color: #ffffff; margin-bottom: 40px; letter-spacing: -1px;">
-                            profcaria
-                        </div>
-
-                        <!-- Card -->
-                        <div style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; padding: 48px 40px; max-width: 480px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
-                            
-                            <!-- Title -->
-                            <h2 style="font-family: sans-serif; font-size: 20px; font-weight: 500; color: #e2e8f0; margin: 0 0 32px 0; letter-spacing: -0.5px;">
-                                One-Time Verification Code
-                            </h2>
-
-                            <!-- Code Box -->
-                            <div style="background-color: #020617; border: 1px solid #1e293b; border-radius: 16px; padding: 32px 0; margin-bottom: 32px;">
-                                <span style="font-family: monospace; font-size: 42px; font-weight: 700; color: #3b82f6; letter-spacing: 12px; display: block;">${code}</span>
-                            </div>
-
-                            <!-- Instructions -->
-                            <p style="font-family: sans-serif; color: #94a3b8; font-size: 14px; line-height: 1.6; margin: 0;">
-                                This code is valid for <strong>10 minutes</strong>.<br>
-                                Do not share this code with anyone.
-                            </p>
-                        </div>
-
-                        <!-- Footer -->
-                        <div style="margin-top: 40px; font-family: sans-serif; color: #475569; font-size: 12px;">
-                            &copy; ${new Date().getFullYear()} Profcaria. All rights reserved.
-                        </div>
-                    </td>
-                </tr>
-            </table>
+    const content = `
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">Verification Code</h1>
+        <p style="margin: 0 0 32px 0; color: #94a3b8; font-size: 15px; line-height: 1.6; text-align: center;">
+            Please use the code below to verify your account. It will expire in 10 minutes.
+        </p>
+        <div style="background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <span class="code" style="font-family: monospace; font-size: 42px; font-weight: 700; color: #3b82f6; letter-spacing: 12px; display: block;">${code}</span>
         </div>
-    </body>
-    </html>
+        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center;">If you didn't request this, you can safely ignore this email.</p>
     `;
 
     try {
-        const { data, error } = await resend.emails.send({
-            from: 'Profcaria Security <security@profcaria.com>', // Requires Domain Setup in Resend Dashboard
-            // If domain not setup yet, use: 'onboarding@resend.dev' for testing
-            to: [to],
-            subject: 'Verification Code',
-            html: htmlContent,
+        await resend.emails.send({
+            from: 'Profcaria Security <security@profcaria.com>',
+            to,
+            subject: 'Your Verification Code',
+            html: EmailWrapper(content)
         });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        throw e;
+    }
+}
 
-        if (error) {
-            console.error('❌ RESEND API ERROR:', JSON.stringify(error, null, 2));
-            throw new Error(`Resend Error: ${error.message}`);
-        }
+export async function sendJobInvite(to: string, jobTitle: string, companyName: string, link: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Invite to ${to} for ${jobTitle}. Link: ${link}`);
+        return { success: true };
+    }
 
-        console.log('✅ Email sent via Resend:', data?.id);
-        return { success: true, id: data?.id };
-    } catch (error: any) {
-        console.error('❌ EMAIL SEND FAILED:', error.message);
-        throw error; // Re-throw to be caught by API route
+    const content = `
+        <div style="text-align: center;">
+            <div style="display: inline-block; background-color: #3b82f6; color: #ffffff; width: 48px; height: 48px; border-radius: 50%; line-height: 48px; font-size: 24px; margin-bottom: 24px;">🚀</div>
+        </div>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">You're Invited!</h1>
+        <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+            <strong>${companyName}</strong> thinks you'd be a great fit for their open role:
+        </p>
+        <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${link}" style="display: inline-block; background-color: #10b981; color: #ffffff; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">View Job & Apply</a>
+        </div>
+        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center; line-height: 1.5;">
+            Click the button above to view the full job details. <br>To ensure security, this link is unique to you.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Talent <talent@profcaria.com>',
+            to,
+            subject: `Invited: ${jobTitle} at ${companyName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        throw e;
     }
 }

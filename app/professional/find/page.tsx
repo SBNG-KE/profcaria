@@ -26,10 +26,43 @@ export default function FindJobsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'find' | 'applied'>('find');
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
+    const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchJobs();
+        // Handle URL Ref Param
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+
+        if (ref) {
+            verifyLink(ref);
+        } else {
+            fetchJobs();
+        }
     }, []);
+
+    const verifyLink = async (token: string) => {
+        try {
+            const res = await fetch('/api/professional/jobs/verify-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.jobId) {
+                    setLinkedJobId(data.jobId);
+                    fetchJobs(); // Fetch all, we will filter in render or effect
+                } else {
+                    fetchJobs();
+                }
+            } else {
+                fetchJobs();
+            }
+        } catch (e) {
+            console.error(e);
+            fetchJobs();
+        }
+    };
 
     const fetchJobs = async () => {
         try {
@@ -67,6 +100,11 @@ export default function FindJobsPage() {
 
 
     const filteredJobs = jobs.filter(job => {
+        // If coming from a shared link, SHOW ONLY THAT JOB
+        if (linkedJobId) {
+            return job.id === linkedJobId;
+        }
+
         const term = searchTerm.toLowerCase();
         let matchesSearch = false;
 
