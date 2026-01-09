@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -9,9 +9,6 @@ import {
     ArrowRight,
     Lock,
     Mail,
-    Upload,
-    Phone,
-    FileText,
     X,
     Shield,
     AlertCircle,
@@ -383,7 +380,7 @@ const ForgotPasswordModal = ({
     );
 };
 
-export default function ProfcariaAuth() {
+function AuthContent() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [globalMode, setGlobalMode] = useState<'login' | 'signup'>('login');
@@ -619,6 +616,10 @@ export default function ProfcariaAuth() {
         ? (empWorkEmail && empPassword)
         : (empCompanyName && empWorkEmail && validatePassword(empPassword));
 
+    function setStep(arg0: string) {
+        throw new Error('Function not implemented.');
+    }
+
     return (
         <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col relative">
 
@@ -839,8 +840,9 @@ export default function ProfcariaAuth() {
                 isOpen={forgotPasswordOpen}
                 onClose={() => {
                     setForgotPasswordOpen(false);
-                    setForgotPasswordError(null);
                     setForgotPasswordSuccess(false);
+                    setForgotPasswordError(null);
+                    setStep('email');
                 }}
                 userType={forgotPasswordType}
                 email={forgotPasswordEmail}
@@ -851,7 +853,14 @@ export default function ProfcariaAuth() {
                 success={forgotPasswordSuccess}
                 requires2FA={requires2FA}
             />
-
         </div>
+    );
+}
+
+export default function ProfcariaAuth() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#050b14] flex items-center justify-center text-slate-500">Loading auth...</div>}>
+            <AuthContent />
+        </Suspense>
     );
 }
