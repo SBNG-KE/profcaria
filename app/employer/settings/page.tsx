@@ -82,11 +82,11 @@ function SettingsContent() {
     // Pricing Config State
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [pricing, setPricing] = useState({
-        basic: 25,
+        basic: 0,
         basicOffer: 0,
-        pro: 99,
+        pro: 0,
         proOffer: 0,
-        enterprise: 250,
+        enterprise: 0,
         enterpriseOffer: 0,
         yearlyDiscountPercent: 0
     });
