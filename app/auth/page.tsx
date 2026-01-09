@@ -409,420 +409,441 @@ export default function ProfcariaAuth() {
 
     useEffect(() => {
         // Check if returning from 2FA verification for password reset
-        if (typeof window !== 'undefined') {
-            const urlParams = new URLSearchParams(window.location.search);
-            const resetPassword = urlParams.get('resetPassword');
+        if (resetEmail && userType) {
+            setForgotPasswordEmail(resetEmail);
+            setForgotPasswordType(userType as 'professional' | 'employer');
+            setForgotPasswordOpen(true);
 
-            if (resetPassword === 'true') {
-                const resetEmail = localStorage.getItem('reset_password_email');
-                const userType = localStorage.getItem('reset_password_userType');
-
-                if (resetEmail && userType) {
-                    setForgotPasswordEmail(resetEmail);
-                    setForgotPasswordType(userType as 'professional' | 'employer');
-                    setForgotPasswordOpen(true);
-
-                    // Clear URL param
-                    window.history.replaceState({}, '', '/auth');
-                }
-            }
+            // Clear URL param
+            window.history.replaceState({}, '', '/auth');
+        }
+    }
         }
     }, []);
 
-    // Professional State
-    const [profFirstName, setProfFirstName] = useState('');
-    const [profLastName, setProfLastName] = useState('');
-    const [profEmail, setProfEmail] = useState('');
-    const [profPassword, setProfPassword] = useState('');
-    const [profRole, setProfRole] = useState('');
-
-    // Employer State
-    const [empCompanyName, setEmpCompanyName] = useState('');
-    const [empWorkEmail, setEmpWorkEmail] = useState('');
-    const [empPassword, setEmpPassword] = useState('');
-
-    const getOpacity = (section: 'professional' | 'employer') => {
-        if (activeSection === null) return 'opacity-100 grayscale-0';
-        return activeSection === section ? 'opacity-100 grayscale-0 scale-[1.01]' : 'opacity-30 grayscale blur-[1px]';
-    };
-
-    const handleForgotPassword = async (type: 'professional' | 'employer') => {
-        setForgotPasswordType(type);
-        setForgotPasswordLoading(true);
-        setForgotPasswordError(null);
-
+// Check if ALREADY logged in (Auto-Skip)
+useEffect(() => {
+    const checkSession = async () => {
         try {
-            const emailToCheck = type === 'professional' ? profEmail : empWorkEmail;
+            const res = await fetch('/api/auth/me');
+            if (res.ok) {
+                const data = await res.json();
 
-            const checkRes = await fetch(`/api/${type}/check-email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: emailToCheck }),
-            });
+                // IF we have a ref param, prioritize that!
+                const params = new URLSearchParams(window.location.search);
+                const refToken = params.get('ref');
 
-            if (!checkRes.ok) {
-                throw new Error('User not found');
+                if (data.schema === 'professional') {
+                    if (refToken) {
+                        router.push(`/professional/find?ref=${refToken}`);
+                    } else {
+                        router.push('/professional/home');
+                    }
+                } else if (data.schema === 'employer') {
+                    router.push('/employer/home');
+                }
             }
-
-            const checkData = await checkRes.json();
-
-            if (checkData.requires_2fa) {
-                setRequires2FA(true);
-            } else {
-                setRequires2FA(false);
-            }
-
-            setForgotPasswordEmail(emailToCheck);
-            setForgotPasswordOpen(true);
-        } catch (err: any) {
-            setForgotPasswordError(err.message || 'Failed to check account');
-        } finally {
-            setForgotPasswordLoading(false);
+        } catch (e) {
+            // Not logged in, stay here
         }
     };
+    checkSession();
+}, []);
 
-    const handlePasswordReset = async (email: string, newPassword: string) => {
-        setForgotPasswordLoading(true);
-        setForgotPasswordError(null);
+// Professional State
+const [profFirstName, setProfFirstName] = useState('');
+const [profLastName, setProfLastName] = useState('');
+const [profEmail, setProfEmail] = useState('');
+const [profPassword, setProfPassword] = useState('');
+const [profRole, setProfRole] = useState('');
 
-        try {
-            const res = await fetch('/api/auth/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email,
-                    newPassword: newPassword,
-                    userType: forgotPasswordType
-                })
-            });
+// Employer State
+const [empCompanyName, setEmpCompanyName] = useState('');
+const [empWorkEmail, setEmpWorkEmail] = useState('');
+const [empPassword, setEmpPassword] = useState('');
 
-            if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.error || 'Failed to reset password');
-            }
+const getOpacity = (section: 'professional' | 'employer') => {
+    if (activeSection === null) return 'opacity-100 grayscale-0';
+    return activeSection === section ? 'opacity-100 grayscale-0 scale-[1.01]' : 'opacity-30 grayscale blur-[1px]';
+};
 
-            setForgotPasswordSuccess(true);
+const handleForgotPassword = async (type: 'professional' | 'employer') => {
+    setForgotPasswordType(type);
+    setForgotPasswordLoading(true);
+    setForgotPasswordError(null);
 
-            // Clear localStorage
-            localStorage.removeItem('reset_password_email');
-            localStorage.removeItem('reset_password_userType');
-            localStorage.removeItem('reset_password_timestamp');
+    try {
+        const emailToCheck = type === 'professional' ? profEmail : empWorkEmail;
 
-        } catch (err: any) {
-            setForgotPasswordError(err.message || 'Failed to reset password');
-        } finally {
-            setForgotPasswordLoading(false);
+        const checkRes = await fetch(`/api/${type}/check-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: emailToCheck }),
+        });
+
+        if (!checkRes.ok) {
+            throw new Error('User not found');
         }
-    };
 
-    // URL Params for Redirects
-    const searchParams = useSearchParams();
-    const refToken = searchParams.get('ref');
+        const checkData = await checkRes.json();
 
-    const getRedirectPath = (userType: 'professional' | 'employer') => {
-        if (userType === 'professional' && refToken) {
-            return `/professional/find?ref=${refToken}`;
+        if (checkData.requires_2fa) {
+            setRequires2FA(true);
+        } else {
+            setRequires2FA(false);
         }
-        return userType === 'professional' ? '/professional/home' : '/employer/home';
-    };
 
-    const handleLogin = async (type: 'professional' | 'employer') => {
-        setLoading(true);
-        try {
-            const endpoint = type === 'professional' ? '/api/professional/login' : '/api/employer/login';
-            const email = type === 'professional' ? profEmail : empWorkEmail;
-            const password = type === 'professional' ? profPassword : empPassword;
+        setForgotPasswordEmail(emailToCheck);
+        setForgotPasswordOpen(true);
+    } catch (err: any) {
+        setForgotPasswordError(err.message || 'Failed to check account');
+    } finally {
+        setForgotPasswordLoading(false);
+    }
+};
 
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+const handlePasswordReset = async (email: string, newPassword: string) => {
+    setForgotPasswordLoading(true);
+    setForgotPasswordError(null);
 
-            const data = await res.json();
-            router.push(data.redirect || getRedirectPath(type));
-        } catch (err: any) {
-            alert(err.message || 'Authentication failed');
-        } finally {
-            setLoading(false);
+    try {
+        const res = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: email,
+                newPassword: newPassword,
+                userType: forgotPasswordType
+            })
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Failed to reset password');
         }
-    };
 
-    const handleSignup = async (type: 'professional' | 'employer') => {
-        setLoading(true);
-        try {
-            const endpoint = type === 'professional' ? '/api/professional/signup' : '/api/employer/signup';
+        setForgotPasswordSuccess(true);
 
-            const payload = type === 'professional' ? {
-                email: profEmail,
-                password: profPassword,
-                firstName: profFirstName,
-                lastName: profLastName,
-                role: profRole
-            } : {
-                companyName: empCompanyName,
-                workEmail: empWorkEmail,
-                password: empPassword,
+        // Clear localStorage
+        localStorage.removeItem('reset_password_email');
+        localStorage.removeItem('reset_password_userType');
+        localStorage.removeItem('reset_password_timestamp');
 
-            };
+    } catch (err: any) {
+        setForgotPasswordError(err.message || 'Failed to reset password');
+    } finally {
+        setForgotPasswordLoading(false);
+    }
+};
 
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+// URL Params for Redirects
+const searchParams = useSearchParams();
+const refToken = searchParams.get('ref');
 
-            const data = await res.json();
-            router.push(data.redirect || getRedirectPath(type));
-        } catch (err: any) {
-            alert(err.message || 'Registration failed');
-        } finally {
-            setLoading(false);
-        }
-    };
+const getRedirectPath = (userType: 'professional' | 'employer') => {
+    if (userType === 'professional' && refToken) {
+        return `/professional/find?ref=${refToken}`;
+    }
+    return userType === 'professional' ? '/professional/home' : '/employer/home';
+};
 
-    // Validation Checks
-    const isProfessionalValid = globalMode === 'login'
-        ? (profEmail && profPassword)
-        : (profFirstName && profLastName && profEmail && validatePassword(profPassword));
+const handleLogin = async (type: 'professional' | 'employer') => {
+    setLoading(true);
+    try {
+        const endpoint = type === 'professional' ? '/api/professional/login' : '/api/employer/login';
+        const email = type === 'professional' ? profEmail : empWorkEmail;
+        const password = type === 'professional' ? profPassword : empPassword;
 
-    const isEmployerValid = globalMode === 'login'
-        ? (empWorkEmail && empPassword)
-        : (empCompanyName && empWorkEmail && validatePassword(empPassword));
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+        });
 
-    return (
-        <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col relative">
+        const data = await res.json();
+        router.push(data.redirect || getRedirectPath(type));
+    } catch (err: any) {
+        alert(err.message || 'Authentication failed');
+    } finally {
+        setLoading(false);
+    }
+};
 
-            {/* Background Texture */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 mix-blend-overlay"></div>
+const handleSignup = async (type: 'professional' | 'employer') => {
+    setLoading(true);
+    try {
+        const endpoint = type === 'professional' ? '/api/professional/signup' : '/api/employer/signup';
 
-            {/* Original Profcaria name at top left */}
-            <div className="absolute top-6 left-6 z-40 cursor-pointer" onClick={() => router.push('/')}>
-                <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
-                    Profcaria
-                </h1>
-            </div>
+        const payload = type === 'professional' ? {
+            email: profEmail,
+            password: profPassword,
+            firstName: profFirstName,
+            lastName: profLastName,
+            role: profRole
+        } : {
+            companyName: empCompanyName,
+            workEmail: empWorkEmail,
+            password: empPassword,
+
+        };
+
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        router.push(data.redirect || getRedirectPath(type));
+    } catch (err: any) {
+        alert(err.message || 'Registration failed');
+    } finally {
+        setLoading(false);
+    }
+};
+
+// Validation Checks
+const isProfessionalValid = globalMode === 'login'
+    ? (profEmail && profPassword)
+    : (profFirstName && profLastName && profEmail && validatePassword(profPassword));
+
+const isEmployerValid = globalMode === 'login'
+    ? (empWorkEmail && empPassword)
+    : (empCompanyName && empWorkEmail && validatePassword(empPassword));
+
+return (
+    <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col relative">
+
+        {/* Background Texture */}
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 z-0 mix-blend-overlay"></div>
+
+        {/* Original Profcaria name at top left */}
+        <div className="absolute top-6 left-6 z-40 cursor-pointer" onClick={() => router.push('/')}>
+            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
+                Profcaria
+            </h1>
+        </div>
 
 
 
-            {/* Header with Sign/Get Started - Added mb-8 for spacing below */}
-            <header className="relative z-20 w-full p-4 flex flex-col items-center justify-center mt-20 mb-8">
-                <div className="flex bg-slate-900 p-1.5 rounded-xl border border-slate-800 shadow-2xl w-[300px]">
-                    <button
-                        onClick={() => { setGlobalMode('login'); setActiveSection(null); }}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${globalMode === 'login' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        Sign In
-                    </button>
-                    <button
-                        onClick={() => { setGlobalMode('signup'); setActiveSection(null); }}
-                        className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${globalMode === 'signup' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                        Get Started
-                    </button>
-                </div>
-            </header>
-
-            {/* Main Layout */}
-            <main className="flex-grow flex flex-col lg:flex-row justify-center items-stretch relative z-10 px-0 md:px-8 pb-4 max-w-[1920px] mx-auto w-full h-full">
-
-                {/* PILLAR 1 */}
-                <Pillar className="hidden lg:flex" />
-
-                {/* SECTION 1: PROFESSIONAL */}
-                <section
-                    className={`order-1 lg:order-none flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('professional')}`}
-                    onClick={() => setActiveSection('professional')}
+        {/* Header with Sign/Get Started - Added mb-8 for spacing below */}
+        <header className="relative z-20 w-full p-4 flex flex-col items-center justify-center mt-20 mb-8">
+            <div className="flex bg-slate-900 p-1.5 rounded-xl border border-slate-800 shadow-2xl w-[300px]">
+                <button
+                    onClick={() => { setGlobalMode('login'); setActiveSection(null); }}
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${globalMode === 'login' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
                 >
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-2 bg-blue-900/20 rounded-xl text-blue-400 shadow-inner border border-blue-900/30">
-                            <User size={24} />
-                        </div>
-                        <h2 className="text-xl font-bold text-slate-100 tracking-wide">Professional</h2>
+                    Sign In
+                </button>
+                <button
+                    onClick={() => { setGlobalMode('signup'); setActiveSection(null); }}
+                    className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${globalMode === 'signup' ? 'bg-slate-700 text-white shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                    Get Started
+                </button>
+            </div>
+        </header>
+
+        {/* Main Layout */}
+        <main className="flex-grow flex flex-col lg:flex-row justify-center items-stretch relative z-10 px-0 md:px-8 pb-4 max-w-[1920px] mx-auto w-full h-full">
+
+            {/* PILLAR 1 */}
+            <Pillar className="hidden lg:flex" />
+
+            {/* SECTION 1: PROFESSIONAL */}
+            <section
+                className={`order-1 lg:order-none flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('professional')}`}
+                onClick={() => setActiveSection('professional')}
+            >
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="p-2 bg-blue-900/20 rounded-xl text-blue-400 shadow-inner border border-blue-900/30">
+                        <User size={24} />
                     </div>
+                    <h2 className="text-xl font-bold text-slate-100 tracking-wide">Professional</h2>
+                </div>
 
-                    <div className="space-y-3">
-                        {globalMode === 'signup' && (
-                            <div className="grid grid-cols-2 gap-2">
-                                <ModernInput
-                                    onFocus={() => setActiveSection('professional')}
-                                    placeholder="First Name"
-                                    icon={User}
-                                    value={profFirstName}
-                                    onChange={(e) => setProfFirstName(e.target.value)}
-                                />
-                                <ModernInput
-                                    onFocus={() => setActiveSection('professional')}
-                                    placeholder="Last Name"
-                                    value={profLastName}
-                                    onChange={(e) => setProfLastName(e.target.value)}
-                                />
-                            </div>
-                        )}
-
-                        <ModernInput
-                            onFocus={() => setActiveSection('professional')}
-                            placeholder="Email Address"
-                            type="email"
-                            icon={Mail}
-                            value={profEmail}
-                            onChange={(e) => setProfEmail(e.target.value)}
-                        />
-
-                        <ModernInput
-                            onFocus={() => setActiveSection('professional')}
-                            placeholder="Password"
-                            type="password"
-                            icon={Lock}
-                            value={profPassword}
-                            onChange={(e) => setProfPassword(e.target.value)}
-                            showPasswordToggle
-                            passwordVisible={passwordVisible}
-                            onTogglePassword={() => setPasswordVisible(!passwordVisible)}
-                        />
-
-                        {globalMode === 'login' && (
-                            <div className="flex justify-end pt-1">
-                                <button
-                                    onClick={() => handleForgotPassword('professional')}
-                                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                                    disabled={forgotPasswordLoading}
-                                >
-                                    {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-3 flex justify-end">
-                        <AnimatedSubmitButton
-                            onClick={() => globalMode === 'login'
-                                ? handleLogin('professional')
-                                : handleSignup('professional')
-                            }
-                            disabled={loading || !isProfessionalValid}
-                            loading={loading}
-                            color="blue"
-                        />
-                    </div>
-                </section>
-
-                {/* PILLAR 2 */}
-                <Pillar className="hidden md:flex" />
-
-                {/* CENTRAL SECTION */}
-                <section className="order-2 lg:order-none flex-1 min-w-[300px] max-w-md flex items-center justify-center relative pb-24">
-                    <div className="w-48 h-48 rounded-full bg-gradient-to-br from-blue-900/20 to-emerald-900/20 border-2 border-slate-700/50 shadow-2xl flex items-center justify-center relative overflow-hidden">
-                        <div className="w-40 h-40 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-700/30 overflow-hidden">
-                            <Image
-                                src="/profcaria.png"
-                                alt="Profcaria Logo"
-                                width={160}
-                                height={160}
-                                className="object-contain"
-                                priority
+                <div className="space-y-3">
+                    {globalMode === 'signup' && (
+                        <div className="grid grid-cols-2 gap-2">
+                            <ModernInput
+                                onFocus={() => setActiveSection('professional')}
+                                placeholder="First Name"
+                                icon={User}
+                                value={profFirstName}
+                                onChange={(e) => setProfFirstName(e.target.value)}
+                            />
+                            <ModernInput
+                                onFocus={() => setActiveSection('professional')}
+                                placeholder="Last Name"
+                                value={profLastName}
+                                onChange={(e) => setProfLastName(e.target.value)}
                             />
                         </div>
-                    </div>
-                </section>
+                    )}
 
-                {/* PILLAR 3 */}
-                <Pillar className="hidden md:flex" />
+                    <ModernInput
+                        onFocus={() => setActiveSection('professional')}
+                        placeholder="Email Address"
+                        type="email"
+                        icon={Mail}
+                        value={profEmail}
+                        onChange={(e) => setProfEmail(e.target.value)}
+                    />
 
-                {/* SECTION 3: EMPLOYER */}
-                <section
-                    className={`order-3 lg:order-none flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('employer')}`}
-                    onClick={() => setActiveSection('employer')}
-                >
-                    <div className="flex items-center gap-4 mb-4 justify-end md:justify-start">
-                        <div className="p-2 bg-emerald-900/20 rounded-xl text-emerald-400 shadow-inner border border-emerald-900/30">
-                            <Briefcase size={24} />
+                    <ModernInput
+                        onFocus={() => setActiveSection('professional')}
+                        placeholder="Password"
+                        type="password"
+                        icon={Lock}
+                        value={profPassword}
+                        onChange={(e) => setProfPassword(e.target.value)}
+                        showPasswordToggle
+                        passwordVisible={passwordVisible}
+                        onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+                    />
+
+                    {globalMode === 'login' && (
+                        <div className="flex justify-end pt-1">
+                            <button
+                                onClick={() => handleForgotPassword('professional')}
+                                className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                disabled={forgotPasswordLoading}
+                            >
+                                {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
+                            </button>
                         </div>
-                        <h2 className="text-xl font-bold text-slate-100 tracking-wide">Employer</h2>
-                    </div>
+                    )}
+                </div>
 
-                    <div className="space-y-3">
-                        {globalMode === 'signup' && (
-                            <div className="space-y-3">
-                                <ModernInput
-                                    onFocus={() => setActiveSection('employer')}
-                                    placeholder="Company Name"
-                                    icon={Briefcase}
-                                    value={empCompanyName}
-                                    onChange={(e) => setEmpCompanyName(e.target.value)}
-                                />
-                            </div>
-                        )}
+                <div className="mt-3 flex justify-end">
+                    <AnimatedSubmitButton
+                        onClick={() => globalMode === 'login'
+                            ? handleLogin('professional')
+                            : handleSignup('professional')
+                        }
+                        disabled={loading || !isProfessionalValid}
+                        loading={loading}
+                        color="blue"
+                    />
+                </div>
+            </section>
 
-                        <ModernInput
-                            onFocus={() => setActiveSection('employer')}
-                            placeholder="Work Email"
-                            type="email"
-                            icon={Mail}
-                            value={empWorkEmail}
-                            onChange={(e) => setEmpWorkEmail(e.target.value)}
-                        />
+            {/* PILLAR 2 */}
+            <Pillar className="hidden md:flex" />
 
-                        <ModernInput
-                            onFocus={() => setActiveSection('employer')}
-                            placeholder="Password"
-                            type="password"
-                            icon={Lock}
-                            value={empPassword}
-                            onChange={(e) => setEmpPassword(e.target.value)}
-                            showPasswordToggle
-                            passwordVisible={passwordVisible}
-                            onTogglePassword={() => setPasswordVisible(!passwordVisible)}
-                        />
-
-                        {globalMode === 'login' && (
-                            <div className="flex justify-start pt-1">
-                                <button
-                                    onClick={() => handleForgotPassword('employer')}
-                                    className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                                    disabled={forgotPasswordLoading}
-                                >
-                                    {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-3 flex justify-start">
-                        <AnimatedSubmitButton
-                            onClick={() => globalMode === 'login'
-                                ? handleLogin('employer')
-                                : handleSignup('employer')
-                            }
-                            disabled={loading || !isEmployerValid}
-                            loading={loading}
-                            color="emerald"
+            {/* CENTRAL SECTION */}
+            <section className="order-2 lg:order-none flex-1 min-w-[300px] max-w-md flex items-center justify-center relative pb-24">
+                <div className="w-48 h-48 rounded-full bg-gradient-to-br from-blue-900/20 to-emerald-900/20 border-2 border-slate-700/50 shadow-2xl flex items-center justify-center relative overflow-hidden">
+                    <div className="w-40 h-40 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-700/30 overflow-hidden">
+                        <Image
+                            src="/profcaria.png"
+                            alt="Profcaria Logo"
+                            width={160}
+                            height={160}
+                            className="object-contain"
+                            priority
                         />
                     </div>
-                </section>
+                </div>
+            </section>
 
-                {/* PILLAR 4 */}
-                <Pillar className="hidden lg:flex" />
+            {/* PILLAR 3 */}
+            <Pillar className="hidden md:flex" />
 
-            </main>
+            {/* SECTION 3: EMPLOYER */}
+            <section
+                className={`order-3 lg:order-none flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('employer')}`}
+                onClick={() => setActiveSection('employer')}
+            >
+                <div className="flex items-center gap-4 mb-4 justify-end md:justify-start">
+                    <div className="p-2 bg-emerald-900/20 rounded-xl text-emerald-400 shadow-inner border border-emerald-900/30">
+                        <Briefcase size={24} />
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-100 tracking-wide">Employer</h2>
+                </div>
 
-            <ForgotPasswordModal
-                isOpen={forgotPasswordOpen}
-                onClose={() => {
-                    setForgotPasswordOpen(false);
-                    setForgotPasswordError(null);
-                    setForgotPasswordSuccess(false);
-                }}
-                userType={forgotPasswordType}
-                email={forgotPasswordEmail}
-                onEmailChange={setForgotPasswordEmail}
-                onReset={handlePasswordReset}
-                loading={forgotPasswordLoading}
-                error={forgotPasswordError}
-                success={forgotPasswordSuccess}
-                requires2FA={requires2FA}
-            />
+                <div className="space-y-3">
+                    {globalMode === 'signup' && (
+                        <div className="space-y-3">
+                            <ModernInput
+                                onFocus={() => setActiveSection('employer')}
+                                placeholder="Company Name"
+                                icon={Briefcase}
+                                value={empCompanyName}
+                                onChange={(e) => setEmpCompanyName(e.target.value)}
+                            />
+                        </div>
+                    )}
 
-        </div>
-    );
+                    <ModernInput
+                        onFocus={() => setActiveSection('employer')}
+                        placeholder="Work Email"
+                        type="email"
+                        icon={Mail}
+                        value={empWorkEmail}
+                        onChange={(e) => setEmpWorkEmail(e.target.value)}
+                    />
+
+                    <ModernInput
+                        onFocus={() => setActiveSection('employer')}
+                        placeholder="Password"
+                        type="password"
+                        icon={Lock}
+                        value={empPassword}
+                        onChange={(e) => setEmpPassword(e.target.value)}
+                        showPasswordToggle
+                        passwordVisible={passwordVisible}
+                        onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+                    />
+
+                    {globalMode === 'login' && (
+                        <div className="flex justify-start pt-1">
+                            <button
+                                onClick={() => handleForgotPassword('employer')}
+                                className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                                disabled={forgotPasswordLoading}
+                            >
+                                {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-3 flex justify-start">
+                    <AnimatedSubmitButton
+                        onClick={() => globalMode === 'login'
+                            ? handleLogin('employer')
+                            : handleSignup('employer')
+                        }
+                        disabled={loading || !isEmployerValid}
+                        loading={loading}
+                        color="emerald"
+                    />
+                </div>
+            </section>
+
+            {/* PILLAR 4 */}
+            <Pillar className="hidden lg:flex" />
+
+        </main>
+
+        <ForgotPasswordModal
+            isOpen={forgotPasswordOpen}
+            onClose={() => {
+                setForgotPasswordOpen(false);
+                setForgotPasswordError(null);
+                setForgotPasswordSuccess(false);
+            }}
+            userType={forgotPasswordType}
+            email={forgotPasswordEmail}
+            onEmailChange={setForgotPasswordEmail}
+            onReset={handlePasswordReset}
+            loading={forgotPasswordLoading}
+            error={forgotPasswordError}
+            success={forgotPasswordSuccess}
+            requires2FA={requires2FA}
+        />
+
+    </div>
+);
 }
