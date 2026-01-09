@@ -6,6 +6,7 @@ import { jwtVerify } from 'jose';
 import { createShortLink } from '@/lib/shortener';
 import { sendJobInvite } from '@/lib/email';
 import { getJobShareLink } from '@/lib/sharing';
+import { decryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
@@ -27,7 +28,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const { data: job, error: jobError } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
-            .select('title')
+            .select('enc_title')
             .eq('id', jobId)
             .eq('company_id', companyId)
             .single();
@@ -38,6 +39,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 error: `Job not found. JobID: ${jobId}, MyCompanyID: ${companyId}, DBError: ${jobError?.message || 'None'}`
             }, { status: 404 });
         }
+
+        const jobTitle = decryptData(job.enc_title) || 'Job Opportunity';
 
         // 2. Get Professional Details (Email)
         const { data: professional } = await supabaseAdmin
@@ -67,7 +70,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             // 4. Send Email
             await sendJobInvite(
                 professional.email,
-                job.title,
+                jobTitle,
                 company?.company_name || 'Profcaria Employer',
                 link
             );
