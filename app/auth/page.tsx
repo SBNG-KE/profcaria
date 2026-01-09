@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
     User,
@@ -515,6 +515,17 @@ export default function ProfcariaAuth() {
         }
     };
 
+    // URL Params for Redirects
+    const searchParams = useSearchParams();
+    const refToken = searchParams.get('ref');
+
+    const getRedirectPath = (userType: 'professional' | 'employer') => {
+        if (userType === 'professional' && refToken) {
+            return `/professional/find?ref=${refToken}`;
+        }
+        return userType === 'professional' ? '/professional/home' : '/employer/home';
+    };
+
     const handleLogin = async (type: 'professional' | 'employer') => {
         setLoading(true);
         try {
@@ -529,7 +540,7 @@ export default function ProfcariaAuth() {
             });
 
             const data = await res.json();
-            router.push(data.redirect || (type === 'professional' ? '/professional/home' : '/employer/home'));
+            router.push(data.redirect || getRedirectPath(type));
         } catch (err: any) {
             alert(err.message || 'Authentication failed');
         } finally {
@@ -552,6 +563,7 @@ export default function ProfcariaAuth() {
                 companyName: empCompanyName,
                 workEmail: empWorkEmail,
                 password: empPassword,
+
             };
 
             const res = await fetch(endpoint, {
@@ -561,7 +573,7 @@ export default function ProfcariaAuth() {
             });
 
             const data = await res.json();
-            router.push(data.redirect || (type === 'professional' ? '/professional/home' : '/employer/home'));
+            router.push(data.redirect || getRedirectPath(type));
         } catch (err: any) {
             alert(err.message || 'Registration failed');
         } finally {
