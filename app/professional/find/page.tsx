@@ -247,7 +247,7 @@ export default function FindJobsPage() {
                             key={job.id}
                             className="group relative flex flex-col text-left bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10"
                         >
-                            <div className="p-8 space-y-6 flex-1">
+                            <div className="p-5 md:p-8 space-y-6 flex-1">
                                 <div className="flex items-center justify-between">
                                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shadow-lg">
                                         {job.company?.logoUrl ? (

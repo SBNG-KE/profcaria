@@ -351,9 +351,9 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 </div>
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 pointer-events-none z-0"></div>
                 {pathname.includes('/notifications') || pathname.includes('/messages') ? (
-                    <div className="w-full flex-1 min-h-0 relative z-10">{children}</div>
+                    <div className="w-full flex-1 min-h-0 relative">{children}</div>
                 ) : (
-                    <ScrollableContainer className="w-full relative z-10">
+                    <ScrollableContainer className="w-full relative">
                         {children}
                     </ScrollableContainer>
                 )}

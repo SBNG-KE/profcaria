@@ -69,7 +69,7 @@ const ScrollableContainer = ({ children, className = '' }: { children: React.Rea
   }, [children]);
 
   return (
-    <div className={`relative flex-1 ${className}`}>
+    <div className={`relative flex-1 min-h-0 ${className}`}>
       <div ref={scrollRef} className="h-full overflow-y-auto scrollbar-hide">
         {children}
       </div>
@@ -94,7 +94,7 @@ const ScrollableContainer = ({ children, className = '' }: { children: React.Rea
 // --- Components ---
 const DocumentCard = ({ title, onClick, onRemove }: { title: string, onClick: () => void, onRemove: () => void }) => {
   return (
-    <div className="group relative flex-shrink-0 w-60 h-52">
+    <div className="group relative flex-shrink-0 w-full md:w-60 h-64 md:h-52">
       <button
         onClick={onClick}
         className="w-full h-full rounded-[40px] border-t-2 border-l-2 border-blue-500/80 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] relative z-0"
@@ -121,7 +121,7 @@ const AddNewCard = ({ onClick }: { onClick: () => void }) => {
   return (
     <button
       onClick={onClick}
-      className="group relative flex-shrink-0 w-60 h-52 rounded-[40px] border-t-2 border-l-2 border-slate-700/50 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+      className="group relative flex-shrink-0 w-full md:w-60 h-64 md:h-52 rounded-[40px] border-t-2 border-l-2 border-slate-700/50 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]"
     >
       <div className="relative z-10 h-full w-full flex items-center justify-center">
         <div className="p-4 rounded-full bg-slate-800/50 text-slate-400 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
@@ -513,7 +513,7 @@ export default function ProfessionalHome() {
       {/* --- THE SLIDER (OVERLAY) --- */}
       <div
         className={`
-                absolute inset-0 z-50 bg-[#050b14]/98 border-l border-slate-700/50 backdrop-blur-2xl flex flex-col theme-professional
+                fixed inset-0 z-[105] h-[100dvh] bg-[#050b14]/98 border-l border-slate-700/50 backdrop-blur-2xl flex flex-col theme-professional
                 transition-all duration-500 ease-in-out shadow-[-20px_0_50px_rgba(0,0,0,0.7)]
                 ${activeDocument ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}
             `}
@@ -540,7 +540,7 @@ export default function ProfessionalHome() {
             </div>
 
             {/* FONT SELECTOR */}
-            <div className="relative z-50 hidden md:block">
+            <div className="relative z-50">
               <div className="flex items-center gap-2">
                 {/* Font Family */}
                 <div className="relative">

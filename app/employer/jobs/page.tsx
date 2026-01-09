@@ -142,7 +142,7 @@ export default function EmployerJobsPage() {
                         <div key={job.id} className={`group relative bg-[#0f172a] border rounded-[32px] overflow-hidden transition-all duration-300 ${job.isActive ? 'border-slate-800 hover:border-emerald-500/30' : 'border-slate-800 opacity-60 hover:opacity-100'}`}>
 
 
-                            <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="p-5 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8">
                                 <div className="space-y-4 flex-1 text-left">
                                     <div className="flex items-center gap-3">
                                         <h2 className="text-2xl font-black text-white uppercase tracking-tight">{job.title}</h2>
@@ -157,7 +157,7 @@ export default function EmployerJobsPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-3">
                                     {/* Share Button (Active Only) */}
                                     {/* Share Button (Active Only) */}
                                     {job.isActive && (
