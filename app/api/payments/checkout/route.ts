@@ -50,17 +50,29 @@ export async function POST(req: Request) {
 
         // Base Prices (Monthly USD)
         // Base Prices (Monthly USD) & Offers
-        const prices: Record<string, number> = {
-            basic: parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || process.env.PRICE_BASIC_MONTHLY || '25'),
-            pro: parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || process.env.PRICE_PRO_MONTHLY || '99'),
-            enterprise: parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || process.env.PRICE_ENTERPRISE_MONTHLY || '250'),
+        const getPrice = (plan: string) => {
+            const basicMo = parseFloat(process.env.PRICE_BASIC_MONTHLY || '25');
+            const basicOffer = parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || '0');
+            const proMo = parseFloat(process.env.PRICE_PRO_MONTHLY || '99');
+            const proOffer = parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || '0');
+            const entMo = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250');
+            const entOffer = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || '0');
+
+            switch (plan) {
+                case 'basic': return basicOffer > 0 ? basicOffer : basicMo;
+                case 'pro': return proOffer > 0 ? proOffer : proMo;
+                case 'enterprise': return entOffer > 0 ? entOffer : entMo;
+                default: return undefined;
+            }
         };
 
-        if (!prices[plan]) {
+        const planPrice = getPrice(plan);
+
+        if (planPrice === undefined) {
             return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
         }
-
-        let amountUSD = prices[plan];
+        // Calculate amount in correct currency
+        const amountUSD = planPrice;
 
         // No more yearly discount logic - relying on direct Offer Prices from env
 
