@@ -44,10 +44,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         // 2. Get Professional Details (Email)
         const { data: professional } = await supabaseAdmin
-            .from('users') // Assuming users table holds auth info
-            .select('email')
+            .schema('professional')
+            .from('users')
+            .select('enc_email')
             .eq('id', professionalId)
             .single();
+
+        const professionalEmail = professional?.enc_email ? decryptData(professional.enc_email) : null;
 
         // Also fetch company name for the email
         const { data: company } = await supabaseAdmin
@@ -57,7 +60,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             .eq('id', companyId)
             .single();
 
-        if (professional?.email) {
+        if (professionalEmail) {
+            // 3. Generate Smart Link
             // 3. Generate Smart Link
             const origin = new URL(req.url).origin;
             const longLink = getJobShareLink(jobId, origin);
@@ -65,11 +69,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             // Generate Short Link
             const link = await createShortLink(longLink);
 
-            console.log(`[INVITE] Sending email to ${professional.email} for job ${job.title}`);
+            console.log(`[INVITE] Sending email to ${professionalEmail} for job ${jobTitle}`);
 
             // 4. Send Email
             await sendJobInvite(
-                professional.email,
+                professionalEmail,
                 jobTitle,
                 company?.company_name || 'Profcaria Employer',
                 link
