@@ -53,7 +53,7 @@ export async function GET(req: Request) {
 
         const options = await generateRegistrationOptions({
             rpName: 'Profcaria',
-            rpID: 'localhost', // TODO: Change for production
+            rpID: process.env.RP_ID || (process.env.NODE_ENV === 'production' ? 'profcaria.com' : 'localhost'),
             userID: new TextEncoder().encode(uid),
             userName: userName,
             userDisplayName: userDisplayName,

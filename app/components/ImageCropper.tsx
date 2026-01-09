@@ -36,16 +36,16 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
         img.onload = () => {
             setImage(img);
 
-            // "Cover" logic: ensure image covers 300x300
-            const minScaleX = 300 / img.width;
-            const minScaleY = 300 / img.height;
+            // "Cover" logic: ensure image covers 600x600
+            const minScaleX = 600 / img.width;
+            const minScaleY = 600 / img.height;
             const newMinScale = Math.max(minScaleX, minScaleY);
 
             setScale(newMinScale);
             // Center it
             setPosition({
-                x: (300 - img.width * newMinScale) / 2,
-                y: (300 - img.height * newMinScale) / 2
+                x: (600 - img.width * newMinScale) / 2,
+                y: (600 - img.height * newMinScale) / 2
             });
         };
 
@@ -59,13 +59,13 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
         const width = img.width * currentScale;
         const height = img.height * currentScale;
 
-        // Bounds: image must cover 300x300
+        // Bounds: image must cover 600x600
         // Max x is 0 (left edge at container let edge)
-        // Min x is 300 - width (right edge at container right edge)
-        const minX = 300 - width;
+        // Min x is 600 - width (right edge at container right edge)
+        const minX = 600 - width;
         const maxX = 0;
 
-        const minY = 300 - height;
+        const minY = 600 - height;
         const maxY = 0;
 
         return {
@@ -101,7 +101,7 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
         // Draw Overlay (Mask)
         // We want a circular or square mask. Let's do a square with rounded corners (like the UI)
         // But to make it clear what is being cropped, we can darken the outside.
-        // Actually, the canvas IS the crop area (300x300).
+        // Actually, the canvas IS the crop area (600x600).
         // So anything outside the canvas is "cropped out" visually.
 
     }, [image, scale, position]);
@@ -146,8 +146,8 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
         const zoomSpeed = 0.001;
         const newScaleRaw = scale + (e.deltaY * -zoomSpeed);
 
-        const minScaleX = 300 / image.width;
-        const minScaleY = 300 / image.height;
+        const minScaleX = 600 / image.width;
+        const minScaleY = 600 / image.height;
         const minScale = Math.max(minScaleX, minScaleY);
 
         const newScale = Math.min(Math.max(newScaleRaw, minScale), 5); // Max 5x
@@ -162,7 +162,7 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
 
         canvas.toBlob((blob) => {
             if (blob) onCrop(blob);
-        }, 'image/jpeg', 0.9);
+        }, 'image/jpeg', 1.0);
     };
 
     return (
@@ -185,9 +185,9 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
                 >
                     <canvas
                         ref={canvasRef}
-                        width={300}
-                        height={300}
-                        className="block pointer-events-none" // Events handled by container
+                        width={600}
+                        height={600}
+                        className="block w-[300px] h-[300px] pointer-events-none" // Display as 300px but render as 600px
                     />
 
                     {/* Grid Overlay for assistance */}

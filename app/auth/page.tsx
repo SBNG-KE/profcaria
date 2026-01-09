@@ -68,7 +68,7 @@ const ModernInput = ({
         <input
             type={showPasswordToggle ? (passwordVisible ? "text" : "password") : type}
             onFocus={onFocus}
-            className="w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent block pl-10 pr-10 p-3.5 placeholder-slate-600 transition-all duration-300 backdrop-blur-md hover:bg-slate-800/80 shadow-inner"
+            className={`w-full bg-slate-900/80 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent block pl-10 ${showPasswordToggle ? 'pr-10' : 'pr-4'} p-3.5 placeholder-slate-600 transition-all duration-300 backdrop-blur-md hover:bg-slate-800/80 shadow-inner`}
             placeholder={placeholder}
             value={value}
             onChange={onChange}
@@ -397,6 +397,16 @@ export default function ProfcariaAuth() {
     const [requires2FA, setRequires2FA] = useState(false);
     const [passwordVisible, setPasswordVisible] = useState(false);
 
+    // Validation Helper
+    const validatePassword = (password: string) => {
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasLowerCase = /[a-z]/.test(password);
+        const hasNumbers = /\d/.test(password);
+        const hasNonalphas = /\W/.test(password);
+        const minLength = password.length >= 12;
+        return hasUpperCase && hasLowerCase && hasNumbers && hasNonalphas && minLength;
+    };
+
     useEffect(() => {
         // Check if returning from 2FA verification for password reset
         if (typeof window !== 'undefined') {
@@ -423,24 +433,13 @@ export default function ProfcariaAuth() {
     const [profFirstName, setProfFirstName] = useState('');
     const [profLastName, setProfLastName] = useState('');
     const [profEmail, setProfEmail] = useState('');
-    const [profPhone, setProfPhone] = useState('');
     const [profPassword, setProfPassword] = useState('');
     const [profRole, setProfRole] = useState('');
 
     // Employer State
     const [empCompanyName, setEmpCompanyName] = useState('');
     const [empWorkEmail, setEmpWorkEmail] = useState('');
-    const [empPhone, setEmpPhone] = useState('');
     const [empPassword, setEmpPassword] = useState('');
-    const [logoPreview, setLogoPreview] = useState<string | null>(null);
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            setLogoPreview(url);
-        }
-    };
 
     const getOpacity = (section: 'professional' | 'employer') => {
         if (activeSection === null) return 'opacity-100 grayscale-0';
@@ -548,14 +547,11 @@ export default function ProfcariaAuth() {
                 password: profPassword,
                 firstName: profFirstName,
                 lastName: profLastName,
-                phone: profPhone,
                 role: profRole
             } : {
                 companyName: empCompanyName,
                 workEmail: empWorkEmail,
-                phone: empPhone,
                 password: empPassword,
-                logoUrl: logoPreview,
             };
 
             const res = await fetch(endpoint, {
@@ -573,6 +569,15 @@ export default function ProfcariaAuth() {
         }
     };
 
+    // Validation Checks
+    const isProfessionalValid = globalMode === 'login'
+        ? (profEmail && profPassword)
+        : (profFirstName && profLastName && profEmail && validatePassword(profPassword));
+
+    const isEmployerValid = globalMode === 'login'
+        ? (empWorkEmail && empPassword)
+        : (empCompanyName && empWorkEmail && validatePassword(empPassword));
+
     return (
         <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans selection:bg-blue-500/30 overflow-hidden flex flex-col relative">
 
@@ -586,14 +591,7 @@ export default function ProfcariaAuth() {
                 </h1>
             </div>
 
-            {/* Docs Icon at top right */}
-            <button
-                onClick={() => window.open('/docs', '_blank')}
-                className="absolute top-6 right-6 z-40 p-2 hover:bg-slate-800/50 rounded-lg transition-colors group"
-                title="Documentation"
-            >
-                <FileText size={20} className="text-slate-400 group-hover:text-white transition-colors" />
-            </button>
+
 
             {/* Header with Sign/Get Started - Added mb-8 for spacing below */}
             <header className="relative z-20 w-full p-4 flex flex-col items-center justify-center mt-20 mb-8">
@@ -614,14 +612,14 @@ export default function ProfcariaAuth() {
             </header>
 
             {/* Main Layout */}
-            <main className="flex-grow flex justify-center items-stretch relative z-10 px-0 md:px-8 pb-4 max-w-[1920px] mx-auto w-full h-full">
+            <main className="flex-grow flex flex-col lg:flex-row justify-center items-stretch relative z-10 px-0 md:px-8 pb-4 max-w-[1920px] mx-auto w-full h-full">
 
                 {/* PILLAR 1 */}
                 <Pillar className="hidden lg:flex" />
 
                 {/* SECTION 1: PROFESSIONAL */}
                 <section
-                    className={`flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('professional')}`}
+                    className={`order-1 lg:order-none flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('professional')}`}
                     onClick={() => setActiveSection('professional')}
                 >
                     <div className="flex items-center gap-4 mb-4">
@@ -659,17 +657,6 @@ export default function ProfcariaAuth() {
                             onChange={(e) => setProfEmail(e.target.value)}
                         />
 
-                        {globalMode === 'signup' && (
-                            <ModernInput
-                                onFocus={() => setActiveSection('professional')}
-                                placeholder="Phone Number"
-                                type="tel"
-                                icon={Phone}
-                                value={profPhone}
-                                onChange={(e) => setProfPhone(e.target.value)}
-                            />
-                        )}
-
                         <ModernInput
                             onFocus={() => setActiveSection('professional')}
                             placeholder="Password"
@@ -701,7 +688,7 @@ export default function ProfcariaAuth() {
                                 ? handleLogin('professional')
                                 : handleSignup('professional')
                             }
-                            disabled={loading || (globalMode === 'login' ? (!profEmail || !profPassword) : (!profEmail || !profPassword || !profFirstName || !profLastName))}
+                            disabled={loading || !isProfessionalValid}
                             loading={loading}
                             color="blue"
                         />
@@ -712,7 +699,7 @@ export default function ProfcariaAuth() {
                 <Pillar className="hidden md:flex" />
 
                 {/* CENTRAL SECTION */}
-                <section className="flex-1 min-w-[300px] max-w-md flex items-center justify-center relative pb-24">
+                <section className="order-2 lg:order-none flex-1 min-w-[300px] max-w-md flex items-center justify-center relative pb-24">
                     <div className="w-48 h-48 rounded-full bg-gradient-to-br from-blue-900/20 to-emerald-900/20 border-2 border-slate-700/50 shadow-2xl flex items-center justify-center relative overflow-hidden">
                         <div className="w-40 h-40 rounded-full bg-slate-900/50 flex items-center justify-center border border-slate-700/30 overflow-hidden">
                             <Image
@@ -732,7 +719,7 @@ export default function ProfcariaAuth() {
 
                 {/* SECTION 3: EMPLOYER */}
                 <section
-                    className={`flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('employer')}`}
+                    className={`order-3 lg:order-none flex-1 min-w-[320px] max-w-xl flex flex-col p-6 transition-all duration-500 ${getOpacity('employer')}`}
                     onClick={() => setActiveSection('employer')}
                 >
                     <div className="flex items-center gap-4 mb-4 justify-end md:justify-start">
@@ -752,34 +739,6 @@ export default function ProfcariaAuth() {
                                     value={empCompanyName}
                                     onChange={(e) => setEmpCompanyName(e.target.value)}
                                 />
-
-                                <div className="relative group cursor-pointer border border-dashed border-slate-700 hover:border-emerald-500/50 rounded-lg p-3 transition-colors text-center bg-slate-900/40">
-                                    <input
-                                        type="file"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                        onFocus={() => setActiveSection('employer')}
-                                    />
-                                    {logoPreview ? (
-                                        <div className="flex items-center gap-2 justify-center">
-                                            <Image
-                                                src={logoPreview}
-                                                alt="Logo"
-                                                width={32}
-                                                height={32}
-                                                unoptimized
-                                                className="w-8 h-8 rounded-full object-cover border border-slate-600"
-                                            />
-                                            <span className="text-xs text-emerald-400">Logo Uploaded</span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-1 text-slate-500 group-hover:text-slate-300">
-                                            <Upload size={16} />
-                                            <span className="text-xs">Upload Logo</span>
-                                        </div>
-                                    )}
-                                </div>
                             </div>
                         )}
 
@@ -823,7 +782,7 @@ export default function ProfcariaAuth() {
                                 ? handleLogin('employer')
                                 : handleSignup('employer')
                             }
-                            disabled={loading || (globalMode === 'login' ? (!empWorkEmail || !empPassword) : (!empWorkEmail || !empPassword || !empCompanyName))}
+                            disabled={loading || !isEmployerValid}
                             loading={loading}
                             color="emerald"
                         />

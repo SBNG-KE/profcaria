@@ -18,7 +18,6 @@ export async function POST(req: Request) {
       password,
       firstName,
       lastName,
-      phone,
       role
     } = body;
 
@@ -30,7 +29,7 @@ export async function POST(req: Request) {
     // 2. Create Blind Indexes (For Lookups)
     // We strictly search by hash, never by plain text to protect identity
     const emailIndex = hashForIndex(email);
-    const phoneIndex = phone ? hashForIndex(phone) : null;
+    const phoneIndex = null;
 
     // 3. Check if user already exists in Professional Schema
     const { data: existingUser } = await supabaseAdmin
@@ -73,7 +72,7 @@ export async function POST(req: Request) {
           enc_last_name: encLastName,
           enc_current_role: encRole,
           enc_email: encryptData(email),
-          enc_phone_number: phone ? encryptData(phone) : null,
+          enc_phone_number: null,
           // Default security
           requires_2fa: false
         }

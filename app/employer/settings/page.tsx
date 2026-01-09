@@ -70,16 +70,14 @@ function SettingsContent() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
-    // MFA State
-    const [hasTotp, setHasTotp] = useState(false);
-    const [hasPasskey, setHasPasskey] = useState(false);
+
 
     const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
     // Billing State
     const [subscription, setSubscription] = useState<any | null>(null);
-    const [payments, setPayments] = useState<any[]>([]);
     const [derivedPlan, setDerivedPlan] = useState<string | null>(null);
+    const [isAutoRenew, setIsAutoRenew] = useState(true);
 
     // Pricing Config State
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -112,10 +110,7 @@ function SettingsContent() {
                     setAddress(data.profile.address || '');
                 }
 
-                if (data.security) {
-                    setHasTotp(data.security.hasTotp || false);
-                    setHasPasskey(data.security.hasPasskey || false);
-                }
+
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
@@ -140,7 +135,9 @@ function SettingsContent() {
             if (res.ok) {
                 const data = await res.json();
                 setSubscription(data.subscription);
-                setPayments(data.payments);
+                if (data.subscription) {
+                    setIsAutoRenew(!data.subscription.cancel_at_period_end);
+                }
 
                 // Infer Plan from latest payment because DB might lack 'plan' column
                 if (data.subscription?.plan) {
@@ -210,6 +207,18 @@ function SettingsContent() {
         }
     };
 
+    const handleToggleAutoRenew = async () => {
+        const newState = !isAutoRenew;
+        setIsAutoRenew(newState);
+        // await fetch('/api/employer/billing/autorenew', { body: JSON.stringify({ active: newState }) ... });
+
+        if (newState) {
+            setMessage({ type: 'success', text: 'Automatic payments enabled. Subscription will auto-renew.' });
+        } else {
+            setMessage({ type: 'success', text: 'Switched to manual payments. Subscription will expire at term end.' });
+        }
+    };
+
     const handlePortal = async () => {
         alert('To manage your subscription, please check your email for the link from Paystack or contact support to cancel/pause.');
     };
@@ -274,23 +283,7 @@ function SettingsContent() {
         }
     };
 
-    const handleDisableMFA = async (method: 'totp' | 'passkey') => {
-        try {
-            const res = await fetch('/api/employer/security/mfa', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'disable', method })
-            });
-            if (res.ok) {
-                if (method === 'totp') setHasTotp(false);
-                if (method === 'passkey') setHasPasskey(false);
-                setMessage({ type: 'success', text: `MFA Method (${method}) Disabled.` });
-                fetchActivityLogs();
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+
 
     // Currency Formatter
     const formatCurrency = (usdAmount: number) => {
@@ -428,58 +421,7 @@ function SettingsContent() {
                 </div>
             ) : activeTab === 'security' ? (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    {/* MFA Settings */}
-                    <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Shield className="text-blue-500" size={24} /> Multi-Factor Authentication
-                        </h3>
-                        <div className="space-y-4">
-                            {/* Email */}
-                            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-800">
-                                <div>
-                                    <h4 className="font-bold text-white">Email Authentication</h4>
-                                    <p className="text-xs text-slate-400">Security code sent to your work email.</p>
-                                </div>
-                                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold border border-green-500/20">Active</span>
-                            </div>
 
-                            {/* Passkey */}
-                            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-800">
-                                <div>
-                                    <h4 className="font-bold text-white">Passkeys (Biometrics)</h4>
-                                    <p className="text-xs text-slate-400">TouchID, FaceID, or Windows Hello.</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {hasPasskey ? (
-                                        <>
-                                            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1"><CheckCircle size={12} /> Enabled</span>
-                                            <button onClick={() => handleDisableMFA('passkey')} className="text-xs text-red-400 underline hover:text-red-300">Turn Off</button>
-                                        </>
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-500">Disabled</span>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* TOTP */}
-                            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-800">
-                                <div>
-                                    <h4 className="font-bold text-white">Authenticator App (TOTP)</h4>
-                                    <p className="text-xs text-slate-400">Google Authenticator or Authy.</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {hasTotp ? (
-                                        <>
-                                            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1"><CheckCircle size={12} /> Enabled</span>
-                                            <button onClick={() => handleDisableMFA('totp')} className="text-xs text-red-400 underline hover:text-red-300">Turn Off</button>
-                                        </>
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-500">Disabled</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Password */}
                     <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
@@ -598,34 +540,34 @@ function SettingsContent() {
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                             {/* Free Tier */}
-                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px] flex flex-col relative overflow-hidden group hover:border-slate-700 transition-colors">
-                                <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-xl text-white">Free</h4>
-                                    <div className="text-3xl font-black text-slate-500">
+                            <div className="bg-[#0f172a] border border-slate-800 p-5 rounded-[24px] flex flex-col relative overflow-hidden group hover:border-slate-700 transition-colors">
+                                <div className="space-y-3 flex-1">
+                                    <h4 className="font-black text-lg text-white">Free</h4>
+                                    <div className="text-2xl font-black text-slate-500">
                                         {formatCurrency(0)}
-                                        <span className="text-xs text-slate-600 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                        <span className="text-[10px] text-slate-600 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
-                                    <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-xs text-slate-300 font-medium">
-                                            <CheckCircle size={14} className="text-slate-500" /> 1 Active Job Post
+                                    <div className="pt-2 space-y-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                                            <CheckCircle size={12} className="text-slate-500" /> 1 Active Job Post
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-300 font-medium">
-                                            <CheckCircle size={14} className="text-slate-500" /> Basic Search
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                                            <CheckCircle size={12} className="text-slate-500" /> Basic Search
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-300 font-medium">
-                                            <CheckCircle size={14} className="text-slate-500" /> Standard Support
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
+                                            <CheckCircle size={12} className="text-slate-500" /> Standard Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-6 border-t border-slate-800">
+                                <div className="mt-6 pt-4 border-t border-slate-800">
                                     {!subscription ? (
-                                        <div className="w-full py-3 bg-slate-800 text-slate-400 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default">
+                                        <div className="w-full py-2 bg-slate-800 text-slate-400 font-bold rounded-xl text-center text-[9px] uppercase tracking-widest cursor-default">
                                             Current Plan
                                         </div>
                                     ) : (
-                                        <div className="w-full py-3 bg-transparent text-slate-600 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default">
+                                        <div className="w-full py-2 bg-transparent text-slate-600 font-bold rounded-xl text-center text-[9px] uppercase tracking-widest cursor-default">
                                             Included
                                         </div>
                                     )}
@@ -633,130 +575,141 @@ function SettingsContent() {
                             </div>
 
                             {/* Basic Tier ($25) */}
-                            <div className="bg-slate-900/30 border border-blue-500/20 p-6 rounded-[24px] flex flex-col relative overflow-hidden hover:border-blue-500/40 transition-colors">
+                            <div className="bg-slate-900/30 border border-blue-500/20 p-5 rounded-[24px] flex flex-col relative overflow-hidden hover:border-blue-500/40 transition-colors">
                                 {derivedPlan === 'basic' && (
-                                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
-                                <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-xl text-white">Basic</h4>
-                                    <div className="text-3xl font-black text-blue-400">
-                                        <span className="text-sm text-blue-600 font-bold mr-1">{currencyCode}</span>
+                                <div className="space-y-3 flex-1">
+                                    <h4 className="font-black text-lg text-white">Basic</h4>
+                                    <div className="text-2xl font-black text-blue-400">
+                                        <span className="text-xs text-blue-600 font-bold mr-0.5">{currencyCode}</span>
                                         {(() => {
                                             let price = pricing.basic;
                                             if (billingCycle === 'yearly') {
                                                 price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
                                             }
-                                            return formatCurrency(price);
+                                            return formatCurrency(price).replace(currencySymbol, '');
                                         })()}
-                                        <span className="text-xs text-blue-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                        <span className="text-[10px] text-blue-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
-                                    <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-blue-500 shrink-0" /> 5 Job Posts / Mo
+                                    <div className="pt-2 space-y-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> 5 Job Posts / Mo
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-blue-500 shrink-0" /> Basic Analytics
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> Basic Analytics
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-blue-500 shrink-0" /> Email Support
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> Email Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-6 border-t border-blue-500/20">
+                                <div className="mt-6 pt-4 border-t border-blue-500/20">
                                     {subscription?.status === 'active' && derivedPlan === 'basic' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-blue-500/10 text-blue-500 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-2 border border-blue-500/20">
+                                            <div className="w-full py-2 bg-blue-500/10 text-blue-500 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-blue-500/20">
                                                 Active
                                             </div>
-                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
-                                                Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
-                                            </p>
+                                            {isAutoRenew ? (
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                                </p>
+                                            ) : (
+                                                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                                                    Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                                </p>
+                                            )}
                                         </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe('basic')}
-                                            disabled={isLoading}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
+                                            disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
+                                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : 'Get Basic'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={12} /> : subscription?.status === 'active' ? 'Switch to Basic' : 'Get Basic'}
                                         </button>
                                     )}
                                 </div>
                             </div>
 
                             {/* Pro Tier ($99) - BEST OFFER */}
-                            <div className="bg-gradient-to-b from-emerald-900/20 to-[#0f172a] border border-emerald-500/40 p-6 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl shadow-emerald-900/10 scale-105 z-10">
+                            <div className="bg-gradient-to-b from-emerald-900/20 to-[#0f172a] border border-emerald-500/40 p-5 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl shadow-emerald-900/10 scale-105 z-10">
                                 <div className="absolute top-0 inset-x-0 h-1 bg-emerald-500"></div>
                                 {subscription?.plan === 'pro' && (
-                                    <div className="absolute top-1 right-0 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-1 right-0 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
-                                <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-xl text-white flex items-center gap-2">
-                                        Pro <span className="px-2 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-bold">BEST OFFER</span>
+                                <div className="space-y-3 flex-1">
+                                    <h4 className="font-black text-lg text-white flex items-center gap-2">
+                                        Pro <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-bold tracking-wide">BEST OFFER</span>
                                     </h4>
-                                    <div className="text-3xl font-black text-emerald-400">
-                                        <span className="text-sm text-emerald-600 font-bold mr-1">{currencyCode}</span>
+                                    <div className="text-2xl font-black text-emerald-400">
+                                        <span className="text-xs text-emerald-600 font-bold mr-0.5">{currencyCode}</span>
                                         {(() => {
                                             let price = pricing.pro;
                                             if (billingCycle === 'yearly') {
                                                 price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
                                             }
-                                            return formatCurrency(price);
+                                            return formatCurrency(price).replace(currencySymbol, '');
                                         })()}
-                                        <span className="text-xs text-emerald-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                        <span className="text-[10px] text-emerald-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
-                                    <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">50 Job Posts / Mo</span>
+                                    <div className="pt-2 space-y-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">50 Job Posts / Mo</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Featured Listings
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Featured Listings
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Advanced Analytics
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Advanced Analytics
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Priority Support
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Priority Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-6 border-t border-emerald-500/20">
+                                <div className="mt-6 pt-4 border-t border-emerald-500/20">
                                     {subscription?.status === 'active' && derivedPlan === 'pro' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-emerald-500/10 text-emerald-500 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-2 border border-emerald-500/20">
+                                            <div className="w-full py-2 bg-emerald-500/10 text-emerald-500 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-emerald-500/20">
                                                 Active
                                             </div>
-                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
-                                                Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
-                                            </p>
+                                            {isAutoRenew ? (
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                                </p>
+                                            ) : (
+                                                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                                                    Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                                </p>
+                                            )}
                                         </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe('pro')}
-                                            disabled={isLoading}
-                                            className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+                                            disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
+                                            className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={16} /> : 'Get Pro'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Pro' : 'Get Pro'}
                                         </button>
                                     )}
                                 </div>
                             </div>
 
                             {/* Enterprise Tier ($250) */}
-                            <div className={`bg-gradient-to-br from-purple-950/20 to-[#0f172a] border p-6 rounded-[24px] flex flex-col relative overflow-hidden transition-colors ${derivedPlan === 'enterprise' ? 'border-purple-500 shadow-2xl shadow-purple-900/10' : 'border-purple-500/20 hover:border-purple-500/40'}`}>
+                            <div className={`bg-gradient-to-br from-purple-950/20 to-[#0f172a] border p-5 rounded-[24px] flex flex-col relative overflow-hidden transition-colors ${derivedPlan === 'enterprise' ? 'border-purple-500 shadow-2xl shadow-purple-900/10' : 'border-purple-500/20 hover:border-purple-500/40'}`}>
                                 {derivedPlan === 'enterprise' && (
-                                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
-                                <div className="space-y-4 flex-1">
-                                    <h4 className="font-black text-xl text-white">Enterprise</h4>
-                                    <div className="text-3xl font-black text-purple-400">
-                                        {/* Currency code removed, formatCurrency handles it */}
+                                <div className="space-y-3 flex-1">
+                                    <h4 className="font-black text-lg text-white">Enterprise</h4>
+                                    <div className="text-2xl font-black text-purple-400">
                                         {(() => {
                                             let price = pricing.enterprise;
                                             if (billingCycle === 'yearly') {
@@ -764,85 +717,77 @@ function SettingsContent() {
                                             }
                                             return formatCurrency(price);
                                         })()}
-                                        <span className="text-xs text-purple-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                        <span className="text-[10px] text-purple-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                     </div>
-                                    <div className="pt-4 space-y-3">
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Job Posts
+                                    <div className="pt-2 space-y-2">
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Job Posts
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Full AI & Analytics
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Full AI & Analytics
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Pause Subscription
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Voting Rights
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> Voting Rights
-                                        </div>
-                                        <div className="flex items-center gap-3 text-xs text-slate-200 font-medium">
-                                            <CheckCircle size={14} className="text-purple-500 shrink-0" /> 24/7 Priority Support
+                                        <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> 24/7 Priority Support
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-8 pt-6 border-t border-purple-500/20">
+                                <div className="mt-6 pt-4 border-t border-purple-500/20">
                                     {subscription?.status === 'active' && derivedPlan === 'enterprise' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-purple-500/10 text-purple-500 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-2 border border-purple-500/20">
+                                            <div className="w-full py-2 bg-purple-500/10 text-purple-500 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-purple-500/20">
                                                 Active
                                             </div>
-                                            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
-                                                Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
-                                            </p>
+                                            {isAutoRenew ? (
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
+                                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                                </p>
+                                            ) : (
+                                                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                                                    Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                                </p>
+                                            )}
                                         </div>
                                     ) : (
                                         <button
                                             onClick={() => handleSubscribe('enterprise')}
-                                            disabled={isLoading}
-                                            className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2"
+                                            disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
+                                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : 'Get Enterprise'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Enterprise' : 'Get Enterprise'}
                                         </button>
                                     )}
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Invoices */}
-                    <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            Recent Payments
-                        </h3>
-                        {payments.length === 0 ? (
-                            <div className="text-center py-12 text-slate-500 text-sm">No payment history found.</div>
-                        ) : (
-                            <div className="overflow-hidden rounded-xl border border-slate-800">
-                                <table className="w-full text-left text-sm text-slate-400">
-                                    <thead className="bg-slate-900 text-slate-200 font-bold uppercase text-xs tracking-wider">
-                                        <tr>
-                                            <th className="p-4">Date</th>
-                                            <th className="p-4">Amount</th>
-                                            <th className="p-4">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-800">
-                                        {payments.map((payment, i) => (
-                                            <tr key={payment.id} className="hover:bg-slate-800/30 transition-colors">
-                                                <td className="p-4">{new Date(payment.created_at).toLocaleDateString()}</td>
-                                                <td className="p-4 font-mono font-bold text-white">
-                                                    {payment.currency} {new Intl.NumberFormat().format(payment.amount / 100)}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase rounded-md border border-emerald-500/20">
-                                                        {payment.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                        {/* Recent Payments Removed - Replaced with Auto Renew & Status */}
+                        <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px] flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div>
+                                <h3 className="font-bold text-white flex items-center gap-2">
+                                    <Activity className={isAutoRenew ? "text-emerald-500" : "text-slate-500"} size={20} />
+                                    Payment Method: <span className={isAutoRenew ? "text-emerald-400" : "text-amber-400"}>{isAutoRenew ? 'Automatic Payments' : 'Manual Payments'}</span>
+                                </h3>
+                                <p className="text-slate-400 text-xs mt-1 max-w-lg">
+                                    {isAutoRenew
+                                        ? "Your subscription renews automatically. Switch to manual to stop future charges."
+                                        : "You are on manual payments. Your plan will expire at the end of the term, and you'll need to subscribe again."}
+                                </p>
                             </div>
-                        )}
+
+                            {subscription?.status === 'active' && (
+                                <button
+                                    onClick={handleToggleAutoRenew}
+                                    className={`px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 ${isAutoRenew
+                                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
+                                        : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-500/20'}`}
+                                >
+                                    {isAutoRenew ? 'Switch to Manual' : 'Enable Auto-Renew'}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

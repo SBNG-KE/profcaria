@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
 
 // Define paths
 const PROFESSIONAL_PATHS = ['/professional'];
@@ -77,6 +77,18 @@ export default async function middleware(req: NextRequest) {
         const hasTotp = payload.has_totp as boolean;
         const hasPasskey = payload.has_passkey as boolean;
         const aal = (payload.aal as number) || 1;
+        const now = Math.floor(Date.now() / 1000);
+        const lastActive = (payload.last_active as number) || (payload.iat as number) || now;
+
+        // --- INACTIVITY CHECK (e.g., 7 days) ---
+        // If user hasn't been seen for > 7 days, force logout, even if token is valid for 30d.
+        const IDLE_TIMEOUT = 7 * 24 * 60 * 60;
+        if (now - lastActive > IDLE_TIMEOUT) {
+            console.log('🔐 [MIDDLEWARE] Session idle timeout');
+            const response = NextResponse.redirect(new URL('/', req.url));
+            response.cookies.delete('profcaria_session');
+            return response;
+        }
 
         // Prepare headers for downstream
         const requestHeaders = new Headers(req.headers);
@@ -100,43 +112,65 @@ export default async function middleware(req: NextRequest) {
         }
 
         // 3. 2FA / Security Enforcement
-        // We ONLY enforce this loop if the user is NOT on a public page (unless you want to block public viewing for partial users)
-        // OR if they are currently inside the security flow (to allow them to complete it)
-
         const isProtectedContext = isProfessionalRoute || isEmployerRoute || isSecurityRoute;
 
         // Allow access to setup/verify pages to prevent infinite redirects
         if (isSetupOrVerify) {
+            // We still want to refresh token if needed, but for now just pass through
+            // Actually, better to use the common response object at the bottom?
+            // But existing logic returns early.
+            // We'll just return next() here. Verification pages often have short lived interactions.
             return NextResponse.next({ request: { headers: requestHeaders } });
         }
 
-        // If we are in a protected context, we enforce 2FA
         if (isProtectedContext) {
             const hasAny2FA = hasTotp || hasPasskey;
 
             if (hasAny2FA) {
-                // User has 2FA set up, but current session is not verified (AAL1)
                 if (aal < 2) {
                     if (DEBUG) console.log(`🔐 [MIDDLEWARE] AAL1 detected, enforcing verify`);
                     return NextResponse.redirect(new URL('/security/verify', req.url));
                 }
             } else {
-                // User has NO 2FA set up at all -> Force Setup
                 if (DEBUG) console.log(`🔐 [MIDDLEWARE] No 2FA detected, enforcing setup`);
                 return NextResponse.redirect(new URL('/security/setup', req.url));
             }
         }
 
-        // 4. Allow request to proceed with injected headers
-        return NextResponse.next({
+        // 4. Allowed Request - Check for Token Refresh (Sliding Window)
+        const response = NextResponse.next({
             request: {
                 headers: requestHeaders,
             },
         });
 
+        // Refresh if > 1 hour since last active
+        const REFRESH_THRESHOLD = 60 * 60;
+        if (now - lastActive > REFRESH_THRESHOLD) {
+            if (DEBUG) console.log('🔐 [MIDDLEWARE] Refreshing session token (sliding window)');
+            const newPayload = { ...payload, last_active: now }; // Update last_active
+
+            // Sign new token
+            // Note: SignJWT needs to be imported
+            const newToken = await new SignJWT(newPayload)
+                .setProtectedHeader({ alg: 'HS256' })
+                .setIssuedAt()
+                .setExpirationTime('30d') // Extend to full 30 days
+                .sign(secret);
+
+            response.cookies.set('profcaria_session', newToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 30 * 24 * 60 * 60, // 30 days
+                path: '/'
+            });
+        }
+
+        return response;
+
     } catch (err) {
         console.error("🔐 [MIDDLEWARE] Token Verification Failed:", err);
-        // If token is invalid/expired, remove it and redirect to login/home
         const response = NextResponse.redirect(new URL('/', req.url));
         response.cookies.delete('profcaria_session');
         return response;

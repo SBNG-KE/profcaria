@@ -35,8 +35,8 @@ export async function POST(req: Request) {
         const verification = await verifyRegistrationResponse({
             response: body,
             expectedChallenge: challenge,
-            expectedOrigin: 'http://localhost:3000', // TODO: Use env var for origin
-            expectedRPID: 'localhost',
+            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://profcaria.com' : 'http://localhost:3000'),
+            expectedRPID: process.env.RP_ID || (process.env.NODE_ENV === 'production' ? 'profcaria.com' : 'localhost'),
         });
 
         if (verification.verified && verification.registrationInfo) {

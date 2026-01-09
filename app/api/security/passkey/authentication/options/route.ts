@@ -39,7 +39,7 @@ export async function POST() {
         }));
 
         const options = await generateAuthenticationOptions({
-            rpID: process.env.RP_ID || 'localhost',
+            rpID: process.env.RP_ID || (process.env.NODE_ENV === 'production' ? 'profcaria.com' : 'localhost'),
             allowCredentials,
             userVerification: 'preferred',
         });

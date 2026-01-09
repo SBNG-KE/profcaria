@@ -144,14 +144,13 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
         setCropSource(e.target.files[0]);
-        // Close main modal to focus on cropper
-        setIsImageModalOpen(false);
+        // Keep main modal open so we return to it on cancel
     };
 
     const handleEditCurrent = () => {
         if (userData?.profile?.profileImageUrl) {
             setCropSource(userData.profile.profileImageUrl);
-            setIsImageModalOpen(false);
+            // Keep main modal open so we return to it on cancel
         }
     };
 
@@ -227,13 +226,13 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 <div className="flex flex-col items-center pt-8 px-4 shrink-0">
                     <button
                         onClick={() => setIsImageModalOpen(true)}
-                        className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 shadow-2xl border border-slate-700 transition-all duration-300 hover:scale-105 active:scale-95 ${sidebarOpen ? 'w-32 aspect-square mb-4' : 'w-12 h-12 mb-6'}`}
+                        className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 shadow-2xl border border-slate-700 transition-all duration-300 hover:scale-105 active:scale-95 ${sidebarOpen ? 'w-40 aspect-square mb-6' : 'w-12 h-12 mb-6'}`}
                     >
                         {userData?.profile?.profileImageUrl ? (
                             <img src={userData.profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             <div className="absolute inset-0 flex items-center justify-center bg-slate-800 text-slate-600">
-                                <UserCircle size={sidebarOpen ? 48 : 24} />
+                                <UserCircle size={sidebarOpen ? 40 : 24} />
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -311,49 +310,58 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
             {isImageModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setIsImageModalOpen(false)}></div>
-                    <div className="relative w-full max-w-2xl aspect-square bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col items-center justify-center group">
-                        {userData?.profile?.profileImageUrl ? (
-                            <img
-                                src={userData.profile.profileImageUrl}
-                                alt="Profile Large"
-                                className="w-full h-full object-contain"
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center gap-4 text-slate-600">
-                                <UserCircle size={120} />
-                                <p className="font-bold uppercase tracking-widest text-sm text-slate-400">No profile photo</p>
+                    <div className="relative w-full max-w-2xl aspect-square bg-[#0f172a] border border-slate-700/50 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col group">
+
+                        {/* Image Area */}
+                        <div className="flex-1 relative bg-slate-900/50 overflow-hidden">
+                            {userData?.profile?.profileImageUrl ? (
+                                <img
+                                    src={userData.profile.profileImageUrl}
+                                    alt="Profile Large"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-slate-600">
+                                    <UserCircle size={100} />
+                                    <p className="font-bold uppercase tracking-widest text-sm text-slate-500">No profile photo</p>
+                                </div>
+                            )}
+                            {/* Overlay Gradient for Text readability */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-transparent to-transparent opacity-80"></div>
+                        </div>
+
+                        {/* Controls Bottom Bar */}
+                        <div className="absolute bottom-0 left-0 right-0 p-8 flex items-center justify-between gap-6 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/90 to-transparent">
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50 hover:shadow-blue-500/30 ring-1 ring-white/10"
+                                >
+                                    {isUploading ? 'Uploading...' : userData?.profile?.profileImageUrl ? 'Replace Photo' : 'Upload Photo'}
+                                </button>
+
+                                {userData?.profile?.profileImageUrl && (
+                                    <>
+                                        <button
+                                            onClick={handleEditCurrent}
+                                            className="px-6 py-4 bg-slate-800/80 hover:bg-slate-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-lg active:scale-95 backdrop-blur-sm border border-slate-700"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={handleImageDelete}
+                                            className="px-6 py-4 bg-red-500/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-red-500/20 transition-all active:scale-95 backdrop-blur-sm"
+                                        >
+                                            Remove
+                                        </button>
+                                    </>
+                                )}
                             </div>
-                        )}
 
-                        <div className="absolute bottom-8 left-8 right-8 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploading}
-                                className="flex-1 py-4 bg-blue-600 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-blue-500 transition-all shadow-xl shadow-blue-600/20 active:scale-95 disabled:opacity-50"
-                            >
-                                {isUploading ? 'Uploading...' : userData?.profile?.profileImageUrl ? 'Replace Photo' : 'Add Photo'}
-                            </button>
-
-                            {userData?.profile?.profileImageUrl && (
-                                <button
-                                    onClick={handleEditCurrent}
-                                    className="px-6 py-4 bg-slate-800 hover:bg-slate-700 text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-xl active:scale-95"
-                                >
-                                    Edit
-                                </button>
-                            )}
-
-                            {userData?.profile?.profileImageUrl && (
-                                <button
-                                    onClick={handleImageDelete}
-                                    className="px-6 py-4 bg-red-600/10 border border-red-500/20 text-red-500 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-red-500/20 transition-all active:scale-95"
-                                >
-                                    Remove
-                                </button>
-                            )}
                             <button
                                 onClick={() => setIsImageModalOpen(false)}
-                                className="px-6 py-4 bg-slate-800 text-white font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-slate-700 transition-all active:scale-95"
+                                className="px-6 py-4 text-slate-400 hover:text-white font-black uppercase tracking-widest text-xs transition-colors"
                             >
                                 Close
                             </button>

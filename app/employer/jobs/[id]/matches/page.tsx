@@ -65,12 +65,7 @@ export default function JobMatchesPage() {
     return (
         <div className="p-8 max-w-5xl mx-auto min-h-screen pb-32 font-sans">
             <header className="flex items-center gap-6 mb-12 animate-in fade-in slide-in-from-top-4">
-                <button
-                    onClick={() => router.back()}
-                    className="p-3 rounded-xl bg-slate-900/50 hover:bg-slate-800 text-slate-400 hover:text-white transition-all border border-slate-700/50"
-                >
-                    <ArrowLeft size={20} />
-                </button>
+
                 <div>
                     <h1 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
                         <Zap className="text-yellow-400" fill="currentColor" />

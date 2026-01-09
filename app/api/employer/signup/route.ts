@@ -15,9 +15,7 @@ export async function POST(req: Request) {
     const {
       companyName,
       workEmail,
-      phone,
       password,
-      logoUrl // This should be the blob URL sent from the frontend after upload
     } = body;
 
     // 1. Validation
@@ -27,7 +25,7 @@ export async function POST(req: Request) {
 
     // 2. Create Blind Indexes
     const emailIndex = hashForIndex(workEmail);
-    const phoneIndex = phone ? hashForIndex(phone) : null;
+    const phoneIndex = null;
 
     // 3. Check for existing company
     const { data: existing } = await supabaseAdmin
@@ -51,7 +49,7 @@ export async function POST(req: Request) {
     // 5. Encrypt Sensitive Data
     const encCompanyName = encryptData(companyName);
     // Even the logo URL is encrypted so no one can scrape your list of customers by checking blob URLs
-    const encLogo = logoUrl ? encryptData(logoUrl) : null;
+    const encLogo = null;
 
     // 6. Insert into Employer Schema
     const { data, error } = await supabaseAdmin
@@ -65,7 +63,7 @@ export async function POST(req: Request) {
           enc_company_name: encCompanyName,
           enc_logo_url: encLogo,
           enc_work_email: encryptData(workEmail),
-          enc_phone_number: phone ? encryptData(phone) : null,
+          enc_phone_number: null,
           // Default security settings
           requires_2fa: true,
           allow_passkeys: true

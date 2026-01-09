@@ -26,9 +26,7 @@ export default function ProfessionalSettingsPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
-    // MFA State
-    const [hasTotp, setHasTotp] = useState(false);
-    const [hasPasskey, setHasPasskey] = useState(false);
+
 
     // Preferences State
     const [targetRoleInput, setTargetRoleInput] = useState('');
@@ -69,11 +67,7 @@ export default function ProfessionalSettingsPage() {
                     setAddress(data.profile.address || '');
                 }
 
-                // Security Flags
-                if (data.security) {
-                    setHasTotp(data.security.hasTotp || false);
-                    setHasPasskey(data.security.hasPasskey || false);
-                }
+
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
@@ -206,23 +200,7 @@ export default function ProfessionalSettingsPage() {
         }
     };
 
-    const handleDisableMFA = async (method: 'totp' | 'passkey') => {
-        // Confirmation could be added here
-        try {
-            const res = await fetch('/api/professional/security/mfa', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'disable', method })
-            });
-            if (res.ok) {
-                setHasTotp(false);
-                setMessage({ type: 'success', text: 'MFA Method Disabled.' });
-                fetchActivityLogs();
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
+
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8 pb-32">
@@ -548,55 +526,7 @@ export default function ProfessionalSettingsPage() {
                 </div>
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    {/* MFA Settings */}
-                    <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Shield className="text-emerald-500" size={24} /> Multi-Factor Authentication
-                        </h3>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-800">
-                                <div>
-                                    <h4 className="font-bold text-white">Email Authentication</h4>
-                                    <p className="text-xs text-slate-400">Security code sent to your email address.</p>
-                                </div>
-                                <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold border border-green-500/20">Active</span>
-                            </div>
 
-                            {/* Passkey UI */}
-                            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-800">
-                                <div>
-                                    <h4 className="font-bold text-white">Passkeys (Biometrics)</h4>
-                                    <p className="text-xs text-slate-400">TouchID, FaceID, or Windows Hello.</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {hasPasskey ? (
-                                        <>
-                                            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1"><CheckCircle size={12} /> Enabled</span>
-                                            <button onClick={() => handleDisableMFA('passkey')} className="text-xs text-red-400 underline hover:text-red-300">Turn Off</button>
-                                        </>
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-500">Disabled</span>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-800">
-                                <div>
-                                    <h4 className="font-bold text-white">Authenticator App (TOTP)</h4>
-                                    <p className="text-xs text-slate-400">Google Authenticator or Authy.</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    {hasTotp ? (
-                                        <>
-                                            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1"><CheckCircle size={12} /> Enabled</span>
-                                            <button onClick={() => handleDisableMFA('totp')} className="text-xs text-red-400 underline hover:text-red-300">Turn Off</button>
-                                        </>
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-500">Disabled</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* Password Change */}
                     <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">

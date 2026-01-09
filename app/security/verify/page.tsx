@@ -14,7 +14,7 @@ import {
     HelpCircle,
     AlertCircle,
     CheckCircle2,
-    MessageSquare
+    Mail
 } from "lucide-react";
 import { startAuthentication } from '@simplewebauthn/browser';
 
@@ -23,6 +23,7 @@ type SecurityStatus = {
     hasTotp: boolean;
     hasPhone: boolean;
     is2faEnabled: boolean;
+    defaultMethod?: 'passkey' | 'totp' | 'phone' | null;
 };
 
 export default function SecurityVerifyPage() {
@@ -41,163 +42,109 @@ export default function SecurityVerifyPage() {
 
     // 1. Fetch Status
     useEffect(() => {
-    console.log('🔍 DEBUG: Fetching security status from /api/auth/me');
-    fetch('/api/auth/me')
-        .then(res => res.json())
-        .then(data => {
-            console.log('🔍 DEBUG: Received data from /api/auth/me:', data);
-            if (data.security) {
-                console.log('🔍 DEBUG: Security status:', data.security);
-                setStatus(data.security);
+        console.log('🔍 DEBUG: Fetching security status from /api/auth/me');
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+                console.log('🔍 DEBUG: Received data from /api/auth/me:', data);
+                if (data.security) {
+                    console.log('🔍 DEBUG: Security status:', data.security);
+                    setStatus(data.security);
 
-                // Check if user is coming from password reset
-                if (typeof window !== 'undefined') {
-                    const resetEmail = localStorage.getItem('reset_password_email');
-                    if (resetEmail) {
-                        console.log('🔍 DEBUG: User is resetting password, email stored:', resetEmail);
+                    // Check if user is coming from password reset
+                    if (typeof window !== 'undefined') {
+                        const resetEmail = localStorage.getItem('reset_password_email');
+                        if (resetEmail) {
+                            console.log('🔍 DEBUG: User is resetting password, email stored:', resetEmail);
+                        }
                     }
-                }
 
-                if (!data.security.is2faEnabled) {
-                    console.log('🔍 DEBUG: 2FA not enabled, redirecting to /security/setup');
-                    router.push('/security/setup');
-                } else if (data.security.hasPasskey && !autoStarted.current) {
-                    console.log('🔍 DEBUG: Has passkey, auto-triggering passkey auth');
-                    autoStarted.current = true;
-                    setMethod('passkey');
-                    setStep('method');
-                    setTimeout(startPasskeyAuth, 100);
+                    if (!data.security.is2faEnabled) {
+                        console.log('🔍 DEBUG: 2FA not enabled, redirecting to /security/setup');
+                        router.push('/security/setup');
+                    } else if (data.security.defaultMethod && ['passkey', 'totp', 'phone'].includes(data.security.defaultMethod)) {
+                        // Auto-select default method
+                        console.log('🔍 DEBUG: Auto-selecting default method:', data.security.defaultMethod);
+                        setMethod(data.security.defaultMethod as any);
+                        setStep('method');
+
+                        if (data.security.defaultMethod === 'passkey') {
+                            setTimeout(startPasskeyAuth, 500);
+                        } else if (data.security.defaultMethod === 'phone') {
+                            fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
+                        }
+                    } else {
+                        console.log('🔍 DEBUG: Showing selection');
+                        setStep('selection');
+                    }
                 } else {
-                    console.log('🔍 DEBUG: Showing selection');
-                    setStep('selection');
+                    console.log('🔍 DEBUG: No security data in response');
                 }
-            } else {
-                console.log('🔍 DEBUG: No security data in response');
-            }
-            setLoading(false);
-        })
-        .catch(err => {
-            console.error('🔍 DEBUG: Error fetching security status:', err);
-            setError("Failed to load security status");
-            setLoading(false);
-        });
-}, []);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error('🔍 DEBUG: Error fetching security status:', err);
+                setError("Failed to load security status");
+                setLoading(false);
+            });
+    }, []);
+
+    const handleSetDefault = async (newDefault: boolean) => {
+        if (!status) return;
+        const methodToSet = newDefault ? method : null;
+
+        // Optimistic update
+        setStatus({ ...status, defaultMethod: methodToSet });
+
+        try {
+            await fetch('/api/security/default-method', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ method: methodToSet })
+            });
+        } catch (e) {
+            console.error('Failed to set default', e);
+        }
+    };
+
+    const DefaultToggle = () => (
+        <div className="flex items-center justify-center gap-2 mt-4 mb-2">
+            <button
+                onClick={() => handleSetDefault(status?.defaultMethod !== method)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${status?.defaultMethod === method
+                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                    : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:border-slate-500'
+                    }`}
+            >
+                <div className={`w-2 h-2 rounded-full ${status?.defaultMethod === method ? 'bg-blue-400' : 'bg-slate-600'}`} />
+                {status?.defaultMethod === method ? 'Default Method' : 'Set as Default'}
+            </button>
+        </div>
+    );
 
     const verifyTotp = async () => {
-    setVerifying(true);
-    setError(null);
-    try {
-        const res = await fetch('/api/security/totp/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: totpCode })
-        });
-        const data = await res.json();
-
-        if (!res.ok) {
-            throw new Error(data.error);
-        }
-
-        // Check if we're coming from password reset
-        if (typeof window !== 'undefined') {
-            const resetEmail = localStorage.getItem('reset_password_email');
-            if (resetEmail) {
-                // Redirect back to the page with modal
-                window.location.href = '/?resetPassword=true';
-                return;
-            }
-        }
-
-        router.refresh();
-        router.push(data.redirect || '/');
-    } catch (err: any) {
-        setError(err.message || "Invalid code");
-    } finally {
-        setVerifying(false);
-    }
-};
-
-// In startPasskeyAuth function, update the success part:
-const startPasskeyAuth = async () => {
-    setVerifying(true);
-    setError(null);
-
-    try {
-        const resp = await fetch(
-            '/api/security/passkey/authentication/options',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
-            }
-        );
-
-        const opts = await resp.json();
-        if (!resp.ok) {
-            throw new Error(opts.error || 'Failed to get authentication options');
-        }
-
-        let assertion;
-        try {
-            assertion = await startAuthentication({ optionsJSON: opts });
-        } catch (e: any) {
-            if (e.name === 'NotAllowedError') {
-                throw new Error('Passkey request was cancelled.');
-            }
-            throw e;
-        }
-
-        const verificationResp = await fetch(
-            '/api/security/passkey/authentication/verify',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(assertion),
-            }
-        );
-
-        const verificationJSON = await verificationResp.json();
-        if (!verificationResp.ok || !verificationJSON.verified) {
-            throw new Error(verificationJSON.error || 'Passkey verification failed');
-        }
-
-        // Check if we're coming from password reset
-        if (typeof window !== 'undefined') {
-            const resetEmail = localStorage.getItem('reset_password_email');
-            if (resetEmail) {
-                // Redirect back to the page with modal
-                window.location.href = '/?resetPassword=true';
-                return;
-            }
-        }
-
-        router.refresh();
-        router.push(verificationJSON.redirect || '/');
-
-    } catch (err: any) {
-        console.error('Passkey Auth Error:', err);
-        setError(err.message || 'Passkey authentication failed');
-    } finally {
-        setVerifying(false);
-    }
-};
-
-
-
-
-    const verifyPhone = async () => {
         setVerifying(true);
         setError(null);
         try {
-            const res = await fetch('/api/security/phone/verify', {
+            const res = await fetch('/api/security/totp/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: phoneCode })
+                body: JSON.stringify({ code: totpCode })
             });
             const data = await res.json();
 
             if (!res.ok) {
                 throw new Error(data.error);
+            }
+
+            // Check if we're coming from password reset
+            if (typeof window !== 'undefined') {
+                const resetEmail = localStorage.getItem('reset_password_email');
+                if (resetEmail) {
+                    // Redirect back to the page with modal
+                    window.location.href = '/?resetPassword=true';
+                    return;
+                }
             }
 
             router.refresh();
@@ -209,10 +156,118 @@ const startPasskeyAuth = async () => {
         }
     };
 
+    // In startPasskeyAuth function, update the success part:
+    const startPasskeyAuth = async () => {
+        setVerifying(true);
+        setError(null);
+
+        try {
+            const resp = await fetch(
+                '/api/security/passkey/authentication/options',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                }
+            );
+
+            const opts = await resp.json();
+            if (!resp.ok) {
+                throw new Error(opts.error || 'Failed to get authentication options');
+            }
+
+            let assertion;
+            try {
+                assertion = await startAuthentication({ optionsJSON: opts });
+            } catch (e: any) {
+                if (e.name === 'NotAllowedError') {
+                    throw new Error('Passkey request was cancelled.');
+                }
+                throw e;
+            }
+
+            const verificationResp = await fetch(
+                '/api/security/passkey/authentication/verify',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(assertion),
+                }
+            );
+
+            const verificationJSON = await verificationResp.json();
+            if (!verificationResp.ok || !verificationJSON.verified) {
+                throw new Error(verificationJSON.error || 'Passkey verification failed');
+            }
+
+            // Check if we're coming from password reset
+            if (typeof window !== 'undefined') {
+                const resetEmail = localStorage.getItem('reset_password_email');
+                if (resetEmail) {
+                    // Redirect back to the page with modal
+                    window.location.href = '/?resetPassword=true';
+                    return;
+                }
+            }
+
+            router.refresh();
+            router.push(verificationJSON.redirect || '/');
+
+        } catch (err: any) {
+            console.error('Passkey Auth Error:', err);
+            setError(err.message || 'Passkey authentication failed');
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+
+
+
+    // Auto-verify Email OTP
+    useEffect(() => {
+        if (phoneCode.length === 6 && method === 'phone' && !verifying) {
+            verifyPhone();
+        }
+    }, [phoneCode]);
+
+    const verifyPhone = async () => {
+        setVerifying(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/security/otp/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: phoneCode })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error);
+            }
+
+            // Check if we're coming from password reset
+            if (typeof window !== 'undefined') {
+                const resetEmail = localStorage.getItem('reset_password_email');
+                if (resetEmail) {
+                    // Redirect back to the page with modal
+                    window.location.href = '/?resetPassword=true';
+                    return;
+                }
+            }
+
+            router.refresh();
+            router.push(data.redirect || '/');
+        } catch (err: any) {
+            setError(err.message || "Invalid code");
+            setVerifying(false); // Only set false on error to prevent UI flash on success redirect
+        }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent, type: 'totp' | 'phone') => {
         if (e.key === 'Enter') {
             if (type === 'totp' && totpCode.length === 6) verifyTotp();
-            if (type === 'phone' && phoneCode.length === 6) verifyPhone();
+            // Phone handled by effect, but keep for fallback
         }
     };
 
@@ -228,9 +283,8 @@ const startPasskeyAuth = async () => {
             // Setup endpoint generates a new code. We can REUSE it for now as "Request Code".
             // Since we don't have a distinct "send-otp" endpoint, I will use setup logic call
             // OR I need to make a "send-otp" endpoint? 
-            // Reuse setup/route.ts? It just sends OTP. It doesn't check if user has phone, but SETUP does check user.
-            // SETUP route generates code. That's fine.
-            fetch('/api/security/phone/setup', { method: 'POST' }).catch(console.error);
+            // Reuse setup/route.ts as "Request Code".
+            fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
         }
     };
 
@@ -320,11 +374,11 @@ const startPasskeyAuth = async () => {
                                         className="w-full relative group flex items-center gap-4 p-4 rounded-xl bg-slate-900/30 border border-slate-700 hover:border-slate-500 transition-all duration-300 hover:bg-slate-800/50"
                                     >
                                         <div className="p-3 bg-slate-800 rounded-lg text-slate-400 group-hover:text-slate-200 transition-colors">
-                                            <MessageSquare size={24} />
+                                            <Mail size={24} />
                                         </div>
                                         <div className="text-left">
-                                            <h3 className="text-slate-200 font-semibold">SMS Verification</h3>
-                                            <p className="text-xs text-slate-500">Code via Text Message</p>
+                                            <h3 className="text-slate-200 font-semibold">Email Verification</h3>
+                                            <p className="text-xs text-slate-500">Code via Email</p>
                                         </div>
                                         <ArrowRight className="ml-auto text-slate-600 group-hover:text-white transition-colors" size={18} />
                                     </button>
@@ -374,6 +428,7 @@ const startPasskeyAuth = async () => {
                                     <h3 className="text-lg font-semibold text-white mb-1">Verifying with Passkey</h3>
                                     <p className="text-sm text-slate-500">Check your browser prompt.</p>
                                 </div>
+                                <DefaultToggle />
                                 <button
                                     onClick={() => { setError(null); setStep('selection'); }}
                                     className="text-sm text-slate-500 hover:text-slate-300"
@@ -411,6 +466,8 @@ const startPasskeyAuth = async () => {
                                     {verifying ? <Loader2 className="animate-spin" /> : "Verify Access"}
                                 </button>
 
+                                <DefaultToggle />
+
                                 <div className="text-center">
                                     <button
                                         onClick={() => { setError(null); setStep('selection'); }}
@@ -426,8 +483,8 @@ const startPasskeyAuth = async () => {
                         {step === "method" && method === "phone" && (
                             <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-8">
                                 <div className="space-y-2">
-                                    <label className="block text-xs font-medium text-slate-400 text-center uppercase tracking-wider">SMS Code</label>
-                                    <p className="text-[10px] text-slate-600 text-center mb-2">Code sent to your phone</p>
+                                    <label className="block text-xs font-medium text-slate-400 text-center uppercase tracking-wider">Email Code</label>
+                                    <p className="text-[10px] text-slate-600 text-center mb-2">Code sent to your email</p>
                                     <input
                                         type="text"
                                         value={phoneCode}
@@ -439,13 +496,13 @@ const startPasskeyAuth = async () => {
                                     />
                                 </div>
 
-                                <button
-                                    onClick={verifyPhone}
-                                    disabled={verifying || phoneCode.length !== 6}
-                                    className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {verifying ? <Loader2 className="animate-spin" /> : "Verify Access"}
-                                </button>
+                                {verifying && (
+                                    <div className="w-full py-4 flex items-center justify-center gap-2 text-blue-500">
+                                        <Loader2 className="animate-spin" /> Verifying...
+                                    </div>
+                                )}
+
+                                <DefaultToggle />
 
                                 <div className="text-center">
                                     <button

@@ -16,7 +16,8 @@ import {
     Copy,
     Plus,
     MessageSquare,
-    Trash2
+    Trash2,
+    Mail
 } from "lucide-react";
 import Image from "next/image";
 import { startRegistration } from '@simplewebauthn/browser';
@@ -31,13 +32,14 @@ type SecurityStatus = {
 export default function SecuritySetupPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [step, setStep] = useState<"selection" | "setup" | "verify">("selection");
+    const [step, setStep] = useState<"selection" | "setup" | "verify" | "email_verify">("selection");
     const [status, setStatus] = useState<SecurityStatus | null>(null);
 
     // TOTP State
     const [qrCode, setQrCode] = useState<string | null>(null);
     const [secret, setSecret] = useState<string | null>(null);
     const [totpCode, setTotpCode] = useState("");
+    const [emailOtp, setEmailOtp] = useState("");
     const [error, setError] = useState<string | null>(null);
 
     // Fetch Status with NO CACHE to ensure fresh data
@@ -57,15 +59,23 @@ export default function SecuritySetupPage() {
         fetchStatus();
     }, []);
 
+    // Auto-verify when 6 digits are entered
+    useEffect(() => {
+        if (emailOtp.length === 6 && !loading) {
+            verifyEmailOtp();
+        }
+    }, [emailOtp]);
+
     const handleSuccess = async () => {
         // 1. Refresh global status
         await fetchStatus();
-        
+
         // 2. Clear router cache to ensure Verify page sees new data
         router.refresh();
 
-        // 3. Redirect to Verify page to complete the 2FA loop
-        router.push('/security/verify');
+        // 3. Stay on page to show active status
+        setStep('selection');
+        setLoading(false);
     };
 
     const startTotpSetup = async () => {
@@ -145,8 +155,52 @@ export default function SecuritySetupPage() {
         }
     };
 
+    const startEmailSetup = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            // Call the shared setup endpoint (sends code via Resend)
+            const res = await fetch('/api/security/otp/setup', { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            // CHANGED: Verify INLINE instead of redirecting
+            setStep('email_verify');
+        } catch (err: any) {
+            setError(err.message || "Failed to send email code");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const verifyEmailOtp = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch('/api/security/otp/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: emailOtp })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            // Success! Immediately update UI to unblock user
+            setStep('selection');
+            setLoading(false);
+
+            // Refresh data in background
+            fetchStatus().then(() => router.refresh());
+
+        } catch (err: any) {
+            setError(err.message || "Invalid code");
+            setLoading(false);
+        }
+    };
+
     // Remove a method
-    const removeMethod = async (methodType: 'passkey' | 'totp') => {
+    const removeMethod = async (methodType: 'passkey' | 'totp' | 'phone') => {
         setLoading(true);
         setError(null);
         try {
@@ -197,7 +251,7 @@ export default function SecuritySetupPage() {
                         {step === "selection" ? (
                             <>
                                 {/* SECTION 1: ACTIVE METHODS */}
-                                {status && (status.hasPasskey || status.hasTotp) && (
+                                {status && (status.hasPasskey || status.hasTotp || status.hasPhone) && (
                                     <div className="space-y-4">
                                         <h3 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-2">Active Methods</h3>
                                         <div className="grid gap-3">
@@ -252,12 +306,32 @@ export default function SecuritySetupPage() {
                                                     </div>
                                                 </div>
                                             )}
+
+                                            {status.hasPhone && (
+                                                <div className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-700/50 rounded-xl hover:border-slate-500/50 transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="p-2 bg-slate-700/50 rounded-lg text-slate-400">
+                                                            <Mail size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold text-slate-200">Email Verification</h4>
+                                                            <p className="text-xs text-slate-500">Enabled • OTP via Email</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="text-emerald-500 flex items-center gap-1.5 text-xs font-medium px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                                                            <CheckCircle size={12} /> Active
+                                                        </div>
+                                                        {/* No remove method for phone currently implemented, or use existing stub */}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
 
                                 {/* DIVIDER */}
-                                {status && (status.hasPasskey || status.hasTotp) && (!status.hasPasskey || !status.hasTotp) && (
+                                {status && (status.hasPasskey || status.hasTotp || status.hasPhone) && (!status.hasPasskey || !status.hasTotp || !status.hasPhone) && (
                                     <div className="relative py-4">
                                         <div className="absolute inset-0 flex items-center">
                                             <div className="w-full border-t border-slate-800"></div>
@@ -269,7 +343,7 @@ export default function SecuritySetupPage() {
                                 )}
 
                                 {/* SECTION 2: AVAILABLE METHODS */}
-                                {status && (!status.hasPasskey || !status.hasTotp) && (
+                                {status && (!status.hasPasskey || !status.hasTotp || !status.hasPhone) && (
                                     <div className="space-y-4">
                                         <h3 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-2">
                                             {!status.hasPasskey && !status.hasTotp ? "Add Security Method" : "Add Another Method"}
@@ -304,17 +378,32 @@ export default function SecuritySetupPage() {
                                                     <p className="text-[10px] text-slate-500 mt-2">(Google Authenticator, Authy)</p>
                                                 </button>
                                             )}
+
+                                            {!status.hasPhone && (
+                                                <button
+                                                    onClick={startEmailSetup}
+                                                    disabled={loading}
+                                                    className="flex flex-col items-center p-6 bg-slate-800/20 border border-slate-700/50 rounded-xl hover:border-slate-500 hover:bg-slate-800/40 transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <div className="p-4 bg-slate-700/50 rounded-full text-slate-400 mb-3">
+                                                        <Mail size={32} />
+                                                    </div>
+                                                    <h4 className="font-semibold text-slate-200 mb-1">Email Verification</h4>
+                                                    <p className="text-xs text-slate-500">One-time codes</p>
+                                                    <p className="text-[10px] text-slate-500 mt-2">(Confirms ownership of email)</p>
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 )}
 
-                                {status && status.hasPasskey && status.hasTotp && (
+                                {status && status.hasPasskey && status.hasTotp && status.hasPhone && (
                                     <div className="text-center py-6 space-y-4">
                                         <div className="inline-flex items-center gap-2 p-3 bg-emerald-900/10 border border-emerald-500/20 rounded-full">
                                             <CheckCircle className="text-emerald-500" size={16} />
                                             <p className="text-sm text-emerald-400">All security methods are configured</p>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => router.push('/security/verify')}
                                             className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all shadow-lg shadow-blue-900/20"
                                         >
@@ -326,7 +415,7 @@ export default function SecuritySetupPage() {
                                     </div>
                                 )}
 
-                                {(!status || (!status.hasPasskey && !status.hasTotp)) && loading === false && status !== null && (
+                                {(!status || (!status.hasPasskey && !status.hasTotp && !status.hasPhone)) && loading === false && status !== null && (
                                     <div className="mt-4 p-4 bg-amber-900/10 border border-amber-500/10 rounded-xl flex items-center gap-3">
                                         <AlertCircle className="text-amber-500 shrink-0" size={20} />
                                         <p className="text-sm text-amber-500">You must set up at least one security method to continue.</p>
@@ -337,7 +426,7 @@ export default function SecuritySetupPage() {
                             // TOTP QR VIEW
                             <div className="animate-in slide-in-from-right-8 fade-in h-full flex flex-col items-center">
                                 <h3 className="text-xl font-bold text-white mb-6">Setup Authenticator App</h3>
-                                
+
                                 <div className="p-4 bg-white rounded-2xl shadow-xl mb-6">
                                     <Image src={qrCode || ''} alt="QR Code" width={180} height={180} className="rounded-lg" unoptimized />
                                 </div>
@@ -348,7 +437,7 @@ export default function SecuritySetupPage() {
                                         <code className="flex-1 text-center font-mono text-sm text-slate-300 tracking-wider overflow-hidden text-ellipsis">
                                             {secret}
                                         </code>
-                                        <button 
+                                        <button
                                             onClick={() => navigator.clipboard.writeText(secret || "")}
                                             className="p-2 hover:bg-slate-800 rounded-md text-slate-500 hover:text-white transition-colors"
                                         >
@@ -369,7 +458,7 @@ export default function SecuritySetupPage() {
                                             autoFocus
                                         />
                                     </div>
-                                    
+
                                     <button
                                         onClick={verifyTotp}
                                         disabled={loading || totpCode.length !== 6}
@@ -377,8 +466,44 @@ export default function SecuritySetupPage() {
                                     >
                                         {loading ? <Loader2 className="animate-spin" /> : "Verify & Enable"}
                                     </button>
-                                    
-                                    <button 
+
+                                    <button
+                                        onClick={() => { setStep('selection'); }}
+                                        className="w-full py-2 text-sm text-slate-500 hover:text-slate-300"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        ) : step === "email_verify" ? (
+                            // EMAIL OTP VIEW
+                            <div className="animate-in slide-in-from-right-8 fade-in h-full flex flex-col items-center">
+                                <h3 className="text-xl font-bold text-white mb-6">Verify Email Code</h3>
+
+                                <div className="p-4 bg-slate-800/50 rounded-full mb-6 text-slate-400">
+                                    <Mail size={48} />
+                                </div>
+
+                                <div className="w-full max-w-xs space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-medium text-slate-400 text-center">Enter the 6-digit code sent to your email:</label>
+                                        <input
+                                            type="text"
+                                            value={emailOtp}
+                                            onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                            className="w-full bg-slate-900/50 border border-slate-700 text-center text-2xl tracking-[0.5em] text-white p-4 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-700 font-mono"
+                                            placeholder="000000"
+                                            autoFocus
+                                        />
+                                    </div>
+
+                                    {loading && (
+                                        <div className="w-full py-4 flex items-center justify-center gap-2 text-blue-500">
+                                            <Loader2 className="animate-spin" /> Verifying...
+                                        </div>
+                                    )}
+
+                                    <button
                                         onClick={() => { setStep('selection'); }}
                                         className="w-full py-2 text-sm text-slate-500 hover:text-slate-300"
                                     >

@@ -2,16 +2,15 @@
 
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(req: Request) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
-        const { code, expectedCode } = await req.json(); // expectedCode coming from client is INSECURE.
-        // But I don't have a DB column. 
-        // Strategy switch: The SETUP endpoint should set a cookie "phone_verification_otp".
+        const body = await req.json();
+        const { code } = body;
 
         if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -25,16 +24,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
-        // Retrieve OTP from cookie (set by setup route? No, setup route can't set cookie easily in nextjs app router unless middleware or response manipulation).
-        // Actually, I didn't set the cookie in the previous file. Let's fix that.
-        // Wait, for this specific turn, I'll rely on the client sending back the "debugCode" it received? 
-        // No, that's too hacky.
-        // Let's UPDATE the setup route to set a cookie AND this route to read it.
+        // Retrieve OTP from cookie
+        const storedOtpCookie = cookieStore.get('auth_otp_temp');
 
-        // RE-READING: I just wrote the setup route. I should rewrite it to set a cookie.
-        // But for this 'verify' file:
-
-        const storedOtpCookie = cookieStore.get('phone_otp_temp');
         if (!storedOtpCookie) {
             return NextResponse.json({ error: 'OTP expired or not found' }, { status: 400 });
         }
@@ -55,10 +47,34 @@ export async function POST(req: Request) {
 
         if (error) throw error;
 
-        // Clear cookie
-        // (We can't easily clear it here without returning it in header, handled by NextResponse)
-        const response = NextResponse.json({ verified: true });
-        response.cookies.delete('phone_otp_temp');
+        // Upgrade Session (AAL 2)
+        const newPayload = {
+            ...payload,
+            has_phone_otp: true,
+            aal: 2 // Authentication Assurance Level 2 (2FA Verified)
+        };
+
+        const tokenSecret = new TextEncoder().encode(process.env.JWT_SECRET);
+        const newToken = await new SignJWT(newPayload)
+            .setProtectedHeader({ alg: 'HS256' })
+            .setIssuedAt()
+            .setExpirationTime('30d')
+            .sign(tokenSecret);
+
+        // Clear OTP cookie and set new Session cookie
+        const redirectPath = schema === 'professional' ? '/professional/home' :
+            schema === 'employer' ? '/employer/home' : '/';
+
+        const response = NextResponse.json({ verified: true, redirect: redirectPath });
+
+        response.cookies.delete('auth_otp_temp');
+        response.cookies.set('profcaria_session', newToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+            path: '/',
+        });
 
         return response;
 

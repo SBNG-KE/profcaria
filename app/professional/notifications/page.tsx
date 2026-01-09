@@ -179,6 +179,39 @@ export default function NotificationsPage() {
         }, {} as Record<string, any>)
     );
 
+    // Helper to format date groups
+    const getMessageDateLabel = (date: Date) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) return 'Today';
+        if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+        return date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+    };
+
+    // Group messages function
+    const groupMessagesByDate = (msgs: any[]) => {
+        const groups: { label: string; messages: any[] }[] = [];
+        msgs.forEach(msg => {
+            const date = new Date(msg.created_at);
+            const label = getMessageDateLabel(date);
+            let group = groups.find(g => g.label === label);
+            if (!group) {
+                group = { label, messages: [] };
+                groups.push(group);
+            }
+            group.messages.push(msg);
+        });
+        return groups;
+    };
+
+    const groupedMessages = groupMessagesByDate(
+        messages.filter((msg, index, self) =>
+            index === self.findIndex((t) => (t.id === msg.id))
+        )
+    );
+
     return (
         <div className="flex h-full w-full bg-[#050b14] text-slate-200 overflow-hidden font-sans">
             {/* LEFT SIDEBAR - Fixed, doesn't scroll with content */}
@@ -248,11 +281,11 @@ export default function NotificationsPage() {
                         {groupedConversations.map((app: any) => {
                             const companyId = app.companyId || app.company?.id;
                             // Check internal notifications state for badges
-                            const hasUnread = notifications.some(n =>
+                            const unreadCount = notifications.filter(n =>
                                 !n.is_read && n.application_id &&
                                 // Check if notification app ID matches any app for this company
                                 getCompanyAppIds(app).includes(n.application_id)
-                            );
+                            ).length;
 
                             return (
                                 <button
@@ -268,8 +301,10 @@ export default function NotificationsPage() {
                                         ) : (
                                             <Building2 size={20} />
                                         )}
-                                        {hasUnread && (
-                                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 rounded-full border-2 border-[#0b121e] animate-pulse"></div>
+                                        {unreadCount > 0 && (
+                                            <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#0b121e] flex items-center justify-center animate-[pulse_3s_infinite]">
+                                                <span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                                            </div>
                                         )}
                                     </div>
                                     <div className="flex-1 text-left min-w-0 border-b border-slate-800/50 pb-3">
@@ -321,29 +356,38 @@ export default function NotificationsPage() {
                         </header>
 
                         {/* Chat messages - Scrollable independently */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ scrollbarWidth: 'none' }}>
-                            {messages.filter((msg, index, self) =>
-                                index === self.findIndex((t) => (t.id === msg.id))
-                            ).map((msg) => {
-                                const isMe = msg.sender_type === 'professional';
-                                return (
-                                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                            <div className={`px-4 py-2.5 rounded-2xl relative ${isMe
-                                                ? 'bg-blue-600 text-white rounded-br-sm'
-                                                : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
-                                                <p className="text-sm leading-relaxed">{msg.content}</p>
-                                                <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                    <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-slate-500'}`}>
-                                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                    {isMe && <CheckCheck size={12} className={msg.is_read ? "text-emerald-300" : "text-blue-200/50"} />}
-                                                </div>
-                                            </div>
-                                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-8" style={{ scrollbarWidth: 'none' }}>
+                            {groupedMessages.map((group, groupIndex) => (
+                                <div key={group.label} className="space-y-4">
+                                    <div className="flex items-center justify-center sticky top-0 z-10 py-2">
+                                        <span className="bg-slate-800/80 backdrop-blur text-slate-400 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg border border-slate-700/50">
+                                            {group.label}
+                                        </span>
                                     </div>
-                                );
-                            })}
+                                    <div className="space-y-2">
+                                        {group.messages.map((msg) => {
+                                            const isMe = msg.sender_type === 'professional';
+                                            return (
+                                                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
+                                                        <div className={`px-4 py-2.5 rounded-2xl relative ${isMe
+                                                            ? 'bg-blue-600 text-white rounded-br-sm'
+                                                            : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
+                                                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                                                            <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                                <span className={`text-[10px] ${isMe ? 'text-blue-200' : 'text-slate-500'}`}>
+                                                                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-emerald-300" : "text-blue-200/50"} />}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
                             <div ref={messageEndRef} />
                         </div>
 

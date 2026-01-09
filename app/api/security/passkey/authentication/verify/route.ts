@@ -10,16 +10,16 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
     console.log('🔐 [PASSKEY-VERIFY] Starting verification...');
-    
+
     try {
         const body = await req.json();
         console.log('🔐 [PASSKEY-VERIFY] Request body received:', JSON.stringify(body, null, 2));
-        
+
         const cookieStore = await cookies();
         const challenge = cookieStore.get('auth_challenge')?.value;
-        
+
         console.log('🔐 [PASSKEY-VERIFY] Challenge from cookie:', challenge ? '✓ Present' : '✗ Missing');
-        
+
         if (!challenge) {
             console.error('🔐 [PASSKEY-VERIFY] Challenge expired or missing');
             return NextResponse.json({ error: 'Challenge expired' }, { status: 400 });
@@ -44,13 +44,13 @@ export async function POST(req: Request) {
         console.log('🔐 [PASSKEY-VERIFY] Public key length:', credential.credential_public_key?.length || 0);
 
         // 2. Verify
-        console.log('🔐 [PASSKEY-VERIFY] Starting verification with RPID:', 'localhost');
-        
+        console.log('🔐 [PASSKEY-VERIFY] Starting verification with RPID:', process.env.RP_ID || (process.env.NODE_ENV === 'production' ? 'profcaria.com' : 'localhost'));
+
         const verification = await verifyAuthenticationResponse({
             response: body,
             expectedChallenge: challenge,
-            expectedOrigin: 'http://localhost:3000',
-            expectedRPID: 'localhost',
+            expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'https://profcaria.com' : 'http://localhost:3000'),
+            expectedRPID: process.env.RP_ID || (process.env.NODE_ENV === 'production' ? 'profcaria.com' : 'localhost'),
             credential: {
                 id: credential.credential_id,
                 publicKey: new Uint8Array(Buffer.from(credential.credential_public_key, 'base64url')),
@@ -93,10 +93,10 @@ export async function POST(req: Request) {
 
             console.log('🔐 [PASSKEY-VERIFY] Success! Redirecting to:', redirectPath);
 
-            const response = NextResponse.json({ 
-                success: true, 
-                verified: true, 
-                redirect: redirectPath 
+            const response = NextResponse.json({
+                success: true,
+                verified: true,
+                redirect: redirectPath
             });
 
             response.cookies.set('profcaria_session', token, {
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
 
     } catch (error) {
         console.error("🔐 [PASSKEY-VERIFY] Error:", error);
-        return NextResponse.json({ 
+        return NextResponse.json({
             error: 'Internal Server Error',
             details: error instanceof Error ? error.message : String(error)
         }, { status: 500 });
