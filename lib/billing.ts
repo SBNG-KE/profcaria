@@ -11,7 +11,11 @@ export async function getCompanyPlan(companyId: string) {
         .select('*')
         .eq('company_id', companyId)
         .eq('status', 'active')
-        .single();
+        .eq('company_id', companyId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
     if (!subscription) {
         return { plan: BILLING_PLANS.free, subscription: null };
