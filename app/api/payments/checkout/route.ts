@@ -28,7 +28,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { plan, billingCycle = 'monthly' } = await req.json(); // plan: 'basic' | 'pro' | 'enterprise'
+        const { plan } = await req.json(); // plan: 'basic' | 'pro' | 'enterprise'
 
         let exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
         const merchantCurrency = process.env.MERCHANT_CURRENCY; // e.g., 'KES', 'NGN'
@@ -49,13 +49,12 @@ export async function POST(req: Request) {
         }
 
         // Base Prices (Monthly USD)
+        // Base Prices (Monthly USD) & Offers
         const prices: Record<string, number> = {
-            basic: parseFloat(process.env.PRICE_BASIC_MONTHLY || '25'),
-            pro: parseFloat(process.env.PRICE_PRO_MONTHLY || '99'),
-            enterprise: parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250'),
+            basic: parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || process.env.PRICE_BASIC_MONTHLY || '25'),
+            pro: parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || process.env.PRICE_PRO_MONTHLY || '99'),
+            enterprise: parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || process.env.PRICE_ENTERPRISE_MONTHLY || '250'),
         };
-
-        const discountPercent = parseFloat(process.env.YEARLY_DISCOUNT_PERCENT || '20');
 
         if (!prices[plan]) {
             return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
@@ -63,12 +62,7 @@ export async function POST(req: Request) {
 
         let amountUSD = prices[plan];
 
-        // Calculate USD Amount with Discount if Yearly
-        if (billingCycle === 'yearly') {
-            const yearlyTotal = amountUSD * 12;
-            const discountAmount = yearlyTotal * (discountPercent / 100);
-            amountUSD = yearlyTotal - discountAmount;
-        }
+        // No more yearly discount logic - relying on direct Offer Prices from env
 
         // Convert to Display Units (e.g. 25.00 or 3225.00)
         // Paystack initializes with "Display Amount", library handles *100 if needed
@@ -108,12 +102,18 @@ export async function POST(req: Request) {
         // Line 5: amount: amount * 100. 
         // So we should pass the "Display Amount" (e.g. 3225) and let lib turn it into 322500 cents.
 
+        // 3. Initialize Paystack Transaction
+        // Check if a Paystack Plan Code exists for this selection (Enables Auto-Renew)
+        // Always MONTHLY now.
+        const envPlanKey = `PAYSTACK_PLAN_${plan.toUpperCase()}_MONTHLY`;
+        const paystackPlanCode = process.env[envPlanKey];
+
         const response = await Paystack.initializeTransaction(
             email,
             finalDisplayAmount,
             `${origin}/payment/callback`,
-            { companyId, plan, billingCycle },
-            undefined
+            { companyId, plan, billingCycle: 'monthly' },
+            paystackPlanCode
         );
 
         if (!response.status) {

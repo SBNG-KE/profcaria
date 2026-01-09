@@ -83,8 +83,11 @@ function SettingsContent() {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [pricing, setPricing] = useState({
         basic: 25,
+        basicOffer: 0,
         pro: 99,
+        proOffer: 0,
         enterprise: 250,
+        enterpriseOffer: 0,
         yearlyDiscountPercent: 0
     });
 
@@ -159,8 +162,11 @@ function SettingsContent() {
 
                 setPricing({
                     basic: data.basic || 25,
+                    basicOffer: data.basicOffer || 0,
                     pro: data.pro || 99,
+                    proOffer: data.proOffer || 0,
                     enterprise: data.enterprise || 250,
+                    enterpriseOffer: data.enterpriseOffer || 0,
                     yearlyDiscountPercent: data.yearlyDiscountPercent || 0
                 });
             }
@@ -507,28 +513,7 @@ function SettingsContent() {
                                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                                     <CreditCard className="text-purple-500" size={24} /> Billing & Subscription
                                 </h3>
-                                <p className="text-slate-400 text-sm mt-1">Choose the plan that fits your hiring needs.</p>
-                            </div>
-
-                            {/* Billing Cycle Toggle */}
-                            <div className="flex items-center gap-4 bg-slate-900/50 p-1.5 rounded-xl border border-slate-800 self-start md:self-auto">
-                                <button
-                                    onClick={() => setBillingCycle('monthly')}
-                                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${billingCycle === 'monthly' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                >
-                                    Monthly
-                                </button>
-                                <button
-                                    onClick={() => setBillingCycle('yearly')}
-                                    className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${billingCycle === 'yearly' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
-                                >
-                                    Yearly
-                                    {pricing.yearlyDiscountPercent > 0 && (
-                                        <span className="bg-white/20 text-white px-1.5 py-0.5 rounded text-[9px] font-black">
-                                            -{pricing.yearlyDiscountPercent}%
-                                        </span>
-                                    )}
-                                </button>
+                                <p className="text-slate-400 text-sm mt-1">Simple, transparent monthly pricing.</p>
                             </div>
                         </div>
 
@@ -546,7 +531,7 @@ function SettingsContent() {
                                     <h4 className="font-black text-lg text-white">Free</h4>
                                     <div className="text-2xl font-black text-slate-500">
                                         {formatCurrency(0)}
-                                        <span className="text-[10px] text-slate-600 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                        <span className="text-[10px] text-slate-600 font-bold ml-1">/mo</span>
                                     </div>
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
@@ -573,7 +558,7 @@ function SettingsContent() {
                                 </div>
                             </div>
 
-                            {/* Basic Tier ($25) */}
+                            {/* Basic Tier */}
                             <div className="bg-slate-900/30 border border-blue-500/20 p-5 rounded-[24px] flex flex-col relative overflow-hidden hover:border-blue-500/40 transition-colors">
                                 {derivedPlan === 'basic' && (
                                     <div className="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
@@ -581,18 +566,36 @@ function SettingsContent() {
                                     </div>
                                 )}
                                 <div className="space-y-3 flex-1">
-                                    <h4 className="font-black text-lg text-white">Basic</h4>
-                                    <div className="text-2xl font-black text-blue-400">
-                                        <span className="text-xs text-blue-600 font-bold mr-0.5">{currencyCode}</span>
-                                        {(() => {
-                                            let price = pricing.basic;
-                                            if (billingCycle === 'yearly') {
-                                                price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
-                                            }
-                                            return formatCurrency(price).replace(currencySymbol, '');
-                                        })()}
-                                        <span className="text-[10px] text-blue-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                    <h4 className="font-black text-lg text-white flex items-center gap-2">
+                                        Basic
+                                        {pricing.basicOffer > 0 && (
+                                            <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                                -{Math.round((1 - pricing.basicOffer / pricing.basic) * 100)}%
+                                            </span>
+                                        )}
+                                    </h4>
+
+                                    <div className="flex flex-col">
+                                        {pricing.basicOffer > 0 ? (
+                                            <>
+                                                <span className="text-xs text-slate-500 line-through font-bold">
+                                                    {formatCurrency(pricing.basic)}
+                                                </span>
+                                                <div className="text-2xl font-black text-blue-400">
+                                                    <span className="text-xs text-blue-600 font-bold mr-0.5">{currencyCode}</span>
+                                                    {formatCurrency(pricing.basicOffer).replace(currencyCode, '').replace(currencySymbol, '')}
+                                                    <span className="text-[10px] text-blue-600/70 font-bold ml-1">/mo</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-2xl font-black text-blue-400">
+                                                <span className="text-xs text-blue-600 font-bold mr-0.5">{currencyCode}</span>
+                                                {formatCurrency(pricing.basic).replace(currencyCode, '').replace(currencySymbol, '')}
+                                                <span className="text-[10px] text-blue-600/70 font-bold ml-1">/mo</span>
+                                            </div>
+                                        )}
                                     </div>
+
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
                                             <CheckCircle size={12} className="text-blue-500 shrink-0" /> 5 Job Posts / Mo
@@ -636,26 +639,42 @@ function SettingsContent() {
                             {/* Pro Tier ($99) - BEST OFFER */}
                             <div className="bg-gradient-to-b from-emerald-900/20 to-[#0f172a] border border-emerald-500/40 p-5 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl shadow-emerald-900/10 scale-105 z-10">
                                 <div className="absolute top-0 inset-x-0 h-1 bg-emerald-500"></div>
-                                {subscription?.plan === 'pro' && (
+                                {subscription?.plan_type === 'pro' && (
                                     <div className="absolute top-1 right-0 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
                                 <div className="space-y-3 flex-1">
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
-                                        Pro <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-bold tracking-wide">BEST OFFER</span>
+                                        Pro <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-bold tracking-wide">BEST VALUE</span>
+                                        {pricing.proOffer > 0 && (
+                                            <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                                -{Math.round((1 - pricing.proOffer / pricing.pro) * 100)}%
+                                            </span>
+                                        )}
                                     </h4>
-                                    <div className="text-2xl font-black text-emerald-400">
-                                        <span className="text-xs text-emerald-600 font-bold mr-0.5">{currencyCode}</span>
-                                        {(() => {
-                                            let price = pricing.pro;
-                                            if (billingCycle === 'yearly') {
-                                                price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
-                                            }
-                                            return formatCurrency(price).replace(currencySymbol, '');
-                                        })()}
-                                        <span className="text-[10px] text-emerald-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+
+                                    <div className="flex flex-col">
+                                        {pricing.proOffer > 0 ? (
+                                            <>
+                                                <span className="text-xs text-slate-500 line-through font-bold">
+                                                    {formatCurrency(pricing.pro)}
+                                                </span>
+                                                <div className="text-2xl font-black text-emerald-400">
+                                                    <span className="text-xs text-emerald-600 font-bold mr-0.5">{currencyCode}</span>
+                                                    {formatCurrency(pricing.proOffer).replace(currencyCode, '').replace(currencySymbol, '')}
+                                                    <span className="text-[10px] text-emerald-600/70 font-bold ml-1">/mo</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-2xl font-black text-emerald-400">
+                                                <span className="text-xs text-emerald-600 font-bold mr-0.5">{currencyCode}</span>
+                                                {formatCurrency(pricing.pro).replace(currencyCode, '').replace(currencySymbol, '')}
+                                                <span className="text-[10px] text-emerald-600/70 font-bold ml-1">/mo</span>
+                                            </div>
+                                        )}
                                     </div>
+
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
                                             <CheckCircle size={12} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">50 Job Posts / Mo</span>
@@ -707,17 +726,36 @@ function SettingsContent() {
                                     </div>
                                 )}
                                 <div className="space-y-3 flex-1">
-                                    <h4 className="font-black text-lg text-white">Enterprise</h4>
-                                    <div className="text-2xl font-black text-purple-400">
-                                        {(() => {
-                                            let price = pricing.enterprise;
-                                            if (billingCycle === 'yearly') {
-                                                price = price * 12 * (1 - pricing.yearlyDiscountPercent / 100);
-                                            }
-                                            return formatCurrency(price);
-                                        })()}
-                                        <span className="text-[10px] text-purple-600/70 font-bold ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                    <h4 className="font-black text-lg text-white flex items-center gap-2">
+                                        Enterprise
+                                        {pricing.enterpriseOffer > 0 && (
+                                            <span className="bg-purple-500/20 text-purple-400 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                                -{Math.round((1 - pricing.enterpriseOffer / pricing.enterprise) * 100)}%
+                                            </span>
+                                        )}
+                                    </h4>
+
+                                    <div className="flex flex-col">
+                                        {pricing.enterpriseOffer > 0 ? (
+                                            <>
+                                                <span className="text-xs text-slate-500 line-through font-bold">
+                                                    {formatCurrency(pricing.enterprise)}
+                                                </span>
+                                                <div className="text-2xl font-black text-purple-400">
+                                                    <span className="text-xs text-purple-600 font-bold mr-0.5">{currencyCode}</span>
+                                                    {formatCurrency(pricing.enterpriseOffer).replace(currencyCode, '').replace(currencySymbol, '')}
+                                                    <span className="text-[10px] text-purple-600/70 font-bold ml-1">/mo</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-2xl font-black text-purple-400">
+                                                <span className="text-xs text-purple-600 font-bold mr-0.5">{currencyCode}</span>
+                                                {formatCurrency(pricing.enterprise).replace(currencyCode, '').replace(currencySymbol, '')}
+                                                <span className="text-[10px] text-purple-600/70 font-bold ml-1">/mo</span>
+                                            </div>
+                                        )}
                                     </div>
+
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
                                             <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Job Posts
@@ -753,38 +791,63 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('enterprise')}
                                             disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Enterprise' : 'Get Enterprise'}
+                                            {isLoading ? <Loader2 className="animate-spin" size={12} /> : subscription?.status === 'active' ? 'Switch to Enterprise' : 'Get Enterprise'}
                                         </button>
                                     )}
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Recent Payments Removed - Replaced with Auto Renew & Status */}
-                        <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px] flex flex-col md:flex-row items-center justify-between gap-6">
-                            <div>
-                                <h3 className="font-bold text-white flex items-center gap-2">
-                                    <Activity className={isAutoRenew ? "text-emerald-500" : "text-slate-500"} size={20} />
-                                    Payment Method: <span className={isAutoRenew ? "text-emerald-400" : "text-amber-400"}>{isAutoRenew ? 'Automatic Payments' : 'Manual Payments'}</span>
+                    {/* Payment Method / Status */}
+                    <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[24px] space-y-6">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+                            <div className="space-y-4 max-w-2xl">
+                                <h3 className="font-bold text-white flex items-center gap-3 text-lg">
+                                    <Activity className={isAutoRenew ? "text-emerald-500" : "text-amber-500"} size={24} />
+                                    Subscription Status: <span className={isAutoRenew ? "text-emerald-400" : "text-amber-400"}>{isAutoRenew ? 'Automatic Detection' : 'Manual / Expiring'}</span>
                                 </h3>
-                                <p className="text-slate-400 text-xs mt-1 max-w-lg">
-                                    {isAutoRenew
-                                        ? "Your subscription renews automatically. Switch to manual to stop future charges."
-                                        : "You are on manual payments. Your plan will expire at the end of the term, and you'll need to subscribe again."}
-                                </p>
+
+                                <div className="space-y-3 text-slate-400 text-sm leading-relaxed">
+                                    <p>
+                                        <strong className="text-slate-300">Automatic:</strong> Your subscription renews automatically every month. This ensures uninterrupted access to all features.
+                                    </p>
+                                    <p>
+                                        <strong className="text-slate-300">Manual:</strong> Recurring charges are disabled. Your plan will arguably expire at the end of the current period.
+                                    </p>
+                                    <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/50 mt-2">
+                                        <p className="text-xs text-slate-500">
+                                            <span className="text-red-400 font-bold uppercase tracking-wide mr-2">Important Policy:</span>
+                                            If your subscription expires (Manual Mode) and is not renewed within <span className="text-white font-bold">60 days</span>, your billing account will be automatically reset to the <span className="text-white font-bold">Free Plan</span>. You will effectively start fresh and need to choose a new plan to regain paid features.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                             {subscription?.status === 'active' && (
-                                <button
-                                    onClick={handleToggleAutoRenew}
-                                    className={`px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all active:scale-95 ${isAutoRenew
-                                        ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20'
-                                        : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-500/20'}`}
-                                >
-                                    {isAutoRenew ? 'Switch to Manual' : 'Enable Auto-Renew'}
-                                </button>
+                                <div className="flex flex-col gap-3 w-full md:w-auto min-w-[200px]">
+                                    <button
+                                        onClick={handleToggleAutoRenew}
+                                        disabled={isLoading}
+                                        className={`w-full py-4 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${isAutoRenew
+                                            ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20'
+                                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20'}`}
+                                    >
+                                        {isLoading ? <Loader2 className="animate-spin" size={16} /> : isAutoRenew ? 'Switch to Manual' : 'Enable Auto-Renew'}
+                                    </button>
+
+                                    {isAutoRenew && (
+                                        <button
+                                            onClick={handleToggleAutoRenew}
+                                            disabled={isLoading}
+                                            className="w-full py-3 px-6 bg-transparent hover:bg-red-500/10 border border-slate-700 hover:border-red-500/30 text-slate-500 hover:text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
+                                        >
+                                            Cancel Subscription
+                                        </button>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>

@@ -1,14 +1,17 @@
-const DISCOUNT = parseFloat(process.env.YEARLY_DISCOUNT_PERCENT || '20') / 100;
-
 const BASIC_MO = parseFloat(process.env.PRICE_BASIC_MONTHLY || '25');
+const BASIC_OFFER = parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || '0');
+
 const PRO_MO = parseFloat(process.env.PRICE_PRO_MONTHLY || '99');
+const PRO_OFFER = parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || '0');
+
 const ENT_MO = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250');
+const ENT_OFFER = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || '0');
 
 export const BILLING_PLANS = {
     free: {
         name: 'Free',
         priceMonthly: 0,
-        priceYearly: 0,
+        priceMonthlyOffer: 0,
         limits: {
             jobs: 1, // per month
             connections: 1, // per month
@@ -26,13 +29,13 @@ export const BILLING_PLANS = {
     basic: {
         name: 'Basic',
         priceMonthly: BASIC_MO,
-        priceYearly: BASIC_MO * 12 * (1 - DISCOUNT),
+        priceMonthlyOffer: BASIC_OFFER > 0 ? BASIC_OFFER : null,
         limits: {
             jobs: 5,
-            connections: 9999, // Unspecified? "basics now is better with 5 jobs" -> implied unlim connections or standard? Assuming unlim for paying users unless specified. User said "free plan will have 1 active job... that means their connections or employment is just one per month... basic now is better..." -> implies Basic lifts this? I'll assume standard flow limits apply but connections per se might be effectively unlimited for paid.
+            connections: 9999,
             analyticsHistoryYears: 3,
-            topMatches: 2, // per month
-            restrictedLocations: true, // "basic... has access to top match... no restricted areas mentioned as denied"
+            topMatches: 2,
+            restrictedLocations: true,
         },
         features: [
             '5 Active Jobs',
@@ -44,12 +47,12 @@ export const BILLING_PLANS = {
     pro: {
         name: 'Pro',
         priceMonthly: PRO_MO,
-        priceYearly: PRO_MO * 12 * (1 - DISCOUNT),
+        priceMonthlyOffer: PRO_OFFER > 0 ? PRO_OFFER : null,
         limits: {
-            jobs: 30, // per month
+            jobs: 30,
             connections: 9999,
-            analyticsHistoryYears: 999, // Unlimited
-            topMatches: 15, // per month (shared/overall)
+            analyticsHistoryYears: 999,
+            topMatches: 15,
             restrictedLocations: true,
         },
         features: [
@@ -62,12 +65,12 @@ export const BILLING_PLANS = {
     enterprise: {
         name: 'Enterprise',
         priceMonthly: ENT_MO,
-        priceYearly: ENT_MO * 12 * (1 - DISCOUNT),
+        priceMonthlyOffer: ENT_OFFER > 0 ? ENT_OFFER : null,
         limits: {
-            jobs: 9999, // Unlimited
+            jobs: 9999,
             connections: 9999,
             analyticsHistoryYears: 999,
-            topMatches: 9999, // "capped to 100 per job" - handled in logic
+            topMatches: 9999,
             restrictedLocations: true,
         },
         features: [

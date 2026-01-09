@@ -36,11 +36,15 @@ export async function GET(req: Request) {
             subscription,
             plan: plan.name.toLowerCase(), // 'basic', 'pro', etc.
 
-            // Return base pricing from config so frontend relies on single source of truth
+            // Return base pricing & offers from config
             basic: BILLING_PLANS.basic.priceMonthly,
+            basicOffer: BILLING_PLANS.basic.priceMonthlyOffer,
+
             pro: BILLING_PLANS.pro.priceMonthly,
+            proOffer: BILLING_PLANS.pro.priceMonthlyOffer,
+
             enterprise: BILLING_PLANS.enterprise.priceMonthly,
-            yearlyDiscountPercent: parseFloat(process.env.YEARLY_DISCOUNT_PERCENT || '20')
+            enterpriseOffer: BILLING_PLANS.enterprise.priceMonthlyOffer,
         });
 
     } catch (error) {
