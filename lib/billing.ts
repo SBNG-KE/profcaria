@@ -5,19 +5,35 @@ import { BILLING_PLANS, PlanType } from './billing-config';
 export async function getCompanyPlan(companyId: string) {
     if (!companyId) return { plan: BILLING_PLANS.free, subscription: null };
 
-    const { data: subscription } = await supabaseAdmin
+    // Valid Plans Priority
+    const PRIORITY: Record<string, number> = {
+        'enterprise': 4,
+        'pro': 3,
+        'basic': 2,
+        'free': 1
+    };
+
+    // Fetch potential active subscriptions (handle duplicates/race conditions)
+    const { data: subs } = await supabaseAdmin
         .schema('employer')
         .from('subscriptions')
         .select('*')
         .eq('company_id', companyId)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(5);
 
-    if (!subscription) {
+    if (!subs || subs.length === 0) {
         return { plan: BILLING_PLANS.free, subscription: null };
     }
+
+    // Smart Selection: Prefer Paid > Free
+    const subscription = subs.sort((a: any, b: any) => {
+        const pA = PRIORITY[a.plan_type as string] || 1;
+        const pB = PRIORITY[b.plan_type as string] || 1;
+        if (pA !== pB) return pB - pA; // Higher priority first
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); // Newer first
+    })[0];
 
     // Lazy Reset Check (Monthly reset for everyone)
     const lastReset = new Date(subscription.last_usage_reset || subscription.created_at || new Date());
