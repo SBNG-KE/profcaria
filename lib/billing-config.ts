@@ -1,10 +1,10 @@
-const BASIC_MO = parseFloat(process.env.PRICE_BASIC_MONTHLY || '25');
+const BASIC_MO = parseFloat(process.env.PRICE_BASIC_MONTHLY || '0');
 const BASIC_OFFER = parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || '0');
 
-const PRO_MO = parseFloat(process.env.PRICE_PRO_MONTHLY || '99');
+const PRO_MO = parseFloat(process.env.PRICE_PRO_MONTHLY || '0');
 const PRO_OFFER = parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || '0');
 
-const ENT_MO = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250');
+const ENT_MO = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '0');
 const ENT_OFFER = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || '0');
 
 export const BILLING_PLANS = {

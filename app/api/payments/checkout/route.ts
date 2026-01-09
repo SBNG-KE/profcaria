@@ -37,11 +37,11 @@ export async function POST(req: Request) {
         // Base Prices (Monthly USD)
         // Base Prices (Monthly USD) & Offers
         const getPrice = (plan: string) => {
-            const basicMo = parseFloat(process.env.PRICE_BASIC_MONTHLY || '25');
+            const basicMo = parseFloat(process.env.PRICE_BASIC_MONTHLY || '0');
             const basicOffer = parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || '0');
-            const proMo = parseFloat(process.env.PRICE_PRO_MONTHLY || '99');
+            const proMo = parseFloat(process.env.PRICE_PRO_MONTHLY || '0');
             const proOffer = parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || '0');
-            const entMo = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '250');
+            const entMo = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '0');
             const entOffer = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || '0');
 
             switch (plan) {
