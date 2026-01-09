@@ -45,5 +45,5 @@ export function verifySmartLinkToken<T>(token: string): T | null {
 export function getJobShareLink(jobId: string, origin: string): string {
     const token = generateSmartLinkToken({ jobId, type: 'job-share', ts: Date.now() });
     // Use the origin passed from the request/client
-    return `${origin}/professional/find-work?ref=${token}`;
+    return `${origin}/professional/find?ref=${token}`;
 }
