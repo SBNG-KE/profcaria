@@ -31,8 +31,14 @@ export async function POST(req: Request) {
         const { plan } = await req.json(); // plan: 'basic' | 'pro' | 'enterprise'
 
         // We strictly use the fixed USD_EXCHANGE_RATE from env now as requested.
-        // This allows you to set a test rate (e.g. 1 USD = 1 KES) to test with small amounts.
         let exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+
+        console.log('--- CHECKOUT DEBUG ---');
+        console.log(`Plan: ${plan}`);
+        console.log(`Exchange Rate: ${exchangeRate}`);
+        console.log(`Env PRO: ${process.env.PRICE_PRO_MONTHLY}`);
+        console.log(`Env PRO Offer: ${process.env.PRICE_PRO_MONTHLY_OFFER}`);
+        console.log('----------------------');
 
         // Base Prices (Monthly USD)
         // Base Prices (Monthly USD) & Offers
