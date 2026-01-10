@@ -46,7 +46,13 @@ function VerifyContent() {
     useEffect(() => {
         console.log('🔍 DEBUG: Fetching security status from /api/auth/me');
         fetch('/api/auth/me')
-            .then(res => res.json())
+            .then(async (res) => {
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Failed to fetch status');
+                }
+                return res.json();
+            })
             .then(data => {
                 console.log('🔍 DEBUG: Received data from /api/auth/me:', data);
                 if (data.security) {
@@ -85,12 +91,13 @@ function VerifyContent() {
                     }
                 } else {
                     console.log('🔍 DEBUG: No security data in response');
+                    setError("Failed to load security profile");
                 }
                 setLoading(false);
             })
             .catch(err => {
                 console.error('🔍 DEBUG: Error fetching security status:', err);
-                setError("Failed to load security status");
+                setError(err.message || "Failed to load security status");
                 setLoading(false);
             });
     }, []);
@@ -386,7 +393,7 @@ function VerifyContent() {
                                 )}
 
 
-                                {(!status?.hasPasskey && !status?.hasTotp && !status?.hasEmail) && (
+                                {status && (!status.hasPasskey && !status.hasTotp && !status.hasEmail) && (
                                     <div className="text-center p-4">
                                         <p className="text-amber-500 text-sm">No security methods configured.</p>
                                         <button
