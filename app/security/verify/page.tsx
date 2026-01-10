@@ -21,10 +21,9 @@ import { startAuthentication } from '@simplewebauthn/browser';
 type SecurityStatus = {
     hasPasskey: boolean;
     hasTotp: boolean;
-    hasPhone: boolean;
     hasEmail: boolean;
     is2faEnabled: boolean;
-    defaultMethod?: 'passkey' | 'totp' | 'phone' | 'email' | null;
+    defaultMethod?: 'passkey' | 'totp' | 'email' | null;
 };
 
 function VerifyContent() {
@@ -36,7 +35,7 @@ function VerifyContent() {
     const [verifying, setVerifying] = useState(false);
     const [status, setStatus] = useState<SecurityStatus | null>(null);
     const [step, setStep] = useState<"selection" | "method">("selection");
-    const [method, setMethod] = useState<"passkey" | "totp" | "phone" | "email" | null>(null);
+    const [method, setMethod] = useState<"passkey" | "totp" | "email" | null>(null);
 
     // Code State
     const [totpCode, setTotpCode] = useState("");
@@ -63,12 +62,12 @@ function VerifyContent() {
                     }
 
                     // Strict check: Only redirect to setup if NO methods are configured.
-                    const hasMethod = data.security.hasPasskey || data.security.hasTotp || data.security.hasPhone || data.security.hasEmail;
+                    const hasMethod = data.security.hasPasskey || data.security.hasTotp || data.security.hasEmail;
 
                     if (!hasMethod) {
                         console.log('🔍 DEBUG: No 2FA methods found, redirecting to /security/setup');
                         router.push('/security/setup');
-                    } else if (data.security.defaultMethod && ['passkey', 'totp', 'phone', 'email'].includes(data.security.defaultMethod)) {
+                    } else if (data.security.defaultMethod && ['passkey', 'totp', 'email'].includes(data.security.defaultMethod)) {
                         // Auto-select default method
                         console.log('🔍 DEBUG: Auto-selecting default method:', data.security.defaultMethod);
                         setMethod(data.security.defaultMethod as any);
@@ -76,7 +75,7 @@ function VerifyContent() {
 
                         if (data.security.defaultMethod === 'passkey') {
                             setTimeout(startPasskeyAuth, 500);
-                        } else if (data.security.defaultMethod === 'phone' || data.security.defaultMethod === 'email') {
+                        } else if (data.security.defaultMethod === 'email') {
                             fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
                             setMethod(data.security.defaultMethod);
                         }
@@ -231,9 +230,9 @@ function VerifyContent() {
 
 
 
-    // Auto-verify Email/Phone OTP
+    // Auto-verify Email OTP
     useEffect(() => {
-        if (phoneCode.length === 6 && (method === 'phone' || method === 'email') && !verifying) {
+        if (phoneCode.length === 6 && method === 'email' && !verifying) {
             verifyOtp();
         }
     }, [phoneCode]);
@@ -246,7 +245,7 @@ function VerifyContent() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: phoneCode, redirect: redirectParam, type: method })
-            });
+            }); // ... (rest of function remains same, just context change)
             const data = await res.json();
 
             if (!res.ok) {
@@ -271,21 +270,21 @@ function VerifyContent() {
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent, type: 'totp' | 'phone' | 'email') => {
+    const handleKeyDown = (e: React.KeyboardEvent, type: 'totp' | 'email') => {
         if (e.key === 'Enter') {
             if (type === 'totp' && totpCode.length === 6) verifyTotp();
-            // Phone handled by effect, but keep for fallback
+            // Email handled by effect, but keep for fallback
         }
     };
 
-    const handleMethodSelect = (selected: "passkey" | "totp" | "phone" | "email") => {
+    const handleMethodSelect = (selected: "passkey" | "totp" | "email") => {
         setError(null);
         setMethod(selected);
         setStep("method");
         if (selected === "passkey") {
             setTimeout(() => startPasskeyAuth(), 100);
-        } else if (selected === 'phone' || selected === 'email') {
-            // Trigger SMS/Email send on selection
+        } else if (selected === 'email') {
+            // Trigger Email send on selection
             fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
         }
     };
@@ -370,7 +369,7 @@ function VerifyContent() {
                                     </button>
                                 )}
 
-                                {((status?.hasPhone) || (status?.hasEmail)) && (
+                                {status?.hasEmail && (
                                     <button
                                         onClick={() => handleMethodSelect('email')}
                                         className="w-full relative group flex items-center gap-4 p-4 rounded-xl bg-slate-900/30 border border-slate-700 hover:border-slate-500 transition-all duration-300 hover:bg-slate-800/50"
@@ -387,7 +386,7 @@ function VerifyContent() {
                                 )}
 
 
-                                {(!status?.hasPasskey && !status?.hasTotp && !status?.hasPhone && !status?.hasEmail) && (
+                                {(!status?.hasPasskey && !status?.hasTotp && !status?.hasEmail) && (
                                     <div className="text-center p-4">
                                         <p className="text-amber-500 text-sm">No security methods configured.</p>
                                         <button
@@ -482,21 +481,21 @@ function VerifyContent() {
                             </div>
                         )}
 
-                        {/* METHOD: PHONE OR EMAIL */}
-                        {step === "method" && (method === "phone" || method === "email") && (
+                        {/* METHOD: EMAIL */}
+                        {step === "method" && method === "email" && (
                             <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-8">
                                 <div className="space-y-2">
                                     <label className="block text-xs font-medium text-slate-400 text-center uppercase tracking-wider">
-                                        {method === 'email' ? 'Email Code' : 'SMS Code'}
+                                        Email Code
                                     </label>
                                     <p className="text-[10px] text-slate-600 text-center mb-2">
-                                        {method === 'email' ? 'Code sent to your email' : 'Code sent to your phone'}
+                                        Code sent to your email
                                     </p>
                                     <input
                                         type="text"
                                         value={phoneCode}
                                         onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                        onKeyDown={(e) => handleKeyDown(e, method)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'email')}
                                         className="w-full bg-slate-900/50 border border-slate-700 text-center text-3xl tracking-[0.5em] text-white p-4 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-800 font-mono"
                                         placeholder="000000"
                                         autoFocus

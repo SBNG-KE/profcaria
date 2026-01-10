@@ -25,7 +25,7 @@ import { startRegistration } from '@simplewebauthn/browser';
 type SecurityStatus = {
     hasPasskey: boolean;
     hasTotp: boolean;
-    hasPhone: boolean;
+    hasEmail: boolean;
     is2faEnabled: boolean;
 };
 
@@ -200,7 +200,7 @@ export default function SecuritySetupPage() {
     };
 
     // Remove a method
-    const removeMethod = async (methodType: 'passkey' | 'totp' | 'phone') => {
+    const removeMethod = async (methodType: 'passkey' | 'totp') => {
         setLoading(true);
         setError(null);
         try {
@@ -251,7 +251,7 @@ export default function SecuritySetupPage() {
                         {step === "selection" ? (
                             <>
                                 {/* SECTION 1: ACTIVE METHODS */}
-                                {status && (status.hasPasskey || status.hasTotp || status.hasPhone) && (
+                                {status && (status.hasPasskey || status.hasTotp || status.hasEmail) && (
                                     <div className="space-y-4">
                                         <h3 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-2">Active Methods</h3>
                                         <div className="grid gap-3">
@@ -307,31 +307,12 @@ export default function SecuritySetupPage() {
                                                 </div>
                                             )}
 
-                                            {status.hasPhone && (
-                                                <div className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-700/50 rounded-xl hover:border-slate-500/50 transition-all">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="p-2 bg-slate-700/50 rounded-lg text-slate-400">
-                                                            <Mail size={24} />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="font-semibold text-slate-200">Email Verification</h4>
-                                                            <p className="text-xs text-slate-500">Enabled • OTP via Email</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="text-emerald-500 flex items-center gap-1.5 text-xs font-medium px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                                                            <CheckCircle size={12} /> Active
-                                                        </div>
-                                                        {/* No remove method for phone currently implemented, or use existing stub */}
-                                                    </div>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 )}
 
                                 {/* DIVIDER */}
-                                {status && (status.hasPasskey || status.hasTotp || status.hasPhone) && (!status.hasPasskey || !status.hasTotp || !status.hasPhone) && (
+                                {status && (status.hasPasskey || status.hasTotp || status.hasEmail) && (!status.hasPasskey || !status.hasTotp || !status.hasEmail) && (
                                     <div className="relative py-4">
                                         <div className="absolute inset-0 flex items-center">
                                             <div className="w-full border-t border-slate-800"></div>
@@ -343,7 +324,7 @@ export default function SecuritySetupPage() {
                                 )}
 
                                 {/* SECTION 2: AVAILABLE METHODS */}
-                                {status && (!status.hasPasskey || !status.hasTotp || !status.hasPhone) && (
+                                {status && (!status.hasPasskey || !status.hasTotp) && (
                                     <div className="space-y-4">
                                         <h3 className="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-2">
                                             {!status.hasPasskey && !status.hasTotp ? "Add Security Method" : "Add Another Method"}
@@ -379,7 +360,7 @@ export default function SecuritySetupPage() {
                                                 </button>
                                             )}
 
-                                            {!status.hasPhone && (
+                                            {!status.hasEmail && (
                                                 <button
                                                     onClick={startEmailSetup}
                                                     disabled={loading}
@@ -397,7 +378,7 @@ export default function SecuritySetupPage() {
                                     </div>
                                 )}
 
-                                {status && (status.hasPasskey || status.hasTotp || status.hasPhone) && (
+                                {status && (status.hasPasskey || status.hasTotp || status.hasEmail) && (
                                     <div className="text-center py-6 space-y-4">
                                         <div className="inline-flex items-center gap-2 p-3 bg-emerald-900/10 border border-emerald-500/20 rounded-full">
                                             <CheckCircle className="text-emerald-500" size={16} />
@@ -417,7 +398,7 @@ export default function SecuritySetupPage() {
                                     </div>
                                 )}
 
-                                {(!status || (!status.hasPasskey && !status.hasTotp && !status.hasPhone)) && loading === false && status !== null && (
+                                {(!status || (!status.hasPasskey && !status.hasTotp && !status.hasEmail)) && loading === false && status !== null && (
                                     <div className="mt-4 p-4 bg-amber-900/10 border border-amber-500/10 rounded-xl flex items-center gap-3">
                                         <AlertCircle className="text-amber-500 shrink-0" size={20} />
                                         <p className="text-sm text-amber-500">You must set up at least one security method to continue.</p>
