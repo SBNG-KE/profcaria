@@ -18,6 +18,7 @@ interface Job {
     createdAt: string;
     applicationStatus?: string | null;
     applicationId?: string | null;
+    isInvited?: boolean;
 }
 
 export default function FindJobsPage() {
@@ -25,7 +26,7 @@ export default function FindJobsPage() {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState<'find' | 'applied'>('find');
+    const [viewMode, setViewMode] = useState<'find' | 'applied' | 'invited'>('find');
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
     const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
 
@@ -130,7 +131,9 @@ export default function FindJobsPage() {
 
         const matchesMode = viewMode === 'find'
             ? !job.applicationStatus // Show only filtered/unapplied
-            : !!job.applicationStatus; // Show only applied
+            : viewMode === 'invited'
+                ? job.isInvited && !job.applicationStatus // Show invited and NOT applied
+                : !!job.applicationStatus; // Show only applied
 
         return matchesSearch && matchesMode;
     });
@@ -176,6 +179,13 @@ export default function FindJobsPage() {
                             className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'find' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                             Find Work
+                        </button>
+                        <button
+                            onClick={() => setViewMode('invited')}
+                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'invited' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            Invited
+                            <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.isInvited && !j.applicationStatus).length}</span>
                         </button>
                         <button
                             onClick={() => setViewMode('applied')}

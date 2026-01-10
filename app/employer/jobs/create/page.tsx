@@ -30,6 +30,18 @@ function CreateJobPageContent() {
     const [fields, setFields] = useState<FormField[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [canRestrict, setCanRestrict] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/employer/limits')
+            .then(res => res.json())
+            .then(data => {
+                if (data.limits) {
+                    setCanRestrict(data.limits.restrictedLocations);
+                }
+            })
+            .catch(console.error);
+    }, []);
 
     // Get jobId from search params
     const searchParams = useSearchParams();
@@ -238,7 +250,7 @@ function CreateJobPageContent() {
                     </div>
 
                     <div className="pt-4 border-t border-slate-800 space-y-4">
-                        <label className="flex items-center justify-between cursor-pointer group">
+                        <label className={`flex items-center justify-between group ${canRestrict ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}>
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 group-hover:text-blue-400 transition-colors">
                                     <MapPin size={14} /> Restricted Area?
@@ -247,11 +259,16 @@ function CreateJobPageContent() {
                                     Only visible to candidates in specific locations.
                                 </span>
                             </div>
-                            <div className={`w-10 h-6 rounded-full p-1 transition-all ${isRestricted ? 'bg-blue-600' : 'bg-slate-700'}`}>
+                            <div className={`w-10 h-6 rounded-full p-1 transition-all ${isRestricted ? 'bg-blue-600' : 'bg-slate-700'} ${!canRestrict ? 'opacity-50' : ''}`}>
                                 <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-all transform ${isRestricted ? 'translate-x-4' : 'translate-x-0'}`} />
                             </div>
-                            <input type="checkbox" checked={isRestricted} onChange={(e) => setIsRestricted(e.target.checked)} className="hidden" />
+                            <input type="checkbox" checked={isRestricted} onChange={(e) => setIsRestricted(e.target.checked)} className="hidden" disabled={!canRestrict} />
                         </label>
+                        {!canRestrict && (
+                            <p className="text-[10px] text-amber-500 font-bold bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                                Upgrade to Pro or Enterprise to access Restricted Locations feature.
+                            </p>
+                        )}
 
                         {isRestricted && (
                             <div className="space-y-3 animate-in fade-in slide-in-from-top-2">

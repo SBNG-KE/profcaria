@@ -246,6 +246,7 @@ export async function GET(req: Request) {
                 createdAt: job.created_at,
                 applicationStatus: userApp ? userApp.status : null,
                 applicationId: userApp ? userApp.id : null,
+                isInvited: invitedJobIds.includes(job.id),
                 _score: score
             };
         }).filter((j: any) => j !== null); // Remove filter-out jobs

@@ -43,7 +43,6 @@ export function verifySmartLinkToken<T>(token: string): T | null {
  * Helper to build the full sharing URL
  */
 export function getJobShareLink(jobId: string, origin: string): string {
-    const token = generateSmartLinkToken({ jobId, type: 'job-share', ts: Date.now() });
-    // Use the origin passed from the request/client
-    return `${origin}/professional/find?ref=${token}`;
+    // Direct link to job details page for better UX
+    return `${origin}/professional/jobs/${jobId}`;
 }

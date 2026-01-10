@@ -78,10 +78,8 @@ export async function checkLimit(companyId: string, feature: 'jobs' | 'connectio
     // Let's assume we create a free record or handle null.
 
     if (!subscription) {
-        // If no sub record, maybe we rely on a global limit or allow 1?
-        // Safe bet: Deny if tracking not possible, OR (Better) Create a free tier record on the fly?
-        // For this implementation, let's assume valid companies have a subscription row (even if free).
-        // If not, limit to 1 strict default.
+        // Fallback to Free Plan limits if no subscription exists
+        // We rely on incrementUsage to lazy-create the row.
         return (plan.limits[feature] > 0);
     }
 
@@ -94,15 +92,30 @@ export async function checkLimit(companyId: string, feature: 'jobs' | 'connectio
 }
 
 export async function incrementUsage(companyId: string, feature: 'jobs' | 'connections' | 'topMatches') {
-    // Increment specific counter
     const column = `usage_${feature}`;
 
-    // RPC or direct update? Race conditions possible but acceptable for this scale.
-    // Supabase doesn't have simple increment without RPC usually, but let's try reading then writing or raw sql.
-    // Actually safe way:
-    const { data: sub } = await supabaseAdmin.schema('employer').from('subscriptions').select(column).eq('company_id', companyId).single();
+    // Try to find existing subscription
+    const { data: sub } = await supabaseAdmin
+        .schema('employer')
+        .from('subscriptions')
+        .select(`id, ${column}`)
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
     if (sub) {
         const newVal = (sub[column] || 0) + 1;
-        await supabaseAdmin.schema('employer').from('subscriptions').update({ [column]: newVal }).eq('company_id', companyId);
+        await supabaseAdmin
+            .schema('employer')
+            .from('subscriptions')
+            .update({ [column]: newVal })
+            .eq('id', sub.id);
+    } else {
+        // Auto-initialize Free Tier if missing
+        await supabaseAdmin
+            .schema('employer')
+            .from('subscriptions')
+            .insert([{ company_id: companyId, plan_type: 'free', [column]: 1 }]);
     }
 }
