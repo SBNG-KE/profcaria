@@ -139,12 +139,21 @@ export async function GET(req: Request) {
 
         // 4. Algorithm: Weighted Scoring
         const scoredJobs = jobs.map((job: any) => {
+            // Decrypt Job Info FIRST so we can score it
+            const title = decryptData(job.enc_title) || 'Untitled Role';
+            const description = decryptData(job.enc_description) || '';
+            const location = decryptData(job.enc_location) || '';
+
+            // Decrypt Company Info
+            const companyName = job.company?.enc_company_name ? decryptData(job.company.enc_company_name) : 'Confidential';
+            const companyLogo = job.company?.enc_logo_url ? decryptData(job.company.enc_logo_url) : null;
+
             let score = 0;
 
             // A. Role Match (Heavy Weight: +20)
             if (prefs.target_roles && prefs.target_roles.length > 0) {
-                const titleLower = job.title.toLowerCase();
-                const descLower = (job.description || '').toLowerCase();
+                const titleLower = title.toLowerCase();
+                const descLower = description.toLowerCase();
                 const matches = prefs.target_roles.some((role: string) =>
                     titleLower.includes(role.toLowerCase()) ||
                     descLower.includes(role.toLowerCase())
@@ -169,8 +178,7 @@ export async function GET(req: Request) {
             // D. Location Match (Medium Weight: +10 / Critical if not remote)
             if (job.location_type !== 'remote' && prefs.preferred_locations?.countries) {
                 // Check if job location string contains any preferred country
-                // Very basic string check
-                const jobLoc = (job.location || '').toLowerCase();
+                const jobLoc = location.toLowerCase();
                 const matchesLoc = prefs.preferred_locations.countries.some((c: string) =>
                     jobLoc.includes(c.toLowerCase())
                 );
@@ -178,12 +186,9 @@ export async function GET(req: Request) {
             }
 
             // E. Random "Diversity" Shuffle (Small Weight: 0-5)
-            // Ensures the feed isn't identical every second
             score += Math.random() * 5;
 
-            // F. Recency Decay (Optional, but let's keep recent jobs slightly higher)
-            // Included implicitly by the stable sort of initial fetch, 
-            // but we can add small point for "New" (< 2 days)
+            // F. Recency Decay
             const daysOld = (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24);
             const secondsOld = (Date.now() - new Date(job.created_at).getTime()) / 1000;
 
@@ -193,16 +198,10 @@ export async function GET(req: Request) {
 
             // 1. Strict Restricted Jobs
             if (job.is_restricted) {
-                // Check against PLAIN TEXT `allowed_country_codes` (if available) or skip if not strictly enforced yet
                 if (job.allowed_country_codes && Array.isArray(job.allowed_country_codes)) {
-                    // Normalize
                     const allowed = job.allowed_country_codes.map((c: string) => c.toLowerCase());
                     const userCountryLower = userRealCountry.toLowerCase();
 
-                    // If we have a real country and it's NOT in allowed list -> HIDE
-                    // Note: If we can't detect user country, we err on side of caution? Or allow?
-                    // User prompted "Strict", so if country unknown, maybe block? 
-                    // Let's block if country known and mismatch.
                     if (userRealCountry && !allowed.some((ac: string) => userCountryLower.includes(ac))) {
                         return null;
                     }
@@ -212,12 +211,9 @@ export async function GET(req: Request) {
             // 2. "Speed" Logic - The "Head Start" based on REAL IP
             if (!job.is_restricted && secondsOld < 30 && job.speed_boost_location) {
                 const jobOrigin = job.speed_boost_location || '';
-
-                // Strict Check: User's REAL DETECTED country must match job origin
                 const isLocalReal = userRealCountry && jobOrigin.toLowerCase().includes(userRealCountry.toLowerCase());
 
                 if (!isLocalReal) {
-                    // DELAY! User is remote (or undetected), so they don't see it yet.
                     return null;
                 }
             }
@@ -232,17 +228,8 @@ export async function GET(req: Request) {
 
             // 4. Invite Boost
             if (invitedJobIds.includes(job.id)) {
-                score += 1000; // Massive boost to ensure it's at the top
+                score += 1000;
             }
-
-            // Decrypt Company Info
-            const companyName = job.company?.enc_company_name ? decryptData(job.company.enc_company_name) : 'Confidential';
-            const companyLogo = job.company?.enc_logo_url ? decryptData(job.company.enc_logo_url) : null;
-
-            // Decrypt Job Info
-            const title = decryptData(job.enc_title) || 'Untitled Role';
-            const description = decryptData(job.enc_description) || '';
-            const location = decryptData(job.enc_location) || '';
 
             // Check Application Status
             const userApp = appMap[job.id];
