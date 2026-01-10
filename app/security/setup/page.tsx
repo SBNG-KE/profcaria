@@ -397,11 +397,11 @@ export default function SecuritySetupPage() {
                                     </div>
                                 )}
 
-                                {status && status.hasPasskey && status.hasTotp && status.hasPhone && (
+                                {status && (status.hasPasskey || status.hasTotp || status.hasPhone) && (
                                     <div className="text-center py-6 space-y-4">
                                         <div className="inline-flex items-center gap-2 p-3 bg-emerald-900/10 border border-emerald-500/20 rounded-full">
                                             <CheckCircle className="text-emerald-500" size={16} />
-                                            <p className="text-sm text-emerald-400">All security methods are configured</p>
+                                            <p className="text-sm text-emerald-400">Security methods configured</p>
                                         </div>
                                         <button
                                             onClick={() => router.push('/security/verify')}
@@ -410,7 +410,7 @@ export default function SecuritySetupPage() {
                                             Proceed to Verification
                                         </button>
                                         <p className="text-xs text-slate-500 mt-2">
-                                            You can now use either method to verify your identity
+                                            Click here to verify your identity with your new method
                                         </p>
                                     </div>
                                 )}

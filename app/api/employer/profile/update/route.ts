@@ -35,7 +35,23 @@ export async function PUT(req: Request) {
 
         // 3. Update Companies Table (Name, Website, Email)
         const companyUpdates: any = {};
-        if (companyName) companyUpdates.enc_company_name = encryptData(companyName);
+        if (companyName) {
+            companyUpdates.enc_company_name = encryptData(companyName);
+
+            const companyNameIndex = hashForIndex(companyName);
+            const { data: existingName } = await supabaseAdmin
+                .schema('employer')
+                .from('companies')
+                .select('id')
+                .eq('company_name_index', companyNameIndex)
+                .neq('id', userId)
+                .single();
+
+            if (existingName) {
+                return NextResponse.json({ error: 'Company name already taken' }, { status: 409 });
+            }
+            companyUpdates.company_name_index = companyNameIndex;
+        }
         if (website) companyUpdates.enc_website = encryptData(website);
         if (email) {
             companyUpdates.enc_work_email = encryptData(email);

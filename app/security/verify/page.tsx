@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
     ShieldCheck,
@@ -28,6 +28,8 @@ type SecurityStatus = {
 
 export default function SecurityVerifyPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectParam = searchParams.get('redirect');
     const autoStarted = useRef(false);
     const [loading, setLoading] = useState(true);
     const [verifying, setVerifying] = useState(false);
@@ -148,7 +150,7 @@ export default function SecurityVerifyPage() {
             }
 
             router.refresh();
-            router.push(data.redirect || '/');
+            router.push(redirectParam || data.redirect || '/');
         } catch (err: any) {
             setError(err.message || "Invalid code");
         } finally {
@@ -211,7 +213,7 @@ export default function SecurityVerifyPage() {
             }
 
             router.refresh();
-            router.push(verificationJSON.redirect || '/');
+            router.push(redirectParam || verificationJSON.redirect || '/');
 
         } catch (err: any) {
             console.error('Passkey Auth Error:', err);
@@ -257,7 +259,7 @@ export default function SecurityVerifyPage() {
             }
 
             router.refresh();
-            router.push(data.redirect || '/');
+            router.push(redirectParam || data.redirect || '/');
         } catch (err: any) {
             setError(err.message || "Invalid code");
             setVerifying(false); // Only set false on error to prevent UI flash on success redirect

@@ -27,16 +27,28 @@ export async function POST(req: Request) {
     const emailIndex = hashForIndex(workEmail);
     const phoneIndex = null;
 
-    // 3. Check for existing company
-    const { data: existing } = await supabaseAdmin
+    // 3. Check for existing company (Email or Name)
+    const { data: existingEmail } = await supabaseAdmin
       .schema('employer')
       .from('companies')
       .select('id')
       .eq('work_email_index', emailIndex)
       .single();
 
-    if (existing) {
-      return NextResponse.json({ error: 'Company already registered' }, { status: 409 });
+    if (existingEmail) {
+      return NextResponse.json({ error: 'Company email already registered' }, { status: 409 });
+    }
+
+    const companyNameIndex = hashForIndex(companyName);
+    const { data: existingName } = await supabaseAdmin
+      .schema('employer')
+      .from('companies')
+      .select('id')
+      .eq('company_name_index', companyNameIndex)
+      .single();
+
+    if (existingName) {
+      return NextResponse.json({ error: 'Company name already registered' }, { status: 409 });
     }
 
     // 4. Hash Password
@@ -58,6 +70,7 @@ export async function POST(req: Request) {
       .insert([
         {
           work_email_index: emailIndex,
+          company_name_index: companyNameIndex,
           phone_index: phoneIndex,
           password_hash: passwordHash,
           enc_company_name: encCompanyName,

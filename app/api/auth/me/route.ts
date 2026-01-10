@@ -22,7 +22,7 @@ export async function GET(req: Request) {
         let payload;
         try {
             const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
-            payload = verifiedPayload;
+            payload = verifiedPayload as { [key: string]: any };
         } catch (e) {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
