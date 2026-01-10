@@ -43,7 +43,7 @@ export default function EmployerJobsPage() {
             }
             if (limitsRes.ok) {
                 const data = await limitsRes.json();
-                setLimits(data.limits);
+                setLimits(data);
             }
         } catch (error) {
             console.error("Error fetching jobs/limits", error);
@@ -86,21 +86,34 @@ export default function EmployerJobsPage() {
         return true;
     });
 
+    const isLimitReached = limits && limits.limits.jobs < 9999 && (limits.usage?.jobs >= limits.limits.jobs);
+
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
             {/* Header Section */}
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
-                <div className="text-left">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800">
+                <div>
                     <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Job Management</h1>
                     <p className="text-slate-400 mt-2">Manage your active postings and review candidates.</p>
                 </div>
-                <button
-                    onClick={() => router.push('/employer/jobs/create')}
-                    className="flex items-center gap-2 px-6 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-emerald-600/20 active:scale-95"
-                >
-                    <Plus size={18} />
-                    <span>New Post</span>
-                </button>
+                <div className="group relative">
+                    <button
+                        onClick={() => !isLimitReached && router.push('/employer/jobs/create')}
+                        disabled={isLimitReached}
+                        className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 ${isLimitReached
+                            ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-70 shadow-none'
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                            }`}
+                    >
+                        <Plus size={18} />
+                        <span>{isLimitReached ? 'Plan Limit Reached' : 'New Post'}</span>
+                    </button>
+                    {isLimitReached && (
+                        <div className="absolute top-full mt-2 right-0 w-64 p-3 bg-slate-800 text-slate-300 text-[10px] rounded-xl shadow-xl z-20 hidden group-hover:block border border-slate-700">
+                            You have reached the job posting limit for your current plan. Please upgrade to post more.
+                        </div>
+                    )}
+                </div>
             </header>
 
             {/* Filter Buttons */}
@@ -208,7 +221,7 @@ export default function EmployerJobsPage() {
                                     >
                                         <Users size={14} /> View Applicants
                                     </button>
-                                    {limits && limits.topMatches > 0 && (
+                                    {limits && limits.limits.topMatches > 0 && (
                                         <button
                                             onClick={() => router.push(`/employer/jobs/${job.id}/matches`)}
                                             className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center gap-2"

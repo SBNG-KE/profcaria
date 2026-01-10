@@ -15,12 +15,15 @@ export default function EmployerHome() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'activity' | 'analytics'>('activity');
 
+  const [limits, setLimits] = useState<any>(null);
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const [notifRes, meRes] = await Promise.all([
+        const [notifRes, meRes, limitsRes] = await Promise.all([
           fetch('/api/shared/notifications'),
-          fetch('/api/auth/me')
+          fetch('/api/auth/me'),
+          fetch('/api/employer/limits')
         ]);
 
         if (notifRes.ok) {
@@ -31,6 +34,10 @@ export default function EmployerHome() {
           const data = await meRes.json();
           setEmployerData(data);
         }
+        if (limitsRes.ok) {
+          const data = await limitsRes.json();
+          setLimits(data);
+        }
       } catch (error) {
         console.error("Error fetching dashboard data", error);
       } finally {
@@ -39,6 +46,8 @@ export default function EmployerHome() {
     };
     fetchData();
   }, []);
+
+  const isLimitReached = limits && limits.limits.jobs < 9999 && (limits.usage?.jobs >= limits.limits.jobs);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
@@ -56,14 +65,23 @@ export default function EmployerHome() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 group relative">
           <button
-            onClick={() => router.push('/employer/jobs/create')}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-900/20 transition-all active:scale-95 flex items-center gap-2"
+            onClick={() => !isLimitReached && router.push('/employer/jobs/create')}
+            disabled={isLimitReached}
+            className={`px-5 py-2.5 text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2 ${isLimitReached
+              ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none'
+              : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20'
+              }`}
           >
             <Plus size={16} />
-            <span>Post New Job</span>
+            <span>{isLimitReached ? 'Job Limit Reached' : 'Post New Job'}</span>
           </button>
+          {isLimitReached && (
+            <div className="absolute top-full mt-2 right-0 w-64 p-3 bg-slate-800 text-slate-300 text-[10px] rounded-xl shadow-xl z-20 hidden group-hover:block border border-slate-700">
+              You have reached the job posting limit for your current plan. Please upgrade to post more.
+            </div>
+          )}
         </div>
       </header >
 

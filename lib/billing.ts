@@ -78,9 +78,28 @@ export async function checkLimit(companyId: string, feature: 'jobs' | 'connectio
     // Let's assume we create a free record or handle null.
 
     if (!subscription) {
-        // Fallback to Free Plan limits if no subscription exists
-        // We rely on incrementUsage to lazy-create the row.
-        return (plan.limits[feature] > 0);
+        // Auto-initialize if missing to ensure we track usage correctly from the start.
+        // This prevents the "infinite free actions" bug where checkLimit returns true because it assumes 0 usage.
+        const { data: newSub } = await supabaseAdmin
+            .schema('employer')
+            .from('subscriptions')
+            .insert([{
+                company_id: companyId,
+                plan_type: 'free',
+                [`usage_${feature}`]: 0
+            }])
+            .select()
+            .single();
+
+        if (newSub) {
+            // Re-evaluate with the new subscription
+            const limit = plan.limits[feature];
+            if (limit >= 9999) return true;
+            return (newSub[`usage_${feature}`] || 0) < limit;
+        }
+
+        // Fallback if insertion failed (should receive error, but strictly block if we can't track)
+        return false;
     }
 
     const currentUsage = subscription[`usage_${feature}`] || 0;

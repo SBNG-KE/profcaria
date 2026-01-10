@@ -183,6 +183,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        // Check Limits before creating a connection
+        const { checkLimit, incrementUsage } = await import('@/lib/billing');
+
+        const isEmploying = status === 'employed';
+        if (isEmploying) {
+            const hasLimit = await checkLimit(companyId as string, 'connections');
+            if (!hasLimit) {
+                return NextResponse.json({ error: 'Connection limit reached for your plan.' }, { status: 403 });
+            }
+        }
+
         // Update status
         const { error: updateError } = await supabaseAdmin
             .schema('employer')
@@ -191,6 +202,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             .eq('id', applicationId);
 
         if (updateError) throw updateError;
+
+        // Increment usage if successful
+        if (isEmploying) {
+            await incrementUsage(companyId as string, 'connections');
+        }
 
         // Notify the professional
         let message = '';

@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         const userTable = isProfessional ? 'users' : 'companies';
         const emailField = isProfessional ? 'email_index' : 'work_email_index';
 
-        let selectFields = `has_passkey, has_totp, has_phone_otp, requires_2fa, default_2fa_method, created_at, ${emailField}`;
+        let selectFields = `has_passkey, has_totp, has_phone_otp, has_email_otp, requires_2fa, default_2fa_method, created_at, ${emailField}`;
 
         if (isProfessional) {
             selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number`;
@@ -191,7 +191,8 @@ export async function GET(req: Request) {
                 hasPasskey: user.has_passkey,
                 hasTotp: user.has_totp,
                 hasPhone: user.has_phone_otp,
-                is2faEnabled: user.requires_2fa || user.has_passkey || user.has_totp || user.has_phone_otp,
+                hasEmail: user.has_email_otp,
+                is2faEnabled: user.requires_2fa || user.has_passkey || user.has_totp || user.has_phone_otp || user.has_email_otp,
                 defaultMethod: user.default_2fa_method
             }
         });

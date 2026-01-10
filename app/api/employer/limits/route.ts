@@ -19,9 +19,19 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const { plan } = await getCompanyPlan(payload.uid as string);
+        const { plan, subscription } = await getCompanyPlan(payload.uid as string);
 
-        return NextResponse.json({ limits: plan.limits, planName: plan.name });
+        const usage = {
+            jobs: subscription?.usage_jobs || 0,
+            connections: subscription?.usage_connections || 0,
+            topMatches: subscription?.usage_top_matches || 0
+        };
+
+        return NextResponse.json({
+            limits: plan.limits,
+            usage,
+            planName: plan.name
+        });
 
     } catch (e) {
         return NextResponse.json({ error: 'Internal Error' }, { status: 500 });

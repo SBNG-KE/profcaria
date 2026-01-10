@@ -22,8 +22,9 @@ type SecurityStatus = {
     hasPasskey: boolean;
     hasTotp: boolean;
     hasPhone: boolean;
+    hasEmail: boolean;
     is2faEnabled: boolean;
-    defaultMethod?: 'passkey' | 'totp' | 'phone' | null;
+    defaultMethod?: 'passkey' | 'totp' | 'phone' | 'email' | null;
 };
 
 function VerifyContent() {
@@ -62,12 +63,12 @@ function VerifyContent() {
                     }
 
                     // Strict check: Only redirect to setup if NO methods are configured.
-                    const hasMethod = data.security.hasPasskey || data.security.hasTotp || data.security.hasPhone;
+                    const hasMethod = data.security.hasPasskey || data.security.hasTotp || data.security.hasPhone || data.security.hasEmail;
 
                     if (!hasMethod) {
                         console.log('🔍 DEBUG: No 2FA methods found, redirecting to /security/setup');
                         router.push('/security/setup');
-                    } else if (data.security.defaultMethod && ['passkey', 'totp', 'phone'].includes(data.security.defaultMethod)) {
+                    } else if (data.security.defaultMethod && ['passkey', 'totp', 'phone', 'email'].includes(data.security.defaultMethod)) {
                         // Auto-select default method
                         console.log('🔍 DEBUG: Auto-selecting default method:', data.security.defaultMethod);
                         setMethod(data.security.defaultMethod as any);
@@ -75,8 +76,10 @@ function VerifyContent() {
 
                         if (data.security.defaultMethod === 'passkey') {
                             setTimeout(startPasskeyAuth, 500);
-                        } else if (data.security.defaultMethod === 'phone') {
+                        } else if (data.security.defaultMethod === 'phone' || data.security.defaultMethod === 'email') {
                             fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
+                            // Map 'email' to 'phone' state for now since logic is shared
+                            setMethod('phone' as any);
                         }
                     } else {
                         console.log('🔍 DEBUG: Showing selection');
@@ -373,7 +376,7 @@ function VerifyContent() {
                                     </button>
                                 )}
 
-                                {status?.hasPhone && (
+                                {((status?.hasPhone) || (status?.hasEmail)) && (
                                     <button
                                         onClick={() => handleMethodSelect('phone')}
                                         className="w-full relative group flex items-center gap-4 p-4 rounded-xl bg-slate-900/30 border border-slate-700 hover:border-slate-500 transition-all duration-300 hover:bg-slate-800/50"
@@ -388,6 +391,7 @@ function VerifyContent() {
                                         <ArrowRight className="ml-auto text-slate-600 group-hover:text-white transition-colors" size={18} />
                                     </button>
                                 )}
+
 
                                 {(!status?.hasPasskey && !status?.hasTotp && !status?.hasPhone) && (
                                     <div className="text-center p-4">
