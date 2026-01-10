@@ -257,7 +257,7 @@ export default function EmployerApplicationView() {
                             <div
                                 ref={editorRef}
                                 className="
-                                    w-full text-slate-300 font-serif leading-relaxed text-lg
+                                    w-full text-slate-300 font-sans leading-relaxed text-lg
                                     [&_h1]:text-3xl [&_h1]:font-black [&_h1]:text-white [&_h1]:uppercase [&_h1]:mb-6
                                     [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mb-4
                                     [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-slate-200 [&_h3]:mb-3

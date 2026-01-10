@@ -29,9 +29,12 @@ body {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
   .scrollbar-hide {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }
 
@@ -47,63 +50,63 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Professional Theme (Blue) */
 .theme-professional ::-webkit-scrollbar-thumb,
 .theme-professional *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, 
-    transparent 0%, 
-    transparent 20%,
-    #3b82f6 20%,
-    #3b82f6 30%,
-    transparent 30%,
-    transparent 40%,
-    #3b82f680 40%,
-    #3b82f680 48%,
-    transparent 48%,
-    transparent 52%,
-    #3b82f660 52%,
-    #3b82f660 60%,
-    transparent 60%,
-    transparent 70%,
-    #3b82f6 70%,
-    #3b82f6 80%,
-    transparent 80%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      transparent 20%,
+      #3b82f6 20%,
+      #3b82f6 30%,
+      transparent 30%,
+      transparent 40%,
+      #3b82f680 40%,
+      #3b82f680 48%,
+      transparent 48%,
+      transparent 52%,
+      #3b82f660 52%,
+      #3b82f660 60%,
+      transparent 60%,
+      transparent 70%,
+      #3b82f6 70%,
+      #3b82f6 80%,
+      transparent 80%,
+      transparent 100%);
   border-radius: 10px;
 }
+
 .theme-professional {
-    scrollbar-color: #3b82f6 transparent;
+  scrollbar-color: #3b82f6 transparent;
 }
 
 /* Employer Theme (Green) */
 .theme-employer ::-webkit-scrollbar-thumb,
 .theme-employer *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, 
-    transparent 0%, 
-    transparent 20%,
-    #10b981 20%,
-    #10b981 30%,
-    transparent 30%,
-    transparent 40%,
-    #10b98180 40%,
-    #10b98180 48%,
-    transparent 48%,
-    transparent 52%,
-    #10b98160 52%,
-    #10b98160 60%,
-    transparent 60%,
-    transparent 70%,
-    #10b981 70%,
-    #10b981 80%,
-    transparent 80%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      transparent 20%,
+      #10b981 20%,
+      #10b981 30%,
+      transparent 30%,
+      transparent 40%,
+      #10b98180 40%,
+      #10b98180 48%,
+      transparent 48%,
+      transparent 52%,
+      #10b98160 52%,
+      #10b98160 60%,
+      transparent 60%,
+      transparent 70%,
+      #10b981 70%,
+      #10b981 80%,
+      transparent 80%,
+      transparent 100%);
   border-radius: 10px;
 }
-.theme-employer {
-    scrollbar-color: #10b981 transparent;
-}
+
+/* .theme-employer {
+  scrollbar-color: #10b981 transparent;
+} */

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
     FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, Send, UserCircle, Building2, ChevronLeft
 } from 'lucide-react';
+import ScrollableContainer from '@/app/components/ScrollableContainer';
 
 interface Application {
     id: string;
@@ -223,7 +224,7 @@ function ApplicationsPageContent() {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                    <ScrollableContainer className="p-4 space-y-2">
                         {loading ? (
                             <div className="text-center py-10 text-slate-500 text-xs uppercase tracking-widest">Loading...</div>
                         ) : filteredApps.length === 0 ? (
@@ -264,7 +265,7 @@ function ApplicationsPageContent() {
                                 </button>
                             ))
                         )}
-                    </div>
+                    </ScrollableContainer>
                 </div>
 
                 {/* RIGHT DETAIL PANEL */}
@@ -322,7 +323,7 @@ function ApplicationsPageContent() {
 
                             {/* Content */}
                             {activeTab === 'profile' ? (
-                                <div className="flex-1 overflow-y-auto bg-[#0f172a]">
+                                <ScrollableContainer className="bg-[#0f172a]">
                                     <div className="p-8 space-y-8">
                                         {/* Actions */}
                                         <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
@@ -450,11 +451,11 @@ function ApplicationsPageContent() {
                                             </p>
                                         </div>
                                     </div>
-                                </div>
+                                </ScrollableContainer>
 
                             ) : (
                                 <div className="flex flex-col h-full">
-                                    <div className="flex-1 p-6 space-y-4 overflow-y-auto">
+                                    <ScrollableContainer className="p-6 space-y-4">
                                         {chatMessages.length === 0 ? (
                                             <div className="text-center text-slate-500 py-10 text-sm">No messages yet.</div>
                                         ) : (
@@ -475,7 +476,7 @@ function ApplicationsPageContent() {
                                             })
                                         )}
                                         <div ref={chatEndRef} />
-                                    </div>
+                                    </ScrollableContainer>
                                     <div className="p-4 bg-slate-900 border-t border-slate-800 mt-auto">
                                         <div className="relative">
                                             <input
