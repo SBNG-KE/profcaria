@@ -387,7 +387,7 @@ function VerifyContent() {
                                 )}
 
 
-                                {(!status?.hasPasskey && !status?.hasTotp && !status?.hasPhone) && (
+                                {(!status?.hasPasskey && !status?.hasTotp && !status?.hasPhone && !status?.hasEmail) && (
                                     <div className="text-center p-4">
                                         <p className="text-amber-500 text-sm">No security methods configured.</p>
                                         <button
@@ -486,8 +486,12 @@ function VerifyContent() {
                         {step === "method" && (method === "phone" || method === "email") && (
                             <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-8">
                                 <div className="space-y-2">
-                                    <label className="block text-xs font-medium text-slate-400 text-center uppercase tracking-wider">Email Code</label>
-                                    <p className="text-[10px] text-slate-600 text-center mb-2">Code sent to your email</p>
+                                    <label className="block text-xs font-medium text-slate-400 text-center uppercase tracking-wider">
+                                        {method === 'email' ? 'Email Code' : 'SMS Code'}
+                                    </label>
+                                    <p className="text-[10px] text-slate-600 text-center mb-2">
+                                        {method === 'email' ? 'Code sent to your email' : 'Code sent to your phone'}
+                                    </p>
                                     <input
                                         type="text"
                                         value={phoneCode}
