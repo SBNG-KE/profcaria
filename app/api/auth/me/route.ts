@@ -190,7 +190,7 @@ export async function GET(req: Request) {
                 hasPasskey: user.has_passkey,
                 hasTotp: user.has_totp,
                 hasPhone: user.has_phone_otp,
-                is2faEnabled: user.requires_2fa,
+                is2faEnabled: user.requires_2fa || user.has_passkey || user.has_totp || user.has_phone_otp,
                 defaultMethod: user.default_2fa_method
             }
         });

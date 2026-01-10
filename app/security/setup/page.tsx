@@ -410,12 +410,6 @@ export default function SecuritySetupPage() {
                                             >
                                                 Proceed to Verification
                                             </button>
-                                            <button
-                                                onClick={() => router.push('/employer/home')}
-                                                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold rounded-lg transition-all"
-                                            >
-                                                Go to Dashboard
-                                            </button>
                                         </div>
                                         <p className="text-xs text-slate-500 mt-2">
                                             Verify now or continue to your dashboard

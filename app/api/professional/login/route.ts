@@ -117,7 +117,9 @@ export async function POST(req: Request) {
     }
 
     // 7. Set Cookie & Return
-    const response = NextResponse.json({ success: true, redirect: '/professional/home' });
+    const has2fa = user.has_totp || user.has_passkey || user.has_phone_otp;
+    const redirectPath = has2fa ? '/security/verify' : '/professional/home';
+    const response = NextResponse.json({ success: true, redirect: redirectPath });
 
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,

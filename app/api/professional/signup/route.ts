@@ -93,8 +93,10 @@ export async function POST(req: Request) {
       .setExpirationTime('30d')
       .sign(secret);
 
-    // 8. Return Success & Set HTTP-Only Cookie
-    const response = NextResponse.json({ success: true, user_id: data.id, redirect: '/professional/home' });
+    // 7. Set Cookie & Return
+    const has2fa = data.has_totp || data.has_passkey || data.has_phone_otp;
+    const redirectPath = has2fa ? '/security/verify' : '/professional/home';
+    const response = NextResponse.json({ success: true, user_id: data.id, redirect: redirectPath });
 
     response.cookies.set('profcaria_session', token, {
       httpOnly: true,
