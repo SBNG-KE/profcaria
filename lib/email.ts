@@ -48,8 +48,8 @@ const EmailWrapper = (content: string) => `
 
                     <!-- Footer -->
                 <div style="text-align: center; margin-top: 32px; color: #64748b; font-size: 12px;">
-                    <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Profcaria. All rights reserved.</p>
-                    <p style="margin: 0;">Nairobi, Kenya</p>
+                    <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Profcaria</p>
+                    <p style="margin: 0;">All rights reserved</p>
                 </div>
             </div>
         </td>
@@ -169,5 +169,25 @@ export async function sendUnreadMessageNotification(to: string, senderName: stri
         console.error('Email Error:', e);
         // Don't throw for notifications, just log
         return { success: false, error: e.message };
+    }
+}
+
+export async function sendEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Generic to ${to} | ${subject}`);
+        return { success: true };
+    }
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Support <support@profcaria.com>',
+            to,
+            subject,
+            html: EmailWrapper(html)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        throw e;
     }
 }

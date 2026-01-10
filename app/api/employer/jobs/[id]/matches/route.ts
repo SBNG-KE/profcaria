@@ -183,7 +183,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             .filter((c: any) => c.score > 40) // Only return decent matches
             .sort((a: any, b: any) => b.score - a.score);
 
-        return NextResponse.json({ candidates });
+        // 5. Enforce Plan Limits
+        const { getCompanyPlan } = await import('@/lib/billing');
+        const { plan } = await getCompanyPlan(auth.uid as string);
+        const matchLimit = plan.limits.topMatches || 0;
+
+        // If limit is 0, return empty or specific error? 
+        // User requested "Free = Access denied" effectively. 
+        // We will return empty array if 0, or just limit the slice.
+
+        const finalCandidates = candidates.slice(0, matchLimit);
+
+        return NextResponse.json({
+            candidates: finalCandidates,
+            limit: matchLimit,
+            totalFound: candidates.length,
+            isLimitReached: candidates.length > matchLimit
+        });
 
     } catch (error) {
         console.error('Matching Error:', error);

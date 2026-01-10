@@ -535,13 +535,10 @@ function SettingsContent() {
                                     </div>
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
-                                            <CheckCircle size={12} className="text-slate-500" /> 1 Active Job Post
+                                            <CheckCircle size={12} className="text-slate-500" /> 1 Job Post/mo
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
-                                            <CheckCircle size={12} className="text-slate-500" /> Basic Search
-                                        </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-slate-300 font-medium">
-                                            <CheckCircle size={12} className="text-slate-500" /> Standard Support
+                                            <CheckCircle size={12} className="text-slate-500" /> 1 Year Analytics History
                                         </div>
                                     </div>
                                 </div>
@@ -598,13 +595,13 @@ function SettingsContent() {
 
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> 5 Job Posts / Mo
+                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> 5 Job Posts/mo
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> Basic Analytics
+                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> 3 Years Analytics History
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> Email Support
+                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> Top Match Access (Limited)
                                         </div>
                                     </div>
                                 </div>
@@ -677,16 +674,16 @@ function SettingsContent() {
 
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">50 Job Posts / Mo</span>
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">30 Job Postings/mo</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Featured Listings
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Unlimited Analytics History
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Advanced Analytics
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Top Matches (Increased Limit)
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Priority Support
+                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Access to Restricted Location Feature
                                         </div>
                                     </div>
                                 </div>
@@ -758,16 +755,16 @@ function SettingsContent() {
 
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Job Posts
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Job Postings
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Full AI & Analytics
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Analytics History
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Voting Rights
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Top Matches (capped at 100/job)
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> 24/7 Priority Support
+                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Access to Restricted Location Feature
                                         </div>
                                     </div>
                                 </div>

@@ -162,7 +162,7 @@ export default function FindJobsPage() {
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Job Discovery</span>
                         </div>
                         <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Find Opportunities</h1>
-                        <p className="text-slate-400 mt-2 text-sm">Discover secure, encrypted job roles that match your profile.</p>
+                        <p className="text-slate-400 mt-2 text-sm">Discover job roles that match your profile.</p>
                     </div>
                 </div>
 

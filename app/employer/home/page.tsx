@@ -25,7 +25,7 @@ export default function EmployerHome() {
 
         if (notifRes.ok) {
           const data = await notifRes.json();
-          setNotifications(data.notifications.slice(0, 3));
+          setNotifications(data.notifications.slice(0, 10));
         }
         if (meRes.ok) {
           const data = await meRes.json();
@@ -54,7 +54,6 @@ export default function EmployerHome() {
           <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">
             {employerData?.profile?.companyName ? `${employerData.profile.companyName} HQ` : 'Command Center'}
           </h1>
-          <p className="text-slate-500 mt-2 text-sm font-medium">Welcome back. Your recruitment machine is running efficiently.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -87,13 +86,13 @@ export default function EmployerHome() {
               : 'text-slate-500 hover:text-slate-300'
               }`}
           >
-            <BarChart2 size={14} /> Analytics Map
+            <BarChart2 size={14} /> Analytics
           </button>
         </div>
       </div >
 
       {viewMode === 'analytics' ? (
-        <AnalyticsDashboard />
+        <AnalyticsDashboard employerData={employerData} />
       ) : (
         <div className="bg-[#0f172a]/30 border border-slate-800/50 rounded-[32px] overflow-hidden">
           {/* Existing Activity Feed Content */}
@@ -103,7 +102,7 @@ export default function EmployerHome() {
               Recent Activity
             </h3>
             <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
-              Latest 3
+              Latest 10
             </span>
           </div>
           <div className="p-8">

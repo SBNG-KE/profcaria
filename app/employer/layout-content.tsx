@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'reac
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, FileText, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, Users, Building2, Plus, Power, Menu, X
+    Briefcase, Users, Building2, Plus, Power, Menu, X, HelpCircle
 } from 'lucide-react';
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
@@ -295,6 +295,7 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
 
                     <NavItem id="notifications" href="/employer/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
                     <NavItem id="settings" href="/employer/settings" icon={Settings} label="Settings" />
+                    <NavItem id="support" href="/employer/support" icon={HelpCircle} label="Support" />
                 </ScrollableContainer>
 
                 <div className="p-4 border-t border-slate-800 bg-[#0f172a] shrink-0">

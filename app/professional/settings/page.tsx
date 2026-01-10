@@ -512,7 +512,7 @@ export default function ProfessionalSettingsPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">Region / ISP Location <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">Region <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
                                 <input
                                     type="text"
                                     value={address}

@@ -21,7 +21,6 @@ export const BILLING_PLANS = {
         },
         features: [
             '1 Active Job Post',
-            '1 Connection/mo',
             '1 Year Analytics History',
             'Standard Candidates'
         ]
@@ -35,13 +34,12 @@ export const BILLING_PLANS = {
             connections: 9999,
             analyticsHistoryYears: 3,
             topMatches: 2,
-            restrictedLocations: true,
+            restrictedLocations: false,
         },
         features: [
-            '5 Active Jobs',
+            '5 Job Posts/mo',
             '3 Years Analytics History',
-            'Top Match Access (Limited)',
-            'Restricted Locations'
+            'Top Match Access (Limited)'
         ]
     },
     pro: {

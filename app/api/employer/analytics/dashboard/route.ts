@@ -29,11 +29,46 @@ export async function GET(req: Request) {
         const employerId = auth.uid;
 
 
+        const { searchParams } = new URL(req.url);
+        const range = searchParams.get('range'); // '7d' or null
+        const yearParam = searchParams.get('year');
+        const monthParam = searchParams.get('month');
+
         // Check Plan Limits for Analytics
         const { plan } = await import('@/lib/billing').then(m => m.getCompanyPlan(employerId as string));
         const historyYears = plan.limits.analyticsHistoryYears || 1;
-        const minDate = new Date();
-        minDate.setFullYear(minDate.getFullYear() - historyYears);
+
+        let minDate: Date;
+        let maxDate: Date = new Date(); // Default end is now
+
+        const currentYear = new Date().getFullYear();
+        const requestYear = yearParam ? parseInt(yearParam) : currentYear;
+
+        // Verify Plan Access for Historical Years
+        if (currentYear - requestYear >= historyYears) {
+            return NextResponse.json({ error: 'Plan upgrade required for historical data' }, { status: 403 });
+        }
+
+        const is7Days = range === '7d' || !yearParam; // Default to 7d if no year specified? Or default to 7d if range=7d. 
+        // User asked for "Year Filter showing current year". 
+        // Let's say: if range='7d' -> 7 days. If range is empty/null, check year. If year empty, default to 7d.
+
+        if (is7Days && range === '7d') {
+            minDate = new Date();
+            minDate.setDate(minDate.getDate() - 7);
+        } else {
+            // Custom Year/Month
+            minDate = new Date(requestYear, 0, 1); // Jan 1st
+            maxDate = new Date(requestYear, 11, 31, 23, 59, 59); // Dec 31st
+
+            if (monthParam && monthParam !== 'all') {
+                const m = parseInt(monthParam);
+                if (!isNaN(m) && m >= 1 && m <= 12) {
+                    minDate = new Date(requestYear, m - 1, 1);
+                    maxDate = new Date(requestYear, m, 0, 23, 59, 59);
+                }
+            }
+        }
 
         // 1. Fetch Key Stats
         // A. Total Jobs (Active vs Closed)
@@ -60,9 +95,12 @@ export async function GET(req: Request) {
                 .from('applications')
                 .select('user_id, created_at, status, job_id')
                 .in('job_id', jobIds)
-                .gte('created_at', minDate.toISOString()) // Apply Date Limit
+                .in('job_id', jobIds)
+                .in('job_id', jobIds)
+                .gte('created_at', minDate.toISOString())
+                .lte('created_at', maxDate.toISOString())
                 .order('created_at', { ascending: false })
-                .limit(500);
+                .limit(2000);
 
             applications = apps || [];
 
@@ -135,26 +173,56 @@ export async function GET(req: Request) {
             { name: 'Employed', value: employed }
         ];
 
-        // 4. Time Series (Last 7 Days Applications)
-        const last7Days: Record<string, number> = {};
-        // Initialize last 7 days keys
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const key = d.toISOString().split('T')[0];
-            last7Days[key] = 0;
+        // 4. Time Series
+        const trendMap: Record<string, number> = {};
+
+        // Strategy: 
+        // If 7 Days -> Daily buckets (Date String)
+        // If Month Selected -> Daily buckets (Date String)
+        // If Year Selected (All Months) -> Monthly buckets (Jan, Feb...)
+
+        const isMonthlyView = !is7Days && (!monthParam || monthParam === 'all'); // Year view = Monthly buckets
+
+        if (is7Days) {
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().split('T')[0].slice(5); // MM-DD
+                trendMap[key] = 0;
+            }
+        } else if (monthParam && monthParam !== 'all') {
+            // Specific Month -> Daily buckets
+            const start = new Date(minDate);
+            const end = new Date(maxDate);
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const key = d.toISOString().split('T')[0].slice(5); // MM-DD
+                trendMap[key] = 0;
+            }
+        } else {
+            // Yearly View -> Monthly buckets
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            monthNames.forEach(m => trendMap[m] = 0);
         }
 
         applications.forEach((app: any) => {
-            const dateKey = new Date(app.created_at).toISOString().split('T')[0];
-            if (last7Days[dateKey] !== undefined) {
-                last7Days[dateKey]++;
+            const d = new Date(app.created_at);
+            let key = '';
+
+            if (isMonthlyView) {
+                // Year View -> Monthly Names
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                key = monthNames[d.getMonth()];
+            } else {
+                // Daily View
+                key = d.toISOString().split('T')[0].slice(5);
             }
+
+            if (trendMap[key] !== undefined) trendMap[key]++;
         });
 
-        const trendData = Object.keys(last7Days).map(key => ({
-            date: key.slice(5), // MM-DD
-            count: last7Days[key]
+        const trendData = Object.keys(trendMap).map(key => ({
+            date: key,
+            count: trendMap[key]
         }));
 
 

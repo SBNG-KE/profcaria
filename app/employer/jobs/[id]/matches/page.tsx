@@ -79,7 +79,7 @@ export default function JobMatchesPage() {
                         Top Matches
                     </h1>
                     <p className="text-slate-400 mt-1 font-medium">
-                        AI-curated candidates for your job. Invite them to get instant attention.
+                        Candidates for your job. Invite them to get instant attention.
                     </p>
                 </div>
             </header>

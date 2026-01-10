@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
-import { Globe, TrendingUp, Users, Target, Map, Zap } from 'lucide-react';
+import { Globe, TrendingUp, Users, Target, Map, Zap, ChevronDown, Calendar, Check } from 'lucide-react';
 
 interface Metrics {
     stats: {
@@ -18,17 +18,174 @@ interface Metrics {
     trendData: { date: string; count: number }[];
 }
 
-export default function AnalyticsDashboard() {
+// Custom Dropdown Scroll Container (Matches layout-content.tsx dots style)
+const DropdownScroll = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const [showScrollbar, setShowScrollbar] = useState(false);
+
+    const handleScroll = () => {
+        const element = scrollRef.current;
+        if (!element) return;
+        const { scrollTop, scrollHeight, clientHeight } = element;
+
+        const needsScroll = scrollHeight > clientHeight + 1;
+        if (needsScroll !== showScrollbar) setShowScrollbar(needsScroll);
+
+        if (needsScroll) {
+            setScrollProgress(scrollTop / (scrollHeight - clientHeight));
+        }
+    };
+
+    useEffect(() => {
+        const element = scrollRef.current;
+        if (!element) return;
+        const resizeObserver = new ResizeObserver(handleScroll);
+        resizeObserver.observe(element);
+        handleScroll();
+        return () => resizeObserver.disconnect();
+    }, [children]);
+
+    return (
+        <div className="relative w-full overflow-hidden">
+            <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className={`overflow-y-auto scrollbar-hide ${className}`}
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+                {children}
+            </div>
+            {showScrollbar && (
+                <div className="absolute right-1 top-2 bottom-2 w-1 pointer-events-none z-50 flex flex-col justify-start">
+                    <div
+                        className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[2px] items-center"
+                        style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 20}px)` }}
+                    >
+                        <div className="w-1 h-1 bg-emerald-500 rounded-full shadow-[0_0_4px_rgba(16,185,129,0.6)]"></div>
+                        <div className="w-0.5 h-0.5 bg-emerald-500/80 rounded-full shadow-sm"></div>
+                        <div className="w-0.5 h-0.5 bg-emerald-500/60 rounded-full shadow-sm"></div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Custom Dropdown Component
+function CustomDropdown({ value, onChange, options, icon }: { value: string | number, onChange: (val: string | number) => void, options: { value: string | number, label: string }[], icon?: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const selectedLabel = options.find(o => o.value == value)?.label || value;
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-800/50 transition-colors group"
+            >
+                {icon}
+                <span className="text-[11px] font-bold text-slate-200 uppercase tracking-widest min-w-[60px] text-left">
+                    {selectedLabel}
+                </span>
+                <ChevronDown size={12} className={`text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute top-full mt-2 left-0 w-48 bg-[#0f172a] border border-slate-700/50 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <DropdownScroll className="max-h-[200px] p-1">
+                        {options.map((opt) => (
+                            <button
+                                key={opt.value}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setIsOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left
+                                    ${opt.value == value
+                                        ? 'bg-blue-600 text-white'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-800'}
+                                `}
+                            >
+                                {opt.label}
+                                {opt.value == value && <Check size={12} />}
+                            </button>
+                        ))}
+                    </DropdownScroll>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default function AnalyticsDashboard({ employerData }: { employerData: any }) {
     const [data, setData] = useState<Metrics | null>(null);
     const [loading, setLoading] = useState(true);
+    const [dateRange, setDateRange] = useState<'7d' | 'custom'>('7d');
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState<string>('all');
+    const [applicantGrowth, setApplicantGrowth] = useState({ value: 0, improved: false });
+
+    // Plan Limits
+    const planLevel = employerData?.subscription?.plan_id || 'free';
+
+    // Logic: Free = 1 year (Current), Basic = 3 years, Pro/Ent = Unlimited (Back to 2020)
+    const currentYear = new Date().getFullYear();
+    const startYear = (planLevel === 'enterprise' || planLevel === 'pro') ? 2020 : (planLevel === 'basic' ? currentYear - 2 : currentYear);
+    const years = [];
+    for (let y = currentYear; y >= startYear; y--) {
+        years.push(y);
+    }
+
+    const months = [
+        { value: 'all', label: 'All Months' },
+        { value: '1', label: 'January' }, { value: '2', label: 'February' }, { value: '3', label: 'March' },
+        { value: '4', label: 'April' }, { value: '5', label: 'May' }, { value: '6', label: 'June' },
+        { value: '7', label: 'July' }, { value: '8', label: 'August' }, { value: '9', label: 'September' },
+        { value: '10', label: 'October' }, { value: '11', label: 'November' }, { value: '12', label: 'December' }
+    ];
 
     useEffect(() => {
         const fetchAnalytics = async () => {
+            setLoading(true);
             try {
-                const res = await fetch('/api/employer/analytics/dashboard');
+                let url = `/api/employer/analytics/dashboard?`;
+                if (dateRange === '7d') {
+                    url += `range=7d`;
+                } else {
+                    url += `range=custom&year=${selectedYear}&month=${selectedMonth}`;
+                }
+
+                const res = await fetch(url);
                 if (res.ok) {
                     const json = await res.json();
                     setData(json);
+
+                    // Calculate applicant growth
+                    if (json.trendData && json.trendData.length > 1) {
+                        const trends = json.trendData;
+                        const mid = Math.floor(trends.length / 2);
+                        const firstHalf = trends.slice(0, mid).reduce((sum: number, item: any) => sum + item.count, 0);
+                        const secondHalf = trends.slice(mid).reduce((sum: number, item: any) => sum + item.count, 0);
+
+                        const prev = firstHalf || 1;
+                        const percentChange = ((secondHalf - firstHalf) / prev) * 100;
+                        setApplicantGrowth({
+                            value: Math.round(Math.abs(percentChange)),
+                            improved: percentChange >= 0
+                        });
+                    }
                 }
             } catch (e) {
                 console.error("Analytics fetch fail", e);
@@ -37,12 +194,12 @@ export default function AnalyticsDashboard() {
             }
         };
         fetchAnalytics();
-    }, []);
+    }, [dateRange, selectedYear, selectedMonth]);
 
     if (loading) return (
         <div className="p-20 flex flex-col items-center justify-center text-slate-500 space-y-4 animate-pulse">
             <Globe size={48} className="text-emerald-500/50 spin-slow" />
-            <p className="text-xs font-black uppercase tracking-widest">Initialising War Room...</p>
+            <p className="text-xs font-black uppercase tracking-widest">Initialising...</p>
         </div>
     );
 
@@ -50,6 +207,51 @@ export default function AnalyticsDashboard() {
 
     return (
         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+            {/* FILTERS */}
+            <div className="flex flex-col md:flex-row justify-end items-center gap-4">
+
+                {/* Custom Filters (Year/Month) */}
+                <div className={`flex items-center gap-3 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 transition-all duration-300 ${dateRange === '7d' ? 'opacity-50 hover:opacity-100' : 'opacity-100 shadow-xl shadow-blue-500/10'}`}>
+
+                    {/* Year Selector */}
+                    <CustomDropdown
+                        value={selectedYear}
+                        onChange={(val) => {
+                            setSelectedYear(Number(val));
+                            setDateRange('custom');
+                        }}
+                        options={years.map(y => ({ value: y, label: y.toString() }))}
+                        icon={<Calendar size={12} className="text-slate-400" />}
+                    />
+
+                    <div className="w-px h-8 bg-slate-700/50"></div>
+
+                    {/* Month Selector */}
+                    <CustomDropdown
+                        value={selectedMonth}
+                        onChange={(val) => {
+                            setSelectedMonth(String(val));
+                            setDateRange('custom');
+                        }}
+                        options={months}
+                        icon={<Calendar size={12} className="text-slate-400" />}
+                    />
+                </div>
+
+                {/* 7 Days Toggle */}
+                <button
+                    onClick={() => setDateRange('7d')}
+                    className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 transform active:scale-95
+                        ${dateRange === '7d'
+                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-500/20'
+                            : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 hover:shadow-lg'}
+                    `}
+                >
+                    <TrendingUp size={14} />
+                    7 Days
+                </button>
+            </div>
+
 
             {/* 1. TOP STATS ROW */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -58,7 +260,9 @@ export default function AnalyticsDashboard() {
                         <Users size={14} className="text-blue-500" /> Total Applicants
                     </div>
                     <div className="text-3xl font-black text-white">{data.stats.totalApplications}</div>
-                    <div className="text-[10px] text-emerald-400 mt-1 font-bold">+12% vs last week</div>
+                    <div className={`text-[10px] mt-1 font-bold ${applicantGrowth.improved ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {applicantGrowth.improved ? '+' : '-'}{applicantGrowth.value}% vs previous period
+                    </div>
                 </div>
                 <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                     <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -153,9 +357,17 @@ export default function AnalyticsDashboard() {
                     <div className="space-y-6">
                         {data.funnelData.map((stage, i) => (
                             <div key={stage.name} className="relative">
-                                <div className="flex justify-between text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">
-                                    <span>{stage.name}</span>
-                                    <span>{stage.value}</span>
+                                <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full 
+                                            ${i === 0 ? 'bg-slate-600' :
+                                                i === 1 ? 'bg-blue-500' :
+                                                    i === 2 ? 'bg-purple-500' : 'bg-emerald-500'
+                                            }`}
+                                        />
+                                        <span>{stage.name}</span>
+                                    </div>
+                                    <span className="text-white">{stage.value}</span>
                                 </div>
                                 <div className="w-full bg-slate-800/50 rounded-full h-3 overflow-hidden">
                                     <div
@@ -186,7 +398,9 @@ export default function AnalyticsDashboard() {
 
             {/* 3. APPLICATION TRENDS */}
             <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] h-[350px]">
-                <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Application Velocity (7 Days)</h3>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">
+                    Application Velocity ({dateRange === '7d' ? 'Last 7 Days' : (selectedMonth === 'all' ? `Year ${selectedYear}` : `${selectedYear} - ${months.find(m => m.value === selectedMonth)?.label}`)})
+                </h3>
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={data.trendData}>
                         <defs>
