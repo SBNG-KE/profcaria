@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { title, description, formSchema, location_type, location } = body;
+        const { title, description, formSchema, location_type, location, employment_type } = body;
 
         if (!title || !description || !formSchema) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -72,6 +72,8 @@ export async function POST(req: Request) {
                     is_restricted: body.is_restricted || false,
                     speed_boost_location: location ? location.split(',').pop()?.trim() : null, // Store "UK" or "Kenya" plain for speed algo
                     max_applications: body.max_applications ? parseInt(body.max_applications) : null,
+                    employment_type: body.employment_type || 'full-time',
+                    location_type: body.location_type || 'remote',
                     is_active: true
                 }
             ])
@@ -83,10 +85,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, jobId: data.id });
-
         // Asynchronously update usage
         await incrementUsage(uid as string, 'jobs');
+
+        return NextResponse.json({ success: true, jobId: data.id });
 
     } catch (error: any) {
         console.error('API Error:', error);

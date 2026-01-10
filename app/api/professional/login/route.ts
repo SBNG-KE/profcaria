@@ -64,31 +64,43 @@ export async function POST(req: Request) {
       .sign(secret);
 
     // 6a. Log Activity (Security)
+    // 6a. Log Activity (Security)
     try {
-      const { isVPN, reason } = await detectVPN(req.headers.get('x-forwarded-for') || '');
-      if (isVPN) {
-        return NextResponse.json({ error: `Security Check Failed: ${reason}. Please disable VPN/Proxy.` }, { status: 403 });
-      }
-
-      const ip = await getRealIp();
-      const userAgent = req.headers.get('user-agent') || 'Unknown UA';
-
+      let isVPN = false;
+      let ip = '127.0.0.1';
       let locationString = 'Unknown Location';
+
       try {
-        // IP Geolocation (Server-side)
+        // Attempt IP/VPN Detection
+        ip = await getRealIp().catch(() => '127.0.0.1');
+        const vpnCheck = await detectVPN(req.headers.get('x-forwarded-for') || '').catch(() => ({ isVPN: false, reason: '' }));
+        isVPN = vpnCheck.isVPN;
+
+        if (isVPN) {
+          return NextResponse.json({ error: `Security Check Failed: ${vpnCheck.reason}. Please disable VPN/Proxy.` }, { status: 403 });
+        }
+
+        // Geo Lookup
         if (ip && ip.length > 7 && !ip.includes('127.0.0.1') && !ip.includes('localhost')) {
-          const geoRes = await fetch(`http://ip-api.com/json/${ip.split(',')[0].trim()}`);
-          if (geoRes.ok) {
-            const geo = await geoRes.json();
-            if (geo.status === 'success') {
-              locationString = `${geo.city}, ${geo.country}`;
+          try {
+            const geoRes = await fetch(`http://ip-api.com/json/${ip.split(',')[0].trim()}`);
+            if (geoRes.ok) {
+              const geo = await geoRes.json();
+              if (geo.status === 'success') {
+                locationString = `${geo.city}, ${geo.country}`;
+              }
             }
+          } catch (geoErr) {
+            console.error('Geo Lookup Failed:', geoErr);
           }
         }
-      } catch (err) {
-        console.error('Geo Lookup Failed:', err);
+      } catch (detectErr) {
+        console.error('Detection Logic Failed:', detectErr);
       }
 
+      const userAgent = req.headers.get('user-agent') || 'Unknown UA';
+
+      // Perform Insert safely
       await supabaseAdmin
         .schema('professional')
         .from('activity_logs')
@@ -99,8 +111,9 @@ export async function POST(req: Request) {
           user_agent: userAgent,
           enc_location_details: encryptData(locationString)
         }]);
+
     } catch (e) {
-      console.error('Login Log Error:', e);
+      console.error('Login Log Error (Non-Fatal):', e);
     }
 
     // 7. Set Cookie & Return

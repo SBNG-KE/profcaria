@@ -167,8 +167,14 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-[#0f172a] border border-slate-700 rounded-3xl p-6 shadow-2xl max-w-md w-full flex flex-col gap-6">
-                <div className="text-center">
+            <div className="bg-[#0f172a] border border-slate-700 rounded-3xl p-6 shadow-2xl max-w-md w-full flex flex-col gap-6 relative max-h-[90vh] overflow-y-auto">
+                <button
+                    onClick={onCancel}
+                    className="absolute top-4 right-4 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors"
+                >
+                    <X size={20} />
+                </button>
+                <div className="text-center mt-2">
                     <h3 className="text-xl font-bold text-white">Crop Image</h3>
                     <p className="text-xs text-slate-400">Drag to position. Scroll to resize.</p>
                 </div>

@@ -24,9 +24,15 @@ export default function EmployerJobsPage() {
     const [filter, setFilter] = useState<'all' | 'active' | 'closed'>('all');
     const [copiedId, setCopiedId] = useState<string | null>(null);
 
+    const [limits, setLimits] = useState<any>(null);
+
     const fetchJobs = async () => {
         try {
-            const res = await fetch('/api/employer/jobs');
+            const [res, limitsRes] = await Promise.all([
+                fetch('/api/employer/jobs'),
+                fetch('/api/employer/limits')
+            ]);
+
             if (res.ok) {
                 const data = await res.json();
                 // Sort by newest first
@@ -35,8 +41,12 @@ export default function EmployerJobsPage() {
                 );
                 setJobs(sortedJobs);
             }
+            if (limitsRes.ok) {
+                const data = await limitsRes.json();
+                setLimits(data.limits);
+            }
         } catch (error) {
-            console.error("Error fetching jobs", error);
+            console.error("Error fetching jobs/limits", error);
         } finally {
             setLoading(false);
         }
@@ -198,12 +208,14 @@ export default function EmployerJobsPage() {
                                     >
                                         <Users size={14} /> View Applicants
                                     </button>
-                                    <button
-                                        onClick={() => router.push(`/employer/jobs/${job.id}/matches`)}
-                                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center gap-2"
-                                    >
-                                        <Zap size={14} className="text-yellow-300" /> Top Matches
-                                    </button>
+                                    {limits && limits.topMatches > 0 && (
+                                        <button
+                                            onClick={() => router.push(`/employer/jobs/${job.id}/matches`)}
+                                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center gap-2"
+                                        >
+                                            <Zap size={14} className="text-yellow-300" /> Top Matches
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => toggleStatus(job.id, job.isActive)}
                                         className={`px-4 py-3 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${job.isActive ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20'}`}

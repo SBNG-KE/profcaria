@@ -167,7 +167,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
             return {
                 id: pro.id,
-                name: `${decryptData(pro.enc_first_name)} ${decryptData(pro.enc_last_name)}`,
+                name: `${decryptData(pro.enc_first_name) || 'Unknown'} ${decryptData(pro.enc_last_name) || 'Candidate'}`,
                 role: currentRole,
                 image: decryptData(pro.enc_profile_image_url),
                 score: Math.min(score, 100),

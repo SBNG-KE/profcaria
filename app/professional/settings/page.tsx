@@ -404,7 +404,7 @@ export default function ProfessionalSettingsPage() {
                                 <Briefcase className="text-purple-500" size={24} /> Employment Type
                             </h3>
                             <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] space-y-2">
-                                {['full-time', 'part-time', 'contract', 'internship', 'temporary'].map((type) => (
+                                {['full-time', 'part-time', 'contract', 'internship'].map((type) => (
                                     <label key={type} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl cursor-pointer hover:bg-slate-900 transition-all group">
                                         <span className="font-bold text-slate-300 capitalize group-hover:text-white transition-colors">{type}</span>
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${employmentTypes.includes(type) ? 'bg-purple-600 border-purple-600' : 'border-slate-600'}`}>

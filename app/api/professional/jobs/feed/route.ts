@@ -253,7 +253,7 @@ export async function GET(req: Request) {
                 description,
                 location,
                 company: {
-                    name: companyName,
+                    name: companyName || 'Confidential',
                     logoUrl: companyLogo
                 },
                 createdAt: job.created_at,

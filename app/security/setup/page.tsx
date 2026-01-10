@@ -403,14 +403,22 @@ export default function SecuritySetupPage() {
                                             <CheckCircle className="text-emerald-500" size={16} />
                                             <p className="text-sm text-emerald-400">Security methods configured</p>
                                         </div>
-                                        <button
-                                            onClick={() => router.push('/security/verify')}
-                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all shadow-lg shadow-blue-900/20"
-                                        >
-                                            Proceed to Verification
-                                        </button>
+                                        <div className="flex flex-col gap-3">
+                                            <button
+                                                onClick={() => router.push('/security/verify')}
+                                                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition-all shadow-lg shadow-blue-900/20"
+                                            >
+                                                Proceed to Verification
+                                            </button>
+                                            <button
+                                                onClick={() => router.push('/employer/home')}
+                                                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold rounded-lg transition-all"
+                                            >
+                                                Go to Dashboard
+                                            </button>
+                                        </div>
                                         <p className="text-xs text-slate-500 mt-2">
-                                            Click here to verify your identity with your new method
+                                            Verify now or continue to your dashboard
                                         </p>
                                     </div>
                                 )}
