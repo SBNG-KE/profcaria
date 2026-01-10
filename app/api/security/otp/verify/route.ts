@@ -10,7 +10,8 @@ export async function POST(req: Request) {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
         const body = await req.json();
-        const { code } = body;
+        const { code, type = 'phone' } = body;
+        const column = type === 'email' ? 'has_email_otp' : 'has_phone_otp';
 
         if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -42,17 +43,17 @@ export async function POST(req: Request) {
         const { error } = await supabaseAdmin
             .schema(schema as string)
             .from(table)
-            .update({ has_phone_otp: true })
+            .update({ [column]: true })
             .eq('id', uid);
 
         if (error) throw error;
 
         // Upgrade Session (AAL 2)
-        const newPayload = {
+        const newPayload: any = {
             ...payload,
-            has_phone_otp: true,
             aal: 2 // Authentication Assurance Level 2 (2FA Verified)
         };
+        newPayload[column] = true;
 
         const tokenSecret = new TextEncoder().encode(process.env.JWT_SECRET);
         const newToken = await new SignJWT(newPayload)

@@ -36,7 +36,7 @@ function VerifyContent() {
     const [verifying, setVerifying] = useState(false);
     const [status, setStatus] = useState<SecurityStatus | null>(null);
     const [step, setStep] = useState<"selection" | "method">("selection");
-    const [method, setMethod] = useState<"passkey" | "totp" | "phone" | null>(null);
+    const [method, setMethod] = useState<"passkey" | "totp" | "phone" | "email" | null>(null);
 
     // Code State
     const [totpCode, setTotpCode] = useState("");
@@ -78,8 +78,7 @@ function VerifyContent() {
                             setTimeout(startPasskeyAuth, 500);
                         } else if (data.security.defaultMethod === 'phone' || data.security.defaultMethod === 'email') {
                             fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
-                            // Map 'email' to 'phone' state for now since logic is shared
-                            setMethod('phone' as any);
+                            setMethod(data.security.defaultMethod);
                         }
                     } else {
                         console.log('🔍 DEBUG: Showing selection');
@@ -232,21 +231,21 @@ function VerifyContent() {
 
 
 
-    // Auto-verify Email OTP
+    // Auto-verify Email/Phone OTP
     useEffect(() => {
-        if (phoneCode.length === 6 && method === 'phone' && !verifying) {
-            verifyPhone();
+        if (phoneCode.length === 6 && (method === 'phone' || method === 'email') && !verifying) {
+            verifyOtp();
         }
     }, [phoneCode]);
 
-    const verifyPhone = async () => {
+    const verifyOtp = async () => {
         setVerifying(true);
         setError(null);
         try {
             const res = await fetch('/api/security/otp/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: phoneCode, redirect: redirectParam })
+                body: JSON.stringify({ code: phoneCode, redirect: redirectParam, type: method })
             });
             const data = await res.json();
 
@@ -272,26 +271,21 @@ function VerifyContent() {
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent, type: 'totp' | 'phone') => {
+    const handleKeyDown = (e: React.KeyboardEvent, type: 'totp' | 'phone' | 'email') => {
         if (e.key === 'Enter') {
             if (type === 'totp' && totpCode.length === 6) verifyTotp();
             // Phone handled by effect, but keep for fallback
         }
     };
 
-    const handleMethodSelect = (selected: "passkey" | "totp" | "phone") => {
+    const handleMethodSelect = (selected: "passkey" | "totp" | "phone" | "email") => {
         setError(null);
         setMethod(selected);
         setStep("method");
         if (selected === "passkey") {
             setTimeout(() => startPasskeyAuth(), 100);
-        } else if (selected === 'phone') {
-            // Trigger SMS send on selection? Usually good UX.
-            // Re-using the Setup endpoint? No, we need a "Send Verification Code" endpoint.
-            // Setup endpoint generates a new code. We can REUSE it for now as "Request Code".
-            // Since we don't have a distinct "send-otp" endpoint, I will use setup logic call
-            // OR I need to make a "send-otp" endpoint? 
-            // Reuse setup/route.ts as "Request Code".
+        } else if (selected === 'phone' || selected === 'email') {
+            // Trigger SMS/Email send on selection
             fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
         }
     };
@@ -378,7 +372,7 @@ function VerifyContent() {
 
                                 {((status?.hasPhone) || (status?.hasEmail)) && (
                                     <button
-                                        onClick={() => handleMethodSelect('phone')}
+                                        onClick={() => handleMethodSelect('email')}
                                         className="w-full relative group flex items-center gap-4 p-4 rounded-xl bg-slate-900/30 border border-slate-700 hover:border-slate-500 transition-all duration-300 hover:bg-slate-800/50"
                                     >
                                         <div className="p-3 bg-slate-800 rounded-lg text-slate-400 group-hover:text-slate-200 transition-colors">
@@ -488,8 +482,8 @@ function VerifyContent() {
                             </div>
                         )}
 
-                        {/* METHOD: PHONE */}
-                        {step === "method" && method === "phone" && (
+                        {/* METHOD: PHONE OR EMAIL */}
+                        {step === "method" && (method === "phone" || method === "email") && (
                             <div className="w-full space-y-6 animate-in fade-in slide-in-from-right-8">
                                 <div className="space-y-2">
                                     <label className="block text-xs font-medium text-slate-400 text-center uppercase tracking-wider">Email Code</label>
@@ -498,7 +492,7 @@ function VerifyContent() {
                                         type="text"
                                         value={phoneCode}
                                         onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                        onKeyDown={(e) => handleKeyDown(e, 'phone')}
+                                        onKeyDown={(e) => handleKeyDown(e, method)}
                                         className="w-full bg-slate-900/50 border border-slate-700 text-center text-3xl tracking-[0.5em] text-white p-4 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder-slate-800 font-mono"
                                         placeholder="000000"
                                         autoFocus
