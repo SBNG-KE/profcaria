@@ -61,8 +61,11 @@ function VerifyContent() {
                         }
                     }
 
-                    if (!data.security.is2faEnabled) {
-                        console.log('🔍 DEBUG: 2FA not enabled, redirecting to /security/setup');
+                    // Strict check: Only redirect to setup if NO methods are configured.
+                    const hasMethod = data.security.hasPasskey || data.security.hasTotp || data.security.hasPhone;
+
+                    if (!hasMethod) {
+                        console.log('🔍 DEBUG: No 2FA methods found, redirecting to /security/setup');
                         router.push('/security/setup');
                     } else if (data.security.defaultMethod && ['passkey', 'totp', 'phone'].includes(data.security.defaultMethod)) {
                         // Auto-select default method
@@ -240,7 +243,7 @@ function VerifyContent() {
             const res = await fetch('/api/security/otp/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: phoneCode })
+                body: JSON.stringify({ code: phoneCode, redirect: redirectParam })
             });
             const data = await res.json();
 
