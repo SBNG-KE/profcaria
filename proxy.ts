@@ -59,8 +59,16 @@ export default async function middleware(req: NextRequest) {
         if (isProfessionalRoute || isEmployerRoute || isSecurityRoute) {
             if (DEBUG) console.log(`🔐 [MIDDLEWARE] Protected route accessed without token. Redirecting.`);
             // You might want to redirect to a specific login page based on the route
-            if (path.startsWith('/employer')) return NextResponse.redirect(new URL('/employer/login', req.url));
-            if (path.startsWith('/professional')) return NextResponse.redirect(new URL('/professional/login', req.url));
+            if (path.startsWith('/employer')) {
+                const url = new URL('/employer/login', req.url);
+                url.searchParams.set('redirect', path);
+                return NextResponse.redirect(url);
+            }
+            if (path.startsWith('/professional')) {
+                const url = new URL('/professional/login', req.url);
+                url.searchParams.set('redirect', path);
+                return NextResponse.redirect(url);
+            }
 
             return NextResponse.redirect(new URL('/', req.url));
         }

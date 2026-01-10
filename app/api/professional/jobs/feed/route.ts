@@ -51,10 +51,9 @@ export async function GET(req: Request) {
         // 2a. Fetch User's Invites
         const { data: invites } = await supabaseAdmin
             .schema('employer')
-            .from('job_invites')
             .select('job_id')
             .eq('professional_id', auth.uid)
-            .eq('status', 'pending');
+            .in('status', ['pending', 'sent']); // Allow 'sent' as well just in case
 
         const invitedJobIds = invites?.map((inv: any) => inv.job_id) || [];
 

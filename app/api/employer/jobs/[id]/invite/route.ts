@@ -89,7 +89,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             .insert({
                 job_id: jobId,
                 professional_id: professionalId,
-                company_id: companyId
+                company_id: companyId,
+                status: 'pending'
             });
 
         return NextResponse.json({ success: true });
