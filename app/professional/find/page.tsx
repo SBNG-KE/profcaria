@@ -10,6 +10,7 @@ interface Job {
     description: string;
     location?: string;
     location_type?: string;
+    employment_type?: string;
     company: {
         name: string;
         logoUrl?: string;
@@ -283,6 +284,7 @@ export default function FindJobsPage() {
                                 <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                                     <span className="flex items-center gap-1.5 shrink-0"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
                                     <span className="flex items-center gap-1.5 shrink-0"><MapPin size={12} className="text-blue-500" /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
+                                    <span className="flex items-center gap-1.5 shrink-0"><Briefcase size={12} className="text-emerald-500" /> {job.employment_type ? job.employment_type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Full Time'}</span>
                                     {job.location && (
                                         <span className="text-slate-400 truncate max-w-[120px]">— {job.location}</span>
                                     )}
