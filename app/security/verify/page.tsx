@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -26,7 +26,7 @@ type SecurityStatus = {
     defaultMethod?: 'passkey' | 'totp' | 'phone' | null;
 };
 
-export default function SecurityVerifyPage() {
+function VerifyContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const redirectParam = searchParams.get('redirect');
@@ -528,5 +528,17 @@ export default function SecurityVerifyPage() {
 
             </div>
         </div>
+    );
+}
+
+export default function SecurityVerifyPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#050b14] flex items-center justify-center text-slate-400">
+                <Loader2 className="animate-spin" size={32} />
+            </div>
+        }>
+            <VerifyContent />
+        </Suspense>
     );
 }
