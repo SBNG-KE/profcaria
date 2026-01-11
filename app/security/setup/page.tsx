@@ -200,7 +200,7 @@ export default function SecuritySetupPage() {
     };
 
     // Remove a method
-    const removeMethod = async (methodType: 'passkey' | 'totp') => {
+    const removeMethod = async (methodType: 'passkey' | 'totp' | 'email') => {
         setLoading(true);
         setError(null);
         try {
@@ -300,6 +300,32 @@ export default function SecuritySetupPage() {
                                                             onClick={() => removeMethod('totp')}
                                                             className="p-2 text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
                                                             title="Remove authenticator"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {status.hasEmail && (
+                                                <div className="flex items-center justify-between p-4 bg-slate-800/20 border border-slate-700/50 rounded-xl hover:border-slate-500/50 transition-all">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="p-2 bg-slate-700/50 rounded-lg text-slate-400">
+                                                            <Mail size={24} />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="font-semibold text-slate-200">Email Verification</h4>
+                                                            <p className="text-xs text-slate-500">Enabled • Security Code</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="text-emerald-500 flex items-center gap-1.5 text-xs font-medium px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                                                            <CheckCircle size={12} /> Active
+                                                        </div>
+                                                        <button
+                                                            onClick={() => removeMethod('email')}
+                                                            className="p-2 text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
+                                                            title="Remove email verification"
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
