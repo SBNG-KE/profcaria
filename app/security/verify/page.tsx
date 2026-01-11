@@ -45,7 +45,7 @@ function VerifyContent() {
     // 1. Fetch Status
     useEffect(() => {
         console.log('🔍 DEBUG: Fetching security status from /api/auth/me');
-        fetch('/api/auth/me')
+        fetch('/api/auth/me', { cache: 'no-store' })
             .then(async (res) => {
                 if (!res.ok) {
                     const err = await res.json();

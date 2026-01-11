@@ -84,6 +84,9 @@ export default async function middleware(req: NextRequest) {
         const userSchema = payload.schema as string; // 'professional' or 'employer'
         const hasTotp = payload.has_totp as boolean;
         const hasPasskey = payload.has_passkey as boolean;
+        // Check for Email OTP as well (added support)
+        const hasEmail = payload.has_email_otp as boolean;
+
         const aal = (payload.aal as number) || 1;
         const now = Math.floor(Date.now() / 1000);
         const lastActive = (payload.last_active as number) || (payload.iat as number) || now;
@@ -124,15 +127,12 @@ export default async function middleware(req: NextRequest) {
 
         // Allow access to setup/verify pages to prevent infinite redirects
         if (isSetupOrVerify) {
-            // We still want to refresh token if needed, but for now just pass through
-            // Actually, better to use the common response object at the bottom?
-            // But existing logic returns early.
-            // We'll just return next() here. Verification pages often have short lived interactions.
             return NextResponse.next({ request: { headers: requestHeaders } });
         }
 
         if (isProtectedContext) {
-            const hasAny2FA = hasTotp || hasPasskey;
+            // Include Email in the check
+            const hasAny2FA = hasTotp || hasPasskey || hasEmail;
 
             if (hasAny2FA) {
                 if (aal < 2) {

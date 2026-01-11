@@ -42,13 +42,19 @@ export async function POST(req: Request) {
         const table = schema === 'professional' ? 'users' : 'companies';
 
         // Update DB
-        const { error } = await supabaseAdmin
+        console.log(`[OTP Verify] Updating ${table} for uid ${uid}, setting ${column}=true`);
+        const { error, data: updateData } = await supabaseAdmin
             .schema(schema as string)
             .from(table)
             .update({ [column]: true })
-            .eq('id', uid);
+            .eq('id', uid)
+            .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('[OTP Verify] DB Update Error:', error);
+            throw error;
+        }
+        console.log('[OTP Verify] DB Update Success:', updateData);
 
         // Upgrade Session (AAL 2)
         const newPayload: any = {
