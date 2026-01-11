@@ -333,23 +333,18 @@ function VerifyContent() {
                     <div className="bg-[#0f172a]/40 rounded-[22px] p-6 md:p-8 min-h-[300px] flex flex-col items-center justify-center">
 
                         {error && (
-                            <div className="w-full flex flex-col gap-2">
+                            <div className="w-full flex flex-col gap-2 mb-6 animate-in fade-in slide-in-from-top-2">
                                 <div className="w-full p-3 bg-red-900/20 border border-red-500/20 text-red-400 rounded-xl text-sm text-center flex items-center justify-center gap-2">
                                     <AlertCircle size={16} />
                                     {error}
                                 </div>
                                 <button
                                     onClick={() => {
-                                        // Force clearing cookies/storage
-                                        document.cookie.split(";").forEach((c) => {
-                                            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-                                        });
-                                        // Hard redirect to login
                                         window.location.href = '/login';
                                     }}
                                     className="text-xs text-slate-500 hover:text-white underline"
                                 >
-                                    Sign Out & Retry
+                                    Sign In Again
                                 </button>
                             </div>
                         )}
@@ -552,8 +547,8 @@ function VerifyContent() {
                     </button>
                 </div>
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 

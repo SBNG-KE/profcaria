@@ -43,28 +43,12 @@ export async function GET(req: Request) {
             selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email`; // Add employer fields
         }
 
-        // Helper to fetch user safely
-        const fetchUser = async (fields: string) => {
-            return await supabaseAdmin
-                .schema(schema as string)
-                .from(userTable)
-                .select(fields)
-                .eq('id', uid)
-                .single() as any;
-        };
-
-        // Try fetching with new email_otp field
-        let { data: user, error } = await fetchUser(selectFields);
-
-        // Fallback: If error (likely missing column), try legacy fields
-        if (error) {
-            console.warn('Primary fetch failed (schema change missing?), using fallback:', error.message);
-            // Remove new fields to avoid error
-            const legacyFields = selectFields.replace(', has_email_otp', '');
-            const retry = await fetchUser(legacyFields);
-            user = retry.data;
-            error = retry.error;
-        }
+        const { data: user, error } = await supabaseAdmin
+            .schema(schema as string)
+            .from(userTable)
+            .select(selectFields)
+            .eq('id', uid)
+            .single() as any;
 
         if (error || !user) {
             console.error('Fetch User Error:', error);
