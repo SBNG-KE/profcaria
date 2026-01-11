@@ -180,7 +180,7 @@ export default function SecuritySetupPage() {
             const res = await fetch('/api/security/otp/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: emailOtp })
+                body: JSON.stringify({ code: emailOtp, type: 'email' })
             });
 
             const data = await res.json();

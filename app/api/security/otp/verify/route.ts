@@ -10,8 +10,10 @@ export async function POST(req: Request) {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
         const body = await req.json();
-        const { code, type = 'phone' } = body;
-        const column = type === 'email' ? 'has_email_otp' : 'has_phone_otp';
+        const { code, type } = body;
+        // Since we removed phone support, we classify any non-specified type as email for safety, 
+        // OR strictly check for email. Given the user context, defaulting to email logic is safest.
+        const column = 'has_email_otp';
 
         if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -53,7 +55,7 @@ export async function POST(req: Request) {
             ...payload,
             aal: 2 // Authentication Assurance Level 2 (2FA Verified)
         };
-        newPayload[column] = true;
+        newPayload['has_email_otp'] = true;
 
         const tokenSecret = new TextEncoder().encode(process.env.JWT_SECRET);
         const newToken = await new SignJWT(newPayload)
