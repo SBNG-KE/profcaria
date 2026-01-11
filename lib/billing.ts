@@ -110,7 +110,7 @@ export async function checkLimit(companyId: string, feature: 'jobs' | 'connectio
     return currentUsage < limit;
 }
 
-export async function incrementUsage(companyId: string, feature: 'jobs' | 'connections' | 'topMatches') {
+export async function incrementUsage(companyId: string, feature: 'jobs' | 'connections' | 'topMatches', amount: number = 1) {
     const column = `usage_${feature}`;
 
     // Try to find existing subscription
@@ -124,7 +124,7 @@ export async function incrementUsage(companyId: string, feature: 'jobs' | 'conne
         .single();
 
     if (sub) {
-        const newVal = (sub[column] || 0) + 1;
+        const newVal = (sub[column] || 0) + amount;
         await supabaseAdmin
             .schema('employer')
             .from('subscriptions')
@@ -135,6 +135,6 @@ export async function incrementUsage(companyId: string, feature: 'jobs' | 'conne
         await supabaseAdmin
             .schema('employer')
             .from('subscriptions')
-            .insert([{ company_id: companyId, plan_type: 'free', [column]: 1 }]);
+            .insert([{ company_id: companyId, plan_type: 'free', [column]: amount }]);
     }
 }

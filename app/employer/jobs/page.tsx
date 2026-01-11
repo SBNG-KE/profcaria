@@ -221,7 +221,7 @@ export default function EmployerJobsPage() {
                                     >
                                         <Users size={14} /> View Applicants
                                     </button>
-                                    {limits && limits.limits.topMatches > 0 && (
+                                    {limits && limits.limits.topMatches > 0 && (limits.limits.topMatches >= 9999 || (limits.usage?.topMatches || 0) < limits.limits.topMatches) && (
                                         <button
                                             onClick={() => router.push(`/employer/jobs/${job.id}/matches`)}
                                             className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center gap-2"

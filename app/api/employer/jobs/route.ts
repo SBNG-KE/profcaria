@@ -56,6 +56,20 @@ export async function POST(req: Request) {
         const encLocation = location ? encryptData(location) : null;
         const encTargetLocations = body.target_locations ? encryptData(JSON.stringify(body.target_locations)) : null;
 
+        // Check Plan Limits for Applications
+        const { plan } = await import('@/lib/billing').then(m => m.getCompanyPlan(uid as string));
+        const planMaxApps = plan.limits.maxApplicationsPerJob || 10;
+
+        let appsCap = body.max_applications ? parseInt(body.max_applications) : null;
+
+        // Ensure user cannot set a limit higher than their plan allows
+        if (appsCap && appsCap > planMaxApps) {
+            appsCap = planMaxApps;
+        } else if (!appsCap) {
+            // Default to plan max if not provided
+            appsCap = planMaxApps;
+        }
+
         const { data, error } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
@@ -71,7 +85,7 @@ export async function POST(req: Request) {
                     allowed_country_codes: body.target_locations || [], // Save plain text for strict filtering
                     is_restricted: body.is_restricted || false,
                     speed_boost_location: location ? location.split(',').pop()?.trim() : null, // Store "UK" or "Kenya" plain for speed algo
-                    max_applications: body.max_applications ? parseInt(body.max_applications) : null,
+                    max_applications: appsCap, // Enforce Plan Cap
                     employment_type: body.employment_type || 'full-time',
                     location_type: body.location_type || 'remote',
                     is_active: true

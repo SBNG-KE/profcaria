@@ -217,12 +217,22 @@ export async function GET(req: Request) {
                 }
             }
 
-            // 3. Max Applications Check
-            if (job.max_applications) {
-                const currentApps = jobAppCounts[job.id] || 0;
-                if (currentApps >= job.max_applications) {
-                    return null; // Job is full/closed
-                }
+            // 3. Max Applications Check (Plan Enforcement)
+            // Import billing config or fetch company plan context. 
+            // For rigorous "Plan Enforcement", we need the Company's Plan Limit.
+            // Since we joined 'company', we can check plan type? No, we don't join subscriptions.
+            // OPTION: We default to 100 as a "Soft Cap" for Enterprise/General if not specified? 
+            // User requested: "Enterprise unlimited but 100 shown per job" -> This means 100 applications? 
+            // Actually, user said "100 cap per job" for Enterprise.
+            // We use the job.max_applications if set. If NOT set, we should probably enforce a default based on the system rules.
+            // Since we don't have the Company Plan here efficiently, we rely on `max_applications` being set correctly at Creation Time.
+            // However, to satisfy "System will know how many to show", we enforce strict check:
+
+            const effectiveMax = job.max_applications || 100; // Default system cap if null
+            const currentApps = jobAppCounts[job.id] || 0;
+
+            if (currentApps >= effectiveMax) {
+                return null; // Job is full/closed
             }
 
             // 4. Invite Boost

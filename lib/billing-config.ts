@@ -17,7 +17,9 @@ export const BILLING_PLANS = {
             connections: 1, // per month
             analyticsHistoryYears: 1,
             topMatches: 0, // Access denied
+            maxProfileViewPerJob: 0,
             restrictedLocations: false,
+            maxApplicationsPerJob: 10, // Very low cap for free
         },
         features: [
             '1 Active Job Post',
@@ -33,8 +35,10 @@ export const BILLING_PLANS = {
             jobs: 5,
             connections: 9999,
             analyticsHistoryYears: 3,
-            topMatches: 2,
+            topMatches: 5, // 5 Total Credits
+            maxProfileViewPerJob: 1, // Show 1 at a time
             restrictedLocations: false,
+            maxApplicationsPerJob: 50,
         },
         features: [
             '5 Job Posts/mo',
@@ -50,8 +54,10 @@ export const BILLING_PLANS = {
             jobs: 30,
             connections: 9999,
             analyticsHistoryYears: 999,
-            topMatches: 15,
+            topMatches: 15, // 15 Total Credits
+            maxProfileViewPerJob: 2, // 2 per job view
             restrictedLocations: true,
+            maxApplicationsPerJob: 100,
         },
         features: [
             '30 Active Jobs',
@@ -68,8 +74,10 @@ export const BILLING_PLANS = {
             jobs: 9999,
             connections: 9999,
             analyticsHistoryYears: 999,
-            topMatches: 9999,
+            topMatches: 9999, // Unlimited
+            maxProfileViewPerJob: 100, // Show 100 at a time
             restrictedLocations: true,
+            maxApplicationsPerJob: 9999, // Unlimited
         },
         features: [
             'Unlimited Jobs',

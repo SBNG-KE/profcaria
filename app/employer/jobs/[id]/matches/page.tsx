@@ -25,6 +25,8 @@ export default function JobMatchesPage() {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [invitingId, setInvitingId] = useState<string | null>(null);
+    const [isLimitReached, setIsLimitReached] = useState(false);
+    const [limitCount, setLimitCount] = useState(0);
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -33,6 +35,8 @@ export default function JobMatchesPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setCandidates(data.candidates || []);
+                    setIsLimitReached(data.isLimitReached || false);
+                    setLimitCount(data.limit || 0);
                 }
             } catch (e) {
                 console.error("Fetch matches error", e);
@@ -159,6 +163,26 @@ export default function JobMatchesPage() {
                             </button>
                         </div>
                     ))}
+                </div>
+            )}
+            {!isLoading && isLimitReached && candidates.length > 0 && (
+                <div className="mt-8 p-6 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4">
+                    <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
+                        <Star className="text-blue-400" size={24} />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2">
+                        Matches Limited by Plan
+                    </h3>
+                    <p className="text-slate-400 max-w-lg mb-6 text-sm">
+                        You are seeing the top {limitCount} candidates allowed by your current plan.
+                        Upgrade to Enterprise or check back next month to see more matches.
+                    </p>
+                    <button
+                        onClick={() => router.push('/employer/settings')}
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all"
+                    >
+                        Upgrade Plan
+                    </button>
                 </div>
             )}
         </div>

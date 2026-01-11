@@ -184,21 +184,46 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             .sort((a: any, b: any) => b.score - a.score);
 
         // 5. Enforce Plan Limits
-        const { getCompanyPlan } = await import('@/lib/billing');
+        const { getCompanyPlan, checkLimit, incrementUsage } = await import('@/lib/billing');
         const { plan } = await getCompanyPlan(auth.uid as string);
-        const matchLimit = plan.limits.topMatches || 0;
 
-        // If limit is 0, return empty or specific error? 
-        // User requested "Free = Access denied" effectively. 
-        // We will return empty array if 0, or just limit the slice.
+        // A. Check Global "Credit" Limit (Total top matches allowed)
+        // If checking 'topMatches', checkLimit checks if usage < limit.
+        const canViewMore = await checkLimit(auth.uid as string, 'topMatches');
 
-        const finalCandidates = candidates.slice(0, matchLimit);
+        // B. Get Per-View Limit (How many to show right now)
+        const perViewLimit = plan.limits.maxProfileViewPerJob || 0;
+        const totalCreditsLimit = plan.limits.topMatches || 0;
+
+        if (!canViewMore || perViewLimit === 0) {
+            // Access Denied or Limit Reached
+            return NextResponse.json({
+                candidates: [],
+                limit: perViewLimit,
+                totalFound: candidates.length,
+                isLimitReached: true,
+                message: "Top Matches limit reached or feature not available."
+            });
+        }
+
+        // C. Slice Logic
+        // We show `perViewLimit` candidates.
+        const finalCandidates = candidates.slice(0, perViewLimit);
+
+        // D. Increment Usage (Cost = number of profiles revealed)
+        // Only increment if we actually found candidates
+        if (finalCandidates.length > 0) {
+            // We await this to ensure it counts, or we can fire-and-forget if performance is critical.
+            // For accuracy, we await.
+            await incrementUsage(auth.uid as string, 'topMatches', finalCandidates.length);
+        }
 
         return NextResponse.json({
             candidates: finalCandidates,
-            limit: matchLimit,
+            limit: perViewLimit,
+            remainingCredits: totalCreditsLimit >= 9999 ? 'Unlimited' : (totalCreditsLimit - (await getCompanyPlan(auth.uid as string)).subscription?.usage_top_matches),
             totalFound: candidates.length,
-            isLimitReached: candidates.length > matchLimit
+            isLimitReached: candidates.length > perViewLimit // Just indicates there are more hidden ones
         });
 
     } catch (error) {
