@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { verifySmartLinkToken } from '@/lib/sharing';
+import { sanitizeHtml } from '@/lib/sanitize';
 import { Shield, Lock } from 'lucide-react';
 
 // Force dynamic since we use params and DB
@@ -115,7 +116,7 @@ export default async function SharedDocPage({ params }: { params: Promise<{ toke
 
                 {/* Content */}
                 <div className="p-10 leading-relaxed text-lg text-slate-300 min-h-[300px]">
-                    <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-black prose-headings:uppercase prose-a:text-blue-400" />
+                    <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} className="prose prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-black prose-headings:uppercase prose-a:text-blue-400" />
                 </div>
 
                 {/* Footer */}

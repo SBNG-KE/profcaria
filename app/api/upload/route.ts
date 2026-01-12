@@ -2,15 +2,36 @@ import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { validateFile, sanitizeFilename, ALLOWED_IMAGE_TYPES } from '@/lib/file-validation';
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get('profcaria_session')?.value;
-  
+
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
-  const filename = searchParams.get('filename') || 'image.png';
+  const rawFilename = searchParams.get('filename') || 'image.png';
+  const contentType = request.headers.get('content-type')?.split(';')[0] || 'image/png';
+  const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
+
+  // Validate file before upload
+  const validation = validateFile({
+    name: rawFilename,
+    type: contentType,
+    size: contentLength,
+  }, 'profileImage');
+
+  if (!validation.valid) {
+    return NextResponse.json({
+      error: validation.error || 'Invalid file',
+      allowedTypes: 'JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, SVG',
+      maxSize: '10MB'
+    }, { status: 400 });
+  }
+
+  // Use sanitized filename
+  const filename = validation.sanitizedFilename || sanitizeFilename(rawFilename);
 
   // Securely upload to Vercel Blob
   // access: 'public' means the URL is readable, but only people with the URL can see it.

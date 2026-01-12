@@ -6,6 +6,7 @@ import {
     ChevronLeft, UserCircle, Briefcase, Mail, FileText,
     Calendar, Shield, Lock, ExternalLink, Download, ChevronRight
 } from 'lucide-react';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface ProfileData {
     profile: {
@@ -156,7 +157,7 @@ export default function EmployerProfileViewPage() {
                                         [&_h1]:text-white [&_h1]:font-black [&_h1]:uppercase [&_h1]:tracking-tight
                                         [&_p]:break-words [&_pre]:whitespace-pre-wrap [&_pre]:break-words
                                     "
-                                    dangerouslySetInnerHTML={{ __html: activeDoc.content }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeDoc.content) }}
                                 />
                             </div>
                         </div>

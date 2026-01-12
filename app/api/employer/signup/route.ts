@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, hashForIndex } from '@/lib/security';
+import { checkRateLimit, getClientIdentifier, rateLimitedResponse } from '@/lib/rate-limit';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
 
@@ -11,6 +12,13 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
+    // Rate Limiting Check (5 signups/minute per IP)
+    const clientId = getClientIdentifier(req);
+    const rateCheck = checkRateLimit(clientId, 'signup');
+    if (!rateCheck.allowed) {
+      return rateLimitedResponse(rateCheck.resetIn);
+    }
+
     const body = await req.json();
     const {
       companyName,

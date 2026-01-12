@@ -6,6 +6,7 @@ import {
     Users, Calendar, Clock, Link as LinkIcon, FileText,
     Send, ChevronRight, UserCircle, CheckCircle2, X, Eye, Lock, Unlock
 } from 'lucide-react';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface Application {
     id: string;
@@ -275,7 +276,7 @@ export default function ViewApplicationsPage() {
                                                             [&_br]:block [&_br]:mb-2
                                                         "
                                                         style={{ whiteSpace: 'pre-wrap' }}
-                                                        dangerouslySetInnerHTML={{ __html: value }}
+                                                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }}
                                                     />
                                                 ) : (
                                                     <p className="text-slate-200 font-medium leading-relaxed whitespace-pre-wrap">

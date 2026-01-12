@@ -7,6 +7,7 @@ import {
     FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, Send, UserCircle, Building2, ChevronLeft
 } from 'lucide-react';
 import ScrollableContainer from '@/app/components/ScrollableContainer';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface Application {
     id: string;
@@ -382,7 +383,7 @@ function ApplicationsPageContent() {
                                                             </p>
                                                             <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl overflow-auto text-slate-300 text-sm">
                                                                 {typeof value === 'string' && value.includes('<') ? (
-                                                                    <div dangerouslySetInnerHTML={{ __html: value }} />
+                                                                    <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
                                                                 ) : (
                                                                     <p className="whitespace-pre-wrap leading-relaxed font-sans">{Array.isArray(value) ? value.join(', ') : String(value)}</p>
                                                                 )}

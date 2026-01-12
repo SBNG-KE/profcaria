@@ -4,6 +4,7 @@ import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
 import { checkLimit, incrementUsage } from '@/lib/billing';
+import { generateEmbedding } from '@/lib/embeddings';
 
 export const runtime = 'nodejs';
 
@@ -103,6 +104,27 @@ export async function POST(req: Request) {
 
         // Asynchronously update usage
         await incrementUsage(uid as string, 'jobs');
+
+        // Auto-generate embedding for semantic matching (non-blocking)
+        // This runs in background so job creation response is immediate
+        const jobId = data.id;
+        (async () => {
+            try {
+                const text = `${title} ${description}`.slice(0, 512);
+                const embedding = await generateEmbedding(text);
+                if (embedding) {
+                    await supabaseAdmin
+                        .schema('employer')
+                        .from('jobs')
+                        .update({ embedding_json: embedding })
+                        .eq('id', jobId);
+                    console.log(`[Jobs] Embedding generated for job ${jobId}`);
+                }
+            } catch (embError) {
+                console.log('[Jobs] Embedding generation skipped:', embError);
+                // Non-critical: rule-based matching still works
+            }
+        })();
 
         return NextResponse.json({ success: true, jobId: data.id });
 

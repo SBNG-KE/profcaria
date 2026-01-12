@@ -6,6 +6,7 @@ import { decryptData } from '@/lib/security';
 import { calculateRoleSimilarity } from '@/lib/role-similarity';
 import { extractSkillsFromText, calculateSkillOverlap } from '@/lib/skills-matching';
 import { detectExperienceLevel, experienceLevelMatch } from '@/lib/experience-level';
+import { cosineSimilarity, parseEmbedding } from '@/lib/vector-search';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -240,6 +241,29 @@ export async function GET(req: Request) {
 
                 // H. Invite Boost
                 if (invitedJobIds.includes(job.id)) score += 1000;
+
+                // I. Semantic Embedding Boost (ML Enhancement)
+                // Uses pre-computed embeddings from database for fast matching
+                // Max ~15 pts bonus for high semantic similarity
+                if (job.embedding_json && prefs.embedding_json) {
+                    try {
+                        const jobEmb = parseEmbedding(job.embedding_json);
+                        const userEmb = parseEmbedding(prefs.embedding_json);
+                        if (jobEmb && userEmb) {
+                            const similarity = cosineSimilarity(userEmb, jobEmb);
+                            // Similarity is -1 to 1, but text is usually 0 to 1
+                            // Add bonus only for positive similarity > 0.3
+                            if (similarity > 0.5) {
+                                score += 15; // Strong semantic match
+                            } else if (similarity > 0.3) {
+                                score += 8;  // Moderate semantic match
+                            }
+                        }
+                    } catch (embError) {
+                        // Fallback: rule-based scoring continues to work
+                        console.log('[Feed] Embedding comparison skipped:', embError);
+                    }
+                }
 
                 // Diversity Shuffle (Minor)
                 score += Math.random() * 3;

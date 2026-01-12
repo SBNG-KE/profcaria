@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { hashForIndex, encryptData } from '@/lib/security';
 import { detectVPN, getRealIp } from '@/lib/vpn';
+import { checkRateLimit, getClientIdentifier, rateLimitedResponse } from '@/lib/rate-limit';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
 
@@ -11,6 +12,13 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
+    // Rate Limiting Check (10 attempts/minute per IP)
+    const clientId = getClientIdentifier(req);
+    const rateCheck = checkRateLimit(clientId, 'login');
+    if (!rateCheck.allowed) {
+      return rateLimitedResponse(rateCheck.resetIn);
+    }
+
     const body = await req.json();
     const { email, password } = body; // 'email' here is the Work Email
 
