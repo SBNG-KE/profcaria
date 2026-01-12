@@ -158,12 +158,12 @@ export async function GET(req: Request) {
             // A. Role Similarity & Semantic Match (Max ~50 pts)
             // Uses fuzzy matching + category awareness
             let roleScore = 0;
-            const jobCategory = job.role_category; // New field from DB
+            const jobCategories = job.role_categories || (job.role_category ? [job.role_category] : []); // Support array
 
             if (prefs.target_roles && prefs.target_roles.length > 0) {
                 // Check similarity against all target roles and take best match
                 const similarities = prefs.target_roles.map((targetRole: string) =>
-                    calculateRoleSimilarity(targetRole, title, jobCategory)
+                    calculateRoleSimilarity(targetRole, title, jobCategories)
                 );
                 const bestMatch = Math.max(...similarities);
 

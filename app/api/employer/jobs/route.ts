@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json();
-        const { title, description, formSchema, location_type, location, employment_type, role_category } = body;
+        const { title, description, formSchema, location_type, location, employment_type, role_category, role_categories } = body;
 
         if (!title || !description || !formSchema) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -79,6 +79,7 @@ export async function POST(req: Request) {
                     enc_title: encTitle,
                     enc_description: encDescription,
                     role_category: role_category || null,
+                    role_categories: role_categories || (role_category ? [role_category] : []), // New array field
                     enc_form_schema: encFormSchema,
 
                     enc_location: encLocation,
@@ -168,6 +169,7 @@ export async function GET(req: Request) {
             id: job.id,
             title: decryptData(job.enc_title),
             role_category: job.role_category,
+            role_categories: job.role_categories,
             description: decryptData(job.enc_description),
             location: decryptData(job.enc_location),
             location_type: job.location_type,

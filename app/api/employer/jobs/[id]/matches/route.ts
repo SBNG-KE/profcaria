@@ -89,13 +89,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             // --- NEW ALGORITHM IMPLEMENTATION ---
 
             // A. Role Similarity (Max 40 pts)
-            const jobCategory = job.role_category;
+            const jobCategories = job.role_categories || (job.role_category ? [job.role_category] : []);
 
             // Check Target Roles
             let targetRoleScore = 0;
             if (prefs.target_roles && Array.isArray(prefs.target_roles) && prefs.target_roles.length > 0) {
                 const bestMatch = Math.max(...prefs.target_roles.map((r: string) =>
-                    calculateRoleSimilarity(r, jobTitle, jobCategory)
+                    calculateRoleSimilarity(r, jobTitle, jobCategories)
                 ));
                 targetRoleScore = Math.round(bestMatch * 0.4); // Scale 0-100 to 0-40
             }
@@ -104,7 +104,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             let currentRoleScore = 0;
             const currentRole = decryptData(pro.enc_current_role);
             if (currentRole) {
-                const match = calculateRoleSimilarity(currentRole, jobTitle, jobCategory);
+                const match = calculateRoleSimilarity(currentRole, jobTitle, jobCategories);
                 currentRoleScore = Math.round(match * 0.4);
             }
 

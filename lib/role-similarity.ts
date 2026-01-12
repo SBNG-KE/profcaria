@@ -1,7 +1,7 @@
 import { ROLE_CATEGORIES, RoleCategoryKey, getCategoryInfo } from './role-categories';
 
 // Calculate similarity between two role strings (0-100)
-export function calculateRoleSimilarity(role1: string, role2: string, jobCategory?: string): number {
+export function calculateRoleSimilarity(role1: string, role2: string, jobCategories?: string[] | string): number {
     if (!role1 || !role2) return 0;
 
     role1 = role1.toLowerCase().trim();
@@ -13,24 +13,39 @@ export function calculateRoleSimilarity(role1: string, role2: string, jobCategor
 
     // 2. Category-based matching
     const cat1 = detectRoleCategory(role1);
-    const cat2 = detectRoleCategory(role2);
 
-    // If job has explicit category, use it instead of detecting for role2 (which is the job title)
-    const effectiveJobCategory = jobCategory ? (jobCategory as RoleCategoryKey) : cat2;
+    // Normalize job categories to array (support legacy single string)
+    const normalizedJobCats: string[] = Array.isArray(jobCategories)
+        ? jobCategories
+        : jobCategories ? [jobCategories] : [];
 
-    // Same category match
-    if (cat1 && effectiveJobCategory && cat1 === effectiveJobCategory) {
-        return 80;
+    // If no explicit categories, try to detect from role2 (job title)
+    if (normalizedJobCats.length === 0) {
+        const cat2 = detectRoleCategory(role2);
+        if (cat2) normalizedJobCats.push(cat2);
     }
 
-    // Related category match
-    if (cat1 && effectiveJobCategory) {
-        const info1 = getCategoryInfo(cat1);
-        const related = info1.related as readonly string[];
-        if (related.includes(effectiveJobCategory)) {
-            return 60;
+    // Check against ANY of the job categories
+    let maxCategoryScore = 0;
+
+    if (cat1 && normalizedJobCats.length > 0) {
+        for (const jobCat of normalizedJobCats) {
+            // Same category match
+            if (cat1 === jobCat) {
+                maxCategoryScore = Math.max(maxCategoryScore, 80);
+            } else {
+                // Related category match
+                const info1 = getCategoryInfo(cat1);
+                const related = info1.related as readonly string[];
+                if (related.includes(jobCat)) {
+                    maxCategoryScore = Math.max(maxCategoryScore, 60);
+                }
+            }
         }
     }
+
+    if (maxCategoryScore > 0) return maxCategoryScore;
+
 
     // 3. Keyword overlap (if categories didn't match or weren't found)
     const words1 = extractKeywords(role1);

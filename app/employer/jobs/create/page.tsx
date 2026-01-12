@@ -20,7 +20,7 @@ interface FormField {
 function CreateJobPageContent() {
     const router = useRouter();
     const [title, setTitle] = useState('');
-    const [roleCategory, setRoleCategory] = useState('');
+    const [roleCategories, setRoleCategories] = useState<string[]>([]);
     const [description, setDescription] = useState('');
     const [maxApplications, setMaxApplications] = useState<number | ''>('');
     const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
@@ -61,7 +61,11 @@ function CreateJobPageContent() {
                     const job = data.jobs.find((j: any) => j.id === jobId);
                     if (job) {
                         setTitle(job.title);
-                        if (job.role_category) setRoleCategory(job.role_category);
+                        if (job.role_categories && Array.isArray(job.role_categories)) {
+                            setRoleCategories(job.role_categories);
+                        } else if (job.role_category) {
+                            setRoleCategories([job.role_category]);
+                        }
                         setDescription(job.description);
                         if (job.max_applications) setMaxApplications(job.max_applications);
                         setLocationType(job.location_type || 'remote');
@@ -126,7 +130,7 @@ function CreateJobPageContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title,
-                    role_category: roleCategory,
+                    role_categories: roleCategories,
                     description,
                     max_applications: maxApplications,
                     location_type: locationType,
@@ -183,18 +187,51 @@ function CreateJobPageContent() {
                 </div>
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <Briefcase size={14} /> Role Category
+                        <Briefcase size={14} /> Role Categories {roleCategories.length > 0 && <span className="text-blue-400">({roleCategories.length} selected)</span>}
                     </label>
                     <select
-                        value={roleCategory}
-                        onChange={(e) => setRoleCategory(e.target.value)}
+                        onChange={(e) => {
+                            if (e.target.value) {
+                                if (roleCategories.includes(e.target.value)) {
+                                    setRoleCategories(roleCategories.filter(c => c !== e.target.value));
+                                } else {
+                                    setRoleCategories([...roleCategories, e.target.value]);
+                                }
+                                e.target.value = ''; // Reset
+                            }
+                        }}
                         className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-sm appearance-none cursor-pointer"
                     >
-                        <option value="">Select a category...</option>
+                        <option value="">+ Add a category...</option>
                         {ROLE_CATEGORY_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option
+                                key={opt.value}
+                                value={opt.value}
+                                disabled={roleCategories.includes(opt.value)}
+                                className={roleCategories.includes(opt.value) ? 'text-slate-500' : ''}
+                            >
+                                {opt.label} {roleCategories.includes(opt.value) ? '✓' : ''}
+                            </option>
                         ))}
                     </select>
+
+                    {roleCategories.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3">
+                            {roleCategories.map(cat => {
+                                const label = ROLE_CATEGORY_OPTIONS.find(o => o.value === cat)?.label || cat;
+                                return (
+                                    <button
+                                        key={cat}
+                                        onClick={() => setRoleCategories(roleCategories.filter(c => c !== cat))}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 rounded-lg text-xs font-bold transition-all group"
+                                    >
+                                        <span>{label}</span>
+                                        <X size={12} className="opacity-50 group-hover:opacity-100" />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
