@@ -140,8 +140,10 @@ export async function GET(req: Request) {
             return NextResponse.json({ jobs });
         }
 
+        console.log('[MetaFeed] Starting scoring for', jobs?.length || 0, 'jobs. Prefs:', JSON.stringify(prefs));
+
         // 4. Algorithm: Weighted Scoring
-        const scoredJobs = jobs.map((job: any) => {
+        const scoredJobs = (jobs || []).map((job: any) => {
             // Decrypt Job Info FIRST so we can score it
             const title = decryptData(job.enc_title) || 'Untitled Role';
             const description = decryptData(job.enc_description) || '';
@@ -294,7 +296,7 @@ export async function GET(req: Request) {
                 };
 
             } catch (jobError) {
-                console.error(`[MetaFeed] Error processing job ${job.id}:`, jobError);
+                console.error(`[MetaFeed] CRITICAL ERROR processing job ${job.id}:`, jobError);
                 return null; // Skip this job instead of crashing
             }
         }).filter((j: any) => j !== null); // Remove filter-out jobs
