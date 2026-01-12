@@ -183,6 +183,21 @@ function CreateJobPageContent() {
                 </div>
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <Briefcase size={14} /> Role Category
+                    </label>
+                    <select
+                        value={roleCategory}
+                        onChange={(e) => setRoleCategory(e.target.value)}
+                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-sm appearance-none cursor-pointer"
+                    >
+                        <option value="">Select a category...</option>
+                        {ROLE_CATEGORY_OPTIONS.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                         <FileText size={14} /> Description
                     </label>
                     <textarea
