@@ -259,7 +259,8 @@ export async function GET(req: Request) {
                 const jobOrigin = job.speed_boost_location || '';
                 const isLocalReal = userRealCountry && jobOrigin.toLowerCase().includes(userRealCountry.toLowerCase());
 
-                if (!isLocalReal) {
+                // Only enforce if we successfully detected user country
+                if (userRealCountry && !isLocalReal) {
                     return null;
                 }
             }
@@ -297,7 +298,14 @@ export async function GET(req: Request) {
         // 5. Sort by Score
         scoredJobs.sort((a: any, b: any) => b._score - a._score);
 
-        return NextResponse.json({ jobs: scoredJobs });
+        return NextResponse.json({
+            jobs: scoredJobs,
+            debug: {
+                totalFetched: jobs.length,
+                filteredRestricted: jobs.length - scoredJobs.length, // Rough diff
+                userCountry: userRealCountry
+            }
+        });
 
     } catch (error) {
         console.error('Feed Error:', error);
