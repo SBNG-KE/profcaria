@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Cable, Building2, Briefcase, Clock, AlertTriangle,
-    CheckCircle2, XCircle, X, ExternalLink, FileText, Plus, Pencil
+    CheckCircle2, XCircle, X, ExternalLink, FileText, Plus, Pencil, Share2
 } from 'lucide-react';
 
 interface Connection {
@@ -51,6 +51,33 @@ const ConnectionCard = ({
 }) => {
     const terminated = ['terminated', 'rejected', 'declined', 'resigned'].includes(connection.status);
     const active = ['accepted', 'hired', 'employed', 'offered'].includes(connection.status);
+    const [sharing, setSharing] = useState(false);
+
+    const handleShare = async () => {
+        if (sharing) return;
+        setSharing(true);
+        try {
+            const res = await fetch('/api/documents/share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    source: 'connection',
+                    id: connection.id
+                })
+            });
+            if (res.ok) {
+                const { link } = await res.json();
+                window.open(link, '_blank');
+            } else {
+                alert('Failed to generate share link.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error sharing reason.');
+        } finally {
+            setSharing(false);
+        }
+    };
 
     return (
         <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-emerald-500/30 transition-all group flex flex-col h-full">
@@ -82,10 +109,18 @@ const ConnectionCard = ({
                                     <span>Ended {formatDate(connection.terminated_at || new Date().toISOString())}</span>
                                 </div>
                                 {connection.terminationReason && (
-                                    <div className="flex items-start gap-2 text-slate-500 text-[10px] font-medium bg-slate-900/50 p-2 rounded border border-slate-800">
-                                        <AlertTriangle size={10} className="mt-0.5 text-red-500/50 shrink-0" />
-                                        <span className="line-clamp-2">{connection.terminationReason}</span>
-                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleShare();
+                                        }}
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition-all group/share"
+                                    >
+                                        <Share2 size={10} className={sharing ? "animate-spin" : "group-hover/share:text-white transition-colors"} />
+                                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                                            {sharing ? 'Generating...' : 'Share Reason'}
+                                        </span>
+                                    </button>
                                 )}
                             </div>
                         )}

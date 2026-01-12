@@ -7,7 +7,7 @@ import {
   Heading1, Heading2, Heading3,
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Image as ImageIcon, Palette,
-  Shield, Check, ChevronDown, Type
+  Shield, Check, ChevronDown, Type, Share2
 } from 'lucide-react';
 
 const FONTS = [
@@ -93,16 +93,56 @@ const ScrollableContainer = ({ children, className = '' }: { children: React.Rea
 
 // --- Components ---
 const DocumentCard = ({ title, onClick, onRemove }: { title: string, onClick: () => void, onRemove: () => void }) => {
+  const [sharing, setSharing] = useState(false);
+
+  // Check if this is the "Reason" card (fuzzy match)
+  const isReasonCard = title.toUpperCase().includes('REASON') || title.toUpperCase().includes('LEAVING');
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (sharing) return;
+    setSharing(true);
+
+    try {
+      const res = await fetch('/api/documents/share', {
+        method: 'POST',
+        body: JSON.stringify({ docType: title })
+      });
+      if (res.ok) {
+        const { link } = await res.json();
+        window.open(link, '_blank');
+      } else {
+        alert('Failed to generate share link.');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <div className="group relative flex-shrink-0 w-full md:w-60 h-64 md:h-52">
       <button
         onClick={onClick}
         className="w-full h-full rounded-[40px] border-t-2 border-l-2 border-blue-500/80 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] relative z-0"
       >
-        <div className="relative z-10 h-full w-full flex items-center justify-center">
-          <h2 className="text-3xl font-black text-slate-200 tracking-tighter group-hover:text-blue-400 transition-colors uppercase">
+        <div className="relative z-10 h-full w-full flex flex-col items-center justify-center gap-2">
+          <h2 className="text-3xl font-black text-slate-200 tracking-tighter group-hover:text-blue-400 transition-colors uppercase text-center px-4">
             {title}
           </h2>
+
+          {isReasonCard && (
+            <div
+              onClick={handleShare}
+              className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-blue-500/20 transition-all cursor-pointer"
+            >
+              <Share2 size={12} className={sharing ? "animate-spin text-blue-400" : "text-blue-400"} />
+              <span className="text-[10px] font-bold text-blue-300 uppercase tracking-widest">
+                {sharing ? 'Generating...' : 'Share Reason'}
+              </span>
+            </div>
+          )}
         </div>
         <div className="absolute top-0 left-0 w-24 h-24 bg-blue-500/10 blur-[40px] pointer-events-none"></div>
       </button>

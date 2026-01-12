@@ -14,18 +14,18 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Profcaria | Private AI-Powered Career Network",
+    default: "Profcaria | Private Privacy-First Career Network",
     template: "%s | Profcaria"
   },
-  description: "The exclusive, privacy-first career marketplace. Connect with top employers securely using verified AI matching. No ghosting, just results.",
-  keywords: ["Jobs", "Career", "Privacy", "AI Matching", "Tech Jobs", "Executive Search", "Private Network"],
+  description: "The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
+  keywords: ["Jobs", "Career", "Privacy", "Smart Matching", "Tech Jobs", "Executive Search", "Private Network"],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.profcaria.com',
     siteName: 'Profcaria',
-    title: 'Profcaria | Private AI-Powered Career Network',
-    description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified AI matching.',
+    title: 'Profcaria | Private Privacy-First Career Network',
+    description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     images: [
       {
         url: 'https://www.profcaria.com/og-image.png',
@@ -37,8 +37,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Profcaria | Private AI-Powered Career Network',
-    description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified AI matching.',
+    title: 'Profcaria | Private Privacy-First Career Network',
+    description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     creator: '@profcaria', // Update if known
   },
 };

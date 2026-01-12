@@ -202,8 +202,8 @@ export default function JobApplyPage() {
                             <h4 className="text-xs font-black uppercase tracking-widest">Secure Info</h4>
                         </div>
                         <p className="text-[10px] text-slate-500 leading-relaxed font-bold uppercase">
-                            Your application is encrypted using AES-256 and PQC Concept validation.
-                            Only authorized recruitment officers from this entity can decrypt your data.
+                            Your application is protected with End-to-End Encryption.
+                            Only authorized recruitment officers from this entity can view your data.
                         </p>
                     </div>
                 </div>
