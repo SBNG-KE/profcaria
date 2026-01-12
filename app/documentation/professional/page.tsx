@@ -2,12 +2,15 @@ import Link from 'next/link';
 import {
     User,
     FileCheck,
-    Shield,
     Briefcase,
     CheckCircle,
-    Key,
-    Share2,
-    Eye
+    MessageSquare,
+    Bell,
+    Search,
+    Heart,
+    Lock,
+    Zap,
+    Users
 } from 'lucide-react';
 
 export default function ProfessionalDocsPage() {
@@ -20,19 +23,20 @@ export default function ProfessionalDocsPage() {
                     <User size={12} /> Professional Guide
                 </div>
                 <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight">
-                    Building Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Verified Legacy</span>
+                    Complete Guide for <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Professionals</span>
                 </h1>
                 <p className="text-lg text-slate-400 max-w-2xl leading-relaxed">
-                    The Professional Dashboard is your command center. Here you verify your history, manage encrypted artifacts, and control exactly who sees your data.
+                    Everything you need to know about using Profcaria to find your next opportunity while keeping your data private and secure.
                 </p>
             </div>
 
-            {/* Table of Contents / Quick Nav */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Quick Nav */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {[
-                    { title: "Artifact Management", icon: FileCheck, href: "#artifacts" },
-                    { title: "Job Applications", icon: Briefcase, href: "#applications" },
-                    { title: "Privacy Controls", icon: Shield, href: "#privacy" }
+                    { title: "Getting Started", icon: Zap, href: "#getting-started" },
+                    { title: "Your Profile", icon: User, href: "#profile" },
+                    { title: "Finding Jobs", icon: Search, href: "#jobs" },
+                    { title: "Connections", icon: Users, href: "#connections" }
                 ].map((item) => (
                     <a key={item.title} href={item.href} className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 transition-all group">
                         <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 group-hover:scale-110 transition-transform">
@@ -45,143 +49,215 @@ export default function ProfessionalDocsPage() {
 
             <hr className="border-white/5" />
 
-            {/* Section 1: Artifacts */}
-            <section id="artifacts" className="space-y-8 scroll-mt-24">
+            {/* Section 1: Getting Started */}
+            <section id="getting-started" className="space-y-8 scroll-mt-24">
                 <div className="flex items-start gap-4">
                     <div className="p-3 bg-blue-900/20 rounded-2xl border border-blue-500/20 text-blue-400">
-                        <FileCheck size={28} />
+                        <Zap size={28} />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-2xl font-bold text-white">Artifact Management</h2>
+                        <h2 className="text-2xl font-bold text-white">Getting Started</h2>
                         <p className="text-slate-400 max-w-3xl leading-relaxed">
-                            "Artifacts" are the core building blocks of your Profcaria profile. Unlike a traditional resume which is just text, an Artifact is a verified data object.
+                            Create your account in under 2 minutes. Here's what happens:
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">1</div>
+                        <h3 className="text-lg font-bold text-white">Sign Up</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            Enter your email and create a strong password. Your account is immediately protected with enterprise-grade encryption.
+                        </p>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">2</div>
+                        <h3 className="text-lg font-bold text-white">Set Up 2FA</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            Two-Factor Authentication is required for all accounts. Verify with OTP or set up a passkey for passwordless login.
+                        </p>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">3</div>
+                        <h3 className="text-lg font-bold text-white">Set Preferences</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            Tell us what you're looking for: target roles, work mode (remote/hybrid/onsite), and locations. This helps our algorithm match you to relevant jobs.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Section 2: Your Profile */}
+            <section id="profile" className="space-y-8 scroll-mt-24">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-emerald-900/20 rounded-2xl border border-emerald-500/20 text-emerald-400">
+                        <User size={28} />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-white">Your Profile</h2>
+                        <p className="text-slate-400 max-w-3xl leading-relaxed">
+                            Your profile is your digital career identity. Here's what you can add:
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/10 rounded-[30px] p-8 space-y-6">
+                    <h3 className="text-lg font-bold text-white">Profile Sections</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider">Personal Information</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Name (encrypted)</li>
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Email (encrypted)</li>
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Profile Photo (optional)</li>
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Headline / Current Role</li>
+                            </ul>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider">Career Details</h4>
+                            <ul className="space-y-2 text-sm text-slate-400">
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Resume / CV</li>
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Education History</li>
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Skills & Expertise</li>
+                                <li className="flex items-center gap-2"><CheckCircle size={14} className="text-emerald-500" /> Certifications</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-orange-500/5 border border-orange-500/20">
+                    <h4 className="font-bold text-white mb-2 flex items-center gap-2">
+                        <Lock size={18} className="text-orange-400" /> No PDF Uploads Required
+                    </h4>
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                        Unlike other platforms, you don't upload your resume as a PDF. You enter your information directly into our system where it's immediately encrypted. This means:
+                    </p>
+                    <ul className="mt-3 space-y-1 text-sm text-slate-400">
+                        <li>• No malware risk from PDF exploits</li>
+                        <li>• No wondering what happens to your file</li>
+                        <li>• Your data stays encrypted and under your control</li>
+                        <li>• Update once, it reflects everywhere</li>
+                    </ul>
+                </div>
+            </section>
+
+            {/* Section 3: Finding Jobs */}
+            <section id="jobs" className="space-y-8 scroll-mt-24">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-purple-900/20 rounded-2xl border border-purple-500/20 text-purple-400">
+                        <Search size={28} />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-white">Finding Jobs</h2>
+                        <p className="text-slate-400 max-w-3xl leading-relaxed">
+                            Our smart matching algorithm finds jobs that fit you. The system is continuously being improved with the best features available.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-blue-500/5 border border-blue-500/20">
+                    <h4 className="font-bold text-white mb-2 flex items-center gap-2">
+                        <Zap size={18} className="text-blue-400" /> Algorithm Under Active Development
+                    </h4>
+                    <p className="text-sm text-slate-400 leading-relaxed">
+                        Our matching algorithm is continuously being refined to its finest. We're implementing the best available technologies to ensure you see the most relevant opportunities based on your preferences and skills.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+                        <Search size={24} className="text-blue-400" />
+                        <h3 className="text-lg font-bold text-white">Job Feed</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            Jobs are ranked by how well they match your preferences. Higher matching jobs appear first. Scroll through to find opportunities that fit you.
+                        </p>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+                        <Heart size={24} className="text-red-400" />
+                        <h3 className="text-lg font-bold text-white">Save Jobs</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            Bookmark interesting jobs to review later. Access your saved jobs from the "Saved" tab. Once you apply, the job is automatically removed from saved.
+                        </p>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
+                        <FileCheck size={24} className="text-emerald-400" />
+                        <h3 className="text-lg font-bold text-white">Apply</h3>
+                        <p className="text-sm text-slate-400 leading-relaxed">
+                            When you apply, the employer gains access to your resume and profile information. Answer their custom questions to complete your application.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Section 4: Connections */}
+            <section id="connections" className="space-y-8 scroll-mt-24">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-indigo-900/20 rounded-2xl border border-indigo-500/20 text-indigo-400">
+                        <Users size={28} />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-white">Connections & Work History</h2>
+                        <p className="text-slate-400 max-w-3xl leading-relaxed">
+                            Your employment history is built through verified connections with employers.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-white/[0.02] border border-white/10 rounded-[30px] p-8 space-y-6">
+                    <h3 className="text-lg font-bold text-white">How Connections Work</h3>
+                    <p className="text-sm text-slate-400 mb-4">
+                        When you work with an employer through Profcaria, that creates a "connection" - a verified record of your employment.
+                    </p>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                            <h4 className="text-white font-bold mb-2">Previous Employments</h4>
+                            <p className="text-sm text-slate-400">Your connections appear as verified previous employments on your profile. Future employers can see these when viewing your full profile.</p>
+                        </div>
+
+                        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                            <h4 className="text-white font-bold mb-2">What Employers See</h4>
+                            <p className="text-sm text-slate-400">After you apply, employers can view your resume and connection history (previous employments made through the platform).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Section 5: Messages */}
+            <section id="messages" className="space-y-8 scroll-mt-24 pb-20">
+                <div className="flex items-start gap-4">
+                    <div className="p-3 bg-cyan-900/20 rounded-2xl border border-cyan-500/20 text-cyan-400">
+                        <MessageSquare size={28} />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-white">Messages & Invites</h2>
+                        <p className="text-slate-400 max-w-3xl leading-relaxed">
+                            Communicate securely with employers through our encrypted messaging system.
                         </p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs text-blue-400 border border-blue-500/30">1</span>
-                            Creating an Artifact
-                        </h3>
+                        <Bell size={24} className="text-yellow-400" />
+                        <h3 className="text-lg font-bold text-white">Job Invites</h3>
                         <p className="text-sm text-slate-400 leading-relaxed">
-                            Navigate to the <strong>My Artifacts</strong> tab. You can create artifacts for Education, Employment, Certifications, or Skills. Each entry is encrypted locally before being saved.
+                            Employers can send you invites to apply for their jobs. These appear in your inbox and as priority items in your feed. You choose whether to respond.
                         </p>
-                        <div className="p-4 rounded-lg bg-black/40 border border-white/5 text-xs font-mono text-slate-500">
-                            Example: Adding a Degree<br />
-                            1. Click "Add Artifact"<br />
-                            2. Select "Education"<br />
-                            3. Upload Diploma (PDF/Img) - Encrypted instantly<br />
-                            4. Save
-                        </div>
                     </div>
 
                     <div className="p-6 rounded-2xl bg-slate-900/40 border border-white/5 space-y-4">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-xs text-emerald-400 border border-emerald-500/30">2</span>
-                            Verification Status
-                        </h3>
+                        <MessageSquare size={24} className="text-blue-400" />
+                        <h3 className="text-lg font-bold text-white">Secure Chat</h3>
                         <p className="text-sm text-slate-400 leading-relaxed">
-                            Artifacts have three states:
-                        </p>
-                        <ul className="space-y-2 text-sm text-slate-400">
-                            <li className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-slate-500"></span> Unverified (Self-reported)
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Pending Review
-                            </li>
-                            <li className="flex items-center gap-2 text-emerald-400 font-bold">
-                                <CheckCircle size={14} /> Verified (Cryptographically Signed)
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            {/* Section 2: Applications */}
-            <section id="applications" className="space-y-8 scroll-mt-24">
-                <div className="flex items-start gap-4">
-                    <div className="p-3 bg-indigo-900/20 rounded-2xl border border-indigo-500/20 text-indigo-400">
-                        <Briefcase size={28} />
-                    </div>
-                    <div className="space-y-2">
-                        <h2 className="text-2xl font-bold text-white">Connections & Jobs</h2>
-                        <p className="text-slate-400 max-w-3xl leading-relaxed">
-                            Profcaria reverses the traditional job search. Instead of spamming resumes, you curate a profile and Employers apply to <em>you</em> or you apply to specific verified openings.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="bg-white/[0.02] border border-white/10 rounded-[30px] p-8">
-                    <h3 className="text-lg font-bold text-white mb-6">The Handshake Protocol</h3>
-                    <div className="relative border-l border-white/10 ml-3 space-y-10 pl-8 py-2">
-
-                        <div className="relative">
-                            <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-indigo-500 border-4 border-[#050b14]"></div>
-                            <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-1">Step 1: Invitation</h4>
-                            <p className="text-sm text-slate-400">
-                                An Employer finds your anonymized profile summary (Skills & verified badges only). They send an "Invite to Connect".
-                            </p>
-                        </div>
-
-                        <div className="relative">
-                            <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-indigo-500/50 border-4 border-[#050b14]"></div>
-                            <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-1">Step 2: Key Exchange</h4>
-                            <p className="text-sm text-slate-400">
-                                If you accept the invite, a cryptographic key exchange occurs. This grants the Employer temporary read-access to your encrypted text data (Name, Resume details).
-                            </p>
-                        </div>
-
-                        <div className="relative">
-                            <div className="absolute -left-[41px] top-1 w-5 h-5 rounded-full bg-indigo-500/20 border-4 border-[#050b14]"></div>
-                            <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-1">Step 3: Interview & Offer</h4>
-                            <p className="text-sm text-slate-400">
-                                Communication happens over encrypted channels. Offers are digitally signed contracts stored in your vault.
-                            </p>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
-
-            {/* Section 3: Privacy */}
-            <section id="privacy" className="space-y-8 scroll-mt-24 pb-20">
-                <div className="flex items-start gap-4">
-                    <div className="p-3 bg-emerald-900/20 rounded-2xl border border-emerald-500/20 text-emerald-400">
-                        <Shield size={28} />
-                    </div>
-                    <div className="space-y-2">
-                        <h2 className="text-2xl font-bold text-white">Privacy Controls</h2>
-                        <p className="text-slate-400 max-w-3xl leading-relaxed">
-                            You have granular control over visibility.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-5 border border-white/10 rounded-2xl bg-slate-900/20">
-                        <div className="mb-4 text-slate-400"><Eye size={24} /></div>
-                        <h4 className="font-bold text-white mb-2">Public Profile</h4>
-                        <p className="text-xs text-slate-500">
-                            Controls what is visible to public search engines. Default: <span className="text-emerald-400">OFF</span>.
-                        </p>
-                    </div>
-
-                    <div className="p-5 border border-white/10 rounded-2xl bg-slate-900/20">
-                        <div className="mb-4 text-slate-400"><Share2 size={24} /></div>
-                        <h4 className="font-bold text-white mb-2">Employer Discovery</h4>
-                        <p className="text-xs text-slate-500">
-                            Allow verified employers to find you in internal search. Default: <span className="text-blue-400">ON</span>.
-                        </p>
-                    </div>
-
-                    <div className="p-5 border border-white/10 rounded-2xl bg-slate-900/20">
-                        <div className="mb-4 text-slate-400"><Key size={24} /></div>
-                        <h4 className="font-bold text-white mb-2">Access Revocation</h4>
-                        <p className="text-xs text-slate-500">
-                            You can revoke an Employer's access to your data at any time, instantly cutting off their decryption keys.
+                            All messages between you and employers are encrypted. Discuss opportunities, ask questions, and negotiate - all within a secure environment.
                         </p>
                     </div>
                 </div>

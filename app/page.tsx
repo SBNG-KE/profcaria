@@ -335,6 +335,32 @@ export default function LandingPage() {
                   </div>
                 </div>
 
+                {/* Item 5 - No Spam */}
+                <div className="flex gap-4 items-start group/item">
+                  <div className="p-3 bg-orange-900/10 rounded-xl text-orange-400 border border-orange-900/20 group-hover/item:border-orange-500/30 transition-colors">
+                    <Ban size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Zero Recruiter Spam</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                      No InMail harassment. No cold outreach. Just relevant opportunities.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Item 6 - Data Ownership */}
+                <div className="flex gap-4 items-start group/item">
+                  <div className="p-3 bg-cyan-900/10 rounded-xl text-cyan-400 border border-cyan-900/20 group-hover/item:border-cyan-500/30 transition-colors">
+                    <Shield size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">You Own Your Data</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                      Only employers you apply to see your info. We never sell data. You're the customer, not the product.
+                    </p>
+                  </div>
+                </div>
+
               </div>
 
               {/* Background Effects */}
