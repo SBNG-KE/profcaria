@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     images: [
       {
-        url: 'https://www.profcaria.com/og-image.png',
+        url: 'https://www.profcaria.com/profcaria.png',
         width: 1200,
         height: 630,
         alt: 'Profcaria Platform Preview',
