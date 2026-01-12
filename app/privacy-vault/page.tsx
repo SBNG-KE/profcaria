@@ -21,7 +21,7 @@ export default function PrivacyVaultPage() {
                         Transparency Center
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter">
-                        THE PRIVACY <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">VAULT</span>
+                        THE SECURITY & <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">PRIVACY VAULT</span>
                     </h1>
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
                         We believe your data is your property. This page details exactly how we protect it, where it lives, and why we can't sell it even if we wanted to.

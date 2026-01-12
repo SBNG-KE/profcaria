@@ -7,7 +7,8 @@ import {
     UserCheck,
     Filter,
     FileText,
-    Globe
+    Globe,
+    ArrowRight
 } from 'lucide-react';
 
 export default function EmployerDocsPage() {
@@ -147,39 +148,23 @@ export default function EmployerDocsPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 border border-white/10 rounded-2xl bg-slate-900/20">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 className="font-bold text-white text-lg">Starter</h4>
-                                <p className="text-xs text-slate-500">Perfect for small teams</p>
+                <div className="p-10 border border-white/10 rounded-[30px] bg-slate-900/20 backdrop-blur-xl">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                        <div className="p-6 bg-purple-500/10 rounded-full text-purple-400">
+                            <CreditCard size={48} />
+                        </div>
+                        <div className="space-y-4 text-center md:text-left">
+                            <h3 className="text-2xl font-bold text-white">Fair & Dynamic Pricing</h3>
+                            <p className="text-slate-400 text-sm leading-relaxed max-w-xl">
+                                We believe in fair pricing that reflects the current economic landscape. Our plans are variable and tailored to your organization's size and hiring volume.
+                                We offer competitive rates designed to be accessible for startups while scaling effectively for enterprise needs.
+                            </p>
+                            <div className="pt-2">
+                                <Link href="/contact" className="inline-flex items-center gap-2 text-purple-400 font-bold uppercase tracking-widest text-xs hover:text-white transition-colors">
+                                    Contact Sales for a Quote <ArrowRight size={14} />
+                                </Link>
                             </div>
-                            <div className="text-xl font-black text-white">$49<span className="text-xs text-slate-500 font-normal">/mo</span></div>
                         </div>
-                        <ul className="space-y-2 text-sm text-slate-300">
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-slate-500" /> 5 Active Job Posts</li>
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-slate-500" /> 50 Candidate Views / mo</li>
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-slate-500" /> Basic Support</li>
-                        </ul>
-                    </div>
-
-                    <div className="p-6 border border-emerald-500/20 rounded-2xl bg-emerald-900/5 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-widest">
-                            Recommended
-                        </div>
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 className="font-bold text-white text-lg">Enterprise</h4>
-                                <p className="text-xs text-emerald-400">For scaling organizations</p>
-                            </div>
-                            <div className="text-xl font-black text-white">$199<span className="text-xs text-slate-500 font-normal">/mo</span></div>
-                        </div>
-                        <ul className="space-y-2 text-sm text-slate-300">
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-emerald-500" /> Unlimited Job Posts</li>
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-emerald-500" /> Unlimited Views</li>
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-emerald-500" /> API Access</li>
-                            <li className="flex items-center gap-2"><Globe size={14} className="text-emerald-500" /> Dedicated Support</li>
-                        </ul>
                     </div>
                 </div>
             </section>
