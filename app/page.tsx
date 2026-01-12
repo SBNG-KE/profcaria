@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import {
   ArrowRight,
@@ -15,14 +16,51 @@ import {
   ChevronDown,
   Building2,
   Users,
-  Linkedin,
-  Instagram,
+  // Linkedin, // Deprecated
+  // Instagram, // Deprecated
   FileText,
   Ban,
   EyeOff,
   Server,
   Check
 } from 'lucide-react';
+
+// Inline replacements for deprecated Lucide icons
+const LinkedinIcon = ({ size = 24, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect width="4" height="12" x="2" y="9" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
+
+const InstagramIcon = ({ size = 24, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+  </svg>
+);
 
 const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -220,10 +258,10 @@ export default function LandingPage() {
                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M4 4l11.733 16h4.267l-11.733-16z" /><path d="M4 20l6.768-6.768m2.46-2.46L20 4" /></svg>
                   </a>
                   <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
-                    <Linkedin size={24} />
+                    <LinkedinIcon size={24} />
                   </a>
                   <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
-                    <Instagram size={24} />
+                    <InstagramIcon size={24} />
                   </a>
                 </div>
               </div>
@@ -315,10 +353,10 @@ export default function LandingPage() {
             <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em]">&copy; {new Date().getFullYear()} Secured ecosystem. All rights reserved.</p>
           </div>
           <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-500">
-            <a href="#" className="hover:text-blue-500 transition-colors">Documentation</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Privacy Vault</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Legal</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Security Audit</a>
+            <Link href="/documentation" className="hover:text-blue-500 transition-colors">Documentation</Link>
+            <Link href="/privacy-vault" className="hover:text-blue-500 transition-colors">Privacy Vault</Link>
+            <Link href="/legal" className="hover:text-blue-500 transition-colors">Legal</Link>
+            <Link href="/security-audit" className="hover:text-blue-500 transition-colors">Security Audit</Link>
           </div>
         </div>
       </footer>
