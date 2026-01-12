@@ -7,8 +7,7 @@ import {
     UserCheck,
     Filter,
     FileText,
-    Globe,
-    ArrowRight
+    Globe
 } from 'lucide-react';
 
 export default function EmployerDocsPage() {
@@ -159,11 +158,6 @@ export default function EmployerDocsPage() {
                                 We believe in fair pricing that reflects the current economic landscape. Our plans are variable and tailored to your organization's size and hiring volume.
                                 We offer competitive rates designed to be accessible for startups while scaling effectively for enterprise needs.
                             </p>
-                            <div className="pt-2">
-                                <Link href="/contact" className="inline-flex items-center gap-2 text-purple-400 font-bold uppercase tracking-widest text-xs hover:text-white transition-colors">
-                                    Contact Sales for a Quote <ArrowRight size={14} />
-                                </Link>
-                            </div>
                         </div>
                     </div>
                 </div>

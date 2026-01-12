@@ -3,17 +3,8 @@ import { ArrowLeft, ShieldCheck, Lock } from 'lucide-react';
 
 export default function SecurityAuditPage() {
     return (
-        <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans p-6 md:p-20 relative overflow-hidden">
-
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none -mr-40 -mt-40" />
-
-            <div className="max-w-3xl mx-auto space-y-12 relative z-10">
-
-                {/* Nav */}
-                <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                    <ArrowLeft size={16} /> Back to Home
-                </Link>
+        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 relative">
+            <div className="space-y-12 relative z-10">
 
                 {/* Header */}
                 <div className="space-y-6">

@@ -3,17 +3,12 @@ import { ArrowLeft, EyeOff, Server, Key, Database } from 'lucide-react';
 
 export default function PrivacyVaultPage() {
     return (
-        <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans p-6 md:p-20 relative overflow-hidden">
+        <div className="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-700 relative">
 
             {/* Background decoration */}
             <div className="absolute top-[20%] left-[-10%] w-[60%] h-[60%] bg-blue-900/10 rounded-full blur-[150px] pointer-events-none" />
 
             <div className="max-w-4xl mx-auto space-y-16 relative z-10">
-
-                {/* Nav */}
-                <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
-                    <ArrowLeft size={16} /> Back to Home
-                </Link>
 
                 {/* Header */}
                 <div className="text-center space-y-6">

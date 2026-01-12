@@ -30,8 +30,8 @@ export default function DocumentationLayout({
         { name: 'Getting Started', href: '/documentation', icon: Home },
         { name: 'For Professionals', href: '/documentation/professional', icon: User },
         { name: 'For Employers', href: '/documentation/employer', icon: Briefcase },
-        { name: 'Legal', href: '/legal', icon: FileText },
-        { name: 'Security & Privacy Vault', href: '/privacy-vault', icon: Shield },
+        { name: 'Legal', href: '/documentation/legal', icon: FileText },
+        { name: 'Security & Privacy Vault', href: '/documentation/privacy-vault', icon: Shield },
     ];
 
     return (
