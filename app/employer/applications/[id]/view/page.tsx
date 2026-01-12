@@ -6,7 +6,7 @@ import {
     Bold, Italic, Underline, Link as LinkIcon,
     Heading1, Heading2, Heading3,
     AlignLeft, AlignCenter, AlignRight,
-    List, ListOrdered, CheckCircle2, XCircle
+    List, ListOrdered, CheckCircle2, XCircle, Building2
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -51,6 +51,7 @@ export default function EmployerApplicationView() {
     const [isSnapshot, setIsSnapshot] = useState(false);
     const [status, setStatus] = useState<string>('');
     const [snapshottedAt, setSnapshottedAt] = useState<string | null>(null);
+    const [connections, setConnections] = useState<{ id: string; company: { name: string; logoUrl?: string | null } }[]>([]);
 
     // UI State
     const [activeDocument, setActiveDocument] = useState<string | null>(null);
@@ -80,7 +81,23 @@ export default function EmployerApplicationView() {
             }
         };
 
-        if (applicationId) fetchData();
+        const fetchConnections = async () => {
+            try {
+                const res = await fetch(`/api/employer/applications/${applicationId}/connections`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setConnections(data.connections || []);
+                }
+            } catch (error) {
+                console.error('Error fetching connections', error);
+            }
+        };
+
+        if (applicationId) {
+            fetchData();
+            fetchConnections();
+        }
+
     }, [applicationId]);
 
     // Update editor content when active document changes
@@ -206,6 +223,32 @@ export default function EmployerApplicationView() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Previous Employments (Connections) */}
+                        {connections.length > 0 && (
+                            <div className="pt-4 border-t border-slate-800 space-y-3">
+                                <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                    <Building2 size={12} /> Previous Employments
+                                </h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {connections.map((conn) => (
+                                        <div
+                                            key={conn.id}
+                                            className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-800 rounded-xl"
+                                        >
+                                            <div className="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
+                                                {conn.company.logoUrl ? (
+                                                    <img src={conn.company.logoUrl} alt={conn.company.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Building2 size={10} className="text-slate-500" />
+                                                )}
+                                            </div>
+                                            <span className="text-xs font-bold text-slate-400">{conn.company.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </aside>
