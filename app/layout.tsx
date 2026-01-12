@@ -41,6 +41,9 @@ export const metadata: Metadata = {
     description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     creator: '@profcaria', // Update if known
   },
+  verification: {
+    google: "6xck7xYL-QCWEu1is-U_xcQlkUjfWGxengTW-7mIrk4",
+  },
 };
 
 export default function RootLayout({
