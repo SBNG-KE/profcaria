@@ -93,12 +93,9 @@ export default function DocumentationLayout({
                         <div className="mt-10 pt-10 border-t border-white/5">
                             <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-600 mb-4">Resources</h3>
                             <div className="space-y-4">
-                                <Link href="/contact" className="block text-sm text-slate-400 hover:text-white transition-colors">
+                                <a href="mailto:support@profcaria.com" className="block text-sm text-slate-400 hover:text-white transition-colors">
                                     Contact Support
-                                </Link>
-                                <Link href="/status" className="block text-sm text-slate-400 hover:text-white transition-colors">
-                                    System Status
-                                </Link>
+                                </a>
                             </div>
                         </div>
                     </div>
