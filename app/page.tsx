@@ -24,6 +24,7 @@ import {
   Server,
   Check
 } from 'lucide-react';
+import { Analytics } from "@vercel/analytics/next";
 
 // Inline replacements for deprecated Lucide icons
 const YoutubeIcon = ({ size = 24, className = "" }) => (
@@ -366,7 +367,8 @@ export default function LandingPage() {
         .reveal {
           animation: fade-up 1s forwards;
         }
-      `}</style >
-    </div >
+      `}</style>
+      <Analytics />
+    </div>
   );
 }
