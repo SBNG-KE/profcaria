@@ -65,7 +65,6 @@ export async function GET(req: Request) {
         const { data: userApps } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .from('applications')
             .select('job_id, status, id, job:jobs(enc_title)')
             .eq('user_id', auth.uid);
 
