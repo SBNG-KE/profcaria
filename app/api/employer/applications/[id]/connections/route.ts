@@ -34,13 +34,14 @@ export async function GET(req: Request, { params }: Params) {
             return NextResponse.json({ error: 'Application not found' }, { status: 404 });
         }
 
-        // Get all accepted/hired/employed applications for this user (these are their connections)
+        // Get all connection applications for this user
+        // Connections are: hired, employed, or terminated (resigned/mutual/involuntary)
         const { data: connections, error: connError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
             .select('id, jobs(company_id)')
             .eq('user_id', application.user_id)
-            .in('status', ['accepted', 'hired', 'employed', 'terminated', 'resigned'])
+            .in('status', ['hired', 'employed', 'resigned', 'terminated'])
             .order('created_at', { ascending: false });
 
         if (connError) {

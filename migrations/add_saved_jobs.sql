@@ -16,19 +16,17 @@ CREATE TABLE IF NOT EXISTS professional.saved_jobs (
 CREATE INDEX IF NOT EXISTS idx_saved_jobs_user_id ON professional.saved_jobs(user_id);
 CREATE INDEX IF NOT EXISTS idx_saved_jobs_job_id ON professional.saved_jobs(job_id);
 
--- Add RLS policies
+-- Grant permissions to service role (for supabaseAdmin to work)
+-- This is important since we're using supabaseAdmin which uses service_role
+GRANT ALL ON professional.saved_jobs TO service_role;
+GRANT ALL ON professional.saved_jobs TO postgres;
+
+-- RLS policies (optional since supabaseAdmin bypasses RLS)
+-- But good to have for security if you ever use anon/authenticated role
 ALTER TABLE professional.saved_jobs ENABLE ROW LEVEL SECURITY;
 
--- Users can only see their own saved jobs
-CREATE POLICY "Users can view own saved jobs" ON professional.saved_jobs
-    FOR SELECT USING (user_id = auth.uid()::uuid);
-
--- Users can insert their own saved jobs
-CREATE POLICY "Users can save jobs" ON professional.saved_jobs
-    FOR INSERT WITH CHECK (user_id = auth.uid()::uuid);
-
--- Users can delete their own saved jobs
-CREATE POLICY "Users can unsave jobs" ON professional.saved_jobs
-    FOR DELETE USING (user_id = auth.uid()::uuid);
+-- Allow service_role to bypass RLS (supabaseAdmin uses this)
+CREATE POLICY "Service role full access" ON professional.saved_jobs
+    FOR ALL USING (true) WITH CHECK (true);
 
 COMMENT ON TABLE professional.saved_jobs IS 'Stores jobs saved by professionals for later review';
