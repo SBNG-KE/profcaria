@@ -1,0 +1,21 @@
+{
+    "name": "Profcaria",
+    "short_name": "Profcaria",
+    "description": "Private Privacy-First Career Network",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#020617",
+    "theme_color": "#3b82f6",
+    "icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "any",
+            "type": "image/x-icon"
+        },
+        {
+            "src": "/profcaria.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

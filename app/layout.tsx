@@ -13,12 +13,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.profcaria.com'),
+  manifest: '/manifest.json',
   title: {
     default: "Profcaria | Private Privacy-First Career Network",
     template: "%s | Profcaria"
   },
   description: "The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
   keywords: ["Jobs", "Career", "Privacy", "Smart Matching", "Tech Jobs", "Executive Search", "Private Network"],
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
