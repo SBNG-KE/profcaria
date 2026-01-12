@@ -4,9 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     ChevronLeft, UserCircle, Briefcase, Mail, FileText,
-    Calendar, Shield, Lock, ExternalLink, Download, ChevronRight
+    Shield, Lock, ExternalLink, Download, ChevronRight, Building2
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
+
+interface Connection {
+    id: string;
+    company: {
+        name: string;
+        logoUrl?: string | null;
+    };
+}
 
 interface ProfileData {
     profile: {
@@ -29,6 +37,7 @@ export default function EmployerProfileViewPage() {
     const { id } = useParams();
     const router = useRouter();
     const [data, setData] = useState<ProfileData | null>(null);
+    const [connections, setConnections] = useState<Connection[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -49,7 +58,21 @@ export default function EmployerProfileViewPage() {
                 setLoading(false);
             }
         };
+
+        const fetchConnections = async () => {
+            try {
+                const res = await fetch(`/api/employer/applications/${id}/connections`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setConnections(data.connections || []);
+                }
+            } catch (error) {
+                console.error("Error fetching connections", error);
+            }
+        };
+
         fetchProfile();
+        fetchConnections();
     }, [id]);
 
     if (loading) return (
@@ -117,6 +140,32 @@ export default function EmployerProfileViewPage() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Previous Employments (Connections) */}
+                    {connections.length > 0 && (
+                        <div className="bg-blue-500/5 border border-blue-500/10 rounded-[32px] p-6 space-y-4">
+                            <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                <Building2 size={14} /> Previous Employments
+                            </h4>
+                            <div className="flex flex-wrap gap-3">
+                                {connections.map((conn) => (
+                                    <div
+                                        key={conn.id}
+                                        className="flex items-center gap-3 px-4 py-3 bg-slate-900/50 border border-slate-800 rounded-2xl"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
+                                            {conn.company.logoUrl ? (
+                                                <img src={conn.company.logoUrl} alt={conn.company.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Building2 size={16} className="text-slate-500" />
+                                            )}
+                                        </div>
+                                        <span className="text-sm font-bold text-slate-300">{conn.company.name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-[32px] p-6 space-y-4">
                         <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
