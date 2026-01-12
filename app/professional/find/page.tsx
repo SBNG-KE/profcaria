@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, Sparkles, CheckCircle2, Trash2 } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart } from 'lucide-react';
 
 interface Job {
     id: string;
@@ -19,16 +19,19 @@ interface Job {
     applicationStatus?: string | null;
     applicationId?: string | null;
     isInvited?: boolean;
+    isSaved?: boolean;
 }
 
 export default function FindJobsPage() {
     const router = useRouter();
     const [jobs, setJobs] = useState<Job[]>([]);
+    const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState<'find' | 'applied' | 'invited'>('find');
+    const [viewMode, setViewMode] = useState<'find' | 'applied' | 'invited' | 'saved'>('find');
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
     const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
+    const [savingJobId, setSavingJobId] = useState<string | null>(null);
 
     useEffect(() => {
         // Handle URL Ref Param
@@ -39,8 +42,22 @@ export default function FindJobsPage() {
             verifyLink(ref);
         } else {
             fetchJobs();
+            fetchSavedJobs();
         }
     }, []);
+
+    const fetchSavedJobs = async () => {
+        try {
+            const res = await fetch('/api/professional/saved-jobs');
+            if (res.ok) {
+                const data = await res.json();
+                const ids = new Set<string>((data.savedJobs || []).map((sj: any) => sj.job_id));
+                setSavedJobIds(ids);
+            }
+        } catch (error) {
+            console.error("Error fetching saved jobs", error);
+        }
+    };
 
     const verifyLink = async (token: string) => {
         try {
@@ -92,6 +109,48 @@ export default function FindJobsPage() {
         }
     };
 
+    const handleSaveJob = async (jobId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (savingJobId) return; // Prevent double-click
+        setSavingJobId(jobId);
+
+        const isSaved = savedJobIds.has(jobId);
+
+        try {
+            if (isSaved) {
+                // Unsave
+                const res = await fetch('/api/professional/saved-jobs', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jobId })
+                });
+                if (res.ok) {
+                    setSavedJobIds(prev => {
+                        const next = new Set(prev);
+                        next.delete(jobId);
+                        return next;
+                    });
+                }
+            } else {
+                // Save
+                const res = await fetch('/api/professional/saved-jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jobId })
+                });
+                if (res.ok) {
+                    setSavedJobIds(prev => new Set(prev).add(jobId));
+                }
+            }
+        } catch (error) {
+            console.error('Error saving job:', error);
+        } finally {
+            setSavingJobId(null);
+        }
+    };
+
     const handleRetract = async (applicationId: string) => {
         if (!confirm('Are you sure you want to retract your application? You can apply again later.')) return;
 
@@ -129,11 +188,16 @@ export default function FindJobsPage() {
                 (job.description || '').toLowerCase().includes(term);
         }
 
-        const matchesMode = viewMode === 'find'
-            ? !job.applicationStatus // Show only filtered/unapplied
-            : viewMode === 'invited'
-                ? job.isInvited && !job.applicationStatus // Show invited and NOT applied
-                : !!job.applicationStatus; // Show only applied
+        let matchesMode = false;
+        if (viewMode === 'find') {
+            matchesMode = !job.applicationStatus; // Show only unapplied
+        } else if (viewMode === 'invited') {
+            matchesMode = !!job.isInvited && !job.applicationStatus; // Invited and NOT applied
+        } else if (viewMode === 'applied') {
+            matchesMode = !!job.applicationStatus; // Only applied
+        } else if (viewMode === 'saved') {
+            matchesMode = savedJobIds.has(job.id) && !job.applicationStatus; // Saved and NOT applied
+        }
 
         return matchesSearch && matchesMode;
     });
@@ -181,6 +245,14 @@ export default function FindJobsPage() {
                             Find Work
                         </button>
                         <button
+                            onClick={() => setViewMode('saved')}
+                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                        >
+                            <Heart size={12} className="inline mr-1" />
+                            Saved
+                            <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => savedJobIds.has(j.id) && !j.applicationStatus).length}</span>
+                        </button>
+                        <button
                             onClick={() => setViewMode('invited')}
                             className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'invited' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
@@ -221,7 +293,7 @@ export default function FindJobsPage() {
                             <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={20} />
                             <input
                                 type="text"
-                                placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : 'applications'}...`}
+                                placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : viewMode === 'saved' ? 'saved jobs' : 'applications'}...`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm"
@@ -248,7 +320,9 @@ export default function FindJobsPage() {
                 <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4">
                     <Briefcase size={64} className="opacity-10" />
                     <p className="font-bold text-sm uppercase tracking-widest">
-                        {viewMode === 'find' ? 'No open roles found matching your search' : 'You haven\'t applied to any jobs yet'}
+                        {viewMode === 'find' ? 'No open roles found matching your search' :
+                            viewMode === 'saved' ? 'No saved jobs yet. Click the heart icon to save jobs for later.' :
+                                'You haven\'t applied to any jobs yet'}
                     </p>
                 </div>
             ) : (
@@ -267,20 +341,35 @@ export default function FindJobsPage() {
                                             <Building2 size={24} className="text-slate-500" />
                                         )}
                                     </div>
-                                    <div className="flex flex-col items-end gap-2">
+                                    <div className="flex items-center gap-2">
+                                        {/* Save Button */}
+                                        {!job.applicationStatus && (
+                                            <button
+                                                onClick={(e) => handleSaveJob(job.id, e)}
+                                                disabled={savingJobId === job.id}
+                                                className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id)
+                                                        ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20'
+                                                        : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-500/20'
+                                                    }`}
+                                                title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}
+                                            >
+                                                <Heart size={16} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} />
+                                            </button>
+                                        )}
                                         <div className="px-3 py-1 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest rounded-lg border border-emerald-500/20 flex items-center gap-2">
                                             <Zap size={10} /> Active
                                         </div>
-                                        {job.applicationStatus && (
-                                            <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                                job.applicationStatus === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                                    'bg-slate-800 text-slate-500 border-slate-700'
-                                                }`}>
-                                                <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
+
+                                {job.applicationStatus && (
+                                    <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                        job.applicationStatus === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                            'bg-slate-800 text-slate-500 border-slate-700'
+                                        }`}>
+                                        <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
+                                    </div>
+                                )}
 
                                 <div className="space-y-2">
                                     <h2 className="text-2xl font-black text-white leading-tight group-hover:text-blue-400 transition-colors uppercase tracking-tighter line-clamp-2">{job.title}</h2>
