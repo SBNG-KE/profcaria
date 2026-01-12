@@ -54,6 +54,7 @@ export async function GET(req: Request) {
         // 2a. Fetch User's Invites
         const { data: invites } = await supabaseAdmin
             .schema('employer')
+            .from('job_invites')
             .select('job_id')
             .eq('professional_id', auth.uid)
             .in('status', ['pending', 'sent']); // Allow 'sent' as well just in case
