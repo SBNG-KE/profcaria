@@ -3,6 +3,9 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { decryptData } from '@/lib/security';
+import { calculateRoleSimilarity } from '@/lib/role-similarity';
+import { extractSkillsFromText, calculateSkillOverlap } from '@/lib/skills-matching';
+import { detectExperienceLevel, experienceLevelMatch } from '@/lib/experience-level';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -61,7 +64,8 @@ export async function GET(req: Request) {
         const { data: userApps } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('job_id, status, id')
+            .from('applications')
+            .select('job_id, status, id, job:jobs(enc_title)')
             .eq('user_id', auth.uid);
 
         const appMap: Record<string, any> = {};
@@ -149,34 +153,61 @@ export async function GET(req: Request) {
 
             let score = 0;
 
-            // A. Role Match (Heavy Weight: +20)
+            // --- NEW ALGORITHM IMPLEMENTATION ---
+
+            // A. Role Similarity & Semantic Match (Max ~50 pts)
+            // Uses fuzzy matching + category awareness
+            let roleScore = 0;
+            const jobCategory = job.role_category; // New field from DB
+
             if (prefs.target_roles && prefs.target_roles.length > 0) {
-                const titleLower = title.toLowerCase();
-                const descLower = description.toLowerCase();
-                const matches = prefs.target_roles.some((role: string) =>
-                    titleLower.includes(role.toLowerCase()) ||
-                    descLower.includes(role.toLowerCase())
+                // Check similarity against all target roles and take best match
+                const similarities = prefs.target_roles.map((targetRole: string) =>
+                    calculateRoleSimilarity(targetRole, title, jobCategory)
                 );
-                if (matches) score += 20;
+                const bestMatch = Math.max(...similarities);
+
+                // Base score from similarity (0-100) -> scaled to 0-30
+                score += Math.round(bestMatch * 0.3);
+
+                // Bonus if exact match on title (boost confidence)
+                if (bestMatch > 90) score += 10;
             }
 
-            // B. Work Mode Match (Medium Weight: +10)
-            if (prefs.work_modes && prefs.work_modes.length > 0) {
-                if (prefs.work_modes.includes(job.location_type)) {
-                    score += 10;
-                }
+            // B. Skills Matching (Max ~20 pts)
+            // Extract skills from job description and match with user's implied skills
+            // (In future: use actual user skills profile)
+            const jobSkills = extractSkillsFromText(description + ' ' + title);
+            const userContext = (prefs.target_roles || []).join(' ') + ' ' + (prefs.headline || '');
+            // We don't have user skills in prefs yet, so we infer from roles. 
+            // Ideally we'd fetch user.skills. For now, we extract from their target roles to simulate.
+            const userSkills = extractSkillsFromText(userContext);
+
+            if (jobSkills.length > 0) {
+                const skillMatch = calculateSkillOverlap(userSkills, jobSkills);
+                score += Math.round(skillMatch * 0.2); // Scale 0-100 to 0-20
             }
 
-            // C. Employment Type Match (Medium Weight: +10)
-            if (prefs.employment_types && prefs.employment_types.length > 0) {
-                if (prefs.employment_types.includes(job.employment_type)) {
-                    score += 10;
-                }
+            // C. Experience Level Match (Max ~10 pts)
+            const jobLevel = detectExperienceLevel(title) || detectExperienceLevel(description);
+            // We assume user level from their target roles or past jobs? 
+            // Hard to guess without strict profile data. Defaulting to neutral if unknown.
+            // If user has "Senior" in target roles:
+            const userLevel = detectExperienceLevel((prefs.target_roles || []).join(' '));
+
+            if (jobLevel && userLevel) {
+                const levelScore = experienceLevelMatch(userLevel, jobLevel);
+                score += Math.round(levelScore * 0.1); // Scale 0-100 to 0-10
+            } else {
+                score += 5; // Neutral bonus
             }
 
-            // D. Location Match (Medium Weight: +10 / Critical if not remote)
+            // D. Work Mode & Employment (Max 20 pts)
+            if (prefs.work_modes?.includes(job.location_type)) score += 10;
+            if (prefs.employment_types?.includes(job.employment_type)) score += 10;
+
+            // E. Location Match (Max 10 pts)
             if (job.location_type !== 'remote' && prefs.preferred_locations?.countries) {
-                // Check if job location string contains any preferred country
                 const jobLoc = location.toLowerCase();
                 const matchesLoc = prefs.preferred_locations.countries.some((c: string) =>
                     jobLoc.includes(c.toLowerCase())
@@ -184,16 +215,31 @@ export async function GET(req: Request) {
                 if (matchesLoc) score += 10;
             }
 
-            // E. Random "Diversity" Shuffle (Small Weight: 0-5)
-            score += Math.random() * 5;
+            // F. Activity/Recency Logic (Dynamic)
+            const hoursOld = (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60);
+            if (hoursOld < 6) score += 5;      // Very fresh
+            else if (hoursOld < 24) score += 3; // Today
+            else if (hoursOld < 72) score += 1; // Recent
 
-            // F. Recency Decay
-            const daysOld = (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24);
-            const secondsOld = (Date.now() - new Date(job.created_at).getTime()) / 1000;
+            // G. Bidirectional Matching (Past Applications)
+            // Did user apply to similar jobs?
+            if (userApps && userApps.length > 0) {
+                const pastTitles = userApps
+                    .map((a: any) => decryptData(a.job?.enc_title))
+                    .filter(Boolean) as string[];
 
-            if (daysOld < 3) score += 3;
+                // Check similarity with THIS job
+                const pastSimilarity = Math.max(0, ...pastTitles.map(t => calculateRoleSimilarity(t, title)));
+                if (pastSimilarity > 70) {
+                    score += 10; // User likes this kind of job
+                }
+            }
 
-            // --- G. ADVANCED ALGORITHM: SPEED & RESTRICTIONS ---
+            // H. Invite Boost
+            if (invitedJobIds.includes(job.id)) score += 1000;
+
+            // Diversity Shuffle (Minor)
+            score += Math.random() * 3;
 
             // 1. Strict Restricted Jobs
             if (job.is_restricted) {
@@ -208,6 +254,7 @@ export async function GET(req: Request) {
             }
 
             // 2. "Speed" Logic - The "Head Start" based on REAL IP
+            const secondsOld = (Date.now() - new Date(job.created_at).getTime()) / 1000;
             if (!job.is_restricted && secondsOld < 30 && job.speed_boost_location) {
                 const jobOrigin = job.speed_boost_location || '';
                 const isLocalReal = userRealCountry && jobOrigin.toLowerCase().includes(userRealCountry.toLowerCase());
@@ -218,26 +265,11 @@ export async function GET(req: Request) {
             }
 
             // 3. Max Applications Check (Plan Enforcement)
-            // Import billing config or fetch company plan context. 
-            // For rigorous "Plan Enforcement", we need the Company's Plan Limit.
-            // Since we joined 'company', we can check plan type? No, we don't join subscriptions.
-            // OPTION: We default to 100 as a "Soft Cap" for Enterprise/General if not specified? 
-            // User requested: "Enterprise unlimited but 100 shown per job" -> This means 100 applications? 
-            // Actually, user said "100 cap per job" for Enterprise.
-            // We use the job.max_applications if set. If NOT set, we should probably enforce a default based on the system rules.
-            // Since we don't have the Company Plan here efficiently, we rely on `max_applications` being set correctly at Creation Time.
-            // However, to satisfy "System will know how many to show", we enforce strict check:
-
             const effectiveMax = job.max_applications || 100; // Default system cap if null
             const currentApps = jobAppCounts[job.id] || 0;
 
             if (currentApps >= effectiveMax) {
                 return null; // Job is full/closed
-            }
-
-            // 4. Invite Boost
-            if (invitedJobIds.includes(job.id)) {
-                score += 1000;
             }
 
             // Check Application Status

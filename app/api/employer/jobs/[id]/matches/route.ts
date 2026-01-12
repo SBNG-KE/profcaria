@@ -3,6 +3,9 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { decryptData } from '@/lib/security';
+import { calculateRoleSimilarity } from '@/lib/role-similarity';
+import { extractSkillsFromText, calculateSkillOverlap } from '@/lib/skills-matching';
+import { detectExperienceLevel, experienceLevelMatch } from '@/lib/experience-level';
 
 export const runtime = 'nodejs';
 
@@ -70,7 +73,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                     created_at
                 )
             `)
-            .limit(100);
+
+            .limit(200); // Expanded pool for better matching
 
         if (prosError) {
             console.error('Candidate Fetch Error:', prosError);
@@ -82,27 +86,47 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             let score = 0;
             const prefs = pro.preferences || {};
 
-            // A. Role Match (40 pts)
-            // Compare Job Title vs Target Roles
-            if (prefs.target_roles && Array.isArray(prefs.target_roles)) {
-                if (prefs.target_roles.some((r: string) => jobTitle.toLowerCase().includes(r.toLowerCase()))) {
-                    score += 40;
-                } else if (prefs.target_roles.some((r: string) => jobDesc.toLowerCase().includes(r.toLowerCase()))) {
-                    score += 20; // Partial match in description
-                }
+            // --- NEW ALGORITHM IMPLEMENTATION ---
+
+            // A. Role Similarity (Max 40 pts)
+            const jobCategory = job.role_category;
+
+            // Check Target Roles
+            let targetRoleScore = 0;
+            if (prefs.target_roles && Array.isArray(prefs.target_roles) && prefs.target_roles.length > 0) {
+                const bestMatch = Math.max(...prefs.target_roles.map((r: string) =>
+                    calculateRoleSimilarity(r, jobTitle, jobCategory)
+                ));
+                targetRoleScore = Math.round(bestMatch * 0.4); // Scale 0-100 to 0-40
             }
 
-            // Check Current Role (Backup)
+            // Check Current Role (Backup/Reinforce)
+            let currentRoleScore = 0;
             const currentRole = decryptData(pro.enc_current_role);
-            if (currentRole && currentRole.toLowerCase().includes(jobTitle.toLowerCase())) {
-                // Reinforce score but cap at 40
-                if (score < 40) score = 40;
+            if (currentRole) {
+                const match = calculateRoleSimilarity(currentRole, jobTitle, jobCategory);
+                currentRoleScore = Math.round(match * 0.4);
             }
 
-            // B. Location Match (30 pts)
-            // Strict enforcement or Relocation leniency
+            // Take the better of the two, but maybe boost if both match?
+            score += Math.max(targetRoleScore, currentRoleScore);
+
+
+            // B. Skills Matching (Max 20 pts)
+            // Extract from Job Desc
+            const jobSkills = extractSkillsFromText(jobTitle + ' ' + (jobDesc || ''));
+            // Extract from Candidate (Current Role + Target Roles serves as proxy for now)
+            // Future: Fetch explicit skills column
+            const candidateContext = (currentRole || '') + ' ' + (prefs.target_roles || []).join(' ');
+            const candidateSkills = extractSkillsFromText(candidateContext);
+
+            if (jobSkills.length > 0) {
+                const skillMatch = calculateSkillOverlap(candidateSkills, jobSkills);
+                score += Math.round(skillMatch * 0.2);
+            }
+
+            // C. Location Match (Max 30 pts)
             let userLoc = '';
-            // Get location from latest log
             // Get location from latest log
             if (pro.activity_logs && pro.activity_logs.length > 0) {
                 // Sort logs by created_at desc to find latest
@@ -110,59 +134,53 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
                 );
                 const log = sortedLogs[0];
-
                 try {
                     const decLog = decryptData(log.enc_location_details);
                     if (decLog) {
-                        if (decLog.trim().startsWith('{')) {
-                            try {
-                                const locObj = JSON.parse(decLog);
-                                const parts = [];
-                                if (locObj.city) parts.push(locObj.city);
-                                if (locObj.country) parts.push(locObj.country);
-                                userLoc = parts.join(', ');
-                            } catch {
-                                userLoc = decLog;
-                            }
-                        } else {
-                            userLoc = decLog;
-                        }
+                        userLoc = decLog.trim().startsWith('{') ? JSON.parse(decLog).country || decLog : decLog;
+                        // Simplify for comparison (naive)
+                        if (userLoc.includes(',')) userLoc = userLoc.split(',').pop()?.trim() || userLoc;
                     }
                 } catch { }
             }
 
             const jobOrigin = job.speed_boost_location || jobLocation || '';
-            const isLocal = userLoc.toLowerCase().includes(jobOrigin.toLowerCase());
+            // Naive check
+            const isLocal = userLoc && jobOrigin && userLoc.toLowerCase().includes(jobOrigin.toLowerCase());
 
             if (job.location_type === 'remote') {
-                score += 30; // Everyone matches remote
+                score += 30;
             } else if (isLocal) {
-                score += 30; // Perfect local match
+                score += 30;
             } else {
-                // Not local. 
-                // Strict check? 
                 if (isRestricted) {
-                    // If strictly restricted, 0 points.
                     score += 0;
                 } else {
-                    // "Willing to relocate" / Global pool -> Partial Points
-                    score += 15;
+                    score += 15; // Relocation / Global
                 }
             }
 
-            // C. Preference Match (20 pts)
-            if (prefs.work_modes && prefs.work_modes.includes(job.location_type)) {
-                score += 10;
-            }
-            if (prefs.employment_types && prefs.employment_types.includes(job.employment_type)) { // job.employment_type might be undefined in DB row? check schema
-                // Assuming job has employment_type column
-                score += 10;
-            }
+            // D. Preferences (Max 10 pts)
+            // Combined Work Mode & Employment Type
+            let prefScore = 0;
+            if (prefs.work_modes?.includes(job.location_type)) prefScore += 5;
+            if (prefs.employment_types?.includes(job.employment_type)) prefScore += 5;
+            score += prefScore;
 
-            // D. Activity (10 pts)
-            // If they have recent logs (implied by being in the fetch list if we filtered, but we didn't)
+            // E. Activity Recency (Max 10 pts)
             if (pro.activity_logs && pro.activity_logs.length > 0) {
-                score += 10;
+                const latest = new Date(pro.activity_logs[0].created_at).getTime(); // They are sorted in SQL? No, only fetched.
+                // Re-sort locally just in case arrays are messy
+                const sortedLogs = pro.activity_logs.sort((a: any, b: any) =>
+                    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                );
+                const lastActive = new Date(sortedLogs[0].created_at).getTime();
+                const hoursAgo = (Date.now() - lastActive) / (1000 * 60 * 60);
+
+                if (hoursAgo < 24) score += 10;
+                else if (hoursAgo < 72) score += 7; // 3 days
+                else if (hoursAgo < 168) score += 5; // 1 week
+                else score += 2; // Older
             }
 
             return {

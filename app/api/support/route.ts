@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
             <p>${message.replace(/\n/g, '<br>')}</p>
         `;
 
-        // Send to Admin
+        // Send to Support Team
         await sendEmail({
-            to: 'admin@profcaria.com',
+            to: 'support@profcaria.com',
             subject: subject,
             html: htmlContent
         });

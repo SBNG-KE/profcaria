@@ -511,15 +511,6 @@ export default function ProfessionalSettingsPage() {
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">Region <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
-                                <input
-                                    type="text"
-                                    value={address}
-                                    readOnly
-                                    className="w-full bg-slate-900/20 border border-slate-800/50 rounded-xl px-4 py-3 text-slate-400 cursor-not-allowed font-bold focus:outline-none"
-                                />
-                            </div>
                             <p className="text-[10px] text-slate-600 italic mt-2 flex items-center gap-1.5"><Shield size={10} /> Location is securely verified via your connection info.</p>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { ROLE_CATEGORY_OPTIONS } from '@/lib/role-categories';
 export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -19,6 +20,7 @@ interface FormField {
 function CreateJobPageContent() {
     const router = useRouter();
     const [title, setTitle] = useState('');
+    const [roleCategory, setRoleCategory] = useState('');
     const [description, setDescription] = useState('');
     const [maxApplications, setMaxApplications] = useState<number | ''>('');
     const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
@@ -59,6 +61,7 @@ function CreateJobPageContent() {
                     const job = data.jobs.find((j: any) => j.id === jobId);
                     if (job) {
                         setTitle(job.title);
+                        if (job.role_category) setRoleCategory(job.role_category);
                         setDescription(job.description);
                         if (job.max_applications) setMaxApplications(job.max_applications);
                         setLocationType(job.location_type || 'remote');
@@ -123,6 +126,7 @@ function CreateJobPageContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title,
+                    role_category: roleCategory,
                     description,
                     max_applications: maxApplications,
                     location_type: locationType,
