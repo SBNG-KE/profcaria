@@ -62,12 +62,14 @@ const ConnectionCard = ({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     source: 'connection',
-                    id: connection.id
+                    id: connection.applicationId // Use applicationId, not id
                 })
             });
             if (res.ok) {
                 const { link } = await res.json();
-                window.open(link, '_blank');
+                // Copy to clipboard instead of opening
+                await navigator.clipboard.writeText(link);
+                alert('Share link copied to clipboard!');
             } else {
                 alert('Failed to generate share link.');
             }

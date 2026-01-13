@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Users, Search, User, X, ExternalLink, Shield, Briefcase, Clock,
-    CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText
+    CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2
 } from 'lucide-react';
 
 interface Connection {
@@ -11,8 +11,9 @@ interface Connection {
     applicationId: string;
     userId: string;
     status: string;
-    terminationType?: string; // Add
-    connectionFileUrl?: string; // Add
+    terminationType?: string;
+    terminationReason?: string | null;
+    connectionFileUrl?: string;
     connectedAt: string;
     job: {
         id: string;
@@ -57,6 +58,35 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
     onApproveMutual: () => void
 }) => {
     const [showConfirm, setShowConfirm] = useState(false);
+    const [sharing, setSharing] = useState(false);
+    const terminated = ['terminated', 'rejected', 'declined', 'resigned'].includes(connection.status);
+
+    const handleShareReason = async () => {
+        if (sharing) return;
+        setSharing(true);
+        try {
+            const res = await fetch('/api/documents/share', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    source: 'connection',
+                    id: connection.applicationId
+                })
+            });
+            if (res.ok) {
+                const { link } = await res.json();
+                await navigator.clipboard.writeText(link);
+                alert('Share link copied to clipboard!');
+            } else {
+                alert('Failed to generate share link.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error sharing reason.');
+        } finally {
+            setSharing(false);
+        }
+    };
 
     return (
         <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-emerald-500/30 transition-all group">
@@ -142,6 +172,24 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                             </span>
                         ))}
                     </div>
+                </div>
+            )}
+
+            {/* Share Reason Button for Terminated Connections */}
+            {terminated && connection.terminationReason && (
+                <div className="mt-4 pt-4 border-t border-white/5">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleShareReason();
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition-all"
+                    >
+                        <Share2 size={10} className={sharing ? "animate-spin" : ""} />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                            {sharing ? 'Generating...' : 'Share Reason'}
+                        </span>
+                    </button>
                 </div>
             )}
 

@@ -19,6 +19,24 @@ export default function EmployerNotifications() {
         return date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
     };
 
+    // Linkify helper: convert URLs to clickable blue links
+    const linkifyText = (text: string) => {
+        const urlPattern = /(https?:\/\/[^\s]+)/gi;
+        const parts = text.split(urlPattern);
+        return parts.map((part, i) => {
+            if (urlPattern.test(part)) {
+                urlPattern.lastIndex = 0; // Reset regex
+                return (
+                    <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+                        className="text-blue-400 underline hover:text-blue-300 break-all">
+                        {part}
+                    </a>
+                );
+            }
+            return part;
+        });
+    };
+
     const groupMessagesByDate = (msgs: any[]) => {
         const groups: { label: string; messages: any[] }[] = [];
         msgs.forEach(msg => {
@@ -134,13 +152,6 @@ export default function EmployerNotifications() {
 
     const sendMessage = async () => {
         if (!newMessage.trim() || !activeConversation || isSending) return;
-
-        // Security: Block links in messages to prevent phishing/hacking
-        const urlPattern = /(https?:\/\/|www\.)[^\s]+/gi;
-        if (urlPattern.test(newMessage)) {
-            alert('Links are not allowed in messages for security reasons.');
-            return;
-        }
 
         const msgContent = newMessage;
         setNewMessage('');
@@ -374,7 +385,7 @@ export default function EmployerNotifications() {
                                                         <div className={`px-4 py-2.5 rounded-2xl relative ${isMe
                                                             ? 'bg-emerald-600 text-white rounded-br-sm'
                                                             : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
-                                                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                                                            <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{linkifyText(msg.content)}</p>
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                                 <span className={`text-[10px] ${isMe ? 'text-emerald-200' : 'text-slate-500'}`}>
                                                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

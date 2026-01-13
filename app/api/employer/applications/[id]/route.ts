@@ -99,13 +99,36 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             });
         });
 
-        // Safe Decryption of Form Data
-        let formData = {};
+        // Safe Decryption of Form Data with Label Mapping
+        let formData: Record<string, any> = {};
         try {
             if (application.enc_form_data) {
                 const decrypted = decryptData(application.enc_form_data);
                 if (decrypted) {
-                    formData = JSON.parse(decrypted);
+                    const rawFormData = JSON.parse(decrypted);
+
+                    // Decrypt form schema to get readable labels
+                    let labelMap: Record<string, string> = {};
+                    if (job.enc_form_schema) {
+                        try {
+                            const schemaDecrypted = decryptData(job.enc_form_schema);
+                            if (schemaDecrypted) {
+                                const schema = JSON.parse(schemaDecrypted);
+                                // Build ID -> Label map
+                                schema.forEach((field: { id: string; label: string }) => {
+                                    labelMap[field.id] = field.label;
+                                });
+                            }
+                        } catch (schemaErr) {
+                            console.error('Error decrypting form schema:', schemaErr);
+                        }
+                    }
+
+                    // Map field IDs to readable labels
+                    for (const [key, value] of Object.entries(rawFormData)) {
+                        const label = labelMap[key] || key; // Fallback to ID if no label
+                        formData[label] = value;
+                    }
                 }
             }
         } catch (err) {
