@@ -76,7 +76,7 @@ export default function PricingPage() {
                             href="/auth"
                             className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-white/5"
                         >
-                            Get Started
+                            Launch
                         </Link>
                     </div>
                 </div>
@@ -126,14 +126,6 @@ export default function PricingPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-6 pt-4 border-t border-slate-800">
-                                <Link
-                                    href="/auth"
-                                    className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-center text-xs uppercase tracking-widest transition-all block"
-                                >
-                                    Start Free
-                                </Link>
-                            </div>
                         </div>
 
                         {/* Basic Tier */}
@@ -179,14 +171,6 @@ export default function PricingPage() {
                                         <CheckCircle size={14} className="text-blue-500 shrink-0" /> Top Match Access (Limited)
                                     </div>
                                 </div>
-                            </div>
-                            <div className="mt-6 pt-4 border-t border-blue-500/20">
-                                <Link
-                                    href="/auth"
-                                    className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 block"
-                                >
-                                    Get Basic
-                                </Link>
                             </div>
                         </div>
 
@@ -238,14 +222,6 @@ export default function PricingPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-6 pt-4 border-t border-emerald-500/20">
-                                <Link
-                                    href="/auth"
-                                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 block"
-                                >
-                                    Get Pro
-                                </Link>
-                            </div>
                         </div>
 
                         {/* Enterprise Tier */}
@@ -295,21 +271,13 @@ export default function PricingPage() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-6 pt-4 border-t border-purple-500/20">
-                                <Link
-                                    href="/auth"
-                                    className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-center text-xs uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 block"
-                                >
-                                    Get Enterprise
-                                </Link>
-                            </div>
                         </div>
                     </div>
 
-                    {/* FAQ/Contact Section */}
-                    <div className="mt-20 text-center space-y-4">
-                        <p className="text-slate-400">
-                            Have questions? <a href="mailto:support@profcaria.com" className="text-white hover:text-blue-400 transition-colors font-bold">Contact our team</a>
+                    {/* Footer Note */}
+                    <div className="mt-20 text-center">
+                        <p className="text-slate-500 text-sm">
+                            These prices are tailored for employers.
                         </p>
                     </div>
                 </div>
