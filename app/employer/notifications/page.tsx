@@ -134,6 +134,14 @@ export default function EmployerNotifications() {
 
     const sendMessage = async () => {
         if (!newMessage.trim() || !activeConversation || isSending) return;
+
+        // Security: Block links in messages to prevent phishing/hacking
+        const urlPattern = /(https?:\/\/|www\.)[^\s]+/gi;
+        if (urlPattern.test(newMessage)) {
+            alert('Links are not allowed in messages for security reasons.');
+            return;
+        }
+
         const msgContent = newMessage;
         setNewMessage('');
         setIsSending(true);

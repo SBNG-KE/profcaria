@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.profcaria.com',
     siteName: 'Profcaria',
-    title: 'Profcaria | Private Privacy-First Career Network',
-    description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
+    title: 'Profcaria | Professional Career',
+    description: 'The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     images: [
       {
         url: 'https://www.profcaria.com/profcaria.png',

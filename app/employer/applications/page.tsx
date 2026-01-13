@@ -326,7 +326,69 @@ function ApplicationsPageContent() {
                             {activeTab === 'profile' ? (
                                 <ScrollableContainer className="bg-[#0f172a]">
                                     <div className="p-8 space-y-8">
-                                        {/* Actions */}
+                                        {/* 1. Application Questions (Form Data) - FIRST */}
+                                        {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
+                                            <div className="space-y-4">
+                                                <h3 className="text-xs font-black text-emerald-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                                                    <FileText size={14} /> Application Answers
+                                                </h3>
+                                                {Object.entries(selectedApp.formData).map(([key, value]) => (
+                                                    <div key={key} className="space-y-2">
+                                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                            <FileText size={12} /> {key}
+                                                        </p>
+                                                        <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl overflow-auto text-slate-300 text-sm">
+                                                            {typeof value === 'string' && value.includes('<') ? (
+                                                                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
+                                                            ) : (
+                                                                <p className="whitespace-pre-wrap leading-relaxed font-sans">{Array.isArray(value) ? value.join(', ') : String(value)}</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* 2. Candidate Profile - SECOND */}
+                                        <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
+                                            <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest border-b border-slate-800 pb-2">Candidate Profile</h3>
+
+                                            {/* Contact Information */}
+                                            {((selectedApp.user as any).email || (selectedApp.user as any).phone) && (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {(selectedApp.user as any).email && (
+                                                        <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
+                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Email</p>
+                                                            <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).email}</p>
+                                                        </div>
+                                                    )}
+                                                    {(selectedApp.user as any).phone && (
+                                                        <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
+                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Phone</p>
+                                                            <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).phone}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 flex flex-col items-center text-center space-y-4">
+                                                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                                                    <FileText size={32} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-white font-bold uppercase tracking-tight">Full Profile Snapshot</h4>
+                                                    <p className="text-xs text-slate-500 mt-1">View the professional's profile and shared documents.</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => window.open(`/employer/applications/${selectedApp.id}/view`, '_blank')}
+                                                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+                                                >
+                                                    <ExternalLink size={16} /> View Candidate Profile
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* 3. Workflow Actions - LAST */}
                                         <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
                                             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Workflow Actions</h3>
                                             <div className="flex flex-wrap gap-4">
@@ -371,76 +433,12 @@ function ApplicationsPageContent() {
                                             </div>
                                         </div>
 
-                                        {/* Form Data */}
-                                        <div className="space-y-6">
-                                            {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
-                                                <div className="space-y-4">
-                                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Application Questions</h3>
-                                                    {Object.entries(selectedApp.formData).map(([key, value]) => (
-                                                        <div key={key} className="space-y-2">
-                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                                                <FileText size={12} /> {key}
-                                                            </p>
-                                                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl overflow-auto text-slate-300 text-sm">
-                                                                {typeof value === 'string' && value.includes('<') ? (
-                                                                    <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
-                                                                ) : (
-                                                                    <p className="whitespace-pre-wrap leading-relaxed font-sans">{Array.isArray(value) ? value.join(', ') : String(value)}</p>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Contact Information */}
-                                            {(selectedApp.user as any).email || (selectedApp.user as any).phone ? (
-                                                <div className="space-y-4 pt-6">
-                                                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Contact Information</h3>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {(selectedApp.user as any).email && (
-                                                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
-                                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Email</p>
-                                                                <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).email}</p>
-                                                            </div>
-                                                        )}
-                                                        {(selectedApp.user as any).phone && (
-                                                            <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
-                                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Phone</p>
-                                                                <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).phone}</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ) : null}
-
-                                            {/* Candidate Profile Link */}
-                                            <div className="space-y-4 pt-6 animate-in slide-in-from-bottom-4 duration-500">
-                                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2">Candidate Profile</h3>
-
-                                                <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 flex flex-col items-center text-center space-y-4">
-                                                    <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
-                                                        <FileText size={32} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-white font-bold uppercase tracking-tight">Full Profile Snapshot</h4>
-                                                        <p className="text-xs text-slate-500 mt-1">View the professional's profile and shared documents.</p>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => window.open(`/employer/applications/${selectedApp.id}/view`, '_blank')}
-                                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
-                                                    >
-                                                        <ExternalLink size={16} /> View Candidate Profile
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        {/* Applied On Date */}
                                         <div className="pt-4 border-t border-slate-800">
                                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-2">
                                                 <Clock size={12} /> Applied On
                                             </p>
                                             <p className="text-sm text-slate-300">
-                                                {/* Use createdAt or created_at, handling potential undefined */}
                                                 {(selectedApp.createdAt || (selectedApp as any).created_at) ? new Date(selectedApp.createdAt || (selectedApp as any).created_at).toLocaleDateString(undefined, {
                                                     weekday: 'long',
                                                     year: 'numeric',

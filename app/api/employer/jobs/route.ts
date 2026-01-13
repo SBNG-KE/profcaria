@@ -63,13 +63,11 @@ export async function POST(req: Request) {
 
         let appsCap = body.max_applications ? parseInt(body.max_applications) : null;
 
-        // Ensure user cannot set a limit higher than their plan allows
+        // Only enforce plan limit if user explicitly set a value
         if (appsCap && appsCap > planMaxApps) {
             appsCap = planMaxApps;
-        } else if (!appsCap) {
-            // Default to plan max if not provided
-            appsCap = planMaxApps;
         }
+        // If null/empty, it means unlimited - don't force plan max
 
         const { data, error } = await supabaseAdmin
             .schema('employer')

@@ -237,6 +237,46 @@ function CreateJobPageContent() {
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                         <FileText size={14} /> Description
                     </label>
+                    {/* List Format Buttons */}
+                    <div className="flex gap-2 mb-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const lines = description.split('\n');
+                                const formatted = lines.map(line => {
+                                    if (line.trim() && !line.trim().startsWith('•') && !line.trim().match(/^\d+\./)) {
+                                        return '• ' + line.trim();
+                                    }
+                                    return line;
+                                }).join('\n');
+                                setDescription(formatted);
+                            }}
+                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                        >
+                            <List size={14} /> Bullets
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const lines = description.split('\n');
+                                let counter = 1;
+                                const formatted = lines.map(line => {
+                                    if (line.trim() && !line.trim().startsWith('•') && !line.trim().match(/^\d+\./)) {
+                                        return `${counter++}. ` + line.trim();
+                                    } else if (line.trim()) {
+                                        // Replace existing bullet with number
+                                        const cleaned = line.replace(/^[•\d]+\.?\s*/, '').trim();
+                                        if (cleaned) return `${counter++}. ${cleaned}`;
+                                    }
+                                    return line;
+                                }).join('\n');
+                                setDescription(formatted);
+                            }}
+                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+                        >
+                            <Hash size={14} /> Numbered
+                        </button>
+                    </div>
                     <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
