@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Save, Shield, MapPin, Globe, Activity, Lock, AlertCircle, CheckCircle, Briefcase, Plus, X } from 'lucide-react';
+import { User, Save, Shield, MapPin, Globe, Activity, Lock, AlertCircle, CheckCircle, Briefcase, Plus, X, Clock } from 'lucide-react';
+import { EXPERIENCE_YEAR_RANGES } from '@/lib/experience-level';
 
 export default function ProfessionalSettingsPage() {
     const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences'>('profile');
@@ -36,6 +37,7 @@ export default function ProfessionalSettingsPage() {
     const [preferredCountries, setPreferredCountries] = useState<string[]>([]); // Stored in preferred_locations.countries
     const [locationInput, setLocationInput] = useState('');
     const [isOpenToRelocation, setIsOpenToRelocation] = useState(false);
+    const [experienceYearsRanges, setExperienceYearsRanges] = useState<string[]>([]);
 
     const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
@@ -100,6 +102,7 @@ export default function ProfessionalSettingsPage() {
                 if (p.preferred_locations && p.preferred_locations.countries) {
                     setPreferredCountries(p.preferred_locations.countries);
                 }
+                setExperienceYearsRanges(p.experience_years_ranges || []);
             }
         } catch (error) {
             console.error('Error fetching preferences:', error);
@@ -153,8 +156,9 @@ export default function ProfessionalSettingsPage() {
                     is_open_to_relocation: isOpenToRelocation,
                     preferred_locations: {
                         countries: preferredCountries,
-                        continents: [] // Could add later
-                    }
+                        continents: []
+                    },
+                    experience_years_ranges: experienceYearsRanges
                 })
             });
 
@@ -416,6 +420,33 @@ export default function ProfessionalSettingsPage() {
                                             onChange={(e) => {
                                                 if (e.target.checked) setEmploymentTypes([...employmentTypes, type]);
                                                 else setEmploymentTypes(employmentTypes.filter(t => t !== type));
+                                            }}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Experience Years */}
+                        <div className="space-y-6">
+                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                <Clock className="text-purple-500" size={24} /> Experience Level
+                            </h3>
+                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] space-y-2">
+                                <p className="text-xs text-slate-400 mb-4">What experience ranges are you looking for?</p>
+                                {EXPERIENCE_YEAR_RANGES.map((range) => (
+                                    <label key={range.value} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-xl cursor-pointer hover:bg-slate-900 transition-all group">
+                                        <span className="font-bold text-slate-300 group-hover:text-white transition-colors">{range.label}</span>
+                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${experienceYearsRanges.includes(range.value) ? 'bg-purple-600 border-purple-600' : 'border-slate-600'}`}>
+                                            {experienceYearsRanges.includes(range.value) && <CheckCircle size={14} className="text-white" />}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            checked={experienceYearsRanges.includes(range.value)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) setExperienceYearsRanges([...experienceYearsRanges, range.value]);
+                                                else setExperienceYearsRanges(experienceYearsRanges.filter(r => r !== range.value));
                                             }}
                                             className="hidden"
                                         />

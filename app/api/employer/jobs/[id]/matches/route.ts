@@ -5,7 +5,8 @@ import { jwtVerify } from 'jose';
 import { decryptData } from '@/lib/security';
 import { calculateRoleSimilarity } from '@/lib/role-similarity';
 import { extractSkillsFromText, calculateSkillOverlap } from '@/lib/skills-matching';
-import { detectExperienceLevel, experienceLevelMatch } from '@/lib/experience-level';
+import { detectExperienceLevel, experienceLevelMatch, extractYearsFromText, yearsMatchScore } from '@/lib/experience-level';
+import { cosineSimilarity, parseEmbedding } from '@/lib/vector-search';
 
 export const runtime = 'nodejs';
 
@@ -66,7 +67,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                     target_roles,
                     work_modes,
                     employment_types,
-                    preferred_locations
+                    preferred_locations,
+                    embedding_json,
+                    experience_years_ranges
                 ),
                 activity_logs (
                     enc_location_details,
@@ -125,6 +128,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 score += Math.round(skillMatch * 0.2);
             }
 
+            // B2. Experience Years Match (~10 pts)
+            const jobYears = extractYearsFromText(jobTitle + ' ' + jobDesc);
+            if (prefs.experience_years_ranges && prefs.experience_years_ranges.length > 0) {
+                const yearScore = yearsMatchScore(jobYears, prefs.experience_years_ranges);
+                score += Math.round(yearScore * 0.1);
+            }
+
             // C. Location Match (Max 30 pts)
             let userLoc = '';
             // Get location from latest log
@@ -181,6 +191,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 else if (hoursAgo < 72) score += 7; // 3 days
                 else if (hoursAgo < 168) score += 5; // 1 week
                 else score += 2; // Older
+            }
+
+            // F. Semantic ML Match (~15 pts bonus)
+            // Uses pre-computed embeddings for meaning-based matching
+            if (job.embedding_json && prefs.embedding_json) {
+                try {
+                    const jobEmb = parseEmbedding(job.embedding_json);
+                    const userEmb = parseEmbedding(prefs.embedding_json);
+                    if (jobEmb && userEmb) {
+                        const similarity = cosineSimilarity(userEmb, jobEmb);
+                        if (similarity > 0.5) score += 15; // Strong semantic match
+                        else if (similarity > 0.3) score += 8; // Moderate match
+                    }
+                } catch (embError) {
+                    // Fallback: rule-based scoring continues
+                }
             }
 
             return {

@@ -46,7 +46,8 @@ export async function GET(req: Request) {
             preferred_locations: { countries: [], continents: [] },
             work_modes: [],
             employment_types: [],
-            is_open_to_relocation: false
+            is_open_to_relocation: false,
+            experience_years_ranges: []
         };
 
         return NextResponse.json({ preferences });
@@ -70,7 +71,8 @@ export async function PUT(req: Request) {
             preferred_locations,
             work_modes,
             employment_types,
-            is_open_to_relocation
+            is_open_to_relocation,
+            experience_years_ranges
         } = body;
 
         // Upsert preferences
@@ -84,6 +86,7 @@ export async function PUT(req: Request) {
                 work_modes: work_modes || [],
                 employment_types: employment_types || [],
                 is_open_to_relocation: !!is_open_to_relocation,
+                experience_years_ranges: experience_years_ranges || [],
                 updated_at: new Date().toISOString()
             }, { onConflict: 'user_id' });
 

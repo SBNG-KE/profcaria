@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose';
 import { decryptData } from '@/lib/security';
 import { calculateRoleSimilarity } from '@/lib/role-similarity';
 import { extractSkillsFromText, calculateSkillOverlap } from '@/lib/skills-matching';
-import { detectExperienceLevel, experienceLevelMatch } from '@/lib/experience-level';
+import { detectExperienceLevel, experienceLevelMatch, extractYearsFromText, yearsMatchScore } from '@/lib/experience-level';
 import { cosineSimilarity, parseEmbedding } from '@/lib/vector-search';
 
 export const runtime = 'nodejs';
@@ -204,6 +204,15 @@ export async function GET(req: Request) {
                     score += Math.round(levelScore * 0.1); // Scale 0-100 to 0-10
                 } else {
                     score += 5; // Neutral bonus
+                }
+
+                // C2. Experience Years Range Match (Max ~10 pts)
+                const jobYears = extractYearsFromText(description + ' ' + title);
+                if (prefs.experience_years_ranges && prefs.experience_years_ranges.length > 0) {
+                    const yearScore = yearsMatchScore(jobYears, prefs.experience_years_ranges);
+                    score += Math.round(yearScore * 0.1); // Scale 0-100 to 0-10
+                } else if (jobYears !== null) {
+                    score += 5; // Neutral if user has no preference
                 }
 
                 // D. Work Mode & Employment (Max 20 pts)
