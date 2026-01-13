@@ -94,6 +94,7 @@ const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode,
 
 export default function LandingPage() {
   const router = useRouter();
+  const [trailerClicked, setTrailerClicked] = useState(false);
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -168,9 +169,10 @@ export default function LandingPage() {
           <ScrollReveal className="delay-300 pt-8">
             <div className="flex flex-col md:flex-row items-center justify-center gap-4">
               <button
+                onClick={() => setTrailerClicked(true)}
                 className="w-full md:w-auto px-10 py-5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-3xl font-black uppercase tracking-[0.15em] text-xs transition-all flex items-center justify-center gap-3 backdrop-blur-md"
               >
-                Watch Trailer
+                {trailerClicked ? 'Coming Soon' : 'Watch Trailer'}
               </button>
             </div>
           </ScrollReveal>
@@ -253,15 +255,12 @@ export default function LandingPage() {
               <div className="pt-4 flex flex-col gap-6">
                 <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Join the future of professional networking.</div>
                 <div className="flex gap-6">
-                  <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
+                  <a href="https://x.com/profcaria" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
                     {/* X Logo SVG */}
                     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M4 4l11.733 16h4.267l-11.733-16z" /><path d="M4 20l6.768-6.768m2.46-2.46L20 4" /></svg>
                   </a>
-                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
+                  <a href="https://www.youtube.com/@Profcaria" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
                     <YoutubeIcon size={24} />
-                  </a>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors">
-                    <InstagramIcon size={24} />
                   </a>
                 </div>
               </div>
