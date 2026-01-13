@@ -3,11 +3,22 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { verifySmartLinkToken } from '@/lib/sharing';
-import { sanitizeHtml } from '@/lib/sanitize';
 import { Shield, Lock } from 'lucide-react';
 
 // Force dynamic since we use params and DB
 export const dynamic = 'force-dynamic';
+
+// Simple HTML escape for server-side (avoids jsdom issues on Vercel)
+function escapeHtml(text: string): string {
+    if (!text) return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '<br/>'); // Preserve line breaks
+}
 
 export default async function SharedDocPage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
@@ -114,9 +125,9 @@ export default async function SharedDocPage({ params }: { params: Promise<{ toke
                     <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">Shared by {userName}</p>
                 </div>
 
-                {/* Content */}
+                {/* Content - Use escaped HTML for plain text */}
                 <div className="p-10 leading-relaxed text-lg text-slate-300 min-h-[300px]">
-                    <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} className="prose prose-invert max-w-none prose-p:leading-relaxed prose-headings:font-black prose-headings:uppercase prose-a:text-blue-400" />
+                    <div dangerouslySetInnerHTML={{ __html: escapeHtml(content) }} className="prose prose-invert max-w-none prose-p:leading-relaxed" />
                 </div>
 
                 {/* Footer */}

@@ -59,10 +59,11 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
 }) => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [sharing, setSharing] = useState(false);
+    const [copied, setCopied] = useState(false);
     const terminated = ['terminated', 'rejected', 'declined', 'resigned'].includes(connection.status);
 
     const handleShareReason = async () => {
-        if (sharing) return;
+        if (sharing || copied) return;
         setSharing(true);
         try {
             const res = await fetch('/api/documents/share', {
@@ -76,7 +77,8 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             if (res.ok) {
                 const { link } = await res.json();
                 await navigator.clipboard.writeText(link);
-                alert('Share link copied to clipboard!');
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
             } else {
                 alert('Failed to generate share link.');
             }
@@ -183,11 +185,11 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                             e.stopPropagation();
                             handleShareReason();
                         }}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg border border-blue-500/20 transition-all"
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/20'}`}
                     >
                         <Share2 size={10} className={sharing ? "animate-spin" : ""} />
                         <span className="text-[10px] font-bold uppercase tracking-widest">
-                            {sharing ? 'Generating...' : 'Share Reason'}
+                            {copied ? 'Copied!' : sharing ? 'Generating...' : 'Share Reason'}
                         </span>
                     </button>
                 </div>

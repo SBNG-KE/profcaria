@@ -72,6 +72,7 @@ export async function GET(req: Request) {
                 userId: app.user_id,
                 status: app.status,
                 terminationType: app.termination_type,
+                terminationReason: app.enc_termination_reason ? decryptData(app.enc_termination_reason) : null,
                 connectedAt: app.created_at,
                 terminatedAt: app.terminated_at,
                 connectionFileUrl: app.connection_file_url,
