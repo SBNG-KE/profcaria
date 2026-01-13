@@ -102,8 +102,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         // Safe Decryption of Form Data
         let formData = {};
         try {
-            if (application.enc_answers) {
-                const decrypted = decryptData(application.enc_answers);
+            if (application.enc_form_data) {
+                const decrypted = decryptData(application.enc_form_data);
                 if (decrypted) {
                     formData = JSON.parse(decrypted);
                 }

@@ -538,8 +538,9 @@ export default function ConnectionsPage() {
 
 
 
-            {/* Profile Modal (Reused) */}
-            {selectedConnection && (
+
+            {/* Profile Modal (Reused) - Only show when NOT in action mode */}
+            {selectedConnection && !showActionModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => { setSelectedConnection(null); setActiveDocument(null); }}></div>
                     <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 flex flex-col">

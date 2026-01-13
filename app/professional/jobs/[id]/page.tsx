@@ -187,29 +187,9 @@ export default function JobApplyPage() {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 text-left">
-                {/* JOB DESCRIPTION */}
-                <div className="lg:col-span-1 space-y-6 order-2 lg:order-1">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                        <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
-                        Description
-                    </h3>
-                    <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
-
-                    <div className="p-6 bg-blue-600/5 border border-blue-500/10 rounded-3xl space-y-4">
-                        <div className="flex items-center gap-3 text-blue-400">
-                            <Info size={18} />
-                            <h4 className="text-xs font-black uppercase tracking-widest">Secure Info</h4>
-                        </div>
-                        <p className="text-[10px] text-slate-500 leading-relaxed font-bold uppercase">
-                            Your application is protected with End-to-End Encryption.
-                            Only authorized recruitment officers from this entity can view your data.
-                        </p>
-                    </div>
-                </div>
-
-                {/* APPLICATION FORM */}
-                <div className="lg:col-span-2 order-1 lg:order-2">
+            <div className="flex flex-col lg:flex-row gap-12 text-left">
+                {/* APPLICATION FORM - First on mobile */}
+                <div className="lg:w-2/3 order-1">
                     <form onSubmit={handleSubmit} className="bg-[#0f172a] border border-slate-800 rounded-[40px] p-10 space-y-8 shadow-2xl">
                         <div className="space-y-2 border-b border-slate-800 pb-6 mb-8">
                             <h3 className="text-2xl font-black text-white uppercase tracking-tight">Application Questionnaire</h3>
@@ -311,7 +291,28 @@ export default function JobApplyPage() {
                         </button>
                     </form>
                 </div>
+
+                {/* JOB DESCRIPTION - Second on mobile, sidebar on desktop */}
+                <div className="lg:w-1/3 space-y-6 order-2">
+                    <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+                        <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+                        Description
+                    </h3>
+                    <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+
+                    <div className="p-6 bg-blue-600/5 border border-blue-500/10 rounded-3xl space-y-4">
+                        <div className="flex items-center gap-3 text-blue-400">
+                            <Info size={18} />
+                            <h4 className="text-xs font-black uppercase tracking-widest">Secure Info</h4>
+                        </div>
+                        <p className="text-[10px] text-slate-500 leading-relaxed font-bold uppercase">
+                            Your application is protected with End-to-End Encryption.
+                            Only authorized recruitment officers from this entity can view your data.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
+
