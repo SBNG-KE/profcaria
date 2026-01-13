@@ -251,27 +251,36 @@ export async function GET(req: Request) {
                 // H. Invite Boost
                 if (invitedJobIds.includes(job.id)) score += 1000;
 
-                // I. Semantic Embedding Boost (ML Enhancement)
-                // Uses pre-computed embeddings from database for fast matching
-                // Max ~15 pts bonus for high semantic similarity
+                // I. Semantic Embedding Match (ML Primary Factor)
+                // Uses pre-computed embeddings from database for meaning-based matching
+                // Max ~45 pts (40% of total score) - ML is now the primary ranking factor
                 if (job.embedding_json && prefs.embedding_json) {
                     try {
                         const jobEmb = parseEmbedding(job.embedding_json);
                         const userEmb = parseEmbedding(prefs.embedding_json);
                         if (jobEmb && userEmb) {
                             const similarity = cosineSimilarity(userEmb, jobEmb);
-                            // Similarity is -1 to 1, but text is usually 0 to 1
-                            // Add bonus only for positive similarity > 0.3
-                            if (similarity > 0.5) {
-                                score += 15; // Strong semantic match
+                            // Scale similarity to points: 0.5+ = full, 0.3-0.5 = partial
+                            if (similarity > 0.6) {
+                                score += 45; // Excellent semantic match
+                            } else if (similarity > 0.5) {
+                                score += 35; // Strong semantic match
+                            } else if (similarity > 0.4) {
+                                score += 25; // Good semantic match
                             } else if (similarity > 0.3) {
-                                score += 8;  // Moderate semantic match
+                                score += 15; // Moderate match
+                            } else {
+                                score += 5; // Weak match but not penalized
                             }
+                        } else {
+                            score += 20; // Neutral: embedding parsing failed
                         }
                     } catch (embError) {
-                        // Fallback: rule-based scoring continues to work
-                        console.log('[Feed] Embedding comparison skipped:', embError);
+                        score += 20; // Neutral: error in comparison
+                        console.log('[Feed] Embedding comparison error:', embError);
                     }
+                } else {
+                    score += 20; // Neutral: embeddings not available yet
                 }
 
                 // Diversity Shuffle (Minor)

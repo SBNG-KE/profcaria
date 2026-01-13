@@ -193,20 +193,28 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 else score += 2; // Older
             }
 
-            // F. Semantic ML Match (~15 pts bonus)
+            // F. Semantic ML Match (Primary Factor ~45 pts)
             // Uses pre-computed embeddings for meaning-based matching
+            // ML is now the primary ranking factor (40% of total score)
             if (job.embedding_json && prefs.embedding_json) {
                 try {
                     const jobEmb = parseEmbedding(job.embedding_json);
                     const userEmb = parseEmbedding(prefs.embedding_json);
                     if (jobEmb && userEmb) {
                         const similarity = cosineSimilarity(userEmb, jobEmb);
-                        if (similarity > 0.5) score += 15; // Strong semantic match
-                        else if (similarity > 0.3) score += 8; // Moderate match
+                        if (similarity > 0.6) score += 45; // Excellent match
+                        else if (similarity > 0.5) score += 35; // Strong match
+                        else if (similarity > 0.4) score += 25; // Good match
+                        else if (similarity > 0.3) score += 15; // Moderate match
+                        else score += 5; // Weak match
+                    } else {
+                        score += 20; // Neutral: parsing failed
                     }
                 } catch (embError) {
-                    // Fallback: rule-based scoring continues
+                    score += 20; // Neutral: error
                 }
+            } else {
+                score += 20; // Neutral: embeddings not available
             }
 
             return {
