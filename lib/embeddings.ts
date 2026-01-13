@@ -1,136 +1,138 @@
 /**
- * Embedding Service - Transformers.js Wrapper
- * Uses all-MiniLM-L6-v2 for semantic text embeddings
+ * Embedding Service - HuggingFace Inference API
+ * Uses sentence-transformers/all-MiniLM-L6-v2 via cloud API
  * 
- * This service runs LOCALLY - no data sent to external APIs
- * Model downloads once (~90MB) then cached
+ * RUNS ON HUGGINGFACE SERVERS - fast, reliable, free tier available
+ * No model download needed, works perfectly on Vercel
+ * 
+ * Setup: Add HF_TOKEN to your .env.local
+ * Get free token: https://huggingface.co/settings/accesstokens
  */
 
-// Dynamic import to avoid bundling issues
-let pipeline: any = null;
-let embedder: any = null;
-let isInitializing = false;
-let initPromise: Promise<void> | null = null;
+import { HfInference } from '@huggingface/inference';
 
-// Model config
-const MODEL_NAME = 'Xenova/all-MiniLM-L6-v2';
+// Initialize HuggingFace client
+const HF_TOKEN = process.env.HF_TOKEN;
+let hf: HfInference | null = null;
+
+// Model config - same model as before, now running in cloud
+const MODEL_NAME = 'sentence-transformers/all-MiniLM-L6-v2';
 const EMBEDDING_DIM = 384; // This model outputs 384-dim vectors
+const MAX_TEXT_LENGTH = 512; // Model's context limit
 
 /**
- * Initialize the embedding pipeline (lazy load)
- * Called automatically on first use
+ * Initialize HuggingFace client (lazy)
  */
-async function initPipeline(): Promise<void> {
-    if (embedder) return;
-    if (initPromise) return initPromise;
-
-    isInitializing = true;
-    initPromise = (async () => {
-        try {
-            // Dynamic import for Next.js compatibility
-            const transformers = await import('@xenova/transformers');
-            pipeline = transformers.pipeline;
-
-            console.log('[Embeddings] Loading model... (first time may take 10-30 seconds)');
-            embedder = await pipeline('feature-extraction', MODEL_NAME, {
-                quantized: true, // Use quantized model for faster inference
-            });
-            console.log('[Embeddings] Model loaded successfully');
-        } catch (error) {
-            console.error('[Embeddings] Failed to load model:', error);
-            embedder = null;
-            throw error;
-        } finally {
-            isInitializing = false;
-        }
-    })();
-
-    return initPromise;
+function getClient(): HfInference | null {
+    if (!HF_TOKEN) {
+        console.warn('[Embeddings] HF_TOKEN not configured - embeddings disabled');
+        return null;
+    }
+    if (!hf) {
+        hf = new HfInference(HF_TOKEN);
+        console.log('[Embeddings] HuggingFace client initialized');
+    }
+    return hf;
 }
 
 /**
  * Generate embedding vector for a text string
- * Returns null if model fails to load
+ * Returns 384-dimensional vector or null on failure
  */
 export async function generateEmbedding(text: string): Promise<number[] | null> {
     if (!text || text.trim().length === 0) {
         return null;
     }
 
+    const client = getClient();
+    if (!client) {
+        return null; // No API key configured
+    }
+
     try {
-        await initPipeline();
+        // Truncate to model's max length
+        const truncatedText = text.slice(0, MAX_TEXT_LENGTH);
 
-        if (!embedder) {
-            console.warn('[Embeddings] Model not available, returning null');
-            return null;
-        }
-
-        // Truncate very long text to avoid memory issues
-        const truncatedText = text.slice(0, 512);
-
-        const output = await embedder(truncatedText, {
-            pooling: 'mean',
-            normalize: true,
+        const result = await client.featureExtraction({
+            model: MODEL_NAME,
+            inputs: truncatedText,
         });
 
-        // Convert Float32Array to regular array
-        return Array.from(output.data);
-    } catch (error) {
-        console.error('[Embeddings] Error generating embedding:', error);
+        // HuggingFace returns nested array for sentence-transformers
+        // We need to handle both formats
+        if (Array.isArray(result)) {
+            // If it's a 2D array (batched response), take first
+            if (Array.isArray(result[0])) {
+                return result[0] as number[];
+            }
+            // If it's already 1D array
+            return result as number[];
+        }
+
+        console.warn('[Embeddings] Unexpected response format');
+        return null;
+
+    } catch (error: any) {
+        // Handle rate limiting gracefully
+        if (error?.status === 429) {
+            console.warn('[Embeddings] Rate limited - try again later');
+        } else {
+            console.error('[Embeddings] Error generating embedding:', error?.message || error);
+        }
         return null;
     }
 }
 
 /**
  * Generate embeddings for multiple texts in batch
- * More efficient than calling generateEmbedding multiple times
+ * More efficient than individual calls
  */
 export async function generateEmbeddings(texts: string[]): Promise<(number[] | null)[]> {
     if (!texts || texts.length === 0) {
         return [];
     }
 
-    try {
-        await initPipeline();
-
-        if (!embedder) {
-            return texts.map(() => null);
-        }
-
-        const results: (number[] | null)[] = [];
-
-        // Process in small batches to avoid memory issues
-        const batchSize = 10;
-        for (let i = 0; i < texts.length; i += batchSize) {
-            const batch = texts.slice(i, i + batchSize);
-
-            for (const text of batch) {
-                if (!text || text.trim().length === 0) {
-                    results.push(null);
-                    continue;
-                }
-
-                const truncatedText = text.slice(0, 512);
-                const output = await embedder(truncatedText, {
-                    pooling: 'mean',
-                    normalize: true,
-                });
-                results.push(Array.from(output.data));
-            }
-        }
-
-        return results;
-    } catch (error) {
-        console.error('[Embeddings] Batch error:', error);
+    const client = getClient();
+    if (!client) {
         return texts.map(() => null);
     }
+
+    const results: (number[] | null)[] = [];
+
+    // Process in small batches to respect rate limits
+    const batchSize = 5;
+    for (let i = 0; i < texts.length; i += batchSize) {
+        const batch = texts.slice(i, i + batchSize);
+
+        // Add small delay between batches to avoid rate limiting
+        if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        for (const text of batch) {
+            if (!text || text.trim().length === 0) {
+                results.push(null);
+                continue;
+            }
+
+            try {
+                const embedding = await generateEmbedding(text);
+                results.push(embedding);
+            } catch (error) {
+                console.error('[Embeddings] Batch item error:', error);
+                results.push(null);
+            }
+        }
+    }
+
+    return results;
 }
 
 /**
- * Check if the embedding service is ready
+ * Check if the embedding service is configured and ready
  */
 export function isEmbeddingServiceReady(): boolean {
-    return embedder !== null;
+    return Boolean(HF_TOKEN);
 }
 
 /**
@@ -141,13 +143,29 @@ export function getEmbeddingDimension(): number {
 }
 
 /**
- * Preload the model (call during app startup if desired)
+ * Validate that the API key works (call on startup if desired)
  */
-export async function preloadModel(): Promise<boolean> {
-    try {
-        await initPipeline();
-        return embedder !== null;
-    } catch {
+export async function validateApiKey(): Promise<boolean> {
+    if (!HF_TOKEN) {
+        console.log('[Embeddings] No HF_TOKEN - feature disabled');
         return false;
     }
+
+    try {
+        const testEmbedding = await generateEmbedding('test connection');
+        const isValid = testEmbedding !== null && testEmbedding.length === EMBEDDING_DIM;
+        console.log('[Embeddings] API validation:', isValid ? 'SUCCESS' : 'FAILED');
+        return isValid;
+    } catch (error) {
+        console.error('[Embeddings] API validation failed:', error);
+        return false;
+    }
+}
+
+/**
+ * Preload/warmup (for compatibility with old interface)
+ * No-op since HuggingFace API doesn't need preloading
+ */
+export async function preloadModel(): Promise<boolean> {
+    return isEmbeddingServiceReady();
 }
