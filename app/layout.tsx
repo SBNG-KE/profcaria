@@ -16,10 +16,10 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.profcaria.com'),
   manifest: '/manifest.json',
   title: {
-    default: "Profcaria | Private Privacy-First Career Network",
+    default: "Profcaria | Professional Career",
     template: "%s | Profcaria"
   },
-  description: "The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
+  description: "The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
   keywords: ["Jobs", "Career", "Privacy", "Smart Matching", "Tech Jobs", "Executive Search", "Private Network"],
   icons: {
     icon: '/favicon.ico',
