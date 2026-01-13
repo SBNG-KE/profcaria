@@ -235,18 +235,18 @@ export default function FindJobsPage() {
                 </div>
 
                 {/* Tabs & Search */}
-                <div className="flex flex-col md:flex-row items-center gap-6">
-                    {/* Tabs */}
-                    <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800">
+                <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-6 w-full">
+                    {/* Tabs - Scrollable on mobile */}
+                    <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto scrollbar-hide shrink-0">
                         <button
                             onClick={() => setViewMode('find')}
-                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'find' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'find' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                             Find Work
                         </button>
                         <button
                             onClick={() => setViewMode('saved')}
-                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                             <Heart size={12} className="inline mr-1" />
                             Saved
@@ -254,14 +254,14 @@ export default function FindJobsPage() {
                         </button>
                         <button
                             onClick={() => setViewMode('invited')}
-                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'invited' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'invited' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                             Invited
                             <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.isInvited && !j.applicationStatus).length}</span>
                         </button>
                         <button
                             onClick={() => setViewMode('applied')}
-                            className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'applied' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'applied' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                         >
                             Applied
                             <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.applicationStatus).length}</span>
@@ -348,8 +348,8 @@ export default function FindJobsPage() {
                                                 onClick={(e) => handleSaveJob(job.id, e)}
                                                 disabled={savingJobId === job.id}
                                                 className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id)
-                                                        ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20'
-                                                        : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-500/20'
+                                                    ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20'
+                                                    : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-500/20'
                                                     }`}
                                                 title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}
                                             >

@@ -366,7 +366,13 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" onClick={() => setIsImageModalOpen(false)}></div>
                     <div className="relative w-full max-w-2xl aspect-square bg-[#0f172a] border border-slate-700/50 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col group">
 
-                        {/* Image Area */}
+                        {/* Top Corner Close Button for small screens */}
+                        <button
+                            onClick={() => setIsImageModalOpen(false)}
+                            className="absolute top-4 right-4 z-20 p-2.5 bg-slate-800/80 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors border border-slate-700/50"
+                        >
+                            <X size={20} />
+                        </button>
                         <div className="flex-1 relative bg-slate-900/50 overflow-hidden">
                             {userData?.profile?.profileImageUrl ? (
                                 <img

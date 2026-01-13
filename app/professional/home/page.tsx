@@ -464,6 +464,11 @@ export default function ProfessionalHome() {
   };
 
   const addLink = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+      alert('Please select the text you want to turn into a link first.');
+      return;
+    }
     const url = window.prompt("Enter URL:");
     if (url) execCommand('createLink', url);
   };
@@ -472,12 +477,47 @@ export default function ProfessionalHome() {
     if (e.key === ' ' || e.key === 'Enter') {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
-      const textNode = selection.getRangeAt(0).startContainer;
+      const range = selection.getRangeAt(0);
+      const textNode = range.startContainer;
 
       if (textNode.nodeType === Node.TEXT_NODE && textNode.textContent) {
-        const lastWord = textNode.textContent.split(/\s+/).pop();
-        if (lastWord && (lastWord.startsWith('http') || lastWord.startsWith('www.'))) {
-          // Browser contentEditable logic
+        const text = textNode.textContent.substring(0, range.startOffset);
+        const words = text.split(/\s+/);
+        const lastWord = words[words.length - 1];
+
+        // Check if last word is a URL
+        const urlPattern = /^(https?:\/\/|www\.)[^\s]+$/i;
+        if (lastWord && urlPattern.test(lastWord)) {
+          const fullUrl = lastWord.startsWith('www.') ? 'https://' + lastWord : lastWord;
+
+          // Find the position of the URL in the text node
+          const urlStart = text.lastIndexOf(lastWord);
+          const urlEnd = urlStart + lastWord.length;
+
+          // Create a range for the URL text
+          const urlRange = document.createRange();
+          urlRange.setStart(textNode, urlStart);
+          urlRange.setEnd(textNode, urlEnd);
+
+          // Create anchor element
+          const anchor = document.createElement('a');
+          anchor.href = fullUrl;
+          anchor.target = '_blank';
+          anchor.rel = 'noopener noreferrer';
+          anchor.style.color = '#60a5fa'; // blue-400
+          anchor.style.textDecoration = 'underline';
+          anchor.textContent = lastWord;
+
+          // Replace the URL text with anchor
+          urlRange.deleteContents();
+          urlRange.insertNode(anchor);
+
+          // Move cursor after the anchor
+          const newRange = document.createRange();
+          newRange.setStartAfter(anchor);
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
         }
       }
     }
@@ -736,6 +776,7 @@ export default function ProfessionalHome() {
                             empty:before:content-['Start_typing...'] empty:before:text-slate-700 empty:before:pointer-events-none
                             [&_ol]:list-decimal [&_ol]:ml-4 [&_ul]:list-disc [&_ul]:ml-4
                             [&_img]:max-w-full [&_img]:max-h-[400px] [&_img]:object-contain [&_img]:rounded-xl [&_img]:my-4 [&_img]:shadow-lg
+                            [&_a]:text-blue-400 [&_a]:underline [&_a]:cursor-pointer
                         "
               style={{
                 minHeight: '1000px',
