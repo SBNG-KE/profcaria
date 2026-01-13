@@ -209,16 +209,16 @@ export default function PricingPage() {
                                 <p className="text-xs text-slate-500 pb-2">For growing companies</p>
                                 <div className="pt-4 space-y-3 border-t border-emerald-500/20">
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">30 Job Posts/mo</span>
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">30 Job Postings/mo</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Unlimited Analytics
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Unlimited Analytics History
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Priority Support
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Top Matches (Increased Limit)
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Restricted Locations
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Access to Restricted Location Feature
                                     </div>
                                 </div>
                             </div>
@@ -258,16 +258,16 @@ export default function PricingPage() {
                                 <p className="text-xs text-slate-500 pb-2">For large organizations</p>
                                 <div className="pt-4 space-y-3 border-t border-purple-500/20">
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Job Posts
+                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Job Postings
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Analytics
+                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Analytics History
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Dedicated Manager
+                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Top Matches (capped at 100)/job
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Max Top Matches
+                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Access to Restricted Location Feature
                                     </div>
                                 </div>
                             </div>
