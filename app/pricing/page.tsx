@@ -21,8 +21,8 @@ export default function PricingPage() {
     useEffect(() => {
         const fetchPricing = async () => {
             try {
-                // Try to fetch from billing API (public endpoint for pricing)
-                const res = await fetch('/api/billing-setup');
+                // Fetch pricing from API (reads from environment variables)
+                const res = await fetch('/api/pricing');
                 if (res.ok) {
                     const data = await res.json();
                     setPricing({
