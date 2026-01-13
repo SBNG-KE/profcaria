@@ -157,12 +157,6 @@ export default function JobApplyPage() {
 
     return (
         <div className="p-8 max-w-4xl mx-auto space-y-12 pb-32">
-            <button
-                onClick={() => router.back()}
-                className="flex items-center gap-2 text-slate-500 hover:text-white transition-all font-bold uppercase text-[10px] tracking-widest"
-            >
-                <ChevronLeft size={16} /> Back to Search
-            </button>
 
             <header className="flex flex-col md:flex-row md:items-start justify-between gap-8 border-b border-slate-800 pb-12">
                 <div className="space-y-6 text-left">
