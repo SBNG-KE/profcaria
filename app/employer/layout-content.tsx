@@ -21,9 +21,26 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
     const [applicationCount, setApplicationCount] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [cropSource, setCropSource] = useState<File | string | null>(null);
+    const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
     // Consume Context
     const { unreadCount } = useNotificationContext();
+
+    // Fetch current billing plan
+    useEffect(() => {
+        const fetchPlan = async () => {
+            try {
+                const res = await fetch('/api/employer/billing');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCurrentPlan(data.plan || 'free');
+                }
+            } catch (error) {
+                console.error('Error fetching plan:', error);
+            }
+        };
+        fetchPlan();
+    }, []);
 
     // Initialize sidebar state
     useEffect(() => {
@@ -214,6 +231,11 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                 </div>
 
                 <ScrollableContainer className="px-4 space-y-2 pb-4">
+                    {sidebarOpen && currentPlan && (
+                        <div className="text-[9px] text-slate-500 font-medium px-2 mb-1 uppercase tracking-wider">
+                            Plan: <span className="text-slate-400">{currentPlan}</span>
+                        </div>
+                    )}
                     <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Management</div>
                     <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
                     <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" />

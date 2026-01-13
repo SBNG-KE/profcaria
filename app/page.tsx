@@ -379,6 +379,7 @@ export default function LandingPage() {
           </div>
           <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-500">
             <Link href="/documentation" className="hover:text-blue-500 transition-colors">Documentation</Link>
+            <Link href="/pricing" className="hover:text-blue-500 transition-colors">Pricing</Link>
           </div>
         </div>
       </footer>
