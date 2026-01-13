@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s | Profcaria"
   },
   description: "The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
-  keywords: ["Jobs", "Career", "Privacy", "Smart Matching", "Tech Jobs", "Executive Search", "Private Network"],
+  keywords: ["Jobs", "Career", "Privacy", "Smart Matching", "Executive Search", "Private Network"],
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Profcaria | Private Privacy-First Career Network',
-    description: 'The exclusive, privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
-    creator: '@profcaria', // Update if known
+    title: 'Profcaria | Professional Career',
+    description: 'The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
+    creator: '@profcaria',
   },
   verification: {
     google: "6xck7xYL-QCWEu1is-U_xcQlkUjfWGxengTW-7mIrk4",
