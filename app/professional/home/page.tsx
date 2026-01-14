@@ -7,7 +7,7 @@ import {
   Heading1, Heading2, Heading3,
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Image as ImageIcon, Palette,
-  Shield, Check, ChevronDown, Type, Share2
+  Shield, Check, ChevronDown, Type, Share2, Pencil
 } from 'lucide-react';
 
 const FONTS = [
@@ -273,8 +273,14 @@ export default function ProfessionalHome() {
   const [currentFont, setCurrentFont] = useState('Default');
   const [currentFontSize, setCurrentFontSize] = useState('3'); // Default 16px
 
+  // State for editable title
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editableTitle, setEditableTitle] = useState('');
+
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
 
   // Formatting State
   const [formats, setFormats] = useState({
@@ -547,6 +553,61 @@ export default function ProfessionalHome() {
     );
   };
 
+  // Check if a card is a base card (cannot be renamed)
+  const isBaseCard = (title: string) => {
+    const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+    return baseCards.includes(title.toUpperCase());
+  };
+
+  // Handler for renaming a card
+  const handleRenameCard = async (oldTitle: string, newTitle: string) => {
+    if (!newTitle.trim() || newTitle.toUpperCase() === oldTitle.toUpperCase()) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/professional/cards', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldTitle, newTitle })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const updatedTitle = data.newTitle || newTitle.toUpperCase();
+
+        // Update documents list
+        setDocuments(prev => prev.map(d => d === oldTitle ? updatedTitle : d));
+
+        // Update active document
+        setActiveDocument(updatedTitle);
+
+        // Update selected cards if the renamed card was selected
+        if (selectedCards.includes(oldTitle)) {
+          setSelectedCards(prev => prev.map(c => c === oldTitle ? updatedTitle : c));
+        }
+      } else {
+        const errData = await res.json();
+        alert(errData.error || 'Failed to rename card.');
+      }
+    } catch (error) {
+      console.error('Error renaming card:', error);
+      alert('Failed to rename card.');
+    } finally {
+      setIsEditingTitle(false);
+    }
+  };
+
+  // Start editing the title
+  const startEditingTitle = () => {
+    if (activeDocument && !isBaseCard(activeDocument)) {
+      setEditableTitle(activeDocument);
+      setIsEditingTitle(true);
+      setTimeout(() => titleInputRef.current?.focus(), 50);
+    }
+  };
+
   return (
     <>
       <div className="p-8">
@@ -758,7 +819,44 @@ export default function ProfessionalHome() {
         <ScrollableContainer className="p-4 md:p-8 flex-1">
           <div className="max-w-4xl mx-auto pb-40">
             <div className="mb-8 border-b border-slate-800 pb-4">
-              <h1 className="text-4xl font-black text-white uppercase tracking-tight">{activeDocument || 'Untitled'}</h1>
+              <div className="flex items-center gap-3 group/title">
+                {isEditingTitle ? (
+                  <input
+                    ref={titleInputRef}
+                    type="text"
+                    value={editableTitle}
+                    onChange={(e) => setEditableTitle(e.target.value.toUpperCase())}
+                    onBlur={() => {
+                      if (activeDocument) {
+                        handleRenameCard(activeDocument, editableTitle);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && activeDocument) {
+                        handleRenameCard(activeDocument, editableTitle);
+                      } else if (e.key === 'Escape') {
+                        setIsEditingTitle(false);
+                        setEditableTitle(activeDocument || '');
+                      }
+                    }}
+                    className="text-4xl font-black text-white uppercase tracking-tight bg-transparent border-b-2 border-blue-500 focus:outline-none focus:border-blue-400 transition-colors"
+                    style={{ width: `${Math.max(editableTitle.length * 28, 150)}px` }}
+                  />
+                ) : (
+                  <>
+                    <h1 className="text-4xl font-black text-white uppercase tracking-tight">{activeDocument || 'Untitled'}</h1>
+                    {activeDocument && !isBaseCard(activeDocument) && (
+                      <button
+                        onClick={startEditingTitle}
+                        className="p-2 rounded-lg text-slate-600 hover:text-blue-400 hover:bg-blue-500/10 transition-all opacity-0 group-hover/title:opacity-100"
+                        title="Rename card"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
                 <Clock size={12} />
                 <span>

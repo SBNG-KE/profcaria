@@ -46,6 +46,64 @@ export async function GET(req: Request) {
     }
 }
 
+// --- PUT: Rename Custom Card ---
+export async function PUT(req: Request) {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get('profcaria_session')?.value;
+        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        const { payload } = await jwtVerify(token, secret);
+        const userId = payload.uid as string;
+
+        const { oldTitle, newTitle } = await req.json();
+        if (!oldTitle || !newTitle) {
+            return NextResponse.json({ error: 'oldTitle and newTitle required' }, { status: 400 });
+        }
+
+        const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+        if (baseCards.includes(oldTitle.toUpperCase())) {
+            return NextResponse.json({ error: 'Cannot rename base cards' }, { status: 400 });
+        }
+
+        // Fetch user's custom cards to find the one to update
+        const { data: cards, error: fetchError } = await supabaseAdmin
+            .schema('professional')
+            .from('custom_cards')
+            .select('id, enc_title')
+            .eq('user_id', userId);
+
+        if (fetchError) throw fetchError;
+
+        // Find the card with matching decrypted title
+        const cardToUpdate = cards?.find((c: { id: string, enc_title: string }) => {
+            const decrypted = decryptData(c.enc_title);
+            return decrypted === oldTitle.toUpperCase();
+        });
+
+        if (!cardToUpdate) {
+            return NextResponse.json({ error: 'Card not found' }, { status: 404 });
+        }
+
+        // Update with new encrypted title
+        const encryptedNewTitle = encryptData(newTitle.toUpperCase());
+        const { error: updateError } = await supabaseAdmin
+            .schema('professional')
+            .from('custom_cards')
+            .update({ enc_title: encryptedNewTitle })
+            .eq('id', cardToUpdate.id);
+
+        if (updateError) throw updateError;
+
+        return NextResponse.json({ success: true, newTitle: newTitle.toUpperCase() });
+
+    } catch (err) {
+        console.error('Card Rename Error:', err);
+        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+    }
+}
+
 // --- POST: Create Custom Card ---
 export async function POST(req: Request) {
     try {
