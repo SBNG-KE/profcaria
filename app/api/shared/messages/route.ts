@@ -173,10 +173,11 @@ export async function POST(req: Request) {
                 is_read: false
             }]);
 
-        // 2. CHECK "OFFLINE" STATUS & SEND EMAIL
-        // Fetch recipient to check last_active_at and get email
+        // 2. CHECK "OFFLINE" STATUS & SEND EMAIL (Tiered Approach)
+        // Tier 1: 1 hour, Tier 2: 10 hours, Tier 3: 48 hours, Tier 4: 72 hours
         const recipientTable = recipientSchema === 'professional' ? 'users' : 'companies';
-        const emailField = recipientSchema === 'professional' ? 'email' : 'work_email'; // Assuming work_email for company
+        // FIX: Use encrypted email field names
+        const emailField = recipientSchema === 'professional' ? 'enc_email' : 'enc_work_email';
 
         const { data: recipientUser } = await supabaseAdmin
             .schema(recipientSchema)
@@ -188,16 +189,65 @@ export async function POST(req: Request) {
         if (recipientUser) {
             const lastActive = recipientUser.last_active_at ? new Date(recipientUser.last_active_at).getTime() : 0;
             const now = Date.now();
-            const fiveMinutes = 5 * 60 * 1000;
+            
+            // Time thresholds in milliseconds
+            const ONE_HOUR = 60 * 60 * 1000;
+            const TEN_HOURS = 10 * 60 * 60 * 1000;
+            const FORTY_EIGHT_HOURS = 48 * 60 * 60 * 1000;
+            const SEVENTY_TWO_HOURS = 72 * 60 * 60 * 1000;
+            
+            const inactiveTime = now - lastActive;
 
-            // If inactive for > 5 mins (or never active), send email
-            if (now - lastActive > fiveMinutes) {
-                const recipientEmail = recipientUser[emailField];
-                // For professional, we need their name, but for now we just say "New Message"
-                // Ideally we'd fetch their name too, but this fits the requirement.
-                if (recipientEmail) {
-                    // Fire and forget (don't await) to keep API fast
-                    sendUnreadMessageNotification(recipientEmail, senderLabel, jobTitle).catch((e: any) => console.error("Email Fail:", e));
+            // Determine which tier email should be sent based on inactivity duration
+            let tierToSend = 0;
+            if (inactiveTime >= SEVENTY_TWO_HOURS) {
+                tierToSend = 4;
+            } else if (inactiveTime >= FORTY_EIGHT_HOURS) {
+                tierToSend = 3;
+            } else if (inactiveTime >= TEN_HOURS) {
+                tierToSend = 2;
+            } else if (inactiveTime >= ONE_HOUR) {
+                tierToSend = 1;
+            }
+
+            if (tierToSend > 0) {
+                // Check if we've already sent this tier email for any unread notification for this user
+                const { data: existingNotifs } = await supabaseAdmin
+                    .schema(recipientSchema)
+                    .from('notifications')
+                    .select('email_tier')
+                    .eq(recipientField, recipientId)
+                    .eq('is_read', false)
+                    .gte('email_tier', tierToSend)
+                    .limit(1);
+
+                // Only send if we haven't sent this tier yet
+                if (!existingNotifs || existingNotifs.length === 0) {
+                    // FIX: Decrypt the email before using it
+                    const encryptedEmail = recipientUser[emailField];
+                    const recipientEmail = encryptedEmail ? decryptData(encryptedEmail) : null;
+                    
+                    if (recipientEmail) {
+                        console.log(`[EMAIL] Sending tier ${tierToSend} notification email to ${recipientEmail} (inactive for ${Math.round(inactiveTime / 1000 / 60)} minutes)`);
+                        
+                        // Fire and forget (don't await) to keep API fast
+                        sendUnreadMessageNotification(recipientEmail, senderLabel, jobTitle)
+                            .then(() => console.log(`[EMAIL] Tier ${tierToSend} email sent successfully`))
+                            .catch((e: any) => console.error("[EMAIL] Email Fail:", e));
+
+                        // Update the notification we just created with the email tier
+                        await supabaseAdmin
+                            .schema(recipientSchema)
+                            .from('notifications')
+                            .update({ email_tier: tierToSend, email_sent_at: new Date().toISOString() })
+                            .eq(recipientField, recipientId)
+                            .eq('application_id', applicationId)
+                            .eq('is_read', false)
+                            .order('created_at', { ascending: false })
+                            .limit(1);
+                    } else {
+                        console.log(`[EMAIL] No email found for recipient ${recipientId} in ${recipientSchema}`);
+                    }
                 }
             }
         }
@@ -208,6 +258,8 @@ export async function POST(req: Request) {
         });
 
     } catch (error) {
+        console.error('[MESSAGES] POST Error:', error);
         return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
     }
 }
+

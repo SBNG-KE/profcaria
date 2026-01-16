@@ -9,6 +9,7 @@ import {
   List, ListOrdered, Image as ImageIcon, Palette,
   Shield, Check, ChevronDown, Type, Share2, Pencil
 } from 'lucide-react';
+import LinkPreview from '@/app/components/LinkPreview';
 
 const FONTS = [
   "Default", "Arial", "Verdana", "Tahoma", "Trebuchet MS", "Times New Roman",
@@ -281,6 +282,11 @@ export default function ProfessionalHome() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
+  // Link preview state
+  const [linkPreviewUrl, setLinkPreviewUrl] = useState<string | null>(null);
+  const [linkPreviewPosition, setLinkPreviewPosition] = useState<{ x: number; y: number } | null>(null);
+  const [pendingLinkData, setPendingLinkData] = useState<{ textNode: Node; urlStart: number; urlEnd: number; fullUrl: string; displayText: string } | null>(null);
+
 
   // Formatting State
   const [formats, setFormats] = useState({
@@ -500,33 +506,89 @@ export default function ProfessionalHome() {
           const urlStart = text.lastIndexOf(lastWord);
           const urlEnd = urlStart + lastWord.length;
 
-          // Create a range for the URL text
-          const urlRange = document.createRange();
-          urlRange.setStart(textNode, urlStart);
-          urlRange.setEnd(textNode, urlEnd);
+          // Get position for the preview popup
+          const rangeRect = range.getBoundingClientRect();
 
-          // Create anchor element
-          const anchor = document.createElement('a');
-          anchor.href = fullUrl;
-          anchor.target = '_blank';
-          anchor.rel = 'noopener noreferrer';
-          anchor.style.color = '#60a5fa'; // blue-400
-          anchor.style.textDecoration = 'underline';
-          anchor.textContent = lastWord;
+          // Store pending link data for when user confirms via preview
+          setPendingLinkData({
+            textNode,
+            urlStart,
+            urlEnd,
+            fullUrl,
+            displayText: lastWord
+          });
 
-          // Replace the URL text with anchor
-          urlRange.deleteContents();
-          urlRange.insertNode(anchor);
+          // Show link preview
+          setLinkPreviewUrl(fullUrl);
+          setLinkPreviewPosition({
+            x: Math.min(rangeRect.left, window.innerWidth - 350),
+            y: rangeRect.bottom + 10
+          });
 
-          // Move cursor after the anchor
-          const newRange = document.createRange();
-          newRange.setStartAfter(anchor);
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
+          // Prevent the default space/enter insertion while preview is shown
+          e.preventDefault();
         }
       }
     }
+  };
+
+  // Function to insert link (called when preview confirms)
+  const insertLinkFromPreview = () => {
+    if (!pendingLinkData) return;
+
+    const { textNode, urlStart, urlEnd, fullUrl, displayText } = pendingLinkData;
+    const selection = window.getSelection();
+
+    try {
+      // Create a range for the URL text
+      const urlRange = document.createRange();
+      urlRange.setStart(textNode, urlStart);
+      urlRange.setEnd(textNode, urlEnd);
+
+      // Create anchor element
+      const anchor = document.createElement('a');
+      anchor.href = fullUrl;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+      anchor.style.color = '#60a5fa'; // blue-400
+      anchor.style.textDecoration = 'underline';
+      anchor.textContent = displayText;
+
+      // Replace the URL text with anchor
+      urlRange.deleteContents();
+      urlRange.insertNode(anchor);
+
+      // Move cursor after the anchor and add a space
+      const space = document.createTextNode(' ');
+      anchor.parentNode?.insertBefore(space, anchor.nextSibling);
+
+      if (selection) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(space);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
+    } catch (error) {
+      console.error('Error inserting link:', error);
+    }
+
+    // Clear preview state
+    setLinkPreviewUrl(null);
+    setLinkPreviewPosition(null);
+    setPendingLinkData(null);
+  };
+
+  // Close link preview without inserting (just insert as plain text)
+  const closeLinkPreview = () => {
+    if (pendingLinkData) {
+      // Just add a space after the URL text (it stays as plain text)
+      editorRef.current?.focus();
+      document.execCommand('insertText', false, ' ');
+    }
+    setLinkPreviewUrl(null);
+    setLinkPreviewPosition(null);
+    setPendingLinkData(null);
   };
 
   const handleAddDocument = async (name: string) => {
@@ -907,6 +969,16 @@ export default function ProfessionalHome() {
         onClose={() => setIsPopupOpen(false)}
         onSave={handleAddDocument}
       />
+
+      {/* Link Preview Popup */}
+      {linkPreviewUrl && linkPreviewPosition && (
+        <LinkPreview
+          url={linkPreviewUrl}
+          position={linkPreviewPosition}
+          onClose={closeLinkPreview}
+          onInsert={() => insertLinkFromPreview()}
+        />
+      )}
     </>
   );
 }

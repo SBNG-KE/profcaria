@@ -19,16 +19,20 @@ export default function EmployerNotifications() {
         return date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
     };
 
-    // Linkify helper: convert URLs to clickable blue links
-    const linkifyText = (text: string) => {
+    // Linkify helper: convert URLs to clickable links with context-aware colors
+    const linkifyText = (text: string, isSenderMessage: boolean = false) => {
         const urlPattern = /(https?:\/\/[^\s]+)/gi;
         const parts = text.split(urlPattern);
         return parts.map((part, i) => {
             if (urlPattern.test(part)) {
                 urlPattern.lastIndex = 0; // Reset regex
+                // Use lighter colors for sender messages (green/emerald bubbles) for better contrast
+                const linkClass = isSenderMessage
+                    ? 'text-white underline hover:text-emerald-100 break-all font-medium'
+                    : 'text-blue-400 underline hover:text-blue-300 break-all';
                 return (
                     <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-                        className="text-blue-400 underline hover:text-blue-300 break-all">
+                        className={linkClass}>
                         {part}
                     </a>
                 );
@@ -383,9 +387,9 @@ export default function EmployerNotifications() {
                                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                                                         <div className={`px-4 py-2.5 rounded-2xl relative ${isMe
-                                                            ? 'bg-emerald-600 text-white rounded-br-sm'
+                                                            ? 'bg-emerald-500 text-white rounded-br-sm'
                                                             : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
-                                                            <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{linkifyText(msg.content)}</p>
+                                                            <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{linkifyText(msg.content, isMe)}</p>
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                                 <span className={`text-[10px] ${isMe ? 'text-emerald-200' : 'text-slate-500'}`}>
                                                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
