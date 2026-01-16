@@ -165,9 +165,17 @@ export default function NotificationsPage() {
         }
     };
 
-    // URL detection in message input
+    // URL detection in message input with debouncing
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const lastDetectedUrlRef = useRef<string | null>(null);
+
     const handleMessageInput = (value: string) => {
         setNewMessage(value);
+
+        // Clear any existing debounce timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
 
         // Detect if there's a URL in the input
         const urlPattern = /(https?:\/\/|www\.)[^\s]+/gi;
@@ -177,16 +185,26 @@ export default function NotificationsPage() {
             const url = matches[matches.length - 1]; // Get the last URL
             const fullUrl = url.startsWith('www.') ? 'https://' + url : url;
 
-            // Position the preview above the input
-            if (inputRef.current) {
-                const rect = inputRef.current.getBoundingClientRect();
-                setLinkPreviewUrl(fullUrl);
-                setLinkPreviewPosition({
-                    x: Math.min(rect.left, window.innerWidth - 350),
-                    y: rect.top - 10
-                });
-            }
+            // Debounce to prevent flickering - only show preview after typing stops for 500ms
+            // And only if it's a new URL (not already showing)
+            debounceTimerRef.current = setTimeout(() => {
+                if (lastDetectedUrlRef.current !== fullUrl) {
+                    lastDetectedUrlRef.current = fullUrl;
+
+                    // Position the preview above the input
+                    if (inputRef.current) {
+                        const rect = inputRef.current.getBoundingClientRect();
+                        setLinkPreviewUrl(fullUrl);
+                        setLinkPreviewPosition({
+                            x: Math.min(rect.left, window.innerWidth - 350),
+                            y: rect.top - 10
+                        });
+                    }
+                }
+            }, 500);
         } else {
+            // Clear preview if no URL
+            lastDetectedUrlRef.current = null;
             setLinkPreviewUrl(null);
             setLinkPreviewPosition(null);
         }
@@ -194,6 +212,7 @@ export default function NotificationsPage() {
 
     // Close link preview
     const closeLinkPreview = () => {
+        lastDetectedUrlRef.current = null;
         setLinkPreviewUrl(null);
         setLinkPreviewPosition(null);
     };

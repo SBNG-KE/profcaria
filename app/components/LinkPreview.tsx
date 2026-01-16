@@ -24,9 +24,22 @@ export default function LinkPreview({ url, onClose, onInsert, position, classNam
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const previewRef = useRef<HTMLDivElement>(null);
+    const fetchedUrlRef = useRef<string | null>(null);
+    const onCloseRef = useRef(onClose);
+
+    // Keep onClose ref updated
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
 
     useEffect(() => {
+        // Prevent re-fetching if we already fetched this URL
+        if (fetchedUrlRef.current === url) {
+            return;
+        }
+
         const fetchMetadata = async () => {
+            fetchedUrlRef.current = url;
             setLoading(true);
             setError(null);
 
@@ -42,14 +55,14 @@ export default function LinkPreview({ url, onClose, onInsert, position, classNam
             } catch (e) {
                 setError('Could not load preview');
                 // Auto-close after error
-                setTimeout(onClose, 2000);
+                setTimeout(() => onCloseRef.current(), 2000);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchMetadata();
-    }, [url, onClose]);
+    }, [url]); // Only depend on url, not onClose
 
     // Close on click outside
     useEffect(() => {

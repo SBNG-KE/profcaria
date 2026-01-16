@@ -956,9 +956,9 @@ export default function ProfessionalHome() {
                 {showLinkInput && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowLinkInput(false)}></div>
-                    <div className="absolute top-full right-0 mt-2 p-3 bg-[#0f172a] border border-slate-700 rounded-xl shadow-2xl z-50 w-[280px]">
+                    <div className="absolute top-full left-0 sm:left-auto sm:right-0 mt-2 p-3 bg-[#0f172a] border border-slate-700 rounded-xl shadow-2xl z-50 w-[calc(100vw-2rem)] max-w-[280px]">
                       <div className="text-xs text-slate-400 mb-2 font-medium">Enter URL:</div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           ref={linkInputRef}
                           type="text"
@@ -969,11 +969,11 @@ export default function ProfessionalHome() {
                             if (e.key === 'Escape') setShowLinkInput(false);
                           }}
                           placeholder="https://example.com"
-                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
+                          className="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
                         />
                         <button
                           onClick={confirmLink}
-                          className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors"
+                          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors shrink-0"
                         >
                           Add
                         </button>
