@@ -22,7 +22,13 @@ import {
   Ban,
   EyeOff,
   Server,
-  Check
+  Check,
+  FileEdit,
+  Link2,
+  SlidersHorizontal,
+  BarChart3,
+  BellOff,
+  MessageSquare
 } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next";
 
@@ -95,6 +101,7 @@ const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode,
 export default function LandingPage() {
   const router = useRouter();
   const [trailerClicked, setTrailerClicked] = useState(false);
+  const [activeTab, setActiveTab] = useState<'features' | 'security'>('features');
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -271,94 +278,183 @@ export default function LandingPage() {
             <div className="h-full bg-[#0a121e] border border-slate-800/60 rounded-[40px] p-8 md:p-10 relative overflow-hidden group hover:border-blue-500/20 transition-all duration-500">
 
               {/* Header */}
-              <div className="mb-8 relative z-10">
+              <div className="mb-6 relative z-10">
                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Why Profcaria?</h3>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Security Protocols</p>
+
+                {/* Toggle Buttons */}
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => setActiveTab('features')}
+                    className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'features'
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
+                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:text-white border border-slate-700/50'
+                      }`}
+                  >
+                    Features
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('security')}
+                    className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'security'
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25'
+                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:text-white border border-slate-700/50'
+                      }`}
+                  >
+                    Security
+                  </button>
                 </div>
               </div>
 
-              {/* List */}
-              <div className="space-y-6 relative z-10">
+              {/* Content based on active tab */}
+              <div className="space-y-5 relative z-10">
 
-                {/* Item 1 */}
-                <div className="flex gap-4 items-start group/item">
-                  <div className="p-3 bg-blue-900/10 rounded-xl text-blue-400 border border-blue-900/20 group-hover/item:border-blue-500/30 transition-colors">
-                    <EyeOff size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Privacy First Engine</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                      Zero ads. Zero tracking. We never sell your data. You are free from the noise of traditional networks.
-                    </p>
-                  </div>
-                </div>
+                {activeTab === 'features' ? (
+                  <>
+                    {/* Feature 1 - Document Storage */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-blue-900/10 rounded-xl text-blue-400 border border-blue-900/20 group-hover/item:border-blue-500/30 transition-colors">
+                        <FileEdit size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Document Storage</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Write, save all your documents within Profcaria. Your career artifacts, all in one secure place.
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Item 2 */}
-                <div className="flex gap-4 items-start group/item">
-                  <div className="p-3 bg-emerald-900/10 rounded-xl text-emerald-400 border border-emerald-900/20 group-hover/item:border-emerald-500/30 transition-colors">
-                    <Server size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Dynamic Artifacts</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                      Stop managing endless file versions. Update your data once within the system, and it reflects everywhere instantly.
-                    </p>
-                  </div>
-                </div>
+                    {/* Feature 2 - Direct Connections */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-emerald-900/10 rounded-xl text-emerald-400 border border-emerald-900/20 group-hover/item:border-emerald-500/30 transition-colors">
+                        <Link2 size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Direct Connections</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Make direct connections and employment within the system. No middlemen, just opportunities.
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Item 3 */}
-                <div className="flex gap-4 items-start group/item">
-                  <div className="p-3 bg-red-900/10 rounded-xl text-red-400 border border-red-900/20 group-hover/item:border-red-500/30 transition-colors">
-                    <Ban size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Malware Shield</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                      We prevent PDF-based attacks by eliminating file uploads. Your application process is pure, secure data transfer.
-                    </p>
-                  </div>
-                </div>
+                    {/* Feature 3 - Smart Preferences */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-purple-900/10 rounded-xl text-purple-400 border border-purple-900/20 group-hover/item:border-purple-500/30 transition-colors">
+                        <SlidersHorizontal size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Smart Preferences</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Adjust your preferences to jobs you want. Filter by experience level — 2 years or 10 years.
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Item 4 */}
-                <div className="flex gap-4 items-start group/item">
-                  <div className="p-3 bg-purple-900/10 rounded-xl text-purple-400 border border-purple-900/20 group-hover/item:border-purple-500/30 transition-colors">
-                    <Lock size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">End-to-End Encryption</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                      Your legacy is protected by best-in-class security standards at every step.
-                    </p>
-                  </div>
-                </div>
+                    {/* Feature 4 - Best Analytics */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-amber-900/10 rounded-xl text-amber-400 border border-amber-900/20 group-hover/item:border-amber-500/30 transition-colors">
+                        <BarChart3 size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Best Analytics</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Get the best analytics of jobs posted. Insights that help you make smarter career decisions.
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Item 5 - No Spam */}
-                <div className="flex gap-4 items-start group/item">
-                  <div className="p-3 bg-orange-900/10 rounded-xl text-orange-400 border border-orange-900/20 group-hover/item:border-orange-500/30 transition-colors">
-                    <Ban size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Zero Recruiter Spam</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                      No InMail harassment. No cold outreach. Just relevant opportunities.
-                    </p>
-                  </div>
-                </div>
+                    {/* Feature 5 - No Ads */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-red-900/10 rounded-xl text-red-400 border border-red-900/20 group-hover/item:border-red-500/30 transition-colors">
+                        <BellOff size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">No Ads</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Zero advertisements for a cleaner experience. Focus on what matters — your career.
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Item 6 - Data Ownership */}
-                <div className="flex gap-4 items-start group/item">
-                  <div className="p-3 bg-cyan-900/10 rounded-xl text-cyan-400 border border-cyan-900/20 group-hover/item:border-cyan-500/30 transition-colors">
-                    <Shield size={20} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">You Own Your Data</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                      Only employers you apply to see your info. We never sell data. You're the customer, not the product.
-                    </p>
-                  </div>
-                </div>
+                    {/* Feature 6 - In-System Chat */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-cyan-900/10 rounded-xl text-cyan-400 border border-cyan-900/20 group-hover/item:border-cyan-500/30 transition-colors">
+                        <MessageSquare size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">In-System Chat</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Chat and text within the system. No more need to send emails unless absolutely needed.
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Security 1 - Privacy First Engine */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-blue-900/10 rounded-xl text-blue-400 border border-blue-900/20 group-hover/item:border-blue-500/30 transition-colors">
+                        <EyeOff size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Privacy First Engine</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Zero tracking. We never sell your data. You are free from the noise of traditional networks.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Security 2 - Malware Shield */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-red-900/10 rounded-xl text-red-400 border border-red-900/20 group-hover/item:border-red-500/30 transition-colors">
+                        <Ban size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Malware Shield</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          We prevent PDF-based attacks by eliminating file uploads. Your application process is pure, secure data transfer.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Security 3 - End-to-End Encryption */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-purple-900/10 rounded-xl text-purple-400 border border-purple-900/20 group-hover/item:border-purple-500/30 transition-colors">
+                        <Lock size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">End-to-End Encryption</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Your legacy is protected by best-in-class security standards at every step.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Security 4 - Zero Recruiter Spam */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-orange-900/10 rounded-xl text-orange-400 border border-orange-900/20 group-hover/item:border-orange-500/30 transition-colors">
+                        <Ban size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Zero Recruiter Spam</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          No InMail harassment. No cold outreach. Just relevant opportunities.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Security 5 - You Own Your Data */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-cyan-900/10 rounded-xl text-cyan-400 border border-cyan-900/20 group-hover/item:border-cyan-500/30 transition-colors">
+                        <Shield size={20} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">You Own Your Data</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Only employers you apply to see your info. We never sell data. You're the customer, not the product.
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
 
               </div>
 
@@ -380,6 +476,7 @@ export default function LandingPage() {
           <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-500">
             <Link href="/documentation" className="hover:text-blue-500 transition-colors">Documentation</Link>
             <Link href="/pricing" className="hover:text-blue-500 transition-colors">Pricing</Link>
+            <Link href="/contact" className="hover:text-blue-500 transition-colors">Contact Us</Link>
           </div>
         </div>
       </footer>
