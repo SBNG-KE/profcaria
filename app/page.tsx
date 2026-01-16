@@ -348,7 +348,7 @@ export default function LandingPage() {
                       <div>
                         <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Smart Preferences</h4>
                         <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                          Adjust your preferences to jobs you want. Filter by experience level — 2 years or 10 years.
+                          Adjust your preferences to jobs you want. Filter by experience level e.g. 2 years, 5 years or 10 years etc.
                         </p>
                       </div>
                     </div>
