@@ -287,6 +287,11 @@ export default function ProfessionalHome() {
   const [linkPreviewPosition, setLinkPreviewPosition] = useState<{ x: number; y: number } | null>(null);
   const [pendingLinkData, setPendingLinkData] = useState<{ textNode: Node; urlStart: number; urlEnd: number; fullUrl: string; displayText: string } | null>(null);
 
+  // Link input popover state (for toolbar button)
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [linkInputUrl, setLinkInputUrl] = useState('');
+  const linkInputRef = useRef<HTMLInputElement>(null);
+
 
   // Formatting State
   const [formats, setFormats] = useState({
@@ -481,8 +486,21 @@ export default function ProfessionalHome() {
       alert('Please select the text you want to turn into a link first.');
       return;
     }
-    const url = window.prompt("Enter URL:");
-    if (url) execCommand('createLink', url);
+    // Show inline link input instead of window.prompt
+    setShowLinkInput(true);
+    setLinkInputUrl('');
+    // Focus the input after it renders
+    setTimeout(() => linkInputRef.current?.focus(), 100);
+  };
+
+  // Confirm link from the inline input
+  const confirmLink = () => {
+    if (linkInputUrl.trim()) {
+      const url = linkInputUrl.startsWith('http') ? linkInputUrl : 'https://' + linkInputUrl;
+      execCommand('createLink', url);
+    }
+    setShowLinkInput(false);
+    setLinkInputUrl('');
   };
 
   // Helper to convert URL text to anchor element
@@ -931,7 +949,39 @@ export default function ProfessionalHome() {
                 />
               </div>
 
-              <button onClick={addLink} className="p-2 text-slate-500 hover:text-blue-400 transition-colors rounded"><LinkIcon size={18} /></button>
+              {/* Link button with inline popover */}
+              <div className="relative">
+                <button onClick={addLink} className="p-2 text-slate-500 hover:text-blue-400 transition-colors rounded"><LinkIcon size={18} /></button>
+
+                {showLinkInput && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowLinkInput(false)}></div>
+                    <div className="absolute top-full right-0 mt-2 p-3 bg-[#0f172a] border border-slate-700 rounded-xl shadow-2xl z-50 w-[280px]">
+                      <div className="text-xs text-slate-400 mb-2 font-medium">Enter URL:</div>
+                      <div className="flex gap-2">
+                        <input
+                          ref={linkInputRef}
+                          type="text"
+                          value={linkInputUrl}
+                          onChange={(e) => setLinkInputUrl(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') confirmLink();
+                            if (e.key === 'Escape') setShowLinkInput(false);
+                          }}
+                          placeholder="https://example.com"
+                          className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
+                        />
+                        <button
+                          onClick={confirmLink}
+                          className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-500 transition-colors"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

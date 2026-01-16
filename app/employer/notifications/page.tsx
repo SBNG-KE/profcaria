@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, MessageSquare, ChevronRight, ChevronLeft, Zap, Send, Shield, Clock, X, Briefcase, UserCircle, Search, CheckCheck, User } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
+import LinkPreview from '@/app/components/LinkPreview';
 
 export default function EmployerNotifications() {
     // Consume Global Context
@@ -65,6 +66,11 @@ export default function EmployerNotifications() {
     const messageEndRef = useRef<HTMLDivElement>(null);
     const lastMessageCountRef = useRef(0);
     const lastFetchTimeRef = useRef(0);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Link preview state
+    const [linkPreviewUrl, setLinkPreviewUrl] = useState<string | null>(null);
+    const [linkPreviewPosition, setLinkPreviewPosition] = useState<{ x: number; y: number } | null>(null);
 
     // Initial Scroll
     useEffect(() => {
@@ -194,6 +200,39 @@ export default function EmployerNotifications() {
         } catch (error) {
             console.error("Error marking messages as read", error);
         }
+    };
+
+    // URL detection in message input
+    const handleMessageInput = (value: string) => {
+        setNewMessage(value);
+
+        // Detect if there's a URL in the input
+        const urlPattern = /(https?:\/\/|www\.)[^\s]+/gi;
+        const matches = value.match(urlPattern);
+
+        if (matches && matches.length > 0) {
+            const url = matches[matches.length - 1]; // Get the last URL
+            const fullUrl = url.startsWith('www.') ? 'https://' + url : url;
+
+            // Position the preview above the input
+            if (inputRef.current) {
+                const rect = inputRef.current.getBoundingClientRect();
+                setLinkPreviewUrl(fullUrl);
+                setLinkPreviewPosition({
+                    x: Math.min(rect.left, window.innerWidth - 350),
+                    y: rect.top - 10
+                });
+            }
+        } else {
+            setLinkPreviewUrl(null);
+            setLinkPreviewPosition(null);
+        }
+    };
+
+    // Close link preview
+    const closeLinkPreview = () => {
+        setLinkPreviewUrl(null);
+        setLinkPreviewPosition(null);
     };
 
     // Filter Logic
@@ -408,18 +447,40 @@ export default function EmployerNotifications() {
                         </div>
 
                         {/* Message input - Fixed at bottom */}
-                        <footer className="px-4 py-3 border-t border-slate-800 bg-[#0b121e]/80 shrink-0">
+                        <footer className="px-4 py-3 border-t border-slate-800 bg-[#0b121e]/80 shrink-0 relative">
+                            {/* Link Preview Popup */}
+                            {linkPreviewUrl && linkPreviewPosition && (
+                                <div className="absolute bottom-full left-0 right-0 mb-2 px-4">
+                                    <LinkPreview
+                                        url={linkPreviewUrl}
+                                        onClose={closeLinkPreview}
+                                        onInsert={() => {
+                                            // Just close the preview - the URL is already in the message 
+                                            closeLinkPreview();
+                                        }}
+                                    />
+                                </div>
+                            )}
                             <div className="flex items-center gap-3">
                                 <input
+                                    ref={inputRef}
                                     type="text"
                                     value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                    onChange={(e) => handleMessageInput(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            closeLinkPreview();
+                                            sendMessage();
+                                        }
+                                    }}
                                     placeholder="Type a message..."
                                     className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
                                 />
                                 <button
-                                    onClick={sendMessage}
+                                    onClick={() => {
+                                        closeLinkPreview();
+                                        sendMessage();
+                                    }}
                                     disabled={!newMessage.trim() || isSending}
                                     className="w-11 h-11 flex items-center justify-center rounded-full transition-all bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 disabled:bg-slate-800 disabled:text-slate-600"
                                 >
