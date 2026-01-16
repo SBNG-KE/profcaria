@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell, MessageSquare, ChevronRight, ChevronLeft, Zap, Send, Shield, Clock, X, Briefcase, UserCircle, Search, CheckCheck, User } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import LinkPreview from '@/app/components/LinkPreview';
+import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkPreview';
 
 export default function EmployerNotifications() {
     // Consume Global Context
@@ -448,6 +449,15 @@ export default function EmployerNotifications() {
                                                             ? 'bg-emerald-500 text-white rounded-br-sm'
                                                             : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
                                                             <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{linkifyText(msg.content, isMe)}</p>
+
+                                                            {/* Inline link preview */}
+                                                            {extractFirstUrl(msg.content) && (
+                                                                <InlineLinkPreview
+                                                                    url={extractFirstUrl(msg.content)!}
+                                                                    className={isMe ? 'text-white' : 'text-slate-200'}
+                                                                />
+                                                            )}
+
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                                 <span className={`text-[10px] ${isMe ? 'text-emerald-200' : 'text-slate-500'}`}>
                                                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
