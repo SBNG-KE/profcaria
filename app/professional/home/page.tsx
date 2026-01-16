@@ -485,7 +485,45 @@ export default function ProfessionalHome() {
     if (url) execCommand('createLink', url);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  // Helper to convert URL text to anchor element
+  const convertUrlToLink = (textNode: Node, urlStart: number, urlEnd: number, fullUrl: string, displayText: string) => {
+    const selection = window.getSelection();
+
+    try {
+      const urlRange = document.createRange();
+      urlRange.setStart(textNode, urlStart);
+      urlRange.setEnd(textNode, urlEnd);
+
+      const anchor = document.createElement('a');
+      anchor.href = fullUrl;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+      anchor.style.color = '#60a5fa';
+      anchor.style.textDecoration = 'underline';
+      anchor.style.cursor = 'pointer';
+      anchor.textContent = displayText;
+
+      urlRange.deleteContents();
+      urlRange.insertNode(anchor);
+
+      // Add a space after the link
+      const space = document.createTextNode(' ');
+      anchor.parentNode?.insertBefore(space, anchor.nextSibling);
+
+      if (selection) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(space);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
+    } catch (error) {
+      console.error('Error converting URL to link:', error);
+    }
+  };
+
+  // Handle keyboard events for URL detection
+  const handleEditorKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === ' ' || e.key === 'Enter') {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
@@ -501,15 +539,13 @@ export default function ProfessionalHome() {
         const urlPattern = /^(https?:\/\/|www\.)[^\s]+$/i;
         if (lastWord && urlPattern.test(lastWord)) {
           const fullUrl = lastWord.startsWith('www.') ? 'https://' + lastWord : lastWord;
-
-          // Find the position of the URL in the text node
           const urlStart = text.lastIndexOf(lastWord);
           const urlEnd = urlStart + lastWord.length;
 
           // Get position for the preview popup
           const rangeRect = range.getBoundingClientRect();
 
-          // Store pending link data for when user confirms via preview
+          // Store pending link data
           setPendingLinkData({
             textNode,
             urlStart,
@@ -518,17 +554,80 @@ export default function ProfessionalHome() {
             displayText: lastWord
           });
 
-          // Show link preview
+          // Show link preview popup
           setLinkPreviewUrl(fullUrl);
           setLinkPreviewPosition({
             x: Math.min(rangeRect.left, window.innerWidth - 350),
             y: rangeRect.bottom + 10
           });
-
-          // Prevent the default space/enter insertion while preview is shown
-          e.preventDefault();
         }
       }
+    }
+  };
+
+  // Handle paste events to detect URLs
+  const handleEditorPaste = (e: React.ClipboardEvent) => {
+    const pastedText = e.clipboardData.getData('text/plain');
+
+    // Check if the entire pasted content is a URL
+    const urlPattern = /^(https?:\/\/|www\.)[^\s]+$/i;
+    if (urlPattern.test(pastedText.trim())) {
+      e.preventDefault();
+
+      const fullUrl = pastedText.trim().startsWith('www.')
+        ? 'https://' + pastedText.trim()
+        : pastedText.trim();
+
+      // Get current selection position for popup
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rangeRect = range.getBoundingClientRect();
+
+        // Insert the URL text first
+        document.execCommand('insertText', false, pastedText.trim());
+
+        // Get the new text node and position
+        const newSelection = window.getSelection();
+        if (newSelection && newSelection.rangeCount > 0) {
+          const newRange = newSelection.getRangeAt(0);
+          const newTextNode = newRange.startContainer;
+
+          if (newTextNode.nodeType === Node.TEXT_NODE && newTextNode.textContent) {
+            const text = newTextNode.textContent;
+            const urlEnd = newRange.startOffset;
+            const urlStart = urlEnd - pastedText.trim().length;
+
+            // Store pending link data
+            setPendingLinkData({
+              textNode: newTextNode,
+              urlStart,
+              urlEnd,
+              fullUrl,
+              displayText: pastedText.trim()
+            });
+
+            // Show link preview popup
+            setLinkPreviewUrl(fullUrl);
+            setLinkPreviewPosition({
+              x: Math.min(rangeRect.left, window.innerWidth - 350),
+              y: rangeRect.bottom + 10
+            });
+          }
+        }
+      }
+    }
+  };
+
+  // Handle clicks on links in the editor
+  const handleEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+
+    // Check if clicked on an anchor element
+    if (target.tagName === 'A') {
+      e.preventDefault();
+      const href = (target as HTMLAnchorElement).href;
+      window.open(href, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -537,41 +636,7 @@ export default function ProfessionalHome() {
     if (!pendingLinkData) return;
 
     const { textNode, urlStart, urlEnd, fullUrl, displayText } = pendingLinkData;
-    const selection = window.getSelection();
-
-    try {
-      // Create a range for the URL text
-      const urlRange = document.createRange();
-      urlRange.setStart(textNode, urlStart);
-      urlRange.setEnd(textNode, urlEnd);
-
-      // Create anchor element
-      const anchor = document.createElement('a');
-      anchor.href = fullUrl;
-      anchor.target = '_blank';
-      anchor.rel = 'noopener noreferrer';
-      anchor.style.color = '#60a5fa'; // blue-400
-      anchor.style.textDecoration = 'underline';
-      anchor.textContent = displayText;
-
-      // Replace the URL text with anchor
-      urlRange.deleteContents();
-      urlRange.insertNode(anchor);
-
-      // Move cursor after the anchor and add a space
-      const space = document.createTextNode(' ');
-      anchor.parentNode?.insertBefore(space, anchor.nextSibling);
-
-      if (selection) {
-        const newRange = document.createRange();
-        newRange.setStartAfter(space);
-        newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-      }
-    } catch (error) {
-      console.error('Error inserting link:', error);
-    }
+    convertUrlToLink(textNode, urlStart, urlEnd, fullUrl, displayText);
 
     // Clear preview state
     setLinkPreviewUrl(null);
@@ -579,12 +644,12 @@ export default function ProfessionalHome() {
     setPendingLinkData(null);
   };
 
-  // Close link preview without inserting (just insert as plain text)
+  // Close link preview and convert to plain link (no preview needed)
   const closeLinkPreview = () => {
     if (pendingLinkData) {
-      // Just add a space after the URL text (it stays as plain text)
-      editorRef.current?.focus();
-      document.execCommand('insertText', false, ' ');
+      // Convert to link anyway (just without showing preview)
+      const { textNode, urlStart, urlEnd, fullUrl, displayText } = pendingLinkData;
+      convertUrlToLink(textNode, urlStart, urlEnd, fullUrl, displayText);
     }
     setLinkPreviewUrl(null);
     setLinkPreviewPosition(null);
@@ -946,10 +1011,10 @@ export default function ProfessionalHome() {
               }}
               onInput={checkFormats}
               onMouseUp={checkFormats}
-              onKeyUp={(e) => {
-                checkFormats();
-                handleKeyDown(e);
-              }}
+              onKeyDown={handleEditorKeyDown}
+              onKeyUp={checkFormats}
+              onPaste={handleEditorPaste}
+              onClick={handleEditorClick}
             />
           </div>
         </ScrollableContainer>
