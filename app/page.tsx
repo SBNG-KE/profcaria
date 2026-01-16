@@ -101,7 +101,7 @@ const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode,
 export default function LandingPage() {
   const router = useRouter();
   const [trailerClicked, setTrailerClicked] = useState(false);
-  const [activeTab, setActiveTab] = useState<'features' | 'security'>('features');
+  const [activeTab, setActiveTab] = useState<'painpoints' | 'features' | 'security'>('painpoints');
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -287,7 +287,16 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Why Profcaria?</h3>
 
                 {/* Toggle Buttons */}
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-4 flex-wrap">
+                  <button
+                    onClick={() => setActiveTab('painpoints')}
+                    className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'painpoints'
+                      ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
+                      : 'bg-slate-800/50 text-slate-400 hover:bg-slate-700/50 hover:text-white border border-slate-700/50'
+                      }`}
+                  >
+                    Pain Points
+                  </button>
                   <button
                     onClick={() => setActiveTab('features')}
                     className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'features'
@@ -312,7 +321,111 @@ export default function LandingPage() {
               {/* Content based on active tab */}
               <div className="space-y-5 relative z-10">
 
-                {activeTab === 'features' ? (
+                {activeTab === 'painpoints' ? (
+                  <>
+                    {/* Pain Point 1 - Recruiter Spam */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-red-900/10 rounded-xl text-red-400 border border-red-900/20 group-hover/item:border-red-500/30 transition-colors">
+                        <Ban size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Endless Recruiter Spam</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Professionals drowning in unsolicited InMail and cold outreach from recruiters.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 text-xs font-black uppercase">
+                        <Check size={16} />
+                        <span>Solved</span>
+                      </div>
+                    </div>
+
+                    {/* Pain Point 2 - Data Sold */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-orange-900/10 rounded-xl text-orange-400 border border-orange-900/20 group-hover/item:border-orange-500/30 transition-colors">
+                        <EyeOff size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Your Data Gets Sold</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Traditional platforms profit by selling your personal information to advertisers.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 text-xs font-black uppercase">
+                        <Check size={16} />
+                        <span>Solved</span>
+                      </div>
+                    </div>
+
+                    {/* Pain Point 3 - Malware in Resumes */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-purple-900/10 rounded-xl text-purple-400 border border-purple-900/20 group-hover/item:border-purple-500/30 transition-colors">
+                        <FileText size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Resume File Malware</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          PDF and document uploads create security vulnerabilities for employers.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 text-xs font-black uppercase">
+                        <Check size={16} />
+                        <span>Solved</span>
+                      </div>
+                    </div>
+
+                    {/* Pain Point 4 - Fake Jobs */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-amber-900/10 rounded-xl text-amber-400 border border-amber-900/20 group-hover/item:border-amber-500/30 transition-colors">
+                        <Ban size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Fake Job Postings</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Professionals waste time applying to ghost jobs and scam listings.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 text-xs font-black uppercase">
+                        <Check size={16} />
+                        <span>Solved</span>
+                      </div>
+                    </div>
+
+                    {/* Pain Point 5 - No Verification */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-blue-900/10 rounded-xl text-blue-400 border border-blue-900/20 group-hover/item:border-blue-500/30 transition-colors">
+                        <Shield size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Unverified Profiles</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Employers can't trust candidate credentials and work history claims.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 text-xs font-black uppercase">
+                        <Check size={16} />
+                        <span>Solved</span>
+                      </div>
+                    </div>
+
+                    {/* Pain Point 6 - Irrelevant Matches */}
+                    <div className="flex gap-4 items-start group/item">
+                      <div className="p-3 bg-cyan-900/10 rounded-xl text-cyan-400 border border-cyan-900/20 group-hover/item:border-cyan-500/30 transition-colors">
+                        <SlidersHorizontal size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-black text-white uppercase tracking-wide mb-1">Poor Job Matching</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                          Generic algorithms show irrelevant jobs and unqualified candidates.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-emerald-400 text-xs font-black uppercase">
+                        <Check size={16} />
+                        <span>Solved</span>
+                      </div>
+                    </div>
+                  </>
+                ) : activeTab === 'features' ? (
                   <>
                     {/* Feature 1 - Document Storage */}
                     <div className="flex gap-4 items-start group/item">
