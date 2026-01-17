@@ -39,7 +39,7 @@ export async function GET(req: Request, { params }: Params) {
         const { data: connections, error: connError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('id, jobs(company_id)')
+            .select('id, status, created_at, updated_at, jobs(company_id)')
             .eq('user_id', application.user_id)
             .in('status', ['hired', 'employed', 'resigned', 'terminated'])
             .order('created_at', { ascending: false });
@@ -53,8 +53,38 @@ export async function GET(req: Request, { params }: Params) {
             return NextResponse.json({ connections: [] });
         }
 
-        // Get unique company IDs
-        const companyIds = [...new Set(connections.map((c: any) => c.jobs?.company_id).filter(Boolean))];
+        // Group connections by company with date info
+        const companyConnectionMap = new Map<string, { companyId: string; startDate: string; endDate: string | null; status: string }>();
+
+        connections.forEach((conn: any) => {
+            const companyId = conn.jobs?.company_id;
+            if (!companyId) return;
+
+            // Use earliest date as start, latest as end
+            if (!companyConnectionMap.has(companyId)) {
+                companyConnectionMap.set(companyId, {
+                    companyId,
+                    startDate: conn.created_at,
+                    endDate: conn.status === 'employed' || conn.status === 'hired' ? null : conn.updated_at,
+                    status: conn.status
+                });
+            } else {
+                const existing = companyConnectionMap.get(companyId)!;
+                // Update start date to earliest
+                if (new Date(conn.created_at) < new Date(existing.startDate)) {
+                    existing.startDate = conn.created_at;
+                }
+                // Update end date to latest, or null if still employed
+                if (conn.status === 'employed' || conn.status === 'hired') {
+                    existing.endDate = null;
+                    existing.status = conn.status;
+                } else if (existing.endDate && new Date(conn.updated_at) > new Date(existing.endDate)) {
+                    existing.endDate = conn.updated_at;
+                }
+            }
+        });
+
+        const companyIds = [...companyConnectionMap.keys()];
 
         if (companyIds.length === 0) {
             return NextResponse.json({ connections: [] });
@@ -72,21 +102,21 @@ export async function GET(req: Request, { params }: Params) {
             return NextResponse.json({ connections: [] });
         }
 
-        // Build unique company list (deduplicated)
-        const seenCompanies = new Set<string>();
+        // Build connection list with dates
         const uniqueConnections = (companies || [])
-            .filter((company: any) => {
-                if (seenCompanies.has(company.id)) return false;
-                seenCompanies.add(company.id);
-                return true;
-            })
-            .map((company: any) => ({
-                id: company.id,
-                company: {
-                    name: company.enc_company_name ? decryptData(company.enc_company_name) : 'Unknown Company',
-                    logoUrl: company.enc_logo_url ? decryptData(company.enc_logo_url) : null
-                }
-            }));
+            .map((company: any) => {
+                const connInfo = companyConnectionMap.get(company.id);
+                return {
+                    id: company.id,
+                    company: {
+                        name: company.enc_company_name ? decryptData(company.enc_company_name) : 'Unknown Company',
+                        logoUrl: company.enc_logo_url ? decryptData(company.enc_logo_url) : null
+                    },
+                    startDate: connInfo?.startDate || null,
+                    endDate: connInfo?.endDate || null,
+                    isCurrentlyEmployed: connInfo?.status === 'employed' || connInfo?.status === 'hired'
+                };
+            });
 
         return NextResponse.json({ connections: uniqueConnections });
 

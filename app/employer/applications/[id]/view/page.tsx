@@ -51,7 +51,7 @@ export default function EmployerApplicationView() {
     const [isSnapshot, setIsSnapshot] = useState(false);
     const [status, setStatus] = useState<string>('');
     const [snapshottedAt, setSnapshottedAt] = useState<string | null>(null);
-    const [connections, setConnections] = useState<{ id: string; company: { name: string; logoUrl?: string | null } }[]>([]);
+    const [connections, setConnections] = useState<{ id: string; company: { name: string; logoUrl?: string | null }; startDate?: string | null; endDate?: string | null; isCurrentlyEmployed?: boolean }[]>([]);
 
     // UI State
     const [activeDocument, setActiveDocument] = useState<string | null>(null);
@@ -231,21 +231,55 @@ export default function EmployerApplicationView() {
                                     <Building2 size={12} /> Previous Employments
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {connections.map((conn) => (
-                                        <div
-                                            key={conn.id}
-                                            className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-800 rounded-xl"
-                                        >
-                                            <div className="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center">
-                                                {conn.company.logoUrl ? (
-                                                    <img src={conn.company.logoUrl} alt={conn.company.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <Building2 size={10} className="text-slate-500" />
-                                                )}
+                                    {connections.map((conn) => {
+                                        // Calculate duration
+                                        let durationText = '';
+                                        if (conn.startDate) {
+                                            const start = new Date(conn.startDate);
+                                            const end = conn.endDate ? new Date(conn.endDate) : new Date();
+                                            const diffMs = end.getTime() - start.getTime();
+                                            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                                            if (diffDays < 30) {
+                                                durationText = `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+                                            } else if (diffDays < 365) {
+                                                const months = Math.floor(diffDays / 30);
+                                                durationText = `${months} month${months !== 1 ? 's' : ''}`;
+                                            } else {
+                                                const years = Math.floor(diffDays / 365);
+                                                const remainingMonths = Math.floor((diffDays % 365) / 30);
+                                                durationText = `${years} yr${years !== 1 ? 's' : ''}`;
+                                                if (remainingMonths > 0) {
+                                                    durationText += ` ${remainingMonths} mo`;
+                                                }
+                                            }
+
+                                            if (conn.isCurrentlyEmployed) {
+                                                durationText += ' (current)';
+                                            }
+                                        }
+
+                                        return (
+                                            <div
+                                                key={conn.id}
+                                                className="flex items-center gap-2 px-3 py-2 bg-slate-900/50 border border-slate-800 rounded-xl"
+                                            >
+                                                <div className="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shrink-0">
+                                                    {conn.company.logoUrl ? (
+                                                        <img src={conn.company.logoUrl} alt={conn.company.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Building2 size={10} className="text-slate-500" />
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-xs font-bold text-slate-400 truncate">{conn.company.name}</span>
+                                                    {durationText && (
+                                                        <span className="text-[10px] text-slate-600">{durationText}</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <span className="text-xs font-bold text-slate-400">{conn.company.name}</span>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

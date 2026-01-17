@@ -379,35 +379,41 @@ export default function FindJobsPage() {
                                 <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">{job.description}</p>
                             </div>
 
-                            <div className="px-8 py-5 bg-slate-900/50 border-t border-slate-800 flex items-center justify-between group-hover:bg-blue-600/5 transition-colors">
-                                <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                    <span className="flex items-center gap-1.5 shrink-0"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
-                                    <span className="flex items-center gap-1.5 shrink-0"><MapPin size={12} className="text-blue-500" /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
-                                    <span className="flex items-center gap-1.5 shrink-0"><Briefcase size={12} className="text-emerald-500" /> {job.employment_type ? job.employment_type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Full Time'}</span>
-                                    {job.location && (
-                                        <span className="text-slate-400 truncate max-w-[120px]">— {job.location}</span>
-                                    )}
-                                </div>
+                            <div className="px-5 md:px-8 py-4 md:py-5 bg-slate-900/50 border-t border-slate-800 group-hover:bg-blue-600/5 transition-colors">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                        <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
+                                        <span className="flex items-center gap-1.5"><MapPin size={12} className="text-blue-500" /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
+                                        <span className="flex items-center gap-1.5"><Briefcase size={12} className="text-emerald-500" /> {job.employment_type ? job.employment_type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Full Time'}</span>
+                                        {job.location && (
+                                            <span className="text-slate-400 flex items-center gap-1.5">
+                                                <span className="hidden sm:inline">—</span> {job.location}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                {job.applicationStatus === 'pending' ? (
-                                    <button
-                                        onClick={() => handleRetract(job.applicationId!)}
-                                        className="text-red-500 hover:text-red-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors z-20"
-                                    >
-                                        <Trash2 size={14} /> Retract
-                                    </button>
-                                ) : !job.applicationStatus ? (
-                                    <button
-                                        onClick={() => router.push(`/professional/jobs/${job.id}`)}
-                                        className="text-blue-500 group-hover:translate-x-1 transition-transform z-20"
-                                    >
-                                        <ChevronRight size={20} />
-                                    </button>
-                                ) : (
-                                    <span className="text-slate-600 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                                        <CheckCircle2 size={14} /> Applied
-                                    </span>
-                                )}
+                                    <div className="flex items-center justify-end shrink-0">
+                                        {job.applicationStatus === 'pending' ? (
+                                            <button
+                                                onClick={() => handleRetract(job.applicationId!)}
+                                                className="text-red-500 hover:text-red-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors z-20"
+                                            >
+                                                <Trash2 size={14} /> Retract
+                                            </button>
+                                        ) : !job.applicationStatus ? (
+                                            <button
+                                                onClick={() => router.push(`/professional/jobs/${job.id}`)}
+                                                className="text-blue-500 group-hover:translate-x-1 transition-transform z-20"
+                                            >
+                                                <ChevronRight size={20} />
+                                            </button>
+                                        ) : (
+                                            <span className="text-slate-600 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                                                <CheckCircle2 size={14} /> Applied
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Clickable Area Overlay for details (if not interacting with buttons) */}
