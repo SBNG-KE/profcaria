@@ -783,9 +783,31 @@ export default function ProfessionalHome() {
                   key={index}
                   title={doc}
                   onClick={() => setActiveDocument(doc)}
-                  onRemove={() => {
-                    if (confirm(`Are you sure you want to delete ${doc}?`)) {
-                      setDocuments(prev => prev.filter(d => d !== doc));
+                  onRemove={async () => {
+                    const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+                    if (baseCards.includes(doc.toUpperCase())) {
+                      alert('Cannot delete base cards (Resume, CV, Certificates).');
+                      return;
+                    }
+                    if (confirm(`Are you sure you want to delete ${doc}? This action cannot be undone.`)) {
+                      try {
+                        const res = await fetch('/api/professional/cards', {
+                          method: 'DELETE',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ title: doc })
+                        });
+                        if (res.ok) {
+                          setDocuments(prev => prev.filter(d => d !== doc));
+                          // Also remove from selected cards if it was selected
+                          setSelectedCards(prev => prev.filter(c => c !== doc));
+                        } else {
+                          const errData = await res.json();
+                          alert(errData.error || 'Failed to delete card.');
+                        }
+                      } catch (error) {
+                        console.error('Error deleting card:', error);
+                        alert('Failed to delete card.');
+                      }
                     }
                   }}
                 />
