@@ -145,7 +145,7 @@ export default function LandingPage() {
               onClick={() => router.push('/auth')}
               className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-white/5"
             >
-              Launch
+              Join Now
             </button>
           </div>
         </div>
@@ -161,15 +161,14 @@ export default function LandingPage() {
           </ScrollReveal>
 
           <ScrollReveal>
-            <h1 className="text-6xl md:text-8xl font-black text-white leading-[0.9] tracking-tighter max-w-4xl mx-auto">
-              SECURE YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-emerald-400">LEGACY</span> IN PROFCARIA.
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tighter max-w-5xl mx-auto">
+              SECURE CAREERS. AUTHENTIC JOBS. <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-white to-emerald-400">TRUSTED</span> HIRING.
             </h1>
           </ScrollReveal>
 
           <ScrollReveal className="delay-200">
-            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              Profcaria is an encrypted ecosystem for professionals and employers.
-              Store your career artifacts with uncompromising, enterprise-grade security.
+            <p className="text-base md:text-lg lg:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+              Profcaria is an end-to-end encrypted recruitment platform where professionals securely store their career records, find authenticated job opportunities, and where employers hire verified, trusted talent.
             </p>
           </ScrollReveal>
 
@@ -183,6 +182,45 @@ export default function LandingPage() {
               </button>
             </div>
           </ScrollReveal>
+
+          {/* World Network Image */}
+          <ScrollReveal className="delay-500 pt-16">
+            <div className="relative max-w-5xl mx-auto">
+              {/* Glow effects around image */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-transparent to-emerald-500/20 blur-3xl rounded-3xl opacity-50" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050b14] via-transparent to-transparent z-10 pointer-events-none" />
+
+              {/* Decorative elements */}
+              <div className="absolute -top-8 -left-8 w-16 h-16 border border-blue-500/30 rounded-full animate-pulse" />
+              <div className="absolute -bottom-6 -right-6 w-12 h-12 border border-emerald-500/30 rounded-full animate-pulse delay-500" />
+              <div className="absolute top-1/2 -right-12 w-3 h-3 bg-purple-500/50 rounded-full animate-ping" />
+              <div className="absolute top-1/4 -left-10 w-2 h-2 bg-cyan-500/50 rounded-full animate-ping delay-700" />
+
+              <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-blue-500/10">
+                <Image
+                  src="/images/world-network.png"
+                  alt="Global recruitment network - Secure Careers, Authentic Jobs, Trusted Hiring"
+                  width={1200}
+                  height={600}
+                  className="w-full h-auto"
+                  priority
+                />
+              </div>
+
+              {/* Floating badges */}
+              <div className="hidden md:flex absolute -bottom-4 left-1/2 -translate-x-1/2 gap-4 z-20">
+                <div className="px-4 py-2 bg-[#0a121e]/90 backdrop-blur-md border border-blue-500/30 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-2">
+                  <Globe size={12} /> Global Reach
+                </div>
+                <div className="px-4 py-2 bg-[#0a121e]/90 backdrop-blur-md border border-emerald-500/30 rounded-full text-[10px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-2">
+                  <Shield size={12} /> Verified Talent
+                </div>
+                <div className="px-4 py-2 bg-[#0a121e]/90 backdrop-blur-md border border-purple-500/30 rounded-full text-[10px] font-black uppercase tracking-widest text-purple-400 flex items-center gap-2">
+                  <Lock size={12} /> Encrypted
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
 
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-20 hidden md:block">
@@ -190,42 +228,122 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Feature Grid */}
+      {/* Feature Grid - Enhanced Cards */}
       <section className="py-32 px-6 relative z-10 bg-gradient-to-b from-transparent via-[#080f1a] to-transparent">
         <div className="max-w-7xl mx-auto">
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Card 1 */}
-              <div className="group p-10 bg-slate-900/40 border border-white/5 rounded-[40px] hover:border-blue-500/20 transition-all backdrop-blur-3xl hover:bg-blue-500/5">
-                <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 mb-8 group-hover:scale-110 transition-transform">
-                  <Lock size={32} />
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                <Zap size={12} fill="currentColor" /> Why Choose Profcaria
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter">
+                Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Modern Careers</span>
+              </h2>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Card 1 - Encrypted Vault */}
+              <div className="group relative p-8 bg-gradient-to-br from-slate-900/60 to-slate-900/30 border border-white/5 rounded-3xl hover:border-blue-500/30 transition-all duration-500 backdrop-blur-3xl hover:shadow-2xl hover:shadow-blue-500/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 group-hover:bg-blue-500/20 transition-all duration-300">
+                    <Lock size={28} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Encrypted Vault</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Every document, every detail, and every communication is encrypted locally. Your data belongs to you, secured by advanced algorithms.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-blue-400 text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Shield size={14} /> Bank-grade Security
+                  </div>
                 </div>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">Encrypted Vault</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Every document, every detail, and every communication is encrypted locally. Your data belongs to you, secured by advanced algorithms.
-                </p>
               </div>
 
-              {/* Card 2 */}
-              <div className="group p-10 bg-slate-900/40 border border-white/5 rounded-[40px] hover:border-emerald-500/20 transition-all backdrop-blur-3xl hover:bg-emerald-500/5">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 mb-8 group-hover:scale-110 transition-transform">
-                  <Building2 size={32} />
+              {/* Card 2 - Direct Hiring */}
+              <div className="group relative p-8 bg-gradient-to-br from-slate-900/60 to-slate-900/30 border border-white/5 rounded-3xl hover:border-emerald-500/30 transition-all duration-500 backdrop-blur-3xl hover:shadow-2xl hover:shadow-emerald-500/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 mb-6 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
+                    <Building2 size={28} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Direct Hiring</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Connect directly with verified employers. No middlemen, no spam — just real opportunities that match your expertise and goals.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Users size={14} /> Verified Employers
+                  </div>
                 </div>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">Employer Connection</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Directly connect with top-tier employers. Our platform cuts through the noise, presenting your verified profile to those who matter.
-                </p>
               </div>
 
-              {/* Card 3 */}
-              <div className="group p-10 bg-slate-900/40 border border-white/5 rounded-[40px] hover:border-purple-500/20 transition-all backdrop-blur-3xl hover:bg-purple-500/5">
-                <div className="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400 mb-8 group-hover:scale-110 transition-transform">
-                  <Shield size={32} />
+              {/* Card 3 - Verified History */}
+              <div className="group relative p-8 bg-gradient-to-br from-slate-900/60 to-slate-900/30 border border-white/5 rounded-3xl hover:border-purple-500/30 transition-all duration-500 backdrop-blur-3xl hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-400 mb-6 group-hover:scale-110 group-hover:bg-purple-500/20 transition-all duration-300">
+                    <Shield size={28} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Verified History</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Build a portfolio of verified achievements. Present a career narrative backed by immutable records that employers trust.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-purple-400 text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Check size={14} /> Trusted Records
+                  </div>
                 </div>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">Verified History</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  Build a portfolio of verified achievements. From education to work history, present a career narrative that is trusted and immutable.
-                </p>
+              </div>
+
+              {/* Card 4 - Smart Matching */}
+              <div className="group relative p-8 bg-gradient-to-br from-slate-900/60 to-slate-900/30 border border-white/5 rounded-3xl hover:border-cyan-500/30 transition-all duration-500 backdrop-blur-3xl hover:shadow-2xl hover:shadow-cyan-500/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-400 mb-6 group-hover:scale-110 group-hover:bg-cyan-500/20 transition-all duration-300">
+                    <SlidersHorizontal size={28} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Smart Matching</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    AI-powered matching connects you with roles that fit your skills, experience level, and career aspirations perfectly.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-cyan-400 text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Zap size={14} /> ML-Powered
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 5 - Zero Spam */}
+              <div className="group relative p-8 bg-gradient-to-br from-slate-900/60 to-slate-900/30 border border-white/5 rounded-3xl hover:border-orange-500/30 transition-all duration-500 backdrop-blur-3xl hover:shadow-2xl hover:shadow-orange-500/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-orange-500/10 rounded-2xl flex items-center justify-center text-orange-400 mb-6 group-hover:scale-110 group-hover:bg-orange-500/20 transition-all duration-300">
+                    <BellOff size={28} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Zero Spam</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    No recruiter spam. No cold outreach. No ads. Just authentic job opportunities and meaningful career connections.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-orange-400 text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Ban size={14} /> Ad-Free Platform
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 6 - Global Access */}
+              <div className="group relative p-8 bg-gradient-to-br from-slate-900/60 to-slate-900/30 border border-white/5 rounded-3xl hover:border-pink-500/30 transition-all duration-500 backdrop-blur-3xl hover:shadow-2xl hover:shadow-pink-500/10 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center text-pink-400 mb-6 group-hover:scale-110 group-hover:bg-pink-500/20 transition-all duration-300">
+                    <Globe size={28} />
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight mb-3">Global Access</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">
+                    Access opportunities worldwide. Connect with international employers and explore careers without geographical limits.
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 text-pink-400 text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ArrowRight size={14} /> Worldwide Reach
+                  </div>
+                </div>
               </div>
             </div>
           </ScrollReveal>
