@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart } from 'lucide-react';
 
@@ -32,6 +32,11 @@ export default function FindJobsPage() {
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
     const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
     const [savingJobId, setSavingJobId] = useState<string | null>(null);
+
+    // Analytics tracking
+    const trackedImpressions = useRef<Set<string>>(new Set());
+    const impressionQueue = useRef<string[]>([]);
+    const flushTimeout = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         // Handle URL Ref Param
@@ -108,6 +113,86 @@ export default function FindJobsPage() {
             setLoading(false);
         }
     };
+
+    // Track job event (impression, view, etc.)
+    const trackJobEvent = useCallback(async (jobId: string, eventType: 'impression' | 'view' | 'apply_start' | 'apply_abandon') => {
+        try {
+            await fetch('/api/analytics/job-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobId, eventType })
+            });
+        } catch (error) {
+            // Silent fail for analytics
+        }
+    }, []);
+
+    // Batch flush impressions
+    const flushImpressions = useCallback(async () => {
+        if (impressionQueue.current.length === 0) return;
+
+        const events = impressionQueue.current.map(jobId => ({
+            jobId,
+            eventType: 'impression'
+        }));
+        impressionQueue.current = [];
+
+        try {
+            await fetch('/api/analytics/job-event', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ events })
+            });
+        } catch (error) {
+            // Silent fail for analytics
+        }
+    }, []);
+
+    // Queue impression and schedule batch flush
+    const queueImpression = useCallback((jobId: string) => {
+        if (trackedImpressions.current.has(jobId)) return;
+        trackedImpressions.current.add(jobId);
+        impressionQueue.current.push(jobId);
+
+        // Clear existing timeout and set new one
+        if (flushTimeout.current) clearTimeout(flushTimeout.current);
+        flushTimeout.current = setTimeout(flushImpressions, 2000);
+    }, [flushImpressions]);
+
+    // Handle job view click with tracking
+    const handleJobView = useCallback((jobId: string) => {
+        trackJobEvent(jobId, 'view');
+        router.push(`/professional/jobs/${jobId}`);
+    }, [router, trackJobEvent]);
+
+    // Intersection Observer for impression tracking
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        const jobId = entry.target.getAttribute('data-job-id');
+                        if (jobId) {
+                            queueImpression(jobId);
+                        }
+                    }
+                });
+            },
+            { threshold: 0.5 } // 50% visibility threshold
+        );
+
+        // Observe all job cards
+        const jobCards = document.querySelectorAll('[data-job-id]');
+        jobCards.forEach(card => observer.observe(card));
+
+        return () => {
+            observer.disconnect();
+            if (flushTimeout.current) {
+                clearTimeout(flushTimeout.current);
+                flushImpressions(); // Flush remaining on unmount
+            }
+        };
+    }, [jobs, queueImpression, flushImpressions]);
 
     const handleSaveJob = async (jobId: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -330,6 +415,7 @@ export default function FindJobsPage() {
                     {filteredJobs.map((job) => (
                         <div
                             key={job.id}
+                            data-job-id={job.id}
                             className="group relative flex flex-col text-left bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10"
                         >
                             <div className="p-5 md:p-8 space-y-6 flex-1">
@@ -402,7 +488,7 @@ export default function FindJobsPage() {
                                             </button>
                                         ) : !job.applicationStatus ? (
                                             <button
-                                                onClick={() => router.push(`/professional/jobs/${job.id}`)}
+                                                onClick={() => handleJobView(job.id)}
                                                 className="text-blue-500 group-hover:translate-x-1 transition-transform z-20"
                                             >
                                                 <ChevronRight size={20} />
@@ -420,7 +506,7 @@ export default function FindJobsPage() {
                             {!job.applicationStatus && (
                                 <button
                                     className="absolute inset-0 z-10"
-                                    onClick={() => router.push(`/professional/jobs/${job.id}`)}
+                                    onClick={() => handleJobView(job.id)}
                                 />
                             )}
                         </div>

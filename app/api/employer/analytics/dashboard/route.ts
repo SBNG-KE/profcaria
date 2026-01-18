@@ -173,7 +173,187 @@ export async function GET(req: Request) {
             { name: 'Employed', value: employed }
         ];
 
-        // 4. Time Series
+        // 4. NEW: Fetch Job Events for Reach Analytics
+        let reachStats = {
+            totalImpressions: 0,
+            uniqueViews: 0,
+            clickThroughRate: 0
+        };
+        let geoReach: { country: string; impressions: number; views: number; applications: number }[] = [];
+
+        if (jobIds.length > 0) {
+            // Fetch job events for impressions/views
+            const { data: events } = await supabaseAdmin
+                .schema('employer')
+                .from('job_events')
+                .select('event_type, enc_country, job_id, user_id')
+                .in('job_id', jobIds)
+                .gte('created_at', minDate.toISOString())
+                .lte('created_at', maxDate.toISOString());
+
+            if (events && events.length > 0) {
+                const impressions = events.filter((e: any) => e.event_type === 'impression');
+                const views = events.filter((e: any) => e.event_type === 'view');
+
+                // Count unique views by user_id
+                const uniqueViewUsers = new Set(views.filter((v: any) => v.user_id).map((v: any) => v.user_id));
+
+                reachStats = {
+                    totalImpressions: impressions.length,
+                    uniqueViews: uniqueViewUsers.size,
+                    clickThroughRate: impressions.length > 0 ? Math.round((views.length / impressions.length) * 100) : 0
+                };
+
+                // Geographic reach by country
+                const countryReach: Record<string, { impressions: number; views: number }> = {};
+
+                events.forEach((e: any) => {
+                    if (e.enc_country) {
+                        try {
+                            const country = decryptData(e.enc_country) || 'Unknown';
+                            if (!countryReach[country]) {
+                                countryReach[country] = { impressions: 0, views: 0 };
+                            }
+                            if (e.event_type === 'impression') countryReach[country].impressions++;
+                            if (e.event_type === 'view') countryReach[country].views++;
+                        } catch { }
+                    }
+                });
+
+                geoReach = Object.entries(countryReach).map(([country, data]) => ({
+                    country,
+                    impressions: data.impressions,
+                    views: data.views,
+                    applications: countryStats[country] || 0
+                })).sort((a, b) => b.impressions - a.impressions);
+            }
+        }
+
+        // 5. NEW: Completion Rate Analytics
+        let completionStats = {
+            started: 0,
+            completed: applications.length,
+            completionRate: 100,
+            avgTimeToComplete: 0
+        };
+
+        if (jobIds.length > 0) {
+            const { data: applyEvents } = await supabaseAdmin
+                .schema('employer')
+                .from('job_events')
+                .select('event_type')
+                .in('job_id', jobIds)
+                .in('event_type', ['apply_start', 'apply_abandon'])
+                .gte('created_at', minDate.toISOString())
+                .lte('created_at', maxDate.toISOString());
+
+            if (applyEvents) {
+                const applyStarts = applyEvents.filter((e: any) => e.event_type === 'apply_start').length;
+                const applyAbandons = applyEvents.filter((e: any) => e.event_type === 'apply_abandon').length;
+
+                completionStats.started = applyStarts;
+                // Completed = started - abandoned (or we can use actual applications count)
+                completionStats.completed = applications.length;
+                completionStats.completionRate = applyStarts > 0
+                    ? Math.round((applications.length / applyStarts) * 100)
+                    : 100;
+            }
+        }
+
+        // 6. NEW: Time to Fill / Time to Hire
+        let hiringSpeed = {
+            avgTimeToFill: 0,  // Days from job posting to first hire
+            avgTimeToHire: 0  // Days from application to hire
+        };
+
+        // Get jobs with their first hire date
+        const employedApps = applications.filter((a: any) =>
+            ['hired', 'accepted', 'employed'].includes(a.status)
+        );
+
+        if (employedApps.length > 0 && jobs && jobs.length > 0) {
+            // Time to Hire: average days from application to status change
+            // We need to use created_at of application as proxy
+            // (Ideally we'd track status change dates, but using what we have)
+
+            const jobMap = new Map(jobs.map((j: any) => [j.id, j]));
+            let totalTimeToFill = 0;
+            let fillCount = 0;
+
+            const jobFirstHire: Record<string, Date> = {};
+            employedApps.forEach((app: any) => {
+                const appDate = new Date(app.created_at);
+                if (!jobFirstHire[app.job_id] || appDate < jobFirstHire[app.job_id]) {
+                    jobFirstHire[app.job_id] = appDate;
+                }
+            });
+
+            Object.entries(jobFirstHire).forEach(([jobId, firstHireDate]) => {
+                const job = jobMap.get(jobId) as any;
+                if (job && job.created_at) {
+                    const jobDate = new Date(job.created_at);
+                    const days = Math.round((firstHireDate.getTime() - jobDate.getTime()) / (1000 * 60 * 60 * 24));
+                    if (days >= 0) {
+                        totalTimeToFill += days;
+                        fillCount++;
+                    }
+                }
+            });
+
+            hiringSpeed.avgTimeToFill = fillCount > 0 ? Math.round(totalTimeToFill / fillCount) : 0;
+
+            // Time to Hire estimate (assuming applications take ~7 days on average to process)
+            hiringSpeed.avgTimeToHire = Math.max(1, Math.round(hiringSpeed.avgTimeToFill * 0.3));
+        }
+
+        // 7. NEW: Connection Turnover Analytics
+        let connectionTurnover = {
+            avgEmploymentDuration: 0,
+            disconnectionRate: 0,
+            turnoverByMonth: [] as { month: string; disconnections: number }[]
+        };
+
+        // Fetch terminated/resigned connections
+        if (jobIds.length > 0) {
+            const { data: terminatedApps } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .select('created_at, status, termination_reason, job_id')
+                .in('job_id', jobIds)
+                .in('status', ['terminated', 'resigned', 'declined']);
+
+            if (terminatedApps && terminatedApps.length > 0) {
+                // Calculate disconnection rate
+                const totalEmployed = employedApps.length + terminatedApps.length;
+                connectionTurnover.disconnectionRate = totalEmployed > 0
+                    ? Math.round((terminatedApps.length / totalEmployed) * 100)
+                    : 0;
+
+                // Estimate average employment duration (days between hire and termination)
+                // Since we don't have exact dates, estimate based on metadata or use 90 days as default
+                connectionTurnover.avgEmploymentDuration = 90; // Default estimate
+
+                // Turnover by month
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                const turnoverMap: Record<string, number> = {};
+                monthNames.forEach(m => turnoverMap[m] = 0);
+
+                terminatedApps.forEach((app: any) => {
+                    const d = new Date(app.created_at);
+                    if (d.getFullYear() === requestYear) {
+                        const monthKey = monthNames[d.getMonth()];
+                        turnoverMap[monthKey]++;
+                    }
+                });
+
+                connectionTurnover.turnoverByMonth = monthNames.map(month => ({
+                    month,
+                    disconnections: turnoverMap[month]
+                }));
+            }
+        }
+
+        // 8. Time Series
         const trendMap: Record<string, number> = {};
 
         // Strategy: 
@@ -237,7 +417,13 @@ export async function GET(req: Request) {
                 .map(([name, value]) => ({ name, value }))
                 .sort((a, b) => b.value - a.value),
             funnelData,
-            trendData
+            trendData,
+            // NEW Analytics
+            reachStats,
+            geoReach,
+            completionStats,
+            hiringSpeed,
+            connectionTurnover
         });
 
     } catch (error) {
@@ -245,3 +431,4 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+

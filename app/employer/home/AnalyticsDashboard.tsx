@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
-import { Globe, TrendingUp, Users, Target, Map, Zap, ChevronDown, Calendar, Check } from 'lucide-react';
+import { Globe, TrendingUp, Users, Target, Map, Zap, ChevronDown, Calendar, Check, Eye, MousePointer, Clock, UserMinus } from 'lucide-react';
 
 interface Metrics {
     stats: {
@@ -16,6 +16,28 @@ interface Metrics {
     geoHeatmap: { name: string; value: number }[];
     funnelData: { name: string; value: number }[];
     trendData: { date: string; count: number }[];
+    // NEW Analytics
+    reachStats?: {
+        totalImpressions: number;
+        uniqueViews: number;
+        clickThroughRate: number;
+    };
+    geoReach?: { country: string; impressions: number; views: number; applications: number }[];
+    completionStats?: {
+        started: number;
+        completed: number;
+        completionRate: number;
+        avgTimeToComplete: number;
+    };
+    hiringSpeed?: {
+        avgTimeToFill: number;
+        avgTimeToHire: number;
+    };
+    connectionTurnover?: {
+        avgEmploymentDuration: number;
+        disconnectionRate: number;
+        turnoverByMonth: { month: string; disconnections: number }[];
+    };
 }
 
 // Custom Dropdown Scroll Container (Matches layout-content.tsx dots style)
@@ -415,6 +437,111 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
+
+            {/* 4. NEW: REACH STATS & HIRING SPEED ROW */}
+            {(data.reachStats || data.hiringSpeed) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    {/* Impressions */}
+                    {data.reachStats && (
+                        <>
+                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
+                                <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <Eye size={14} className="text-cyan-500" /> Total Impressions
+                                </div>
+                                <div className="text-3xl font-black text-white">{data.reachStats.totalImpressions.toLocaleString()}</div>
+                                <div className="text-[10px] text-slate-500 mt-1 font-bold">Job cards viewed in feed</div>
+                            </div>
+                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
+                                <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <MousePointer size={14} className="text-blue-500" /> Unique Views
+                                </div>
+                                <div className="text-3xl font-black text-white">{data.reachStats.uniqueViews.toLocaleString()}</div>
+                                <div className="text-[10px] text-blue-400 mt-1 font-bold">{data.reachStats.clickThroughRate}% CTR</div>
+                            </div>
+                        </>
+                    )}
+                    {/* Hiring Speed */}
+                    {data.hiringSpeed && (
+                        <>
+                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
+                                <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <Clock size={14} className="text-amber-500" /> Time to Fill
+                                </div>
+                                <div className="text-3xl font-black text-white">{data.hiringSpeed.avgTimeToFill}</div>
+                                <div className="text-[10px] text-slate-500 mt-1 font-bold">Days (posting → hire)</div>
+                            </div>
+                            <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
+                                <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <Clock size={14} className="text-orange-500" /> Time to Hire
+                                </div>
+                                <div className="text-3xl font-black text-white">{data.hiringSpeed.avgTimeToHire}</div>
+                                <div className="text-[10px] text-slate-500 mt-1 font-bold">Days (apply → hire)</div>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* 5. NEW: COMPLETION RATE & TURNOVER ROW */}
+            {(data.completionStats || data.connectionTurnover) && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+                    {/* Completion Rate Panel */}
+                    {data.completionStats && data.completionStats.started > 0 && (
+                        <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
+                            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
+                                <TrendingUp className="text-green-500" /> Application Completion
+                            </h3>
+                            <div className="flex items-center gap-8">
+                                <div className="relative w-32 h-32">
+                                    <svg className="w-full h-full -rotate-90">
+                                        <circle cx="64" cy="64" r="56" fill="none" stroke="#1e293b" strokeWidth="12" />
+                                        <circle
+                                            cx="64" cy="64" r="56" fill="none"
+                                            stroke="#10b981" strokeWidth="12"
+                                            strokeDasharray={`${(data.completionStats.completionRate / 100) * 352} 352`}
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <span className="text-3xl font-black text-white">{data.completionStats.completionRate}%</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Started</p>
+                                        <p className="text-xl font-black text-white">{data.completionStats.started}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Completed</p>
+                                        <p className="text-xl font-black text-emerald-400">{data.completionStats.completed}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-slate-500 text-[11px] mt-4">Tracks how many professionals who start your application form complete it.</p>
+                        </div>
+                    )}
+
+                    {/* Turnover Panel */}
+                    {data.connectionTurnover && data.connectionTurnover.disconnectionRate > 0 && (
+                        <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
+                            <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
+                                <UserMinus className="text-red-500" /> Connection Turnover
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Disconnection Rate</p>
+                                    <p className="text-2xl font-black text-red-400">{data.connectionTurnover.disconnectionRate}%</p>
+                                </div>
+                                <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Avg. Duration</p>
+                                    <p className="text-2xl font-black text-white">{data.connectionTurnover.avgEmploymentDuration} days</p>
+                                </div>
+                            </div>
+                            <p className="text-slate-500 text-[11px]">Tracks how quickly connections are terminated or resigned from your company.</p>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
