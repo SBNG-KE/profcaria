@@ -236,11 +236,12 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                             Plan: <span className="text-slate-400">{currentPlan}</span>
                         </div>
                     )}
-                    <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Management</div>
+                    {sidebarOpen && <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-2 px-2">Management</div>}
                     <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
                     <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" />
 
-                    <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-6 px-2">Network</div>
+                    {sidebarOpen && <div className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 mt-6 px-2">Network</div>}
+                    {!sidebarOpen && <div className="my-4 border-t border-slate-800" />}
                     <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
 
                     <NavItem id="notifications" href="/employer/notifications" icon={Bell} label="Notifications" badgeCount={unreadCount} />
