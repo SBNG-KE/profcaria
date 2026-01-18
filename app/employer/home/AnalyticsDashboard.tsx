@@ -382,32 +382,35 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                 {/* PIPELINE FUNNEL */}
                 <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
                     <h3 className="text-lg font-black text-white uppercase tracking-tight mb-8">Pipeline Health</h3>
-                    <div className="space-y-6">
-                        {data.funnelData.map((stage, i) => (
-                            <div key={stage.name} className="relative">
-                                <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full 
-                                            ${i === 0 ? 'bg-slate-600' :
-                                                i === 1 ? 'bg-blue-500' :
-                                                    i === 2 ? 'bg-purple-500' : 'bg-emerald-500'
-                                            }`}
-                                        />
-                                        <span>{stage.name}</span>
+                    <div className="space-y-4">
+                        {data.funnelData.map((stage, i) => {
+                            // Color mapping for each stage
+                            const colorClass =
+                                stage.name === 'Applied' ? 'bg-slate-500' :
+                                    stage.name === 'Rejected' ? 'bg-red-500' :
+                                        stage.name === 'Pending' ? 'bg-amber-500' :
+                                            stage.name === 'Pre-Qualified' ? 'bg-blue-500' :
+                                                stage.name === 'Declined' ? 'bg-orange-500' :
+                                                    stage.name === 'Employed' ? 'bg-emerald-500' : 'bg-slate-500';
+
+                            return (
+                                <div key={stage.name} className="relative">
+                                    <div className="flex justify-between items-center text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${colorClass}`} />
+                                            <span>{stage.name}</span>
+                                        </div>
+                                        <span className="text-white">{stage.value}</span>
                                     </div>
-                                    <span className="text-white">{stage.value}</span>
+                                    <div className="w-full bg-slate-800/50 rounded-full h-2.5 overflow-hidden">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ${colorClass}`}
+                                            style={{ width: `${(stage.value / Math.max(1, data.funnelData[0].value)) * 100}%` }}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="w-full bg-slate-800/50 rounded-full h-3 overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-1000 ${i === 0 ? 'bg-slate-600' :
-                                            i === 1 ? 'bg-blue-500' :
-                                                i === 2 ? 'bg-purple-500' : 'bg-emerald-500'
-                                            }`}
-                                        style={{ width: `${(stage.value / Math.max(1, data.funnelData[0].value)) * 100}%` }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="mt-10 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
