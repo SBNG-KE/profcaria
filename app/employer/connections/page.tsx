@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Users, Search, User, X, ExternalLink, Shield, Briefcase, Clock,
-    CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2
+    CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface Connection {
@@ -362,7 +362,17 @@ export default function ConnectionsPage() {
 
         return matchesSearch && matchesFilter;
     });
-    const activeConnections = connections.filter(c => c.status === 'accepted'); // Just for stats if needed? Or unused? check usage. seems unused
+
+    const ITEMS_PER_PAGE = 100;
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Reset page when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter, searchTerm]);
+
+    const totalPages = Math.ceil(filteredConnections.length / ITEMS_PER_PAGE);
+    const paginatedConnections = filteredConnections.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
     // "activeConnections" var definition is unused in previous file? No wait, it was there.
     // Actually the return renders all filtered.
 
@@ -445,7 +455,7 @@ export default function ConnectionsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filteredConnections.map(connection => (
+                    {paginatedConnections.map(connection => (
                         <ConnectionCard
                             key={connection.id}
                             connection={connection}
@@ -463,6 +473,15 @@ export default function ConnectionsPage() {
                         />
                     ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6">
+                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
+                        <span className="text-slate-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
+                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
+                    </div>
+                )}
             </div>
 
             {/* Involuntary Termination Modal */}

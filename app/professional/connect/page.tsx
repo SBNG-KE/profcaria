@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Cable, Building2, Briefcase, Clock, AlertTriangle,
-    CheckCircle2, XCircle, X, ExternalLink, FileText, Plus, Pencil, Share2
+    CheckCircle2, XCircle, X, ExternalLink, FileText, Plus, Pencil, Share2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface Connection {
@@ -235,7 +235,9 @@ export default function ConnectPage() {
     const [actionType, setActionType] = useState<'resign' | 'mutual' | 'upload_file' | null>(null);
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isUploading, setIsUploading] = useState(false); // Add upload state for file
+    const [isUploading, setIsUploading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 100;
 
     useEffect(() => {
         fetchConnections();
@@ -441,53 +443,50 @@ export default function ConnectPage() {
                             </p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {connections
-                                .filter(c => {
-                                    if (viewMode === 'current') return ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'pending_resignation'].includes(c.status);
-                                    if (viewMode === 'past') {
-                                        const isPast = ['terminated', 'rejected', 'declined', 'resigned'].includes(c.status);
-                                        if (!isPast) return false;
-
-                                        if (pastFilter === 'all') return true;
-                                        if (pastFilter === 'resigned') return c.status === 'resigned' || c.terminationType === 'resignation';
-                                        if (pastFilter === 'involuntary') return c.terminationType === 'involuntary' || (c.status === 'terminated' && (!c.terminationType || c.terminationType === 'involuntary'));
-                                        if (pastFilter === 'mutual') return c.terminationType === 'mutual';
-
-                                        return false;
-                                    }
+                        (() => {
+                            const filteredConns = connections.filter(c => {
+                                if (viewMode === 'current') return ['accepted', 'hired', 'employed', 'offered', 'pending_termination', 'pending_resignation'].includes(c.status);
+                                if (viewMode === 'past') {
+                                    const isPast = ['terminated', 'rejected', 'declined', 'resigned'].includes(c.status);
+                                    if (!isPast) return false;
+                                    if (pastFilter === 'all') return true;
+                                    if (pastFilter === 'resigned') return c.status === 'resigned' || c.terminationType === 'resignation';
+                                    if (pastFilter === 'involuntary') return c.terminationType === 'involuntary' || (c.status === 'terminated' && (!c.terminationType || c.terminationType === 'involuntary'));
+                                    if (pastFilter === 'mutual') return c.terminationType === 'mutual';
                                     return false;
-                                })
-                                .map(connection => (
-                                    <ConnectionCard
-                                        key={connection.id}
-                                        connection={connection}
-                                        onResign={() => {
-                                            setSelectedConnection(connection);
-                                            setActionType('resign');
-                                            setReason('');
-                                        }}
-                                        onMutual={() => {
-                                            setSelectedConnection(connection);
-                                            setActionType('mutual');
-                                            setReason('');
-                                        }}
-                                        onCancel={() => { }} // No-op
-                                        onManageFile={(action) => {
-                                            if (action === 'upload') {
-                                                setSelectedConnection(connection);
-                                                setActionType('upload_file');
-                                            } else if (action === 'view') {
-                                                if (connection.connectionFileUrl) {
-                                                    window.open(connection.connectionFileUrl, '_blank');
-                                                }
-                                            } else if (action === 'remove') {
-                                                handleFileAction(connection.applicationId, 'remove_file', null);
-                                            }
-                                        }}
-                                    />
-                                ))}
-                        </div>
+                                }
+                                return false;
+                            });
+                            const totalPages = Math.ceil(filteredConns.length / ITEMS_PER_PAGE);
+                            const paginatedConns = filteredConns.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+                            return (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {paginatedConns.map(connection => (
+                                            <ConnectionCard
+                                                key={connection.id}
+                                                connection={connection}
+                                                onResign={() => { setSelectedConnection(connection); setActionType('resign'); setReason(''); }}
+                                                onMutual={() => { setSelectedConnection(connection); setActionType('mutual'); setReason(''); }}
+                                                onCancel={() => { }}
+                                                onManageFile={(action) => {
+                                                    if (action === 'upload') { setSelectedConnection(connection); setActionType('upload_file'); }
+                                                    else if (action === 'view') { if (connection.connectionFileUrl) window.open(connection.connectionFileUrl, '_blank'); }
+                                                    else if (action === 'remove') { handleFileAction(connection.applicationId, 'remove_file', null); }
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                    {totalPages > 1 && (
+                                        <div className="flex items-center justify-center gap-4 pt-6">
+                                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
+                                            <span className="text-slate-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
+                                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
+                                        </div>
+                                    )}
+                                </>
+                            );
+                        })()
                     )}
                 </div>
             </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Plus, Briefcase, Users, Edit3, Trash2, Power,
-    MoreHorizontal, ChevronRight, Layout, Zap, Clock, Share2
+    ChevronRight, ChevronLeft, Zap, Clock, Share2
 } from 'lucide-react';
 
 interface Job {
@@ -17,13 +17,15 @@ interface Job {
     applicantCount?: number;
 }
 
+const ITEMS_PER_PAGE = 100;
+
 export default function EmployerJobsPage() {
     const router = useRouter();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'active' | 'closed'>('all');
     const [copiedId, setCopiedId] = useState<string | null>(null);
-
+    const [currentPage, setCurrentPage] = useState(1);
     const [limits, setLimits] = useState<any>(null);
 
     const fetchJobs = async () => {
@@ -32,10 +34,8 @@ export default function EmployerJobsPage() {
                 fetch('/api/employer/jobs'),
                 fetch('/api/employer/limits')
             ]);
-
             if (res.ok) {
                 const data = await res.json();
-                // Sort by newest first
                 const sortedJobs = (data.jobs || []).sort((a: Job, b: Job) =>
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                 );
@@ -52,13 +52,11 @@ export default function EmployerJobsPage() {
         }
     };
 
-    useEffect(() => {
-        fetchJobs();
-    }, []);
+    useEffect(() => { fetchJobs(); }, []);
+    useEffect(() => { setCurrentPage(1); }, [filter]);
 
     const toggleStatus = async (jobId: string, currentStatus: boolean) => {
         try {
-            // We'll use the same jobs API with a PATCH method (to be implemented)
             const res = await fetch(`/api/employer/jobs/${jobId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -86,26 +84,24 @@ export default function EmployerJobsPage() {
         return true;
     });
 
+    const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+    const paginatedJobs = filteredJobs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
     const isLimitReached = limits && limits.limits.jobs < 9999 && (limits.usage?.jobs >= limits.limits.jobs);
 
     return (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
-            {/* Header Section */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 pb-32">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
                 <div>
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Job Management</h1>
-                    <p className="text-slate-400 mt-2">Manage your active postings and review candidates.</p>
+                    <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Job Management</h1>
+                    <p className="text-slate-400 mt-1 text-sm">Manage your active postings and review candidates.</p>
                 </div>
                 <div className="group relative">
                     <button
                         onClick={() => !isLimitReached && router.push('/employer/jobs/create')}
                         disabled={isLimitReached}
-                        className={`flex items-center gap-2 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 ${isLimitReached
-                            ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-70 shadow-none'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
-                            }`}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg active:scale-95 ${isLimitReached ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-70 shadow-none' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'}`}
                     >
-                        <Plus size={18} />
+                        <Plus size={16} />
                         <span>{isLimitReached ? 'Plan Limit Reached' : 'New Post'}</span>
                     </button>
                     {isLimitReached && (
@@ -116,35 +112,10 @@ export default function EmployerJobsPage() {
                 </div>
             </header>
 
-            {/* Filter Buttons */}
-            <div className="flex gap-3">
-                <button
-                    onClick={() => setFilter('all')}
-                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                >
-                    All ({jobs.length})
-                </button>
-                <button
-                    onClick={() => setFilter('active')}
-                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'active'
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                >
-                    Active ({jobs.filter(j => j.isActive).length})
-                </button>
-                <button
-                    onClick={() => setFilter('closed')}
-                    className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'closed'
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                        : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
-                        }`}
-                >
-                    Closed ({jobs.filter(j => !j.isActive).length})
-                </button>
+            <div className="flex gap-2 flex-wrap">
+                <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>All ({jobs.length})</button>
+                <button onClick={() => setFilter('active')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>Active ({jobs.filter(j => j.isActive).length})</button>
+                <button onClick={() => setFilter('closed')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'closed' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>Closed ({jobs.filter(j => !j.isActive).length})</button>
             </div>
 
             {loading ? (
@@ -152,101 +123,50 @@ export default function EmployerJobsPage() {
                     <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
                     <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Loading job architecture...</p>
                 </div>
-            ) : filteredJobs.length === 0 ? (
+            ) : paginatedJobs.length === 0 ? (
                 <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4">
                     <Briefcase size={64} className="opacity-10" />
-                    <p className="font-bold text-sm uppercase tracking-widest">
-                        {filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs`}
-                    </p>
+                    <p className="font-bold text-sm uppercase tracking-widest">{filter === 'all' ? 'No jobs posted yet' : `No ${filter} jobs`}</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-4">
-                    {filteredJobs.map((job) => (
-                        <div key={job.id} className={`group relative bg-[#0f172a] border rounded-[32px] overflow-hidden transition-all duration-300 ${job.isActive ? 'border-slate-800 hover:border-emerald-500/30' : 'border-slate-800 opacity-60 hover:opacity-100'}`}>
-
-
-                            <div className="p-5 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8">
-                                <div className="space-y-4 flex-1 text-left">
-                                    <div className="flex items-center gap-3">
-                                        <h2 className="text-2xl font-black text-white uppercase tracking-tight">{job.title}</h2>
-                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${job.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
-                                            {job.isActive ? 'Active & Visible' : 'Closed'}
-                                        </span>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {paginatedJobs.map((job) => (
+                            <div key={job.id} className={`group relative bg-[#0f172a] border rounded-2xl overflow-hidden transition-all duration-300 ${job.isActive ? 'border-slate-800 hover:border-emerald-500/30' : 'border-slate-800 opacity-60 hover:opacity-100'}`}>
+                                <div className="p-4 space-y-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h2 className="text-lg font-black text-white uppercase tracking-tight leading-tight line-clamp-2 flex-1">{job.title}</h2>
+                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border shrink-0 ${job.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>{job.isActive ? 'Active' : 'Closed'}</span>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                        <span className="flex items-center gap-1.5"><Clock size={12} /> Posted: {new Date(job.createdAt).toLocaleDateString()}</span>
-                                        <span className="flex items-center gap-1.5 text-blue-400"><Users size={12} /> {job.applicantCount || 0} Applicants</span>
-                                        {job.isActive && <span className="flex items-center gap-1.5 text-emerald-400"><Zap size={12} /> Live on Board</span>}
+                                    <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                        <span className="flex items-center gap-1"><Clock size={10} /> {new Date(job.createdAt).toLocaleDateString()}</span>
+                                        <span className="flex items-center gap-1 text-blue-400"><Users size={10} /> {job.applicantCount || 0}</span>
+                                        {job.isActive && <span className="flex items-center gap-1 text-emerald-400"><Zap size={10} /> Live</span>}
                                     </div>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-3">
-                                    {/* Share Button (Active Only) */}
-                                    {/* Share Button (Active Only) */}
-                                    {job.isActive && (
-                                        <div className="flex items-center gap-2">
-                                            {copiedId === job.id && (
-                                                <span className="text-emerald-400 text-[10px] font-bold uppercase animate-in fade-in slide-in-from-right-2">Link Copied!</span>
-                                            )}
-                                            <button
-                                                onClick={async () => {
-                                                    try {
-                                                        const res = await fetch(`/api/employer/jobs/${job.id}/share`);
-                                                        const data = await res.json();
-                                                        if (data.link) {
-                                                            navigator.clipboard.writeText(data.link);
-                                                            setCopiedId(job.id);
-                                                            setTimeout(() => setCopiedId(null), 2500);
-                                                        }
-                                                    } catch (e) {
-                                                        console.error(e);
-                                                    }
-                                                }}
-                                                className={`p-3 rounded-xl transition-all ${copiedId === job.id ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'}`}
-                                                title="Copy Share Link"
-                                            >
-                                                <Share2 size={18} />
-                                            </button>
-                                        </div>
-                                    )}
-                                    <button
-                                        onClick={() => router.push(`/employer/jobs/create?id=${job.id}`)}
-                                        className="px-4 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
-                                    >
-                                        <Edit3 size={14} /> Edit
-                                    </button>
-                                    <button
-                                        onClick={() => router.push(`/employer/applications?jobId=${job.id}`)}
-                                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
-                                    >
-                                        <Users size={14} /> View Applicants
-                                    </button>
-                                    {limits && limits.limits.topMatches > 0 && (limits.limits.topMatches >= 9999 || (limits.usage?.topMatches || 0) < limits.limits.topMatches) && (
-                                        <button
-                                            onClick={() => router.push(`/employer/jobs/${job.id}/matches`)}
-                                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-indigo-600/20 active:scale-95 flex items-center gap-2"
-                                        >
-                                            <Zap size={14} className="text-yellow-300" /> Top Matches
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => toggleStatus(job.id, job.isActive)}
-                                        className={`px-4 py-3 rounded-xl border transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${job.isActive ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20'}`}
-                                    >
-                                        <Power size={14} /> {job.isActive ? 'Close' : 'Publish'}
-                                    </button>
-                                    <button
-                                        onClick={() => deleteJob(job.id)}
-                                        title="Delete Permanently"
-                                        className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl hover:bg-red-500/20 transition-all"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
+                                        {job.isActive && (
+                                            <button onClick={async () => { try { const res = await fetch(`/api/employer/jobs/${job.id}/share`); const data = await res.json(); if (data.link) { navigator.clipboard.writeText(data.link); setCopiedId(job.id); setTimeout(() => setCopiedId(null), 2500); } } catch (e) { console.error(e); } }} className={`p-2 rounded-lg transition-all ${copiedId === job.id ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white'}`} title="Copy Share Link"><Share2 size={14} /></button>
+                                        )}
+                                        <button onClick={() => router.push(`/employer/jobs/create?id=${job.id}`)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-all" title="Edit"><Edit3 size={14} /></button>
+                                        <button onClick={() => router.push(`/employer/applications?jobId=${job.id}`)} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"><Users size={12} /> Applicants</button>
+                                        {limits && limits.limits.topMatches > 0 && (limits.limits.topMatches >= 9999 || (limits.usage?.topMatches || 0) < limits.limits.topMatches) && (
+                                            <button onClick={() => router.push(`/employer/jobs/${job.id}/matches`)} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5"><Zap size={12} className="text-yellow-300" /> Matches</button>
+                                        )}
+                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
+                                        <button onClick={() => deleteJob(job.id)} title="Delete" className="p-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg hover:bg-red-500/20 transition-all"><Trash2 size={14} /></button>
+                                    </div>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-4 pt-6">
+                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
+                            <span className="text-slate-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
         </div>
     );

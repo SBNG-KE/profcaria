@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart, ChevronLeft } from 'lucide-react';
 
 interface Job {
     id: string;
@@ -22,6 +22,8 @@ interface Job {
     isSaved?: boolean;
 }
 
+const ITEMS_PER_PAGE = 100;
+
 export default function FindJobsPage() {
     const router = useRouter();
     const [jobs, setJobs] = useState<Job[]>([]);
@@ -29,9 +31,11 @@ export default function FindJobsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'find' | 'applied' | 'invited' | 'saved'>('find');
+    const [appliedFilter, setAppliedFilter] = useState<'all' | 'waiting' | 'rejected' | 'pre_qualified' | 'declined' | 'employed'>('all');
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
     const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
     const [savingJobId, setSavingJobId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Analytics tracking
     const trackedImpressions = useRef<Set<string>>(new Set());
@@ -77,20 +81,17 @@ export default function FindJobsPage() {
                 if (data.jobId) {
                     setLinkedJobId(data.jobId);
 
-                    // Fetch THIS specific job to ensure it exists in the list
-                    // (The general feed might not include it depending on algos)
                     const jobRes = await fetch(`/api/professional/jobs/${data.jobId}`);
                     if (jobRes.ok) {
                         const { job } = await jobRes.json();
                         if (job) {
-                            setJobs([job]); // Show ONLY this job initially
+                            setJobs([job]);
                             setLoading(false);
                             return;
                         }
                     }
                 }
             }
-            // Fallback if verification fails or job fetch fails
             fetchJobs();
         } catch (e) {
             console.error('Link verification error', e);
@@ -98,10 +99,8 @@ export default function FindJobsPage() {
         }
     };
 
-
     const fetchJobs = async () => {
         try {
-            // Use Smart Feed
             const res = await fetch('/api/professional/jobs/feed');
             if (res.ok) {
                 const data = await res.json();
@@ -114,7 +113,6 @@ export default function FindJobsPage() {
         }
     };
 
-    // Track job event (impression, view, etc.)
     const trackJobEvent = useCallback(async (jobId: string, eventType: 'impression' | 'view' | 'apply_start' | 'apply_abandon') => {
         try {
             await fetch('/api/analytics/job-event', {
@@ -123,73 +121,55 @@ export default function FindJobsPage() {
                 body: JSON.stringify({ jobId, eventType })
             });
         } catch (error) {
-            // Silent fail for analytics
+            // Silent fail
         }
     }, []);
 
-    // Batch flush impressions
     const flushImpressions = useCallback(async () => {
         if (impressionQueue.current.length === 0) return;
-
-        const events = impressionQueue.current.map(jobId => ({
-            jobId,
-            eventType: 'impression'
-        }));
+        const events = impressionQueue.current.map(jobId => ({ jobId, eventType: 'impression' }));
         impressionQueue.current = [];
-
         try {
             await fetch('/api/analytics/job-event', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ events })
             });
-        } catch (error) {
-            // Silent fail for analytics
-        }
+        } catch (error) { }
     }, []);
 
-    // Queue impression and schedule batch flush
     const queueImpression = useCallback((jobId: string) => {
         if (trackedImpressions.current.has(jobId)) return;
         trackedImpressions.current.add(jobId);
         impressionQueue.current.push(jobId);
-
-        // Clear existing timeout and set new one
         if (flushTimeout.current) clearTimeout(flushTimeout.current);
         flushTimeout.current = setTimeout(flushImpressions, 2000);
     }, [flushImpressions]);
 
-    // Handle job view click with tracking
     const handleJobView = useCallback((jobId: string) => {
         trackJobEvent(jobId, 'view');
         router.push(`/professional/jobs/${jobId}`);
     }, [router, trackJobEvent]);
 
-    // Intersection Observer for impression tracking
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
                         const jobId = entry.target.getAttribute('data-job-id');
-                        if (jobId) {
-                            queueImpression(jobId);
-                        }
+                        if (jobId) queueImpression(jobId);
                     }
                 });
             },
-            { threshold: 0.5 } // 50% visibility threshold
+            { threshold: 0.5 }
         );
-
-        // Observe all job cards
         const jobCards = document.querySelectorAll('[data-job-id]');
         jobCards.forEach(card => observer.observe(card));
-
         return () => {
             observer.disconnect();
             if (flushTimeout.current) {
                 clearTimeout(flushTimeout.current);
-                flushImpressions(); // Flush remaining on unmount
+                flushImpressions();
             }
         };
     }, [jobs, queueImpression, flushImpressions]);
@@ -197,15 +177,11 @@ export default function FindJobsPage() {
     const handleSaveJob = async (jobId: string, e: React.MouseEvent) => {
         e.stopPropagation();
         e.preventDefault();
-
-        if (savingJobId) return; // Prevent double-click
+        if (savingJobId) return;
         setSavingJobId(jobId);
-
         const isSaved = savedJobIds.has(jobId);
-
         try {
             if (isSaved) {
-                // Unsave
                 const res = await fetch('/api/professional/saved-jobs', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
@@ -219,7 +195,6 @@ export default function FindJobsPage() {
                     });
                 }
             } else {
-                // Save
                 const res = await fetch('/api/professional/saved-jobs', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -237,34 +212,24 @@ export default function FindJobsPage() {
     };
 
     const handleRetract = async (applicationId: string) => {
-        if (!confirm('Are you sure you want to retract your application? You can apply again later.')) return;
-
+        if (!confirm('Are you sure you want to retract your application?')) return;
         try {
-            const res = await fetch(`/api/professional/applications/${applicationId}`, {
-                method: 'DELETE'
-            });
-
-            if (res.ok) {
-                // Refresh to update status
-                fetchJobs();
-            } else {
-                alert('Could not retract application. It may have already been processed.');
-            }
+            const res = await fetch(`/api/professional/applications/${applicationId}`, { method: 'DELETE' });
+            if (res.ok) fetchJobs();
+            else alert('Could not retract application.');
         } catch (error) {
             console.error('Error retracting:', error);
         }
     };
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [viewMode, appliedFilter, searchTerm, searchType]);
 
     const filteredJobs = jobs.filter(job => {
-        // If coming from a shared link, SHOW ONLY THAT JOB
-        if (linkedJobId) {
-            return job.id === linkedJobId;
-        }
-
+        if (linkedJobId) return job.id === linkedJobId;
         const term = searchTerm.toLowerCase();
         let matchesSearch = false;
-
         if (searchType === 'company') {
             matchesSearch = job.company?.name?.toLowerCase().includes(term);
         } else {
@@ -272,36 +237,50 @@ export default function FindJobsPage() {
                 job.company?.name?.toLowerCase().includes(term) ||
                 (job.description || '').toLowerCase().includes(term);
         }
-
         let matchesMode = false;
         if (viewMode === 'find') {
-            matchesMode = !job.applicationStatus; // Show only unapplied
+            matchesMode = !job.applicationStatus;
         } else if (viewMode === 'invited') {
-            matchesMode = !!job.isInvited && !job.applicationStatus; // Invited and NOT applied
+            matchesMode = !!job.isInvited && !job.applicationStatus;
         } else if (viewMode === 'applied') {
-            matchesMode = !!job.applicationStatus; // Only applied
+            matchesMode = !!job.applicationStatus;
+            if (matchesMode && appliedFilter !== 'all') {
+                const status = job.applicationStatus?.toLowerCase() || '';
+                if (appliedFilter === 'waiting') matchesMode = status === 'pending' || status === 'waiting';
+                else if (appliedFilter === 'rejected') matchesMode = status === 'rejected';
+                else if (appliedFilter === 'pre_qualified') matchesMode = status === 'pre_qualified';
+                else if (appliedFilter === 'declined') matchesMode = status === 'declined';
+                else if (appliedFilter === 'employed') matchesMode = ['employed', 'hired', 'accepted'].includes(status);
+            }
         } else if (viewMode === 'saved') {
-            matchesMode = savedJobIds.has(job.id) && !job.applicationStatus; // Saved and NOT applied
+            matchesMode = savedJobIds.has(job.id) && !job.applicationStatus;
         }
-
         return matchesSearch && matchesMode;
     });
 
-    // Search History Logging (Debounced)
+    const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
+    const paginatedJobs = filteredJobs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+    const appliedJobs = jobs.filter(j => j.applicationStatus);
+    const appliedCounts = {
+        all: appliedJobs.length,
+        waiting: appliedJobs.filter(j => ['pending', 'waiting'].includes(j.applicationStatus?.toLowerCase() || '')).length,
+        rejected: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'rejected').length,
+        pre_qualified: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'pre_qualified').length,
+        declined: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'declined').length,
+        employed: appliedJobs.filter(j => ['employed', 'hired', 'accepted'].includes(j.applicationStatus?.toLowerCase() || '')).length,
+    };
+
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             if (searchTerm.trim().length > 2) {
                 fetch('/api/professional/search/history', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        query: searchTerm,
-                        filters: { type: searchType }
-                    })
+                    body: JSON.stringify({ query: searchTerm, filters: { type: searchType } })
                 });
             }
-        }, 2000); // 2 second debounce
-
+        }, 2000);
         return () => clearTimeout(timeoutId);
     }, [searchTerm, searchType]);
 
@@ -319,199 +298,123 @@ export default function FindJobsPage() {
                     </div>
                 </div>
 
-                {/* Tabs & Search */}
                 <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-6 w-full">
-                    {/* Tabs - Scrollable on mobile */}
                     <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto scrollbar-hide shrink-0">
-                        <button
-                            onClick={() => setViewMode('find')}
-                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'find' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            Find Work
-                        </button>
-                        <button
-                            onClick={() => setViewMode('saved')}
-                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            <Heart size={12} className="inline mr-1" />
-                            Saved
-                            <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => savedJobIds.has(j.id) && !j.applicationStatus).length}</span>
-                        </button>
-                        <button
-                            onClick={() => setViewMode('invited')}
-                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'invited' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            Invited
-                            <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.isInvited && !j.applicationStatus).length}</span>
-                        </button>
-                        <button
-                            onClick={() => setViewMode('applied')}
-                            className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'applied' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
-                        >
-                            Applied
-                            <span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.applicationStatus).length}</span>
-                        </button>
+                        <button onClick={() => setViewMode('find')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'find' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>Find Work</button>
+                        <button onClick={() => setViewMode('saved')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}><Heart size={12} className="inline mr-1" />Saved<span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => savedJobIds.has(j.id) && !j.applicationStatus).length}</span></button>
+                        <button onClick={() => setViewMode('invited')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'invited' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>Invited<span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{jobs.filter(j => j.isInvited && !j.applicationStatus).length}</span></button>
+                        <button onClick={() => setViewMode('applied')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'applied' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}>Applied<span className="ml-2 px-1.5 py-0.5 bg-slate-800 text-white rounded-md">{appliedCounts.all}</span></button>
                     </div>
 
-                    {/* Search Bar - Full Width, Enhanced */}
                     <div className="relative group flex-1 w-full flex items-center gap-2">
-                        {/* Glow Effect (Moved to top so it's behind if z-index is managed or just structural) */}
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-[28px] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none"></div>
-
-                        {/* Type Toggle */}
                         <div className="relative z-10 flex bg-slate-900 rounded-full p-1 border border-slate-800 shrink-0">
-                            <button
-                                onClick={() => setSearchType('job')}
-                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'job' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'}`}
-                            >
-                                Jobs
-                            </button>
-                            <button
-                                onClick={() => setSearchType('company')}
-                                className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'company' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-white'}`}
-                            >
-                                Companies
-                            </button>
+                            <button onClick={() => setSearchType('job')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'job' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-white'}`}>Jobs</button>
+                            <button onClick={() => setSearchType('company')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'company' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-white'}`}>Companies</button>
                         </div>
-
                         <div className="relative z-10 flex-1 flex items-center gap-3 bg-[#0f172a] border-2 border-slate-800 group-focus-within:border-blue-500/50 rounded-[28px] px-6 py-3 transition-all">
                             <Search className="text-slate-500 group-focus-within:text-blue-400 transition-colors shrink-0" size={20} />
-                            <input
-                                type="text"
-                                placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : viewMode === 'saved' ? 'saved jobs' : 'applications'}...`}
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm"
-                            />
-                            {searchTerm && (
-                                <button
-                                    onClick={() => setSearchTerm('')}
-                                    className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors"
-                                >
-                                    ×
-                                </button>
-                            )}
+                            <input type="text" placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : viewMode === 'saved' ? 'saved jobs' : 'applications'}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="flex-1 bg-transparent text-white placeholder:text-slate-600 focus:outline-none font-medium text-sm" />
+                            {searchTerm && <button onClick={() => setSearchTerm('')} className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-white transition-colors">×</button>}
                         </div>
                     </div>
                 </div>
+
+                {viewMode === 'applied' && (
+                    <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2">
+                        <button onClick={() => setAppliedFilter('all')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'all' ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}>All ({appliedCounts.all})</button>
+                        <button onClick={() => setAppliedFilter('waiting')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'waiting' ? 'bg-amber-600 text-white border-amber-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}>Waiting ({appliedCounts.waiting})</button>
+                        <button onClick={() => setAppliedFilter('pre_qualified')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'pre_qualified' ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}>Pre-qualified ({appliedCounts.pre_qualified})</button>
+                        <button onClick={() => setAppliedFilter('employed')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'employed' ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}>Employed ({appliedCounts.employed})</button>
+                        <button onClick={() => setAppliedFilter('rejected')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'rejected' ? 'bg-red-600 text-white border-red-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}>Rejected ({appliedCounts.rejected})</button>
+                        <button onClick={() => setAppliedFilter('declined')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'declined' ? 'bg-slate-600 text-white border-slate-500' : 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white'}`}>Declined ({appliedCounts.declined})</button>
+                    </div>
+                )}
             </header>
+
+            {viewMode === 'applied' && !loading && (
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold text-white"><span className="text-blue-400">{filteredJobs.length}</span> Applications{appliedFilter !== 'all' && <span className="text-slate-500 text-sm ml-2">({appliedFilter.replace('_', ' ')})</span>}</h2>
+                    {totalPages > 1 && <p className="text-slate-500 text-sm">Page {currentPage} of {totalPages}</p>}
+                </div>
+            )}
 
             {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-4">
                     <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
                     <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Scanning network for roles...</p>
                 </div>
-            ) : filteredJobs.length === 0 ? (
+            ) : paginatedJobs.length === 0 ? (
                 <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4">
                     <Briefcase size={64} className="opacity-10" />
                     <p className="font-bold text-sm uppercase tracking-widest">
                         {viewMode === 'find' ? 'No open roles found matching your search' :
                             viewMode === 'saved' ? 'No saved jobs yet. Click the heart icon to save jobs for later.' :
-                                'You haven\'t applied to any jobs yet'}
+                                viewMode === 'applied' && appliedFilter !== 'all' ? `No ${appliedFilter.replace('_', ' ')} applications` :
+                                    'You haven\'t applied to any jobs yet'}
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredJobs.map((job) => (
-                        <div
-                            key={job.id}
-                            data-job-id={job.id}
-                            className="group relative flex flex-col text-left bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10"
-                        >
-                            <div className="p-5 md:p-8 space-y-6 flex-1">
-                                <div className="flex items-center justify-between">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shadow-lg">
-                                        {job.company?.logoUrl ? (
-                                            <img src={job.company.logoUrl} alt={job.company.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <Building2 size={24} className="text-slate-500" />
-                                        )}
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {paginatedJobs.map((job) => (
+                            <div key={job.id} data-job-id={job.id} className="group relative flex flex-col text-left bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10">
+                                <div className="p-5 md:p-8 space-y-6 flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shadow-lg">
+                                            {job.company?.logoUrl ? <img src={job.company.logoUrl} alt={job.company.name} className="w-full h-full object-cover" /> : <Building2 size={24} className="text-slate-500" />}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {!job.applicationStatus && (
+                                                <button onClick={(e) => handleSaveJob(job.id, e)} disabled={savingJobId === job.id} className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id) ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-500/20'}`} title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}>
+                                                    <Heart size={16} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} />
+                                                </button>
+                                            )}
+                                            <div className="px-3 py-1 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest rounded-lg border border-emerald-500/20 flex items-center gap-2"><Zap size={10} /> Active</div>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {/* Save Button */}
-                                        {!job.applicationStatus && (
-                                            <button
-                                                onClick={(e) => handleSaveJob(job.id, e)}
-                                                disabled={savingJobId === job.id}
-                                                className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id)
-                                                    ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20'
-                                                    : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-500/20'
-                                                    }`}
-                                                title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}
-                                            >
-                                                <Heart size={16} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} />
-                                            </button>
-                                        )}
-                                        <div className="px-3 py-1 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest rounded-lg border border-emerald-500/20 flex items-center gap-2">
-                                            <Zap size={10} /> Active
+                                    {job.applicationStatus && (
+                                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : job.applicationStatus === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : ['employed', 'hired', 'accepted'].includes(job.applicationStatus) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : job.applicationStatus === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>
+                                            <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
+                                        </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <h2 className="text-2xl font-black text-white leading-tight group-hover:text-blue-400 transition-colors uppercase tracking-tighter line-clamp-2">{job.title}</h2>
+                                        <p className="text-blue-400 font-bold text-sm tracking-tight">{job.company?.name || 'Unknown Company'}</p>
+                                    </div>
+                                    <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">{job.description}</p>
+                                </div>
+                                <div className="px-5 md:px-8 py-4 md:py-5 bg-slate-900/50 border-t border-slate-800 group-hover:bg-blue-600/5 transition-colors">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                            <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
+                                            <span className="flex items-center gap-1.5"><MapPin size={12} className="text-blue-500" /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
+                                            <span className="flex items-center gap-1.5"><Briefcase size={12} className="text-emerald-500" /> {job.employment_type ? job.employment_type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Full Time'}</span>
+                                            {job.location && <span className="text-slate-400 flex items-center gap-1.5"><span className="hidden sm:inline">—</span> {job.location}</span>}
+                                        </div>
+                                        <div className="flex items-center justify-end shrink-0">
+                                            {job.applicationStatus === 'pending' ? (
+                                                <button onClick={() => handleRetract(job.applicationId!)} className="text-red-500 hover:text-red-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors z-20"><Trash2 size={14} /> Retract</button>
+                                            ) : !job.applicationStatus ? (
+                                                <button onClick={() => handleJobView(job.id)} className="text-blue-500 group-hover:translate-x-1 transition-transform z-20"><ChevronRight size={20} /></button>
+                                            ) : (
+                                                <span className="text-slate-600 font-bold text-xs uppercase tracking-widest flex items-center gap-2"><CheckCircle2 size={14} /> Applied</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
-
-                                {job.applicationStatus && (
-                                    <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                        job.applicationStatus === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                            'bg-slate-800 text-slate-500 border-slate-700'
-                                        }`}>
-                                        <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
-                                    </div>
-                                )}
-
-                                <div className="space-y-2">
-                                    <h2 className="text-2xl font-black text-white leading-tight group-hover:text-blue-400 transition-colors uppercase tracking-tighter line-clamp-2">{job.title}</h2>
-                                    <p className="text-blue-400 font-bold text-sm tracking-tight">{job.company?.name || 'Unknown Company'}</p>
-                                </div>
-
-                                <p className="text-slate-400 text-sm line-clamp-3 leading-relaxed">{job.description}</p>
+                                {!job.applicationStatus && <button className="absolute inset-0 z-10" onClick={() => handleJobView(job.id)} />}
                             </div>
-
-                            <div className="px-5 md:px-8 py-4 md:py-5 bg-slate-900/50 border-t border-slate-800 group-hover:bg-blue-600/5 transition-colors">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                                        <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
-                                        <span className="flex items-center gap-1.5"><MapPin size={12} className="text-blue-500" /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
-                                        <span className="flex items-center gap-1.5"><Briefcase size={12} className="text-emerald-500" /> {job.employment_type ? job.employment_type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Full Time'}</span>
-                                        {job.location && (
-                                            <span className="text-slate-400 flex items-center gap-1.5">
-                                                <span className="hidden sm:inline">—</span> {job.location}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center justify-end shrink-0">
-                                        {job.applicationStatus === 'pending' ? (
-                                            <button
-                                                onClick={() => handleRetract(job.applicationId!)}
-                                                className="text-red-500 hover:text-red-400 font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-colors z-20"
-                                            >
-                                                <Trash2 size={14} /> Retract
-                                            </button>
-                                        ) : !job.applicationStatus ? (
-                                            <button
-                                                onClick={() => handleJobView(job.id)}
-                                                className="text-blue-500 group-hover:translate-x-1 transition-transform z-20"
-                                            >
-                                                <ChevronRight size={20} />
-                                            </button>
-                                        ) : (
-                                            <span className="text-slate-600 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                                                <CheckCircle2 size={14} /> Applied
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Clickable Area Overlay for details (if not interacting with buttons) */}
-                            {!job.applicationStatus && (
-                                <button
-                                    className="absolute inset-0 z-10"
-                                    onClick={() => handleJobView(job.id)}
-                                />
-                            )}
+                        ))}
+                    </div>
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-4 pt-8">
+                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
+                            <div className="flex items-center gap-2"><span className="text-slate-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span></div>
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
         </div>
     );
