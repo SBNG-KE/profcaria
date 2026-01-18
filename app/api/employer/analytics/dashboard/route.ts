@@ -93,9 +93,7 @@ export async function GET(req: Request) {
             const { data: apps } = await supabaseAdmin
                 .schema('employer')
                 .from('applications')
-                .select('user_id, created_at, status, job_id')
-                .in('job_id', jobIds)
-                .in('job_id', jobIds)
+                .select('user_id, created_at, status, job_id, reviewed_at')
                 .in('job_id', jobIds)
                 .gte('created_at', minDate.toISOString())
                 .lte('created_at', maxDate.toISOString())
@@ -423,7 +421,30 @@ export async function GET(req: Request) {
             geoReach,
             completionStats,
             hiringSpeed,
-            connectionTurnover
+            connectionTurnover,
+            // SLA / Response Rate Stats
+            slaStats: (() => {
+                const reviewedApps = applications.filter((a: any) => a.reviewed_at);
+                const pendingApps = applications.filter((a: any) => a.status === 'pending');
+
+                // Calculate average response time in days
+                let avgResponseDays = 0;
+                if (reviewedApps.length > 0) {
+                    const totalDays = reviewedApps.reduce((sum: number, a: any) => {
+                        const created = new Date(a.created_at).getTime();
+                        const reviewed = new Date(a.reviewed_at).getTime();
+                        return sum + (reviewed - created) / (1000 * 60 * 60 * 24);
+                    }, 0);
+                    avgResponseDays = Math.round(totalDays / reviewedApps.length * 10) / 10;
+                }
+
+                return {
+                    responseRate: applications.length > 0 ? Math.round((reviewedApps.length / applications.length) * 100) : 100,
+                    avgResponseDays,
+                    pendingCount: pendingApps.length,
+                    reviewedCount: reviewedApps.length
+                };
+            })()
         });
 
     } catch (error) {

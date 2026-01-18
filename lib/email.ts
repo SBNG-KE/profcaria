@@ -191,3 +191,101 @@ export async function sendEmail({ to, subject, html }: { to: string, subject: st
         throw e;
     }
 }
+
+// NEW: Pre-Qualified Notification
+export async function sendPreQualifiedNotification(to: string, jobTitle: string, companyName: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Pre-Qualified to ${to} for ${jobTitle}`);
+        return { success: true };
+    }
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">Great News! 🎯</h1>
+        <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+            You've been <strong style="color: #3b82f6;">pre-qualified</strong> for a position at <strong>${companyName}</strong>!
+        </p>
+        <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
+        </div>
+        <div style="background-color: #3b82f6/10; border: 1px solid #3b82f6; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #93c5fd; font-size: 14px; text-align: center;">
+                <strong>🔔 Stay Alert!</strong><br>
+                The employer may reach out with messages soon. Please check your inbox and notifications regularly.
+            </p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);">Check Your Dashboard</a>
+        </div>
+        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center; line-height: 1.5;">
+            This is an important step forward. Keep your profile updated and be ready to respond promptly!
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Talent <talent@profcaria.com>',
+            to,
+            subject: `🎯 Pre-Qualified: ${jobTitle} at ${companyName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}
+
+// NEW: Employed Notification - CRITICAL EMAIL
+export async function sendEmployedNotification(to: string, jobTitle: string, companyName: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] EMPLOYED to ${to} for ${jobTitle}`);
+        return { success: true };
+    }
+
+    const content = `
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 48px;">🎉</span>
+        </div>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 800; color: #ffffff; text-align: center;">Congratulations!</h1>
+        <p style="margin: 0 0 8px 0; color: #10b981; font-size: 18px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
+            You're Officially Employed!
+        </p>
+        <p style="margin: 0 0 32px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+            <strong>${companyName}</strong> has hired you for the position of:
+        </p>
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);">
+            <p style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">${jobTitle}</p>
+        </div>
+        
+        <div style="background-color: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #92400e; font-size: 14px; text-align: center; font-weight: 600;">
+                <strong>⚠️ IMPORTANT</strong><br><br>
+                Please check your emails and Profcaria notifications regularly!<br>
+                The employer will be sending important onboarding information, contracts, and next steps.
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="https://www.profcaria.com/auth" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.4);">Go to Your Dashboard</a>
+        </div>
+        
+        <p style="margin: 0; color: #94a3b8; font-size: 13px; text-align: center; line-height: 1.6;">
+            Your journey with <strong>${companyName}</strong> begins now.<br>
+            We wish you all the best in your new role! 🚀
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Careers <careers@profcaria.com>',
+            to,
+            subject: `🎉 Congratulations! You've been hired at ${companyName}!`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        // This is critical - we should throw
+        throw e;
+    }
+}

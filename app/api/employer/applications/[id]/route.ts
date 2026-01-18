@@ -189,11 +189,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
-        // Verify ownership
+        // Verify ownership and get current application state
         const { data: application, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('id, user_id, jobs(company_id)')
+            .select('id, user_id, status, job_id, jobs(company_id, enc_title)')
             .eq('id', applicationId)
             .single();
 
@@ -217,11 +217,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             }
         }
 
+        // Build update data - set reviewed_at if transitioning from pending
+        const updateData: any = { status };
+        const currentStatus = application.status;
+        if (currentStatus === 'pending' && status !== 'pending') {
+            updateData.reviewed_at = new Date().toISOString();
+        }
+
         // Update status
         const { error: updateError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .update({ status })
+            .update(updateData)
             .eq('id', applicationId);
 
         if (updateError) throw updateError;
@@ -231,14 +238,53 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             await incrementUsage(companyId as string, 'connections');
         }
 
-        // Notify the professional
+        // Fetch professional email and company name for email notifications
+        const { data: professional } = await supabaseAdmin
+            .schema('professional')
+            .from('users')
+            .select('enc_email')
+            .eq('id', application.user_id)
+            .single();
+
+        const { data: company } = await supabaseAdmin
+            .schema('employer')
+            .from('companies')
+            .select('enc_company_name')
+            .eq('id', companyId)
+            .single();
+
+        const professionalEmail = professional?.enc_email ? decryptData(professional.enc_email) : null;
+        const jobTitle = jobData?.enc_title ? decryptData(jobData.enc_title) : 'Position';
+        const companyName = company?.enc_company_name ? decryptData(company.enc_company_name) : 'Employer';
+
+        // Send email notifications for key status changes
+        if (professionalEmail) {
+            const { sendPreQualifiedNotification, sendEmployedNotification } = await import('@/lib/email');
+            const safeJobTitle = jobTitle || 'Position';
+            const safeCompanyName = companyName || 'Employer';
+
+            if (status === 'pre_qualified') {
+                // Non-blocking email
+                sendPreQualifiedNotification(professionalEmail, safeJobTitle, safeCompanyName).catch(console.error);
+            } else if (status === 'employed') {
+                // Critical email - send immediately
+                try {
+                    await sendEmployedNotification(professionalEmail, safeJobTitle, safeCompanyName);
+                } catch (emailErr) {
+                    console.error('Failed to send employed email:', emailErr);
+                    // Don't fail the request, but log it
+                }
+            }
+        }
+
+        // Notify the professional in-app
         let message = '';
         if (status === 'pre_qualified') {
             message = 'Great news! You have been pre-qualified for the position. The employer is reviewing your profile for the next steps.';
         } else if (status === 'employed') {
             message = 'Big congratulations! You have been officially employed. Check your contracts for details.';
         } else if (status === 'rejected') {
-            message = 'Your application status has been updated. Unfortuantely, you were not selected for this role.';
+            message = 'Your application status has been updated. Unfortunately, you were not selected for this role.';
         } else if (status === 'declined') {
             message = 'Your application has been declined by the employer.';
         }

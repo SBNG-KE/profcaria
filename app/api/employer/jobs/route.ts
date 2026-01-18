@@ -35,6 +35,31 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Job posting limit reached for your current plan.' }, { status: 403 });
         }
 
+        // NEW: Check for pending applications - must review candidates before posting new jobs
+        const { data: allJobs } = await supabaseAdmin
+            .schema('employer')
+            .from('jobs')
+            .select('id')
+            .eq('company_id', uid);
+
+        if (allJobs && allJobs.length > 0) {
+            const jobIds = allJobs.map((j: any) => j.id);
+            const { count: pendingCount } = await supabaseAdmin
+                .schema('employer')
+                .from('applications')
+                .select('id', { count: 'exact', head: true })
+                .in('job_id', jobIds)
+                .eq('status', 'pending');
+
+            const MAX_PENDING_BEFORE_BLOCK = 10;
+            if (pendingCount && pendingCount > MAX_PENDING_BEFORE_BLOCK) {
+                return NextResponse.json({
+                    error: `Please review pending candidates before posting new jobs. You have ${pendingCount} applications awaiting your decision.`,
+                    pendingCount
+                }, { status: 403 });
+            }
+        }
+
         const body = await req.json();
         const { title, description, formSchema, location_type, location, employment_type, role_category, role_categories } = body;
 

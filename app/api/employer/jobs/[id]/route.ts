@@ -77,6 +77,21 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         const { uid, schema } = payload;
         if (schema !== 'employer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+        // NEW: Check for unreviewed applications before deletion
+        const { count: pendingCount } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .select('id', { count: 'exact', head: true })
+            .eq('job_id', id)
+            .eq('status', 'pending');
+
+        if (pendingCount && pendingCount > 0) {
+            return NextResponse.json({
+                error: `Cannot delete this job. There are ${pendingCount} candidate(s) who have not been reviewed. Please accept, reject, or decline all applicants first.`,
+                pendingCount
+            }, { status: 403 });
+        }
+
         const { error } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
@@ -92,3 +107,4 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+

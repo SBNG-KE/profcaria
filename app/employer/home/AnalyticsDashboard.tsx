@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell
 } from 'recharts';
-import { Globe, TrendingUp, Users, Target, Map, Zap, ChevronDown, Calendar, Check, Eye, MousePointer, Clock, UserMinus } from 'lucide-react';
+import { Globe, TrendingUp, Users, Target, Map, Zap, ChevronDown, Calendar, Check, Eye, MousePointer, Clock, UserMinus, AlertTriangle } from 'lucide-react';
 
 interface Metrics {
     stats: {
@@ -37,6 +37,12 @@ interface Metrics {
         avgEmploymentDuration: number;
         disconnectionRate: number;
         turnoverByMonth: { month: string; disconnections: number }[];
+    };
+    slaStats?: {
+        responseRate: number;
+        avgResponseDays: number;
+        pendingCount: number;
+        reviewedCount: number;
     };
 }
 
@@ -538,6 +544,53 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                                 </div>
                             </div>
                             <p className="text-slate-500 text-[11px]">Tracks how quickly connections are terminated or resigned from your company.</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* 6. NEW: SLA / RESPONSE RATE PANEL */}
+            {data.slaStats && (
+                <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
+                            <Clock className="text-purple-500" /> Response Rate SLA
+                        </h3>
+                        {data.slaStats.pendingCount > 0 && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full">
+                                <AlertTriangle size={14} className="text-amber-500" />
+                                <span className="text-amber-400 text-xs font-bold">{data.slaStats.pendingCount} Pending</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Response Rate</p>
+                            <p className={`text-3xl font-black ${data.slaStats.responseRate >= 90 ? 'text-emerald-400' : data.slaStats.responseRate >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
+                                {data.slaStats.responseRate}%
+                            </p>
+                        </div>
+                        <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Avg Response Time</p>
+                            <p className="text-3xl font-black text-white">{data.slaStats.avgResponseDays}</p>
+                            <p className="text-[10px] text-slate-500 font-bold">days</p>
+                        </div>
+                        <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Reviewed</p>
+                            <p className="text-3xl font-black text-blue-400">{data.slaStats.reviewedCount}</p>
+                        </div>
+                        <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
+                            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Pending</p>
+                            <p className={`text-3xl font-black ${data.slaStats.pendingCount > 5 ? 'text-amber-400' : 'text-slate-400'}`}>
+                                {data.slaStats.pendingCount}
+                            </p>
+                        </div>
+                    </div>
+                    {data.slaStats.pendingCount > 5 && (
+                        <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                            <p className="text-amber-300 text-xs text-center font-medium">
+                                ⚠️ You have candidates waiting for your response. Review them before posting new jobs.
+                            </p>
                         </div>
                     )}
                 </div>

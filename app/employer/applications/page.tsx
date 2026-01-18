@@ -46,6 +46,13 @@ function ApplicationsPageContent() {
     const [isSending, setIsSending] = useState(false);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        type: 'reject' | 'decline' | null;
+        appId: string | null;
+    }>({ isOpen: false, type: null, appId: null });
+
     // Initial load
     useEffect(() => {
         fetchApplications();
@@ -125,6 +132,19 @@ function ApplicationsPageContent() {
         } catch (error) {
             console.error('Error updating status:', error);
         }
+    };
+
+    // Handle reject/decline with confirmation
+    const handleRejectOrDecline = (appId: string, type: 'reject' | 'decline') => {
+        setConfirmModal({ isOpen: true, type, appId });
+    };
+
+    const confirmRejectOrDecline = () => {
+        if (confirmModal.appId && confirmModal.type) {
+            const status = confirmModal.type === 'reject' ? 'rejected' : 'declined';
+            updateStatus(confirmModal.appId, status);
+        }
+        setConfirmModal({ isOpen: false, type: null, appId: null });
     };
 
     const handleSendMessage = async () => {
@@ -401,7 +421,7 @@ function ApplicationsPageContent() {
                                                             <CheckCircle2 size={16} /> Accept (Pre-qualify)
                                                         </button>
                                                         <button
-                                                            onClick={() => updateStatus(selectedApp.id, 'rejected')}
+                                                            onClick={() => handleRejectOrDecline(selectedApp.id, 'reject')}
                                                             className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                                                         >
                                                             <XCircle size={16} /> Reject
@@ -417,7 +437,7 @@ function ApplicationsPageContent() {
                                                             <Briefcase size={16} /> Employ Candidate
                                                         </button>
                                                         <button
-                                                            onClick={() => updateStatus(selectedApp.id, 'declined')}
+                                                            onClick={() => handleRejectOrDecline(selectedApp.id, 'decline')}
                                                             className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
                                                         >
                                                             <XCircle size={16} /> Decline
@@ -507,6 +527,48 @@ function ApplicationsPageContent() {
                     )}
                 </div>
             </div >
+
+            {/* Confirmation Modal for Reject/Decline */}
+            {confirmModal.isOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmModal({ isOpen: false, type: null, appId: null })} />
+                    <div className="relative bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                                <XCircle className="text-amber-500" size={32} />
+                            </div>
+                            <h3 className="text-xl font-black text-white uppercase tracking-tight">
+                                {confirmModal.type === 'reject' ? 'Reject Application?' : 'Decline Candidate?'}
+                            </h3>
+                        </div>
+
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
+                            <p className="text-amber-200 text-sm text-center font-medium">
+                                ⚠️ <strong>Important:</strong> Please make sure you have written a message to the applicant explaining why you have {confirmModal.type === 'reject' ? 'rejected' : 'declined'} them.
+                            </p>
+                        </div>
+
+                        <p className="text-slate-400 text-sm text-center mb-8">
+                            This helps candidates understand your decision and improves their future applications.
+                        </p>
+
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setConfirmModal({ isOpen: false, type: null, appId: null })}
+                                className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
+                            >
+                                No, Cancel
+                            </button>
+                            <button
+                                onClick={confirmRejectOrDecline}
+                                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-red-600/20 active:scale-95"
+                            >
+                                Yes, {confirmModal.type === 'reject' ? 'Reject' : 'Decline'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }
