@@ -28,7 +28,9 @@ import {
   SlidersHorizontal,
   BarChart3,
   BellOff,
-  MessageSquare
+  MessageSquare,
+  Menu,
+  X
 } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next";
 
@@ -102,6 +104,7 @@ export default function LandingPage() {
   const router = useRouter();
   const [trailerClicked, setTrailerClicked] = useState(false);
   const [activeTab, setActiveTab] = useState<'painpoints' | 'features' | 'security'>('painpoints');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -136,11 +139,26 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050b14]/50 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
+            <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
               PROFCARIA
             </h1>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="/documentation" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+              Documentation
+            </Link>
+            <Link href="/pricing" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+              Pricing
+            </Link>
+            <Link href="/contact" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+              Contact Us
+            </Link>
+          </div>
+
+          {/* Desktop Join Now Button */}
+          <div className="hidden md:flex items-center gap-4">
             <button
               onClick={() => router.push('/auth')}
               className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-white/5"
@@ -148,8 +166,76 @@ export default function LandingPage() {
               Join Now
             </button>
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden relative w-10 h-10 flex items-center justify-center text-white z-50"
+            aria-label="Toggle menu"
+          >
+            <div className={`transition-all duration-300 absolute ${mobileMenuOpen ? 'rotate-180 opacity-0' : 'rotate-0 opacity-100'}`}>
+              <Menu size={24} />
+            </div>
+            <div className={`transition-all duration-300 absolute ${mobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-180 opacity-0'}`}>
+              <X size={24} />
+            </div>
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay - Outside nav for proper stacking */}
+      <div
+        className={`md:hidden fixed inset-0 top-20 z-[100] bg-[#030712] transition-all duration-500 ease-out ${mobileMenuOpen
+          ? 'opacity-100 pointer-events-auto'
+          : 'opacity-0 pointer-events-none'
+          }`}
+      >
+        <div className={`h-full flex flex-col items-center justify-start pt-12 gap-8 transition-all duration-500 delay-100 ${mobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+          }`}>
+          {/* Decorative line */}
+          <div className="w-16 h-0.5 bg-gradient-to-r from-blue-500 via-emerald-500 to-purple-500 rounded-full mb-4" />
+
+          <Link
+            href="/documentation"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-lg font-black uppercase tracking-[0.2em] text-slate-300 hover:text-white transition-colors py-3 px-6 hover:bg-white/5 rounded-2xl"
+          >
+            Documentation
+          </Link>
+          <Link
+            href="/pricing"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-lg font-black uppercase tracking-[0.2em] text-slate-300 hover:text-white transition-colors py-3 px-6 hover:bg-white/5 rounded-2xl"
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/contact"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-lg font-black uppercase tracking-[0.2em] text-slate-300 hover:text-white transition-colors py-3 px-6 hover:bg-white/5 rounded-2xl"
+          >
+            Contact Us
+          </Link>
+
+          {/* Divider */}
+          <div className="w-32 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+
+          {/* Join Now Button */}
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              router.push('/auth');
+            }}
+            className="mt-4 bg-white text-black px-10 py-4 rounded-full text-sm font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all active:scale-95 shadow-xl shadow-white/10"
+          >
+            Join Now
+          </button>
+
+          {/* Background decorative elements */}
+          <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-1/3 right-1/4 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 z-10">
