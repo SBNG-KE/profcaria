@@ -64,7 +64,7 @@ export default function DocumentationHome() {
                                 Profcaria is built on a "Privacy First" architecture. We do not sell data. Your artifacts are encrypted.
                                 Understand how our Zero-Knowledge proof system works.
                             </p>
-                            <Link href="/privacy-vault" className="text-xs font-bold uppercase tracking-widest text-white hover:text-orange-400 transition-colors border-b border-white/20 hover:border-orange-400 pb-0.5">
+                            <Link href="/documentation/privacy-vault" className="text-xs font-bold uppercase tracking-widest text-white hover:text-orange-400 transition-colors border-b border-white/20 hover:border-orange-400 pb-0.5">
                                 Read the Manifesto
                             </Link>
                         </div>
