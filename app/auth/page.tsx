@@ -45,7 +45,9 @@ const ModernInput = ({
     className,
     showPasswordToggle = false,
     passwordVisible = false,
-    onTogglePassword
+    onTogglePassword,
+    autoComplete,
+    name
 }: {
     type?: string;
     placeholder: string;
@@ -57,6 +59,8 @@ const ModernInput = ({
     showPasswordToggle?: boolean;
     passwordVisible?: boolean;
     onTogglePassword?: () => void;
+    autoComplete?: string;
+    name?: string;
 }) => (
     <div className={`relative group ${className}`}>
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
@@ -69,6 +73,8 @@ const ModernInput = ({
             placeholder={placeholder}
             value={value}
             onChange={onChange}
+            autoComplete={autoComplete}
+            name={name}
         />
         {showPasswordToggle && onTogglePassword && (
             <button
@@ -697,6 +703,8 @@ function AuthContent() {
                             icon={Mail}
                             value={profEmail}
                             onChange={(e) => setProfEmail(e.target.value)}
+                            autoComplete="email"
+                            name="professional-email"
                         />
 
                         <ModernInput
@@ -709,6 +717,8 @@ function AuthContent() {
                             showPasswordToggle
                             passwordVisible={passwordVisible}
                             onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+                            autoComplete="current-password"
+                            name="professional-password"
                         />
 
                         {globalMode === 'login' && (
@@ -791,6 +801,8 @@ function AuthContent() {
                             icon={Mail}
                             value={empWorkEmail}
                             onChange={(e) => setEmpWorkEmail(e.target.value)}
+                            autoComplete="email"
+                            name="employer-email"
                         />
 
                         <ModernInput
@@ -803,6 +815,8 @@ function AuthContent() {
                             showPasswordToggle
                             passwordVisible={passwordVisible}
                             onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+                            autoComplete="current-password"
+                            name="employer-password"
                         />
 
                         {globalMode === 'login' && (
