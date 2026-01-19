@@ -47,7 +47,8 @@ const ModernInput = ({
     passwordVisible = false,
     onTogglePassword,
     autoComplete,
-    name
+    name,
+    id
 }: {
     type?: string;
     placeholder: string;
@@ -61,6 +62,7 @@ const ModernInput = ({
     onTogglePassword?: () => void;
     autoComplete?: string;
     name?: string;
+    id?: string;
 }) => (
     <div className={`relative group ${className}`}>
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition-colors">
@@ -75,6 +77,7 @@ const ModernInput = ({
             onChange={onChange}
             autoComplete={autoComplete}
             name={name}
+            id={id}
         />
         {showPasswordToggle && onTogglePassword && (
             <button
@@ -801,8 +804,9 @@ function AuthContent() {
                             icon={Mail}
                             value={empWorkEmail}
                             onChange={(e) => setEmpWorkEmail(e.target.value)}
-                            autoComplete="email"
-                            name="employer-email"
+                            autoComplete="username"
+                            name="email"
+                            id="employer-email"
                         />
 
                         <ModernInput
@@ -816,7 +820,8 @@ function AuthContent() {
                             passwordVisible={passwordVisible}
                             onTogglePassword={() => setPasswordVisible(!passwordVisible)}
                             autoComplete="current-password"
-                            name="employer-password"
+                            name="password"
+                            id="employer-password"
                         />
 
                         {globalMode === 'login' && (
