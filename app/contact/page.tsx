@@ -48,17 +48,48 @@ export default function ContactPage() {
                 <div className="absolute -bottom-[10%] left-[20%] w-[50%] h-[30%] bg-blue-900/10 blur-[150px] rounded-full" />
             </div>
 
-            <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
-                <div className="w-full max-w-xl space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-
-                    {/* Back Link */}
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium"
-                    >
-                        <ArrowLeft size={16} />
-                        Back to Home
+            {/* Navigation Header */}
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050b14]/50 backdrop-blur-xl border-b border-white/5">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2">
+                        <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
+                            PROFCARIA
+                        </h1>
                     </Link>
+
+                    {/* Navigation Links */}
+                    <div className="hidden md:flex items-center gap-8">
+                        <Link href="/documentation" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+                            Documentation
+                        </Link>
+                        <Link href="/pricing" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+                            Pricing
+                        </Link>
+                        <Link href="/contact" className="text-[10px] font-black uppercase tracking-widest text-white transition-colors">
+                            Contact Us
+                        </Link>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/"
+                            className="hidden md:flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold"
+                        >
+                            <ArrowLeft size={16} />
+                            Back
+                        </Link>
+                        <Link
+                            href="/auth"
+                            className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-white/5"
+                        >
+                            Join Now
+                        </Link>
+                    </div>
+                </div>
+            </nav>
+
+            <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 md:p-8 pt-24">
+                <div className="w-full max-w-xl space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                     {/* Header */}
                     <div className="text-center space-y-3">

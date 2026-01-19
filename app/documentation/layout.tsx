@@ -13,7 +13,8 @@ import {
     ChevronRight,
     Home,
     FileText,
-    Lock
+    Lock,
+    ArrowLeft
 } from 'lucide-react';
 
 export default function DocumentationLayout({
@@ -36,24 +37,58 @@ export default function DocumentationLayout({
 
     return (
         <div className="min-h-screen bg-[#050b14] text-slate-200 font-sans selection:bg-blue-500/30">
-            {/* Mobile Header */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[#050b14]/80 backdrop-blur-xl border-b border-white/5 h-16 flex items-center px-4 justify-between">
-                <Link href="/" className="font-black text-white tracking-tight text-xl">
-                    PROFCARIA <span className="text-blue-500 text-xs align-top">DOCS</span>
-                </Link>
-                <button
-                    onClick={toggleSidebar}
-                    className="p-2 text-slate-400 hover:text-white transition-colors"
-                >
-                    {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                </button>
-            </div>
+            {/* Navigation Header */}
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050b14]/50 backdrop-blur-xl border-b border-white/5">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2">
+                        <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
+                            PROFCARIA
+                        </h1>
+                    </Link>
 
-            <div className="flex pt-16 lg:pt-0">
+                    {/* Navigation Links */}
+                    <div className="hidden md:flex items-center gap-8">
+                        <Link href="/documentation" className="text-[10px] font-black uppercase tracking-widest text-white transition-colors">
+                            Documentation
+                        </Link>
+                        <Link href="/pricing" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+                            Pricing
+                        </Link>
+                        <Link href="/contact" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+                            Contact Us
+                        </Link>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/"
+                            className="hidden md:flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-bold"
+                        >
+                            <ArrowLeft size={16} />
+                            Back
+                        </Link>
+                        <Link
+                            href="/auth"
+                            className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all active:scale-95 shadow-lg shadow-white/5"
+                        >
+                            Join Now
+                        </Link>
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            onClick={toggleSidebar}
+                            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+                        >
+                            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <div className="flex pt-20">
                 {/* Sidebar */}
                 <aside
                     className={`
-            fixed top-0 left-0 bottom-0 z-40 w-72 bg-[#050b14] border-r border-white/5 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen lg:sticky lg:top-0 overflow-y-auto
+            fixed top-20 left-0 bottom-0 z-40 w-72 bg-[#050b14] border-r border-white/5 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-[calc(100vh-5rem)] lg:sticky lg:top-20 overflow-y-auto
             ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           `}
                 >
@@ -109,14 +144,8 @@ export default function DocumentationLayout({
                 )}
 
                 {/* Main Content */}
-                <main className="flex-1 w-full min-h-[calc(100vh-4rem)] lg:min-h-screen relative">
-                    <div className="absolute top-0 right-0 p-8 hidden lg:block">
-                        <Link href="/" className="px-6 py-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-black uppercase tracking-widest text-white transition-all">
-                            Back to App
-                        </Link>
-                    </div>
-
-                    <div className="max-w-4xl mx-auto px-6 py-12 lg:py-20">
+                <main className="flex-1 w-full min-h-[calc(100vh-5rem)] relative">
+                    <div className="max-w-4xl mx-auto px-6 py-12">
                         {children}
                     </div>
                 </main>
