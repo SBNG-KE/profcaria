@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.profcaria.com'),
   manifest: '/manifest.json',
   title: {
-    default: "Profcaria | Professional Career",
+    default: "Profcaria",
     template: "%s | Profcaria"
   },
   description: "The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.profcaria.com',
     siteName: 'Profcaria',
-    title: 'Profcaria | Professional Career',
+    title: 'Profcaria | Encrypted Career Platform',
     description: 'The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     images: [
       {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Profcaria | Professional Career',
+    title: 'Profcaria | Encrypted Career Platform',
     description: 'The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
     creator: '@profcaria',
   },
