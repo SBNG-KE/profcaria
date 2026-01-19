@@ -680,74 +680,83 @@ function AuthContent() {
                         <h2 className="text-xl font-bold text-slate-100 tracking-wide">Professional</h2>
                     </div>
 
-                    <div className="space-y-3">
-                        {globalMode === 'signup' && (
-                            <div className="grid grid-cols-2 gap-2">
-                                <ModernInput
-                                    onFocus={() => setActiveSection('professional')}
-                                    placeholder="First Name"
-                                    icon={User}
-                                    value={profFirstName}
-                                    onChange={(e) => setProfFirstName(e.target.value)}
-                                />
-                                <ModernInput
-                                    onFocus={() => setActiveSection('professional')}
-                                    placeholder="Last Name"
-                                    value={profLastName}
-                                    onChange={(e) => setProfLastName(e.target.value)}
-                                />
-                            </div>
-                        )}
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            globalMode === 'login' ? handleLogin('professional') : handleSignup('professional');
+                        }}
+                        autoComplete="on"
+                    >
+                        <div className="space-y-3">
+                            {globalMode === 'signup' && (
+                                <div className="grid grid-cols-2 gap-2">
+                                    <ModernInput
+                                        onFocus={() => setActiveSection('professional')}
+                                        placeholder="First Name"
+                                        icon={User}
+                                        value={profFirstName}
+                                        onChange={(e) => setProfFirstName(e.target.value)}
+                                    />
+                                    <ModernInput
+                                        onFocus={() => setActiveSection('professional')}
+                                        placeholder="Last Name"
+                                        value={profLastName}
+                                        onChange={(e) => setProfLastName(e.target.value)}
+                                    />
+                                </div>
+                            )}
 
-                        <ModernInput
-                            onFocus={() => setActiveSection('professional')}
-                            placeholder="Email Address"
-                            type="email"
-                            icon={Mail}
-                            value={profEmail}
-                            onChange={(e) => setProfEmail(e.target.value)}
-                            autoComplete="email"
-                            name="professional-email"
-                        />
+                            <ModernInput
+                                onFocus={() => setActiveSection('professional')}
+                                placeholder="Email Address"
+                                type="email"
+                                icon={Mail}
+                                value={profEmail}
+                                onChange={(e) => setProfEmail(e.target.value)}
+                                autoComplete="email"
+                                name="email"
+                            />
 
-                        <ModernInput
-                            onFocus={() => setActiveSection('professional')}
-                            placeholder="Password"
-                            type="password"
-                            icon={Lock}
-                            value={profPassword}
-                            onChange={(e) => setProfPassword(e.target.value)}
-                            showPasswordToggle
-                            passwordVisible={passwordVisible}
-                            onTogglePassword={() => setPasswordVisible(!passwordVisible)}
-                            autoComplete="current-password"
-                            name="professional-password"
-                        />
+                            <ModernInput
+                                onFocus={() => setActiveSection('professional')}
+                                placeholder="Password"
+                                type="password"
+                                icon={Lock}
+                                value={profPassword}
+                                onChange={(e) => setProfPassword(e.target.value)}
+                                showPasswordToggle
+                                passwordVisible={passwordVisible}
+                                onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+                                autoComplete="current-password"
+                                name="password"
+                            />
 
-                        {globalMode === 'login' && (
-                            <div className="flex justify-end pt-1">
-                                <button
-                                    onClick={() => handleForgotPassword('professional')}
-                                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                                    disabled={forgotPasswordLoading}
-                                >
-                                    {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            {globalMode === 'login' && (
+                                <div className="flex justify-end pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleForgotPassword('professional')}
+                                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                                        disabled={forgotPasswordLoading}
+                                    >
+                                        {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
-                    <div className="mt-3 flex justify-end">
-                        <AnimatedSubmitButton
-                            onClick={() => globalMode === 'login'
-                                ? handleLogin('professional')
-                                : handleSignup('professional')
-                            }
-                            disabled={loading || !isProfessionalValid}
-                            loading={loading}
-                            color="blue"
-                        />
-                    </div>
+                        <div className="mt-3 flex justify-end">
+                            <AnimatedSubmitButton
+                                onClick={() => globalMode === 'login'
+                                    ? handleLogin('professional')
+                                    : handleSignup('professional')
+                                }
+                                disabled={loading || !isProfessionalValid}
+                                loading={loading}
+                                color="blue"
+                            />
+                        </div>
+                    </form>
                 </section>
 
                 {/* PILLAR 2 */}
@@ -784,70 +793,77 @@ function AuthContent() {
                         <h2 className="text-xl font-bold text-slate-100 tracking-wide">Employer</h2>
                     </div>
 
-                    <div className="space-y-3">
-                        {globalMode === 'signup' && (
-                            <div className="space-y-3">
-                                <ModernInput
-                                    onFocus={() => setActiveSection('employer')}
-                                    placeholder="Company Name"
-                                    icon={Briefcase}
-                                    value={empCompanyName}
-                                    onChange={(e) => setEmpCompanyName(e.target.value)}
-                                />
-                            </div>
-                        )}
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            globalMode === 'login' ? handleLogin('employer') : handleSignup('employer');
+                        }}
+                        autoComplete="on"
+                    >
+                        <div className="space-y-3">
+                            {globalMode === 'signup' && (
+                                <div className="space-y-3">
+                                    <ModernInput
+                                        onFocus={() => setActiveSection('employer')}
+                                        placeholder="Company Name"
+                                        icon={Briefcase}
+                                        value={empCompanyName}
+                                        onChange={(e) => setEmpCompanyName(e.target.value)}
+                                    />
+                                </div>
+                            )}
 
-                        <ModernInput
-                            onFocus={() => setActiveSection('employer')}
-                            placeholder="Work Email"
-                            type="email"
-                            icon={Mail}
-                            value={empWorkEmail}
-                            onChange={(e) => setEmpWorkEmail(e.target.value)}
-                            autoComplete="username"
-                            name="email"
-                            id="employer-email"
-                        />
+                            <ModernInput
+                                onFocus={() => setActiveSection('employer')}
+                                placeholder="Work Email"
+                                type="email"
+                                icon={Mail}
+                                value={empWorkEmail}
+                                onChange={(e) => setEmpWorkEmail(e.target.value)}
+                                autoComplete="email"
+                                name="email"
+                            />
 
-                        <ModernInput
-                            onFocus={() => setActiveSection('employer')}
-                            placeholder="Password"
-                            type="password"
-                            icon={Lock}
-                            value={empPassword}
-                            onChange={(e) => setEmpPassword(e.target.value)}
-                            showPasswordToggle
-                            passwordVisible={passwordVisible}
-                            onTogglePassword={() => setPasswordVisible(!passwordVisible)}
-                            autoComplete="current-password"
-                            name="password"
-                            id="employer-password"
-                        />
+                            <ModernInput
+                                onFocus={() => setActiveSection('employer')}
+                                placeholder="Password"
+                                type="password"
+                                icon={Lock}
+                                value={empPassword}
+                                onChange={(e) => setEmpPassword(e.target.value)}
+                                showPasswordToggle
+                                passwordVisible={passwordVisible}
+                                onTogglePassword={() => setPasswordVisible(!passwordVisible)}
+                                autoComplete="current-password"
+                                name="password"
+                            />
 
-                        {globalMode === 'login' && (
-                            <div className="flex justify-start pt-1">
-                                <button
-                                    onClick={() => handleForgotPassword('employer')}
-                                    className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                                    disabled={forgotPasswordLoading}
-                                >
-                                    {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            {globalMode === 'login' && (
+                                <div className="flex justify-start pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleForgotPassword('employer')}
+                                        className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                                        disabled={forgotPasswordLoading}
+                                    >
+                                        {forgotPasswordLoading ? 'Checking...' : 'Forgot Password?'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
 
-                    <div className="mt-3 flex justify-start">
-                        <AnimatedSubmitButton
-                            onClick={() => globalMode === 'login'
-                                ? handleLogin('employer')
-                                : handleSignup('employer')
-                            }
-                            disabled={loading || !isEmployerValid}
-                            loading={loading}
-                            color="emerald"
-                        />
-                    </div>
+                        <div className="mt-3 flex justify-start">
+                            <AnimatedSubmitButton
+                                onClick={() => globalMode === 'login'
+                                    ? handleLogin('employer')
+                                    : handleSignup('employer')
+                                }
+                                disabled={loading || !isEmployerValid}
+                                loading={loading}
+                                color="emerald"
+                            />
+                        </div>
+                    </form>
                 </section>
 
                 {/* PILLAR 4 */}
