@@ -1,177 +1,84 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { JSDOM } from 'jsdom';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-interface LinkMetadata {
-    title: string | null;
-    description: string | null;
-    image: string | null;
-    favicon: string | null;
-    siteName: string | null;
-}
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const url = searchParams.get('url');
 
-// Simple in-memory cache for link previews (with 1-hour TTL)
-const cache = new Map<string, { data: LinkMetadata; timestamp: number }>();
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+    if (!url) {
+        return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+    }
 
-export async function GET(req: Request) {
+    let targetUrl = url;
+    if (!/^https?:\/\//i.test(url)) {
+        targetUrl = 'https://' + url;
+    }
+
     try {
-        const { searchParams } = new URL(req.url);
-        const url = searchParams.get('url');
-
-        if (!url) {
-            return NextResponse.json({ error: 'Missing URL parameter' }, { status: 400 });
-        }
-
         // Validate URL
-        let parsedUrl: URL;
-        try {
-            parsedUrl = new URL(url);
-            if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-                return NextResponse.json({ error: 'Invalid URL protocol' }, { status: 400 });
-            }
-        } catch {
-            return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+        new URL(targetUrl);
+
+        const response = await fetch(targetUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36', // Use real browser UA
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5'
+            },
+            next: { revalidate: 3600 }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch URL');
         }
 
-        // Check cache
-        const cached = cache.get(url);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-            return NextResponse.json(cached.data);
-        }
+        const html = await response.text();
+        const dom = new JSDOM(html);
+        const doc = dom.window.document;
 
-        // Fetch the page
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        const getMeta = (prop: string) =>
+            doc.querySelector(`meta[property="${prop}"]`)?.getAttribute('content') ||
+            doc.querySelector(`meta[name="${prop}"]`)?.getAttribute('content');
 
-        let html: string;
-        try {
-            const response = await fetch(url, {
-                signal: controller.signal,
-                headers: {
-                    'User-Agent': 'Profcaria Link Preview Bot/1.0',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                }
-            });
-            clearTimeout(timeoutId);
+        const title = getMeta('og:title') || doc.title || '';
+        const description = getMeta('og:description') || getMeta('description') || '';
 
-            if (!response.ok) {
-                return NextResponse.json({ error: 'Failed to fetch URL' }, { status: 502 });
-            }
+        // Robust image extraction
+        let image = getMeta('og:image') ||
+            getMeta('twitter:image') ||
+            doc.querySelector('link[rel="image_src"]')?.getAttribute('href') ||
+            '';
 
-            html = await response.text();
-        } catch (e: any) {
-            clearTimeout(timeoutId);
-            if (e.name === 'AbortError') {
-                return NextResponse.json({ error: 'Request timeout' }, { status: 504 });
-            }
-            return NextResponse.json({ error: 'Failed to fetch URL' }, { status: 502 });
-        }
-
-        // Extract metadata using regex (no DOM parser needed in Edge runtime)
-        const metadata: LinkMetadata = {
-            title: null,
-            description: null,
-            image: null,
-            favicon: null,
-            siteName: null,
-        };
-
-        // Helper to extract meta content
-        const getMetaContent = (nameOrProperty: string): string | null => {
-            // Try property first (OpenGraph)
-            const propertyPattern = new RegExp(
-                `<meta[^>]*property=["']${nameOrProperty}["'][^>]*content=["']([^"']*)["']`,
-                'i'
-            );
-            let match = html.match(propertyPattern);
-            if (match) return match[1];
-
-            // Try reversed attribute order
-            const propertyPatternReversed = new RegExp(
-                `<meta[^>]*content=["']([^"']*)["'][^>]*property=["']${nameOrProperty}["']`,
-                'i'
-            );
-            match = html.match(propertyPatternReversed);
-            if (match) return match[1];
-
-            // Try name attribute
-            const namePattern = new RegExp(
-                `<meta[^>]*name=["']${nameOrProperty}["'][^>]*content=["']([^"']*)["']`,
-                'i'
-            );
-            match = html.match(namePattern);
-            if (match) return match[1];
-
-            // Try reversed for name attribute
-            const namePatternReversed = new RegExp(
-                `<meta[^>]*content=["']([^"']*)["'][^>]*name=["']${nameOrProperty}["']`,
-                'i'
-            );
-            match = html.match(namePatternReversed);
-            if (match) return match[1];
-
-            return null;
-        };
-
-        // Get title (OpenGraph > Twitter > HTML title)
-        metadata.title = getMetaContent('og:title')
-            || getMetaContent('twitter:title')
-            || html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim()
-            || null;
-
-        // Get description
-        metadata.description = getMetaContent('og:description')
-            || getMetaContent('twitter:description')
-            || getMetaContent('description')
-            || null;
-
-        // Get image
-        metadata.image = getMetaContent('og:image')
-            || getMetaContent('twitter:image')
-            || getMetaContent('twitter:image:src')
-            || null;
-
-        // Make image URL absolute if relative
-        if (metadata.image && !metadata.image.startsWith('http')) {
-            metadata.image = new URL(metadata.image, parsedUrl.origin).href;
-        }
-
-        // Get site name
-        metadata.siteName = getMetaContent('og:site_name')
-            || parsedUrl.hostname.replace('www.', '')
-            || null;
-
-        // Get favicon
-        const faviconMatch = html.match(/<link[^>]*rel=["'](?:icon|shortcut icon)["'][^>]*href=["']([^"']*)["']/i)
-            || html.match(/<link[^>]*href=["']([^"']*)["'][^>]*rel=["'](?:icon|shortcut icon)["']/i);
-
-        if (faviconMatch) {
-            metadata.favicon = faviconMatch[1].startsWith('http')
-                ? faviconMatch[1]
-                : new URL(faviconMatch[1], parsedUrl.origin).href;
-        } else {
-            // Default to /favicon.ico
-            metadata.favicon = `${parsedUrl.origin}/favicon.ico`;
-        }
-
-        // Cache the result
-        cache.set(url, { data: metadata, timestamp: Date.now() });
-
-        // Clean old cache entries periodically
-        if (cache.size > 100) {
-            const now = Date.now();
-            for (const [key, value] of cache) {
-                if (now - value.timestamp > CACHE_TTL) {
-                    cache.delete(key);
-                }
+        // Fix relative image URLs
+        if (image && !image.match(/^https?:\/\//i)) {
+            try {
+                image = new URL(image, targetUrl).toString();
+            } catch (e) {
+                image = '';
             }
         }
 
-        return NextResponse.json(metadata);
+        const siteName = getMeta('og:site_name') || new URL(targetUrl).hostname;
 
-    } catch (error) {
-        console.error('[LinkPreview] Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            url: targetUrl,
+            title,
+            description,
+            image,
+            siteName
+        });
+
+    } catch (error: any) {
+        console.error('Link Preview Error:', error);
+        // Return fallback data instead of 500 so UI can still show valid "link" without preview
+        return NextResponse.json({
+            url: targetUrl,
+            title: targetUrl,
+            description: '',
+            image: '',
+            siteName: new URL(targetUrl).hostname
+        });
     }
 }

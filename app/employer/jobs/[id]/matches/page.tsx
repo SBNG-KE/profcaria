@@ -79,7 +79,7 @@ export default function JobMatchesPage() {
 
                 <div>
                     <h1 className="text-3xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-                        <Zap className="text-yellow-400" fill="currentColor" />
+                        <Zap className="text-white" fill="currentColor" />
                         Top Matches
                     </h1>
                     <p className="text-slate-400 mt-1 font-medium">
@@ -90,7 +90,7 @@ export default function JobMatchesPage() {
 
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
                     <p className="text-slate-500 font-bold uppercase tracking-widest text-xs animate-pulse">Analyzing Profiles...</p>
                 </div>
             ) : candidates.length === 0 ? (
@@ -107,11 +107,11 @@ export default function JobMatchesPage() {
                         <div
                             key={candidate.id}
                             style={{ animationDelay: `${i * 100}ms` }}
-                            className="group bg-[#0f172a] border border-slate-800 p-6 rounded-[24px] hover:border-blue-500/30 transition-all flex flex-col md:flex-row gap-6 items-center animate-in fade-in slide-in-from-bottom-4"
+                            className="group bg-[#0f172a] border border-slate-800 p-6 rounded-[24px] hover:border-slate-600 transition-all flex flex-col md:flex-row gap-6 items-center animate-in fade-in slide-in-from-bottom-4"
                         >
                             {/* Score Badge */}
                             <div className="flex flex-col items-center justify-center w-20 h-20 rounded-2xl bg-slate-900 border border-slate-800 shrink-0 group-hover:border-blue-500/30 transition-all">
-                                <span className={`text-2xl font-black ${candidate.score >= 80 ? 'text-emerald-400' : candidate.score >= 60 ? 'text-yellow-400' : 'text-slate-400'}`}>
+                                <span className={`text-2xl font-black ${candidate.score >= 80 ? 'text-white' : candidate.score >= 60 ? 'text-slate-300' : 'text-slate-400'}`}>
                                     {candidate.score}%
                                 </span>
                                 <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mt-1">Match</span>
@@ -119,7 +119,7 @@ export default function JobMatchesPage() {
 
                             {/* Info */}
                             <div className="flex-1 text-center md:text-left space-y-2">
-                                <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                                <h3 className="text-xl font-bold text-white group-hover:text-slate-200 transition-colors">
                                     {candidate.name}
                                 </h3>
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
@@ -131,9 +131,9 @@ export default function JobMatchesPage() {
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    {candidate.matchBreakdown.role && <span className="text-[10px] uppercase font-bold text-emerald-500/80 bg-emerald-500/10 px-2 py-0.5 rounded">Role Match</span>}
-                                    {candidate.matchBreakdown.location && <span className="text-[10px] uppercase font-bold text-blue-500/80 bg-blue-500/10 px-2 py-0.5 rounded">Local</span>}
-                                    {candidate.matchBreakdown.relocation && <span className="text-[10px] uppercase font-bold text-yellow-500/80 bg-yellow-500/10 px-2 py-0.5 rounded">Relocation</span>}
+                                    {candidate.matchBreakdown.role && <span className="text-[10px] uppercase font-bold text-white bg-slate-700 px-2 py-0.5 rounded">Role Match</span>}
+                                    {candidate.matchBreakdown.location && <span className="text-[10px] uppercase font-bold text-white bg-slate-700 px-2 py-0.5 rounded">Local</span>}
+                                    {candidate.matchBreakdown.relocation && <span className="text-[10px] uppercase font-bold text-white bg-slate-700 px-2 py-0.5 rounded">Relocation</span>}
                                 </div>
                             </div>
 
@@ -144,8 +144,8 @@ export default function JobMatchesPage() {
                                 className={`
                                     flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all
                                     ${candidate.invited
-                                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 cursor-default'
-                                        : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 active:scale-95'
+                                        ? 'bg-slate-700 text-white border border-slate-600 cursor-default'
+                                        : 'bg-white hover:bg-slate-100 text-black shadow-lg active:scale-95'
                                     }
                                 `}
                             >
@@ -167,8 +167,8 @@ export default function JobMatchesPage() {
             )}
             {!isLoading && isLimitReached && candidates.length > 0 && (
                 <div className="mt-8 p-6 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4">
-                    <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-4">
-                        <Star className="text-blue-400" size={24} />
+                    <div className="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                        <Star className="text-white" size={24} />
                     </div>
                     <h3 className="text-lg font-bold text-white mb-2">
                         Matches Limited by Plan
@@ -179,7 +179,7 @@ export default function JobMatchesPage() {
                     </p>
                     <button
                         onClick={() => router.push('/employer/settings')}
-                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all"
+                        className="px-6 py-2.5 bg-white hover:bg-slate-100 text-black rounded-xl font-bold text-sm transition-all"
                     >
                         Upgrade Plan
                     </button>

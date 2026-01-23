@@ -164,7 +164,7 @@ function CreateJobPageContent() {
                 <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-2 px-8 py-4 bg-white hover:bg-slate-100 text-black rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-95 disabled:opacity-50"
                 >
                     <Save size={18} />
                     <span>{isSaving ? 'Saving...' : jobId ? 'Update Job' : 'Publish Job'}</span>
@@ -182,12 +182,12 @@ function CreateJobPageContent() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g. Senior Frontend Engineer"
-                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-lg"
+                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold text-lg"
                     />
                 </div>
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <Briefcase size={14} /> Role Categories {roleCategories.length > 0 && <span className="text-blue-400">({roleCategories.length} selected)</span>}
+                        <Briefcase size={14} /> Role Categories {roleCategories.length > 0 && <span className="text-slate-400">({roleCategories.length} selected)</span>}
                     </label>
                     <select
                         onChange={(e) => {
@@ -200,7 +200,7 @@ function CreateJobPageContent() {
                                 e.target.value = ''; // Reset
                             }
                         }}
-                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-sm appearance-none cursor-pointer"
+                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold text-sm appearance-none cursor-pointer"
                     >
                         <option value="">+ Add a category...</option>
                         {ROLE_CATEGORY_OPTIONS.map(opt => (
@@ -223,7 +223,7 @@ function CreateJobPageContent() {
                                     <button
                                         key={cat}
                                         onClick={() => setRoleCategories(roleCategories.filter(c => c !== cat))}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30 rounded-lg text-xs font-bold transition-all group"
+                                        className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 rounded-lg text-xs font-bold transition-all group"
                                     >
                                         <span>{label}</span>
                                         <X size={12} className="opacity-50 group-hover:opacity-100" />
@@ -281,7 +281,7 @@ function CreateJobPageContent() {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Describe the role, responsibilities, and requirements..."
-                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all min-h-[150px] text-sm leading-relaxed"
+                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all min-h-[150px] text-sm leading-relaxed"
                     />
                 </div>
             </div>
@@ -299,7 +299,7 @@ function CreateJobPageContent() {
                         value={maxApplications}
                         onChange={(e) => setMaxApplications(e.target.value ? parseInt(e.target.value) : '')}
                         placeholder="e.g. 100"
-                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-lg"
+                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold text-lg"
                     />
                 </div>
             </div>
@@ -318,13 +318,13 @@ function CreateJobPageContent() {
                                     key={type}
                                     onClick={() => setLocationType(type)}
                                     className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${locationType === type
-                                        ? 'bg-emerald-600/20 border-emerald-500/50 text-white'
+                                        ? 'bg-slate-700 border-slate-600 text-white'
                                         : 'bg-slate-900/50 border-slate-700/50 text-slate-400 hover:border-slate-600'
                                         }`}
                                 >
-                                    <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${locationType === type ? 'border-emerald-500' : 'border-slate-600'
+                                    <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${locationType === type ? 'border-white' : 'border-slate-600'
                                         }`}>
-                                        {locationType === type && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                                        {locationType === type && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                     </div>
                                     <span className="font-bold text-[10px] uppercase tracking-wider">{type}</span>
                                 </button>
@@ -341,27 +341,27 @@ function CreateJobPageContent() {
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             placeholder={locationType === 'remote' ? "e.g. Worldwide or New York (HQ)" : "e.g. London, UK"}
-                            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold"
                         />
                     </div>
 
                     <div className="pt-4 border-t border-slate-800 space-y-4">
                         <label className={`flex items-center justify-between group ${canRestrict ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 group-hover:text-blue-400 transition-colors">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 group-hover:text-slate-300 transition-colors">
                                     <MapPin size={14} /> Restricted Area?
                                 </span>
                                 <span className="text-[10px] text-slate-600 font-medium mt-1">
                                     Only visible to candidates in specific locations.
                                 </span>
                             </div>
-                            <div className={`w-10 h-6 rounded-full p-1 transition-all ${isRestricted ? 'bg-blue-600' : 'bg-slate-700'} ${!canRestrict ? 'opacity-50' : ''}`}>
+                            <div className={`w-10 h-6 rounded-full p-1 transition-all ${isRestricted ? 'bg-slate-600' : 'bg-slate-700'} ${!canRestrict ? 'opacity-50' : ''}`}>
                                 <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-all transform ${isRestricted ? 'translate-x-4' : 'translate-x-0'}`} />
                             </div>
                             <input type="checkbox" checked={isRestricted} onChange={(e) => setIsRestricted(e.target.checked)} className="hidden" disabled={!canRestrict} />
                         </label>
                         {!canRestrict && (
-                            <p className="text-[10px] text-amber-500 font-bold bg-amber-500/10 p-2 rounded-lg border border-amber-500/20">
+                            <p className="text-[10px] text-slate-400 font-bold bg-slate-800 p-2 rounded-lg border border-slate-700">
                                 Upgrade to Pro or Enterprise to access Restricted Locations feature.
                             </p>
                         )}
@@ -381,7 +381,7 @@ function CreateJobPageContent() {
                                             }
                                         }}
                                         placeholder="Add Allowed Country (e.g. Kenya)"
-                                        className="flex-1 bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-2 text-white text-xs font-bold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                        className="flex-1 bg-slate-900/50 border border-slate-700/50 rounded-xl px-3 py-2 text-white text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-500"
                                     />
                                     <button
                                         onClick={() => {
@@ -390,16 +390,16 @@ function CreateJobPageContent() {
                                                 setTargetLocInput('');
                                             }
                                         }}
-                                        className="p-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl transition-all"
+                                        className="p-2 bg-slate-700 text-white hover:bg-slate-600 rounded-xl transition-all"
                                     >
                                         <Plus size={16} />
                                     </button>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {targetLocations.map((loc, i) => (
-                                        <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[10px] font-bold uppercase tracking-wider">
+                                        <span key={i} className="flex items-center gap-1.5 px-2 py-1 bg-slate-700 text-white border border-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-wider">
                                             {loc}
-                                            <button onClick={() => setTargetLocations(targetLocations.filter((_, idx) => idx !== i))} className="hover:text-red-400"><X size={12} /></button>
+                                            <button onClick={() => setTargetLocations(targetLocations.filter((_, idx) => idx !== i))} className="hover:text-slate-400"><X size={12} /></button>
                                         </span>
                                     ))}
                                 </div>
@@ -420,13 +420,13 @@ function CreateJobPageContent() {
                                     key={type}
                                     onClick={() => setEmploymentType(type)}
                                     className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${employmentType === type
-                                        ? 'bg-purple-600/20 border-purple-500/50 text-white'
+                                        ? 'bg-slate-700 border-slate-600 text-white'
                                         : 'bg-slate-900/50 border-slate-700/50 text-slate-400 hover:border-slate-600'
                                         }`}
                                 >
-                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${employmentType === type ? 'border-purple-500' : 'border-slate-600'
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${employmentType === type ? 'border-white' : 'border-slate-600'
                                         }`}>
-                                        {employmentType === type && <div className="w-2 h-2 rounded-full bg-purple-500" />}
+                                        {employmentType === type && <div className="w-2 h-2 rounded-full bg-white" />}
                                     </div>
                                     <span className="font-bold text-xs capitalize">{type}</span>
                                 </button>
@@ -445,7 +445,7 @@ function CreateJobPageContent() {
                 <div className="lg:col-span-3 space-y-4">
                     <div className="flex items-center justify-between px-4">
                         <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
-                            <Layout size={24} className="text-blue-500" />
+                            <Layout size={24} className="text-slate-400" />
                             Application Form
                         </h2>
                         <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{fields.length} Fields Added</span>
@@ -461,7 +461,7 @@ function CreateJobPageContent() {
                     ) : (
                         <div className="space-y-6">
                             {fields.map((field, index) => (
-                                <div key={field.id} className="group relative bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] transition-all hover:border-blue-500/30 animate-in slide-in-from-right-4 duration-300">
+                                <div key={field.id} className="group relative bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] transition-all hover:border-slate-600 animate-in slide-in-from-right-4 duration-300">
                                     <div className="flex items-start justify-between gap-6">
                                         <div className="p-2 text-slate-700 cursor-grab active:cursor-grabbing"><GripVertical size={20} /></div>
 
@@ -472,7 +472,7 @@ function CreateJobPageContent() {
                                                     value={field.label}
                                                     onChange={(e) => updateField(field.id, { label: e.target.value })}
                                                     placeholder="Enter your question here..."
-                                                    className="flex-1 bg-transparent border-b border-slate-800 text-lg font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+                                                    className="flex-1 bg-transparent border-b border-slate-800 text-lg font-bold text-white placeholder:text-slate-700 focus:outline-none focus:border-slate-500 transition-colors"
                                                 />
                                                 <span className="px-3 py-1 bg-slate-900 text-[10px] font-black text-slate-500 uppercase tracking-widest rounded-lg border border-slate-800">{field.type}</span>
                                             </div>
@@ -490,7 +490,7 @@ function CreateJobPageContent() {
                                                                     newOptions[optIdx] = e.target.value;
                                                                     updateField(field.id, { options: newOptions });
                                                                 }}
-                                                                className="bg-transparent border-b border-transparent hover:border-slate-800 focus:border-blue-500 focus:outline-none text-sm text-slate-400 py-1 transition-all"
+                                                                className="bg-transparent border-b border-transparent hover:border-slate-800 focus:border-slate-500 focus:outline-none text-sm text-slate-400 py-1 transition-all"
                                                             />
                                                             <button
                                                                 onClick={() => {
@@ -505,7 +505,7 @@ function CreateJobPageContent() {
                                                     ))}
                                                     <button
                                                         onClick={() => updateField(field.id, { options: [...field.options!, `Option ${field.options!.length + 1}`] })}
-                                                        className="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2 hover:text-blue-400 transition-all pt-2"
+                                                        className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 hover:text-white transition-all pt-2"
                                                     >
                                                         <Plus size={12} /> Add Option
                                                     </button>
@@ -516,7 +516,7 @@ function CreateJobPageContent() {
                                         <div className="flex flex-col gap-2">
                                             <button onClick={() => moveField(index, 'up')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronUp size={18} /></button>
                                             <button onClick={() => moveField(index, 'down')} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><ChevronDown size={18} /></button>
-                                            <button onClick={() => removeField(field.id)} className="p-2 hover:bg-red-500/10 rounded-xl text-slate-500 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
+                                            <button onClick={() => removeField(field.id)} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 hover:text-white transition-all"><Trash2 size={18} /></button>
                                         </div>
                                     </div>
                                 </div>
@@ -527,8 +527,8 @@ function CreateJobPageContent() {
 
                 {/* RIGHT: TOOL PICKER (STICKY) */}
                 <div className="lg:col-span-1">
-                    <div className="sticky top-8 bg-blue-600/10 border border-blue-500/20 p-6 rounded-[32px] space-y-4">
-                        <h3 className="text-sm font-black text-blue-400 uppercase tracking-widest">Add Field</h3>
+                    <div className="sticky top-8 bg-slate-800 border border-slate-700 p-6 rounded-[32px] space-y-4">
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest">Add Field</h3>
                         <div className="grid grid-cols-1 gap-3">
                             <button onClick={() => addField('text')} className="flex items-center gap-3 p-4 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-2xl text-slate-300 text-xs font-bold transition-all group">
                                 <span className="p-2 bg-slate-800 rounded-lg group-hover:bg-slate-700 transition-all"><Type size={16} /></span>
@@ -547,8 +547,8 @@ function CreateJobPageContent() {
                                 Checkbox
                             </button>
                         </div>
-                        <div className="pt-4 border-t border-blue-500/20">
-                            <p className="text-[10px] text-blue-400/60 leading-relaxed font-medium">
+                        <div className="pt-4 border-t border-slate-700">
+                            <p className="text-[10px] text-slate-400 leading-relaxed font-medium">
                                 Select a field type to add it to your application form on the left.
                             </p>
                         </div>

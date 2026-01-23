@@ -1,112 +1,110 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================
+   PROFCARIA THEME SYSTEM
+   True Black Dark Mode & Clean Light Mode
+   ============================================ */
+
+/* Dark Mode (True Black) */
+:root,
+.dark {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #171717;
+
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #525252;
+  --text-inverse: #000000;
+
+  --border-primary: rgba(255, 255, 255, 0.2);
+  --border-secondary: rgba(255, 255, 255, 0.1);
+
+  --accent-gold: #D4AF37;
+  /* Vintage Gold */
+
+  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* Light Mode */
+.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafafa;
+  --bg-tertiary: #f5f5f5;
+
+  --text-primary: #000000;
+  --text-secondary: #525252;
+  --text-muted: #a3a3a3;
+  --text-inverse: #ffffff;
+
+  --border-primary: rgba(0, 0, 0, 0.2);
+  --border-secondary: rgba(0, 0, 0, 0.1);
+
+  --accent-gold: #B8860B;
+
+  --shadow-glow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --animate-grow-line: grow-line 0.5s ease-out forwards;
+  --animate-swing: swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+
+  @keyframes grow-line {
+    0% {
+      height: 0;
+      opacity: 0;
+    }
+
+    100% {
+      height: 120px;
+      opacity: 1;
+    }
+  }
+
+  @keyframes swing {
+    0% {
+      transform: perspective(2000px) rotateX(-90deg);
+      opacity: 0;
+    }
+
+    100% {
+      transform: perspective(2000px) rotateX(0deg);
+      opacity: 1;
+    }
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans), Arial, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================
+   SCROLLBAR HIDDEN
+   ============================================ */
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
 }
 
 @layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .text-gold {
+    color: var(--accent-gold);
   }
 
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
+  .border-gold {
+    border-color: var(--accent-gold);
   }
 }
-
-/* Global custom scrollbar - fallback */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background: transparent;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Professional Theme (Blue) */
-.theme-professional ::-webkit-scrollbar-thumb,
-.theme-professional *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg,
-      transparent 0%,
-      transparent 20%,
-      #3b82f6 20%,
-      #3b82f6 30%,
-      transparent 30%,
-      transparent 40%,
-      #3b82f680 40%,
-      #3b82f680 48%,
-      transparent 48%,
-      transparent 52%,
-      #3b82f660 52%,
-      #3b82f660 60%,
-      transparent 60%,
-      transparent 70%,
-      #3b82f6 70%,
-      #3b82f6 80%,
-      transparent 80%,
-      transparent 100%);
-  border-radius: 10px;
-}
-
-.theme-professional {
-  scrollbar-color: #3b82f6 transparent;
-}
-
-/* Employer Theme (Green) */
-.theme-employer ::-webkit-scrollbar-thumb,
-.theme-employer *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg,
-      transparent 0%,
-      transparent 20%,
-      #10b981 20%,
-      #10b981 30%,
-      transparent 30%,
-      transparent 40%,
-      #10b98180 40%,
-      #10b98180 48%,
-      transparent 48%,
-      transparent 52%,
-      #10b98160 52%,
-      #10b98160 60%,
-      transparent 60%,
-      transparent 70%,
-      #10b981 70%,
-      #10b981 80%,
-      transparent 80%,
-      transparent 100%);
-  border-radius: 10px;
-}
-
-/* .theme-employer {
-  scrollbar-color: #10b981 transparent;
-} */

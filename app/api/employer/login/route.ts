@@ -121,7 +121,7 @@ export async function POST(req: Request) {
 
     // 6. Return
     const has2fa = company.has_totp || company.has_passkey || company.has_phone_otp;
-    const redirectPath = has2fa ? '/security/verify?redirect=/employer/home' : '/employer/home';
+    const redirectPath = has2fa ? '/security/verify?redirect=/employer/feed' : '/employer/feed';
     const response = NextResponse.json({ success: true, redirect: redirectPath });
 
     response.cookies.set('profcaria_session', token, {

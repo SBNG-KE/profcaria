@@ -108,7 +108,7 @@ export default async function middleware(req: NextRequest) {
 
         // 1. Role-Based Access Control
         if (isEmployerRoute && userSchema !== 'employer') {
-            return NextResponse.redirect(new URL('/professional/home', req.url));
+            return NextResponse.redirect(new URL('/professional/feed', req.url));
         }
         if (isProfessionalRoute && userSchema !== 'professional') {
             return NextResponse.redirect(new URL('/employer/home', req.url));
@@ -116,7 +116,7 @@ export default async function middleware(req: NextRequest) {
 
         // 2. Auth Page Redirect (If already logged in, move them to dashboard)
         if (path === '/professional/login' || path === '/professional/signup') {
-            return NextResponse.redirect(new URL('/professional/home', req.url));
+            return NextResponse.redirect(new URL('/professional/feed', req.url));
         }
         if (path === '/employer/login' || path === '/employer/signup') {
             return NextResponse.redirect(new URL('/employer/home', req.url));

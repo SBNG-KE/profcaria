@@ -15,14 +15,14 @@ const DocumentCard = ({ title, onClick }: { title: string, onClick: () => void }
     return (
         <button
             onClick={onClick}
-            className="group relative flex-shrink-0 w-60 h-52 rounded-[40px] border-t-2 border-l-2 border-blue-500/80 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+            className="group relative flex-shrink-0 w-60 h-52 rounded-[40px] border-t-2 border-l-2 border-slate-600 bg-[#050b14] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
             <div className="relative z-10 h-full w-full flex items-center justify-center">
-                <h2 className="text-3xl font-black text-slate-200 tracking-tighter group-hover:text-blue-400 transition-colors uppercase">
+                <h2 className="text-3xl font-black text-slate-200 tracking-tighter group-hover:text-white transition-colors uppercase">
                     {title}
                 </h2>
             </div>
-            <div className="absolute top-0 left-0 w-24 h-24 bg-blue-500/10 blur-[40px] pointer-events-none"></div>
+            <div className="absolute top-0 left-0 w-24 h-24 bg-slate-500/10 blur-[40px] pointer-events-none"></div>
         </button>
     );
 };
@@ -116,7 +116,7 @@ export default function EmployerApplicationView() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#050b14] flex items-center justify-center text-slate-500">
-                <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mb-4"></div>
+                <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full mb-4"></div>
                 <span className="ml-3 font-bold uppercase tracking-widest text-xs">Loading Profile...</span>
             </div>
         );
@@ -171,13 +171,13 @@ export default function EmployerApplicationView() {
                                 <br />
                                 <span className="text-slate-500">{profile.lastName}</span>
                             </h1>
-                            <p className="text-blue-400 font-bold text-sm uppercase tracking-wider">{profile.role}</p>
+                            <p className="text-slate-400 font-bold text-sm uppercase tracking-wider">{profile.role}</p>
                         </div>
 
                         {/* Snapshot Indicator */}
                         {isSnapshot && snapshottedAt && (
-                            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-2">
-                                <div className="flex items-center gap-2 text-amber-500 text-xs font-bold uppercase tracking-widest">
+                            <div className="p-4 bg-slate-800 border border-slate-700 rounded-xl space-y-2">
+                                <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest">
                                     <Clock size={14} />
                                     <span>Snapshot View</span>
                                 </div>
@@ -188,8 +188,8 @@ export default function EmployerApplicationView() {
                         )}
 
                         {!isSnapshot && (
-                            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-2">
-                                <div className="flex items-center gap-2 text-emerald-500 text-xs font-bold uppercase tracking-widest">
+                            <div className="p-4 bg-slate-800 border border-slate-700 rounded-xl space-y-2">
+                                <div className="flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest">
                                     <CheckCircle2 size={14} />
                                     <span>Live View</span>
                                 </div>
@@ -227,7 +227,7 @@ export default function EmployerApplicationView() {
                         {/* Previous Employments (Connections) */}
                         {connections.length > 0 && (
                             <div className="pt-4 border-t border-slate-800 space-y-3">
-                                <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                     <Building2 size={12} /> Previous Employments
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
@@ -318,7 +318,7 @@ export default function EmployerApplicationView() {
                     <div className="flex items-center justify-between p-8 border-b border-slate-800 bg-[#0f172a]/50 backdrop-blur-md sticky top-0 z-10">
                         <div>
                             <h2 className="text-4xl font-black text-white uppercase tracking-tight">{activeDocument}</h2>
-                            {isSnapshot && <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest border border-amber-500/20 px-2 py-1 rounded-md mt-2 inline-block">Read-Only Snapshot</span>}
+                            {isSnapshot && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-slate-700 px-2 py-1 rounded-md mt-2 inline-block">Read-Only Snapshot</span>}
                         </div>
                         <button
                             onClick={() => setActiveDocument(null)}
@@ -341,7 +341,7 @@ export default function EmployerApplicationView() {
                                     [&_p]:mb-4 [&_p]:leading-loose
                                     [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6
                                     [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-6
-                                    [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-400 [&_blockquote]:my-6
+                                    [&_blockquote]:border-l-4 [&_blockquote]:border-slate-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-slate-400 [&_blockquote]:my-6
                                     [&_img]:rounded-2xl [&_img]:shadow-2xl [&_img]:my-8 [&_img]:max-w-full
                                 "
                             />

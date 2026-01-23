@@ -90,9 +90,9 @@ const DropdownScroll = ({ children, className = "" }: { children: React.ReactNod
                         className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[2px] items-center"
                         style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 20}px)` }}
                     >
-                        <div className="w-1 h-1 bg-emerald-500 rounded-full shadow-[0_0_4px_rgba(16,185,129,0.6)]"></div>
-                        <div className="w-0.5 h-0.5 bg-emerald-500/80 rounded-full shadow-sm"></div>
-                        <div className="w-0.5 h-0.5 bg-emerald-500/60 rounded-full shadow-sm"></div>
+                        <div className="w-1 h-1 bg-white rounded-full shadow-[0_0_4px_rgba(255,255,255,0.6)]"></div>
+                        <div className="w-0.5 h-0.5 bg-white/80 rounded-full shadow-sm"></div>
+                        <div className="w-0.5 h-0.5 bg-white/60 rounded-full shadow-sm"></div>
                     </div>
                 </div>
             )}
@@ -142,7 +142,7 @@ function CustomDropdown({ value, onChange, options, icon }: { value: string | nu
                                 }}
                                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all text-left
                                     ${opt.value == value
-                                        ? 'bg-blue-600 text-white'
+                                        ? 'bg-slate-700 text-white'
                                         : 'text-slate-400 hover:text-white hover:bg-slate-800'}
                                 `}
                             >
@@ -226,7 +226,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
 
     if (loading) return (
         <div className="p-20 flex flex-col items-center justify-center text-slate-500 space-y-4 animate-pulse">
-            <Globe size={48} className="text-emerald-500/50 spin-slow" />
+            <Globe size={48} className="text-slate-400 spin-slow" />
             <p className="text-xs font-black uppercase tracking-widest">Initialising...</p>
         </div>
     );
@@ -239,7 +239,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
             <div className="flex flex-col md:flex-row justify-end items-center gap-4">
 
                 {/* Custom Filters (Year/Month) */}
-                <div className={`flex items-center gap-3 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 transition-all duration-300 ${dateRange === '7d' ? 'opacity-50 hover:opacity-100' : 'opacity-100 shadow-xl shadow-blue-500/10'}`}>
+                <div className={`flex items-center gap-3 bg-slate-900/80 p-1.5 rounded-2xl border border-slate-800 transition-all duration-300 ${dateRange === '7d' ? 'opacity-50 hover:opacity-100' : 'opacity-100 shadow-xl'}`}>
 
                     {/* Year Selector */}
                     <CustomDropdown
@@ -271,7 +271,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                     onClick={() => setDateRange('7d')}
                     className={`px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 transform active:scale-95
                         ${dateRange === '7d'
-                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 ring-2 ring-emerald-500/20'
+                            ? 'bg-white text-black shadow-lg'
                             : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 hover:shadow-lg'}
                     `}
                 >
@@ -285,35 +285,35 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                     <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Users size={14} className="text-blue-500" /> Total Applicants
+                        <Users size={14} className="text-slate-400" /> Total Applicants
                     </div>
                     <div className="text-3xl font-black text-white">{data.stats.totalApplications}</div>
-                    <div className={`text-[10px] mt-1 font-bold ${applicantGrowth.improved ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className={`text-[10px] mt-1 font-bold ${applicantGrowth.improved ? 'text-slate-300' : 'text-slate-500'}`}>
                         {applicantGrowth.improved ? '+' : '-'}{applicantGrowth.value}% vs previous period
                     </div>
                 </div>
                 <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                     <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Target size={14} className="text-emerald-500" /> Active Jobs
+                        <Target size={14} className="text-slate-400" /> Active Jobs
                     </div>
                     <div className="text-3xl font-black text-white">{data.stats.activeJobs}</div>
                     <div className="text-[10px] text-slate-500 mt-1 font-bold">out of {data.stats.totalJobs} total</div>
                 </div>
                 <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                     <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <TrendingUp size={14} className="text-purple-500" /> Conversion Rate
+                        <TrendingUp size={14} className="text-slate-400" /> Conversion Rate
                     </div>
                     <div className="text-3xl font-black text-white">{data.stats.interviewRate}%</div>
                     <div className="text-[10px] text-slate-500 mt-1 font-bold">Application to Hire</div>
                 </div>
                 <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                     <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Map size={14} className="text-yellow-500" /> Top Region
+                        <Map size={14} className="text-slate-400" /> Top Region
                     </div>
                     <div className="text-2xl font-black text-white truncate">
                         {data.geoHeatmap[0]?.name || 'N/A'}
                     </div>
-                    <div className="text-[10px] text-yellow-500 mt-1 font-bold">
+                    <div className="text-[10px] text-slate-400 mt-1 font-bold">
                         {data.geoHeatmap[0]?.value || 0} Candidates
                     </div>
                 </div>
@@ -326,9 +326,9 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                 <div className="lg:col-span-2 bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] min-h-[400px]">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
-                            <Globe className="text-blue-500" /> Talent Radar
+                            <Globe className="text-slate-400" /> Talent Radar
                         </h3>
-                        <span className="px-3 py-1 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-full uppercase tracking-widest">
+                        <span className="px-3 py-1 bg-slate-800 text-slate-300 text-[10px] font-bold rounded-full uppercase tracking-widest">
                             Live Data
                         </span>
                     </div>
@@ -348,7 +348,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                                     <div key={item.name} className="relative group">
                                         {/* Background Bar */}
                                         <div
-                                            className="absolute top-0 left-0 h-full bg-blue-500/10 rounded-r-xl transition-all duration-1000 ease-out"
+                                            className="absolute top-0 left-0 h-full bg-slate-700/30 rounded-r-xl transition-all duration-1000 ease-out"
                                             style={{ width: `${percent}%` }}
                                         />
 
@@ -357,7 +357,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                                             <div className="flex items-center gap-4">
                                                 <span className={`
                                                     text-xs font-black w-6 h-6 flex items-center justify-center rounded-full
-                                                    ${index === 0 ? 'bg-yellow-500 text-black' :
+                                                    ${index === 0 ? 'bg-white text-black' :
                                                         index === 1 ? 'bg-slate-700 text-white' :
                                                             index === 2 ? 'bg-slate-700 text-slate-400' : 'text-slate-600'}
                                                 `}>
@@ -387,11 +387,11 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                             // Color mapping for each stage
                             const colorClass =
                                 stage.name === 'Applied' ? 'bg-slate-500' :
-                                    stage.name === 'Rejected' ? 'bg-red-500' :
-                                        stage.name === 'Pending' ? 'bg-amber-500' :
-                                            stage.name === 'Pre-Qualified' ? 'bg-blue-500' :
-                                                stage.name === 'Declined' ? 'bg-orange-500' :
-                                                    stage.name === 'Employed' ? 'bg-emerald-500' : 'bg-slate-500';
+                                    stage.name === 'Rejected' ? 'bg-slate-600' :
+                                        stage.name === 'Pending' ? 'bg-slate-400' :
+                                            stage.name === 'Pre-Qualified' ? 'bg-slate-500' :
+                                                stage.name === 'Declined' ? 'bg-slate-600' :
+                                                    stage.name === 'Employed' ? 'bg-white' : 'bg-slate-500';
 
                             return (
                                 <div key={stage.name} className="relative">
@@ -415,7 +415,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
 
                     <div className="mt-10 p-4 bg-slate-900/50 rounded-xl border border-slate-800">
                         <div className="flex items-start gap-3">
-                            <Zap className="text-yellow-400 shrink-0 mt-0.5" size={16} />
+                            <Zap className="text-slate-400 shrink-0 mt-0.5" size={16} />
                             <div>
                                 <h4 className="text-white font-bold text-xs uppercase tracking-wide">Insight</h4>
                                 <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
@@ -436,13 +436,13 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                     <AreaChart data={data.trendData}>
                         <defs>
                             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
                             </linearGradient>
                         </defs>
                         <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
                         <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '12px' }} />
-                        <Area type="monotone" dataKey="count" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                        <Area type="monotone" dataKey="count" stroke="#ffffff" strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
@@ -455,17 +455,17 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                         <>
                             <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                                 <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <Eye size={14} className="text-cyan-500" /> Total Impressions
+                                    <Eye size={14} className="text-slate-400" /> Total Impressions
                                 </div>
                                 <div className="text-3xl font-black text-white">{data.reachStats.totalImpressions.toLocaleString()}</div>
                                 <div className="text-[10px] text-slate-500 mt-1 font-bold">Job cards viewed in feed</div>
                             </div>
                             <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                                 <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <MousePointer size={14} className="text-blue-500" /> Unique Views
+                                    <MousePointer size={14} className="text-slate-400" /> Unique Views
                                 </div>
                                 <div className="text-3xl font-black text-white">{data.reachStats.uniqueViews.toLocaleString()}</div>
-                                <div className="text-[10px] text-blue-400 mt-1 font-bold">{data.reachStats.clickThroughRate}% CTR</div>
+                                <div className="text-[10px] text-slate-400 mt-1 font-bold">{data.reachStats.clickThroughRate}% CTR</div>
                             </div>
                         </>
                     )}
@@ -474,14 +474,14 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                         <>
                             <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                                 <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <Clock size={14} className="text-amber-500" /> Time to Fill
+                                    <Clock size={14} className="text-slate-400" /> Time to Fill
                                 </div>
                                 <div className="text-3xl font-black text-white">{data.hiringSpeed.avgTimeToFill}</div>
                                 <div className="text-[10px] text-slate-500 mt-1 font-bold">Days (posting → hire)</div>
                             </div>
                             <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[24px]">
                                 <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <Clock size={14} className="text-orange-500" /> Time to Hire
+                                    <Clock size={14} className="text-slate-400" /> Time to Hire
                                 </div>
                                 <div className="text-3xl font-black text-white">{data.hiringSpeed.avgTimeToHire}</div>
                                 <div className="text-[10px] text-slate-500 mt-1 font-bold">Days (apply → hire)</div>
@@ -498,7 +498,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                     {data.completionStats && data.completionStats.started > 0 && (
                         <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
                             <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
-                                <TrendingUp className="text-green-500" /> Application Completion
+                                <TrendingUp className="text-slate-400" /> Application Completion
                             </h3>
                             <div className="flex items-center gap-8">
                                 <div className="relative w-32 h-32">
@@ -506,7 +506,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                                         <circle cx="64" cy="64" r="56" fill="none" stroke="#1e293b" strokeWidth="12" />
                                         <circle
                                             cx="64" cy="64" r="56" fill="none"
-                                            stroke="#10b981" strokeWidth="12"
+                                            stroke="#ffffff" strokeWidth="12"
                                             strokeDasharray={`${(data.completionStats.completionRate / 100) * 352} 352`}
                                             strokeLinecap="round"
                                         />
@@ -522,7 +522,7 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                                     </div>
                                     <div>
                                         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Completed</p>
-                                        <p className="text-xl font-black text-emerald-400">{data.completionStats.completed}</p>
+                                        <p className="text-xl font-black text-white">{data.completionStats.completed}</p>
                                     </div>
                                 </div>
                             </div>
@@ -534,12 +534,12 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                     {data.connectionTurnover && data.connectionTurnover.disconnectionRate > 0 && (
                         <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
                             <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6 flex items-center gap-3">
-                                <UserMinus className="text-red-500" /> Connection Turnover
+                                <UserMinus className="text-slate-400" /> Connection Turnover
                             </h3>
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
                                     <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Disconnection Rate</p>
-                                    <p className="text-2xl font-black text-red-400">{data.connectionTurnover.disconnectionRate}%</p>
+                                    <p className="text-2xl font-black text-slate-400">{data.connectionTurnover.disconnectionRate}%</p>
                                 </div>
                                 <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
                                     <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Avg. Duration</p>
@@ -557,19 +557,19 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                 <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px]">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-black text-white uppercase tracking-tight flex items-center gap-3">
-                            <Clock className="text-purple-500" /> Response Rate SLA
+                            <Clock className="text-slate-400" /> Response Rate SLA
                         </h3>
                         {data.slaStats.pendingCount > 0 && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-full">
-                                <AlertTriangle size={14} className="text-amber-500" />
-                                <span className="text-amber-400 text-xs font-bold">{data.slaStats.pendingCount} Pending</span>
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-full">
+                                <AlertTriangle size={14} className="text-slate-400" />
+                                <span className="text-slate-300 text-xs font-bold">{data.slaStats.pendingCount} Pending</span>
                             </div>
                         )}
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Response Rate</p>
-                            <p className={`text-3xl font-black ${data.slaStats.responseRate >= 90 ? 'text-emerald-400' : data.slaStats.responseRate >= 70 ? 'text-amber-400' : 'text-red-400'}`}>
+                            <p className={`text-3xl font-black ${data.slaStats.responseRate >= 90 ? 'text-white' : data.slaStats.responseRate >= 70 ? 'text-slate-300' : 'text-slate-500'}`}>
                                 {data.slaStats.responseRate}%
                             </p>
                         </div>
@@ -580,18 +580,18 @@ export default function AnalyticsDashboard({ employerData }: { employerData: any
                         </div>
                         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Reviewed</p>
-                            <p className="text-3xl font-black text-blue-400">{data.slaStats.reviewedCount}</p>
+                            <p className="text-3xl font-black text-white">{data.slaStats.reviewedCount}</p>
                         </div>
                         <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-2">Pending</p>
-                            <p className={`text-3xl font-black ${data.slaStats.pendingCount > 5 ? 'text-amber-400' : 'text-slate-400'}`}>
+                            <p className={`text-3xl font-black ${data.slaStats.pendingCount > 5 ? 'text-slate-300' : 'text-slate-400'}`}>
                                 {data.slaStats.pendingCount}
                             </p>
                         </div>
                     </div>
                     {data.slaStats.pendingCount > 5 && (
-                        <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                            <p className="text-amber-300 text-xs text-center font-medium">
+                        <div className="mt-4 p-3 bg-slate-800 border border-slate-700 rounded-xl">
+                            <p className="text-slate-300 text-xs text-center font-medium">
                                 ⚠️ You have candidates waiting for your response. Review them before posting new jobs.
                             </p>
                         </div>

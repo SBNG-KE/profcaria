@@ -5,6 +5,7 @@ import {
     Cable, Building2, Briefcase, Clock, AlertTriangle,
     CheckCircle2, XCircle, X, ExternalLink, FileText, Plus, Pencil, Share2, ChevronLeft, ChevronRight
 } from 'lucide-react';
+import { useTheme } from '@/app/context/ThemeContext';
 
 interface Connection {
     id: string;
@@ -96,7 +97,7 @@ const ConnectionCard = ({
                     <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">
                         {connection.company.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-blue-400 text-xs font-bold mt-1">
+                    <div className="flex items-center gap-2 text-neutral-400 text-xs font-bold mt-1">
                         <Briefcase size={12} />
                         <span>{connection.job.title}</span>
                     </div>
@@ -117,7 +118,7 @@ const ConnectionCard = ({
                                             e.stopPropagation();
                                             handleShare();
                                         }}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/20'}`}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-white/10 hover:bg-white/20 text-white border-white/20'}`}
                                     >
                                         <Share2 size={10} className={sharing ? "animate-spin" : ""} />
                                         <span className="text-[10px] font-bold uppercase tracking-widest">
@@ -225,6 +226,8 @@ const ConnectionCard = ({
 };
 
 export default function ConnectPage() {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [connections, setConnections] = useState<Connection[]>([]);
     const [viewMode, setViewMode] = useState<'current' | 'past'>('current');
     const [isLoading, setIsLoading] = useState(true);
@@ -359,26 +362,26 @@ export default function ConnectPage() {
 
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
-                        <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                        <div className={`flex items-center gap-2 mb-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                             <Cable size={16} />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Employment Network</span>
                         </div>
-                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Connections</h1>
-                        <p className="text-slate-500 mt-2 text-sm font-medium">Your employment history and active connections.</p>
+                        <h1 className={`text-4xl font-black uppercase tracking-tighter leading-none ${isDark ? 'text-white' : 'text-black'}`}>Employment</h1>
+                        <p className={`mt-2 text-sm font-medium ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Your employment history and active connections.</p>
                     </div>
 
                     {/* Filter Buttons */}
                     <div className="flex flex-col items-end gap-4">
-                        <div className="flex p-1 bg-slate-900 rounded-xl border border-slate-800 shrink-0">
+                        <div className={`flex p-1 rounded-xl border shrink-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-neutral-100 border-neutral-200'}`}>
                             <button
                                 onClick={() => setViewMode('current')}
-                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'current' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'current' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black')}`}
                             >
                                 Current
                             </button>
                             <button
                                 onClick={() => setViewMode('past')}
-                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'past' ? 'bg-slate-700 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'past' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black')}`}
                             >
                                 Past
                             </button>
@@ -398,47 +401,47 @@ export default function ConnectPage() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                        <div className="mx-auto p-3 bg-emerald-500/20 text-emerald-400 w-fit rounded-xl">
+                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200'}`}>
+                        <div className={`mx-auto p-3 w-fit rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <CheckCircle2 size={24} />
                         </div>
-                        <h3 className="text-3xl font-black text-white">{activeConnections.length}</h3>
-                        <p className="text-slate-500 text-xs uppercase font-bold tracking-widest">Active Connections</p>
+                        <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{activeConnections.length}</h3>
+                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Active Connections</p>
                     </div>
 
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                        <div className="mx-auto p-3 bg-amber-500/20 text-amber-400 w-fit rounded-xl">
+                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200'}`}>
+                        <div className={`mx-auto p-3 w-fit rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <Clock size={24} />
                         </div>
-                        <h3 className="text-3xl font-black text-white">{pendingTerminations.length}</h3>
-                        <p className="text-slate-500 text-xs uppercase font-bold tracking-widest">Pending Actions</p>
+                        <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{pendingTerminations.length}</h3>
+                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Pending Actions</p>
                     </div>
 
-                    <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl space-y-4 text-center">
-                        <div className="mx-auto p-3 bg-blue-500/20 text-blue-400 w-fit rounded-xl">
+                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200'}`}>
+                        <div className={`mx-auto p-3 w-fit rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <Building2 size={24} />
                         </div>
-                        <h3 className="text-3xl font-black text-white">{connections.length}</h3>
-                        <p className="text-slate-500 text-xs uppercase font-bold tracking-widest">Total Connections</p>
+                        <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{connections.length}</h3>
+                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Total Connections</p>
                     </div>
                 </div>
 
                 {/* Connection List */}
                 <div className="space-y-4">
-                    <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest">Your Connections</h2>
+                    <h2 className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Your Connections</h2>
 
                     {isLoading ? (
-                        <div className="bg-[#0f172a] border border-slate-800 rounded-[40px] p-12 text-center">
-                            <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                            <p className="text-slate-500">Loading connections...</p>
+                        <div className={`rounded-[40px] p-12 text-center border ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
+                            <div className={`animate-spin w-8 h-8 border-2 border-t-transparent rounded-full mx-auto mb-4 ${isDark ? 'border-white' : 'border-black'}`}></div>
+                            <p className={isDark ? 'text-slate-500' : 'text-neutral-500'}>Loading connections...</p>
                         </div>
                     ) : connections.length === 0 ? (
-                        <div className="bg-[#0f172a] border border-slate-800 rounded-[40px] p-12 text-center space-y-4">
-                            <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto">
-                                <Cable size={32} className="text-slate-600" />
+                        <div className={`rounded-[40px] p-12 text-center space-y-4 border ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${isDark ? 'bg-slate-800/50' : 'bg-neutral-100'}`}>
+                                <Cable size={32} className={isDark ? 'text-slate-600' : 'text-neutral-400'} />
                             </div>
-                            <h4 className="text-lg font-bold text-slate-300">No Active Connections</h4>
-                            <p className="text-slate-500 max-w-md mx-auto">
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-slate-300' : 'text-neutral-700'}`}>No Active Connections</h4>
+                            <p className={`max-w-md mx-auto ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
                                 When an employer accepts your application, you'll see your employment connection here.
                             </p>
                         </div>

@@ -42,6 +42,12 @@ export const ALLOWED_IMAGE_TYPES = [
 
     // SVG (sanitized)
     'image/svg+xml',
+
+    // Video
+    'video/mp4',
+    'video/webm',
+    'video/ogg',
+    'video/quicktime', // .mov
 ];
 
 // File extension mapping (for validation)
@@ -56,6 +62,7 @@ export const ALLOWED_EXTENSIONS = [
     '.heic', '.heif',
     '.avif',
     '.svg',
+    '.mp4', '.webm', '.ogg', '.mov',
 ];
 
 // Size limits
@@ -63,6 +70,7 @@ export const FILE_SIZE_LIMITS = {
     profileImage: 10 * 1024 * 1024,    // 10MB
     logo: 5 * 1024 * 1024,              // 5MB
     document: 20 * 1024 * 1024,         // 20MB
+    video: 50 * 1024 * 1024,            // 50MB
     general: 10 * 1024 * 1024,          // 10MB default
 };
 
@@ -105,7 +113,7 @@ export function validateFile(
     if (!ALLOWED_IMAGE_TYPES.includes(normalizedType)) {
         return {
             valid: false,
-            error: `File type "${type}" is not allowed. Allowed types: JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, SVG.`,
+            error: `File type "${type}" is not allowed. Allowed types: Images (JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, SVG) and Videos (MP4, WebM, OGG, MOV).`,
         };
     }
 

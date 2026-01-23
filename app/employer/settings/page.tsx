@@ -21,6 +21,7 @@ function SettingsContent() {
 
         if (tab === 'billing') setActiveTab('billing');
 
+
         if (reference) {
             verifyPayment(reference);
         }
@@ -51,19 +52,13 @@ function SettingsContent() {
         }
     };
 
-    const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'billing'>('profile');
+    const [activeTab, setActiveTab] = useState<'security' | 'billing'>('security');
+
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    // Profile State
-    const [companyName, setCompanyName] = useState('');
-    const [website, setWebsite] = useState('');
-    const [email, setEmail] = useState(''); // Read-only
 
-    // Location State
-    const [country, setCountry] = useState('');
-    const [city, setCity] = useState('');
-    const [address, setAddress] = useState('');
+
 
     // Security State
     const [currentPassword, setCurrentPassword] = useState('');
@@ -92,33 +87,11 @@ function SettingsContent() {
     });
 
     useEffect(() => {
-        fetchProfile();
         if (activeTab === 'security') fetchActivityLogs();
         if (activeTab === 'billing') fetchBilling();
     }, [activeTab]);
 
-    const fetchProfile = async () => {
-        try {
-            const res = await fetch('/api/auth/me');
-            if (res.ok) {
-                const data = await res.json();
 
-                if (data.profile) {
-                    setCompanyName(data.profile.companyName || '');
-                    setWebsite(data.profile.website || '');
-                    setEmail(data.profile.email || '');
-
-                    setCountry(data.profile.country || '');
-                    setCity(data.profile.city || '');
-                    setAddress(data.profile.address || '');
-                }
-
-
-            }
-        } catch (error) {
-            console.error('Error fetching profile:', error);
-        }
-    };
 
     const fetchActivityLogs = async () => {
         try {
@@ -228,35 +201,7 @@ function SettingsContent() {
         alert('To manage your subscription, please check your email for the link from Paystack or contact support to cancel/pause.');
     };
 
-    const handleProfileSave = async () => {
-        setIsLoading(true);
-        setMessage(null);
-        try {
-            const res = await fetch('/api/employer/profile/update', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    companyName,
-                    website,
-                    email,
-                    country,
-                    city,
-                    address
-                })
-            });
 
-            if (res.ok) {
-                setMessage({ type: 'success', text: 'Company profile updated successfully!' });
-                if (activeTab === 'security') fetchActivityLogs();
-            } else {
-                setMessage({ type: 'error', text: 'Failed to update profile.' });
-            }
-        } catch (error) {
-            setMessage({ type: 'error', text: 'An error occurred.' });
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const handlePasswordChange = async () => {
         if (newPassword !== confirmNewPassword) {
@@ -304,134 +249,38 @@ function SettingsContent() {
                     <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Company Settings</h1>
                     <p className="text-slate-400 mt-2">Manage company profile, security, and billing.</p>
                 </div>
-                {activeTab === 'profile' && (
-                    <button
-                        onClick={handleProfileSave}
-                        disabled={isLoading}
-                        className="flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
-                    >
-                        <Save size={18} />
-                        <span>{isLoading ? 'Saving...' : 'Save Changes'}</span>
-                    </button>
-                )}
+
             </header>
 
             {/* Tabs */}
             <div className="flex space-x-2 bg-slate-900/50 p-1 rounded-xl w-fit border border-slate-800">
-                <button
-                    onClick={() => setActiveTab('profile')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'profile' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
-                >
-                    <User size={16} /> Profile
-                </button>
+
                 <button
                     onClick={() => setActiveTab('security')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'security' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'security' ? 'bg-white text-black shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                 >
                     <Shield size={16} /> Security
                 </button>
                 <button
                     onClick={() => setActiveTab('billing')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'billing' ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'billing' ? 'bg-white text-black shadow-lg' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
                 >
                     <CreditCard size={16} /> Billing
                 </button>
             </div>
 
             {message && (
-                <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-white/10 text-white border border-white/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
                     {message.text}
                 </div>
             )}
 
-            {activeTab === 'profile' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    {/* Company Info */}
-                    <div className="space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <LayoutDashboard className="text-emerald-500" size={24} /> Company Details
-                        </h3>
-                        <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Company Name</label>
-                                <input
-                                    type="text"
-                                    value={companyName}
-                                    onChange={(e) => setCompanyName(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Website</label>
-                                <input
-                                    type="text"
-                                    value={website}
-                                    onChange={(e) => setWebsite(e.target.value)}
-                                    placeholder="https://..."
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Work Email</label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Location */}
-                    <div className="space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <MapPin className="text-emerald-500" size={24} /> Headquarters Location
-                        </h3>
-                        <div className="bg-[#0f172a] border border-slate-800 p-6 rounded-[32px] space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2"><Globe size={12} /> Country <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
-                                    <input
-                                        type="text"
-                                        value={country}
-                                        onChange={(e) => setCountry(e.target.value)}
-                                        placeholder="e.g. USA"
-                                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">City <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
-                                    <input
-                                        type="text"
-                                        value={city}
-                                        onChange={(e) => setCity(e.target.value)}
-                                        placeholder="e.g. San Francisco"
-                                        className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">Office Address <span className="text-emerald-500 text-[8px] bg-emerald-500/10 px-1 rounded ml-auto">AUTO-DETECTED</span></label>
-                                <input
-                                    type="text"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="e.g. 500 Market St"
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-bold"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            ) : activeTab === 'security' ? (
+            {activeTab === 'security' ? (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
-
-                    {/* Password */}
                     <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Lock className="text-blue-500" size={24} /> Change Password
+                            <Lock className="text-white" size={24} /> Change Password
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* ...fields... */}
@@ -441,7 +290,7 @@ function SettingsContent() {
                                     type="password"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -450,7 +299,7 @@ function SettingsContent() {
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold"
                                 />
                             </div>
                             <div className="space-y-2">
@@ -459,7 +308,7 @@ function SettingsContent() {
                                     type="password"
                                     value={confirmNewPassword}
                                     onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold"
+                                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all font-bold"
                                 />
                             </div>
                         </div>
@@ -467,7 +316,7 @@ function SettingsContent() {
                             <button
                                 onClick={handlePasswordChange}
                                 disabled={isLoading || !currentPassword || !newPassword}
-                                className="px-6 py-3 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-xl font-bold text-sm border border-blue-500/20 transition-all"
+                                className="px-6 py-3 bg-white text-black hover:bg-slate-200 rounded-xl font-bold text-sm border border-transparent transition-all"
                             >
                                 Update Password
                             </button>
@@ -477,7 +326,7 @@ function SettingsContent() {
                     {/* Logs */}
                     <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-[32px] space-y-6">
                         <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Activity className="text-blue-500" size={24} /> Activity Log
+                            <Activity className="text-white" size={24} /> Activity Log
                         </h3>
                         {/* Table... */}
                         <div className="overflow-hidden rounded-xl border border-slate-800">
@@ -511,7 +360,7 @@ function SettingsContent() {
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
                                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <CreditCard className="text-purple-500" size={24} /> Billing & Subscription
+                                    <CreditCard className="text-white" size={24} /> Billing & Subscription
                                 </h3>
                                 <p className="text-slate-400 text-sm mt-1">Simple, transparent monthly pricing.</p>
                             </div>
@@ -556,9 +405,9 @@ function SettingsContent() {
                             </div>
 
                             {/* Basic Tier */}
-                            <div className="bg-slate-900/30 border border-blue-500/20 p-5 rounded-[24px] flex flex-col relative overflow-hidden hover:border-blue-500/40 transition-colors">
+                            <div className="bg-slate-900/30 border border-slate-700/50 p-5 rounded-[24px] flex flex-col relative overflow-hidden hover:border-slate-500 transition-colors">
                                 {derivedPlan === 'basic' && (
-                                    <div className="absolute top-0 right-0 bg-blue-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-0 right-0 bg-white text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
@@ -566,7 +415,7 @@ function SettingsContent() {
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
                                         Basic
                                         {pricing.basicOffer > 0 && (
-                                            <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                            <span className="bg-white/20 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
                                                 -{Math.round((1 - pricing.basicOffer / pricing.basic) * 100)}%
                                             </span>
                                         )}
@@ -578,37 +427,37 @@ function SettingsContent() {
                                                 <span className="text-xs text-slate-500 line-through font-bold">
                                                     {formatCurrency(pricing.basic)}
                                                 </span>
-                                                <div className="text-2xl font-black text-blue-400">
-                                                    <span className="text-xs text-blue-600 font-bold mr-0.5">{currencyCode}</span>
+                                                <div className="text-2xl font-black text-white">
+                                                    <span className="text-xs text-slate-400 font-bold mr-0.5">{currencyCode}</span>
                                                     {formatCurrency(pricing.basicOffer).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                    <span className="text-[10px] text-blue-600/70 font-bold ml-1">/mo</span>
+                                                    <span className="text-[10px] text-slate-500 font-bold ml-1">/mo</span>
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="text-2xl font-black text-blue-400">
-                                                <span className="text-xs text-blue-600 font-bold mr-0.5">{currencyCode}</span>
+                                            <div className="text-2xl font-black text-white">
+                                                <span className="text-xs text-slate-400 font-bold mr-0.5">{currencyCode}</span>
                                                 {formatCurrency(pricing.basic).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                <span className="text-[10px] text-blue-600/70 font-bold ml-1">/mo</span>
+                                                <span className="text-[10px] text-slate-500 font-bold ml-1">/mo</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> 5 Job Posts/mo
+                                            <CheckCircle size={12} className="text-white shrink-0" /> 5 Job Posts/mo
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> 3 Years Analytics History
+                                            <CheckCircle size={12} className="text-white shrink-0" /> 3 Years Analytics History
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-blue-500 shrink-0" /> Top Match Access (Limited)
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Top Match Access (Limited)
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-blue-500/20">
+                                <div className="mt-6 pt-4 border-t border-slate-800">
                                     {subscription?.status === 'active' && derivedPlan === 'basic' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-blue-500/10 text-blue-500 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-blue-500/20">
+                                            <div className="w-full py-2 bg-white/10 text-white font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-white/20">
                                                 Active
                                             </div>
                                             {isAutoRenew ? (
@@ -616,7 +465,7 @@ function SettingsContent() {
                                                     Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
                                                 </p>
                                             ) : (
-                                                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
                                                     Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
                                                 </p>
                                             )}
@@ -625,7 +474,7 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('basic')}
                                             disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-2 bg-white hover:bg-slate-200 text-black font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg shadow-white/10 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isLoading ? <Loader2 className="animate-spin" size={12} /> : subscription?.status === 'active' ? 'Switch to Basic' : 'Get Basic'}
                                         </button>
@@ -634,18 +483,18 @@ function SettingsContent() {
                             </div>
 
                             {/* Pro Tier ($99) - BEST OFFER */}
-                            <div className="bg-gradient-to-b from-emerald-900/20 to-[#0f172a] border border-emerald-500/40 p-5 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl shadow-emerald-900/10 scale-105 z-10">
-                                <div className="absolute top-0 inset-x-0 h-1 bg-emerald-500"></div>
+                            <div className="bg-[#0f172a] border border-slate-600 p-5 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl scale-105 z-10">
+                                <div className="absolute top-0 inset-x-0 h-1 bg-white"></div>
                                 {subscription?.plan_type === 'pro' && (
-                                    <div className="absolute top-1 right-0 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-1 right-0 bg-white text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
                                 <div className="space-y-3 flex-1">
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
-                                        Pro <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[8px] font-bold tracking-wide">BEST VALUE</span>
+                                        Pro <span className="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-bold tracking-wide">BEST VALUE</span>
                                         {pricing.proOffer > 0 && (
-                                            <span className="bg-emerald-500 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                            <span className="bg-white text-black text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
                                                 -{Math.round((1 - pricing.proOffer / pricing.pro) * 100)}%
                                             </span>
                                         )}
@@ -657,40 +506,40 @@ function SettingsContent() {
                                                 <span className="text-xs text-slate-500 line-through font-bold">
                                                     {formatCurrency(pricing.pro)}
                                                 </span>
-                                                <div className="text-2xl font-black text-emerald-400">
-                                                    <span className="text-xs text-emerald-600 font-bold mr-0.5">{currencyCode}</span>
+                                                <div className="text-2xl font-black text-white">
+                                                    <span className="text-xs text-slate-400 font-bold mr-0.5">{currencyCode}</span>
                                                     {formatCurrency(pricing.proOffer).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                    <span className="text-[10px] text-emerald-600/70 font-bold ml-1">/mo</span>
+                                                    <span className="text-[10px] text-slate-500 font-bold ml-1">/mo</span>
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="text-2xl font-black text-emerald-400">
-                                                <span className="text-xs text-emerald-600 font-bold mr-0.5">{currencyCode}</span>
+                                            <div className="text-2xl font-black text-white">
+                                                <span className="text-xs text-slate-400 font-bold mr-0.5">{currencyCode}</span>
                                                 {formatCurrency(pricing.pro).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                <span className="text-[10px] text-emerald-600/70 font-bold ml-1">/mo</span>
+                                                <span className="text-[10px] text-slate-500 font-bold ml-1">/mo</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">30 Job Postings/mo</span>
+                                            <CheckCircle size={12} className="text-white shrink-0" /> <span className="text-white font-bold">30 Job Postings/mo</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Unlimited Analytics History
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Unlimited Analytics History
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Top Matches (Increased Limit)
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Top Matches (Increased Limit)
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-emerald-500 shrink-0" /> Access to Restricted Location Feature
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Access to Restricted Location Feature
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-emerald-500/20">
+                                <div className="mt-6 pt-4 border-t border-slate-700">
                                     {subscription?.status === 'active' && derivedPlan === 'pro' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-emerald-500/10 text-emerald-500 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-emerald-500/20">
+                                            <div className="w-full py-2 bg-white/10 text-white font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-white/20">
                                                 Active
                                             </div>
                                             {isAutoRenew ? (
@@ -698,7 +547,7 @@ function SettingsContent() {
                                                     Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
                                                 </p>
                                             ) : (
-                                                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
                                                     Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
                                                 </p>
                                             )}
@@ -707,7 +556,7 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('pro')}
                                             disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-2.5 bg-white hover:bg-slate-200 text-black font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Pro' : 'Get Pro'}
                                         </button>
@@ -716,9 +565,9 @@ function SettingsContent() {
                             </div>
 
                             {/* Enterprise Tier ($250) */}
-                            <div className={`bg-gradient-to-br from-purple-950/20 to-[#0f172a] border p-5 rounded-[24px] flex flex-col relative overflow-hidden transition-colors ${derivedPlan === 'enterprise' ? 'border-purple-500 shadow-2xl shadow-purple-900/10' : 'border-purple-500/20 hover:border-purple-500/40'}`}>
+                            <div className={`bg-slate-900/30 border p-5 rounded-[24px] flex flex-col relative overflow-hidden transition-colors ${derivedPlan === 'enterprise' ? 'border-white shadow-2xl shadow-white/10' : 'border-slate-700/50 hover:border-slate-500'}`}>
                                 {derivedPlan === 'enterprise' && (
-                                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
+                                    <div className="absolute top-0 right-0 bg-white text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
                                         Current
                                     </div>
                                 )}
@@ -726,7 +575,7 @@ function SettingsContent() {
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
                                         Enterprise
                                         {pricing.enterpriseOffer > 0 && (
-                                            <span className="bg-purple-500/20 text-purple-400 text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                            <span className="bg-white/20 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
                                                 -{Math.round((1 - pricing.enterpriseOffer / pricing.enterprise) * 100)}%
                                             </span>
                                         )}
@@ -738,40 +587,40 @@ function SettingsContent() {
                                                 <span className="text-xs text-slate-500 line-through font-bold">
                                                     {formatCurrency(pricing.enterprise)}
                                                 </span>
-                                                <div className="text-2xl font-black text-purple-400">
-                                                    <span className="text-xs text-purple-600 font-bold mr-0.5">{currencyCode}</span>
+                                                <div className="text-2xl font-black text-white">
+                                                    <span className="text-xs text-slate-400 font-bold mr-0.5">{currencyCode}</span>
                                                     {formatCurrency(pricing.enterpriseOffer).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                    <span className="text-[10px] text-purple-600/70 font-bold ml-1">/mo</span>
+                                                    <span className="text-[10px] text-slate-500 font-bold ml-1">/mo</span>
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="text-2xl font-black text-purple-400">
-                                                <span className="text-xs text-purple-600 font-bold mr-0.5">{currencyCode}</span>
+                                            <div className="text-2xl font-black text-white">
+                                                <span className="text-xs text-slate-400 font-bold mr-0.5">{currencyCode}</span>
                                                 {formatCurrency(pricing.enterprise).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                <span className="text-[10px] text-purple-600/70 font-bold ml-1">/mo</span>
+                                                <span className="text-[10px] text-slate-500 font-bold ml-1">/mo</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="pt-2 space-y-2">
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Job Postings
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Unlimited Job Postings
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Analytics History
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Unlimited Analytics History
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Unlimited Top Matches (capped at 100/job)
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Unlimited Top Matches (capped at 100/job)
                                         </div>
                                         <div className="flex items-center gap-2 text-[10px] text-slate-200 font-medium">
-                                            <CheckCircle size={12} className="text-purple-500 shrink-0" /> Access to Restricted Location Feature
+                                            <CheckCircle size={12} className="text-white shrink-0" /> Access to Restricted Location Feature
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-purple-500/20">
+                                <div className="mt-6 pt-4 border-t border-slate-700/50">
                                     {subscription?.status === 'active' && derivedPlan === 'enterprise' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-purple-500/10 text-purple-500 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-purple-500/20">
+                                            <div className="w-full py-2 bg-white/10 text-white font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-white/20">
                                                 Active
                                             </div>
                                             {isAutoRenew ? (
@@ -779,7 +628,7 @@ function SettingsContent() {
                                                     Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
                                                 </p>
                                             ) : (
-                                                <p className="text-[9px] text-red-400 font-bold uppercase tracking-wider">
+                                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">
                                                     Expires: {new Date(subscription.current_period_end).toLocaleDateString()}
                                                 </p>
                                             )}
@@ -788,7 +637,7 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('enterprise')}
                                             disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg shadow-purple-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-2 bg-white hover:bg-slate-200 text-black font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {isLoading ? <Loader2 className="animate-spin" size={12} /> : subscription?.status === 'active' ? 'Switch to Enterprise' : 'Get Enterprise'}
                                         </button>
@@ -803,8 +652,8 @@ function SettingsContent() {
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
                             <div className="space-y-4 max-w-2xl">
                                 <h3 className="font-bold text-white flex items-center gap-3 text-lg">
-                                    <Activity className={isAutoRenew ? "text-emerald-500" : "text-amber-500"} size={24} />
-                                    Subscription Status: <span className={isAutoRenew ? "text-emerald-400" : "text-amber-400"}>{isAutoRenew ? 'Automatic Detection' : 'Manual / Expiring'}</span>
+                                    <Activity className={isAutoRenew ? "text-white" : "text-slate-400"} size={24} />
+                                    Subscription Status: <span className={isAutoRenew ? "text-white" : "text-slate-400"}>{isAutoRenew ? 'Automatic Detection' : 'Manual / Expiring'}</span>
                                 </h3>
 
                                 <div className="space-y-3 text-slate-400 text-sm leading-relaxed">
@@ -816,7 +665,7 @@ function SettingsContent() {
                                     </p>
                                     <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800/50 mt-2">
                                         <p className="text-xs text-slate-500">
-                                            <span className="text-red-400 font-bold uppercase tracking-wide mr-2">Important Policy:</span>
+                                            <span className="text-white font-bold uppercase tracking-wide mr-2">Important Policy:</span>
                                             If your subscription expires (Manual Mode) and is not renewed within <span className="text-white font-bold">60 days</span>, your billing account will be automatically reset to the <span className="text-white font-bold">Free Plan</span>. You will effectively start fresh and need to choose a new plan to regain paid features.
                                         </p>
                                     </div>
@@ -829,8 +678,8 @@ function SettingsContent() {
                                         onClick={handleToggleAutoRenew}
                                         disabled={isLoading}
                                         className={`w-full py-4 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${isAutoRenew
-                                            ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20'
-                                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/20'}`}
+                                            ? 'bg-slate-800 hover:bg-slate-700 text-white shadow-lg'
+                                            : 'bg-white hover:bg-slate-200 text-black shadow-lg'}`}
                                     >
                                         {isLoading ? <Loader2 className="animate-spin" size={16} /> : isAutoRenew ? 'Switch to Manual' : 'Enable Auto-Renew'}
                                     </button>
@@ -839,7 +688,7 @@ function SettingsContent() {
                                         <button
                                             onClick={handleToggleAutoRenew}
                                             disabled={isLoading}
-                                            className="w-full py-3 px-6 bg-transparent hover:bg-red-500/10 border border-slate-700 hover:border-red-500/30 text-slate-500 hover:text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
+                                            className="w-full py-3 px-6 bg-transparent hover:bg-white/5 border border-slate-700 hover:border-slate-500 text-slate-500 hover:text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
                                         >
                                             Cancel Subscription
                                         </button>
@@ -849,14 +698,15 @@ function SettingsContent() {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 
 export default function EmployerSettingsPage() {
     return (
-        <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#020617]"><Loader2 className="text-emerald-500 animate-spin" size={48} /></div>}>
+        <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#020617]"><Loader2 className="text-white animate-spin" size={48} /></div>}>
             <SettingsContent />
         </Suspense>
     );

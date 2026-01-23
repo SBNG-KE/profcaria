@@ -99,7 +99,7 @@ export default function EmployerJobsPage() {
                     <button
                         onClick={() => !isLimitReached && router.push('/employer/jobs/create')}
                         disabled={isLimitReached}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg active:scale-95 ${isLimitReached ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-70 shadow-none' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'}`}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-lg active:scale-95 ${isLimitReached ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-70 shadow-none' : 'bg-white hover:bg-slate-100 text-black shadow-lg'}`}
                     >
                         <Plus size={16} />
                         <span>{isLimitReached ? 'Plan Limit Reached' : 'New Post'}</span>
@@ -113,14 +113,14 @@ export default function EmployerJobsPage() {
             </header>
 
             <div className="flex gap-2 flex-wrap">
-                <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>All ({jobs.length})</button>
-                <button onClick={() => setFilter('active')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>Active ({jobs.filter(j => j.isActive).length})</button>
-                <button onClick={() => setFilter('closed')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'closed' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>Closed ({jobs.filter(j => !j.isActive).length})</button>
+                <button onClick={() => setFilter('all')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'all' ? 'bg-white text-black shadow-lg' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>All ({jobs.length})</button>
+                <button onClick={() => setFilter('active')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'active' ? 'bg-white text-black shadow-lg' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>Active ({jobs.filter(j => j.isActive).length})</button>
+                <button onClick={() => setFilter('closed')} className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${filter === 'closed' ? 'bg-white text-black shadow-lg' : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'}`}>Closed ({jobs.filter(j => !j.isActive).length})</button>
             </div>
 
             {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-4">
-                    <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                    <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
                     <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Loading job architecture...</p>
                 </div>
             ) : paginatedJobs.length === 0 ? (
@@ -132,28 +132,28 @@ export default function EmployerJobsPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {paginatedJobs.map((job) => (
-                            <div key={job.id} className={`group relative bg-[#0f172a] border rounded-2xl overflow-hidden transition-all duration-300 ${job.isActive ? 'border-slate-800 hover:border-emerald-500/30' : 'border-slate-800 opacity-60 hover:opacity-100'}`}>
+                            <div key={job.id} className={`group relative bg-[#0f172a] border rounded-2xl overflow-hidden transition-all duration-300 ${job.isActive ? 'border-slate-800 hover:border-slate-600' : 'border-slate-800 opacity-60 hover:opacity-100'}`}>
                                 <div className="p-4 space-y-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <h2 className="text-lg font-black text-white uppercase tracking-tight leading-tight line-clamp-2 flex-1">{job.title}</h2>
-                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border shrink-0 ${job.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>{job.isActive ? 'Active' : 'Closed'}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border shrink-0 ${job.isActive ? 'bg-slate-700 text-white border-slate-600' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>{job.isActive ? 'Active' : 'Closed'}</span>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                                         <span className="flex items-center gap-1"><Clock size={10} /> {new Date(job.createdAt).toLocaleDateString()}</span>
-                                        <span className="flex items-center gap-1 text-blue-400"><Users size={10} /> {job.applicantCount || 0}</span>
-                                        {job.isActive && <span className="flex items-center gap-1 text-emerald-400"><Zap size={10} /> Live</span>}
+                                        <span className="flex items-center gap-1 text-slate-400"><Users size={10} /> {job.applicantCount || 0}</span>
+                                        {job.isActive && <span className="flex items-center gap-1 text-white"><Zap size={10} /> Live</span>}
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800">
                                         {job.isActive && (
-                                            <button onClick={async () => { try { const res = await fetch(`/api/employer/jobs/${job.id}/share`); const data = await res.json(); if (data.link) { navigator.clipboard.writeText(data.link); setCopiedId(job.id); setTimeout(() => setCopiedId(null), 2500); } } catch (e) { console.error(e); } }} className={`p-2 rounded-lg transition-all ${copiedId === job.id ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white'}`} title="Copy Share Link"><Share2 size={14} /></button>
+                                            <button onClick={async () => { try { const res = await fetch(`/api/employer/jobs/${job.id}/share`); const data = await res.json(); if (data.link) { navigator.clipboard.writeText(data.link); setCopiedId(job.id); setTimeout(() => setCopiedId(null), 2500); } } catch (e) { console.error(e); } }} className={`p-2 rounded-lg transition-all ${copiedId === job.id ? 'bg-slate-700 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white'}`} title="Copy Share Link"><Share2 size={14} /></button>
                                         )}
                                         <button onClick={() => router.push(`/employer/jobs/create?id=${job.id}`)} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-all" title="Edit"><Edit3 size={14} /></button>
-                                        <button onClick={() => router.push(`/employer/applications?jobId=${job.id}`)} className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"><Users size={12} /> Applicants</button>
+                                        <button onClick={() => router.push(`/employer/applications?jobId=${job.id}`)} className="flex-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"><Users size={12} /> Applicants</button>
                                         {limits && limits.limits.topMatches > 0 && (limits.limits.topMatches >= 9999 || (limits.usage?.topMatches || 0) < limits.limits.topMatches) && (
-                                            <button onClick={() => router.push(`/employer/jobs/${job.id}/matches`)} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5"><Zap size={12} className="text-yellow-300" /> Matches</button>
+                                            <button onClick={() => router.push(`/employer/jobs/${job.id}/matches`)} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5"><Zap size={12} className="text-white" /> Matches</button>
                                         )}
-                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
-                                        <button onClick={() => deleteJob(job.id)} title="Delete" className="p-2 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg hover:bg-red-500/20 transition-all"><Trash2 size={14} /></button>
+                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white' : 'bg-slate-700 border-slate-600 text-white hover:bg-slate-600'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
+                                        <button onClick={() => deleteJob(job.id)} title="Delete" className="p-2 bg-slate-800 border border-slate-700 text-slate-400 rounded-lg hover:bg-slate-700 hover:text-white transition-all"><Trash2 size={14} /></button>
                                     </div>
                                 </div>
                             </div>

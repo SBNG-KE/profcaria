@@ -451,7 +451,7 @@ function AuthContent() {
                         if (refToken) {
                             router.push(`/professional/find?ref=${refToken}`);
                         } else {
-                            router.push('/professional/home');
+                            router.push('/professional/feed');
                         }
                     } else if (data.schema === 'employer') {
                         router.push('/employer/home');
@@ -558,7 +558,7 @@ function AuthContent() {
         if (userType === 'professional' && refToken) {
             return `/professional/find?ref=${refToken}`;
         }
-        return userType === 'professional' ? '/professional/home' : '/employer/home';
+        return userType === 'professional' ? '/professional/feed' : '/employer/home';
     };
 
     const handleLogin = async (type: 'professional' | 'employer') => {

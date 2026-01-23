@@ -54,7 +54,7 @@ export default function EmployerHome() {
       {/* Header Section */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
         <div className="text-left">
-          <div className="flex items-center gap-2 text-emerald-400 mb-2">
+          <div className="flex items-center gap-2 text-slate-400 mb-2">
             <TrendingUp size={16} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">
               {viewMode === 'activity' ? 'Live Workspace' : 'Strategic Insights'}
@@ -71,7 +71,7 @@ export default function EmployerHome() {
             disabled={isLimitReached}
             className={`px-5 py-2.5 text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2 ${isLimitReached
               ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none'
-              : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20'
+              : 'bg-white hover:bg-slate-100 text-black shadow-lg'
               }`}
           >
             <Plus size={16} />
@@ -100,7 +100,7 @@ export default function EmployerHome() {
           <button
             onClick={() => setViewMode('analytics')}
             className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${viewMode === 'analytics'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+              ? 'bg-slate-800 text-white shadow-lg'
               : 'text-slate-500 hover:text-slate-300'
               }`}
           >
@@ -116,7 +116,7 @@ export default function EmployerHome() {
           {/* Existing Activity Feed Content */}
           <div className="px-8 py-6 border-b border-slate-800/50 flex items-center justify-between">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-3">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+              <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
               Recent Activity
             </h3>
             <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
@@ -125,7 +125,7 @@ export default function EmployerHome() {
           </div>
           <div className="p-8">
             {loading ? (
-              <div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>
+              <div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div>
             ) : notifications.length === 0 ? (
               <p className="text-xs font-bold text-slate-600 uppercase tracking-widest text-center py-10">No recent activity found</p>
             ) : (
@@ -142,19 +142,19 @@ export default function EmployerHome() {
                     <button
                       key={notif.id}
                       onClick={() => router.push(getActivityRoute())}
-                      className="w-full flex items-start gap-4 p-5 rounded-2xl hover:bg-emerald-500/5 border border-transparent hover:border-emerald-500/20 transition-all group cursor-pointer text-left"
+                      className="w-full flex items-start gap-4 p-5 rounded-2xl hover:bg-slate-800/50 border border-transparent hover:border-slate-700 transition-all group cursor-pointer text-left"
                     >
-                      <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center text-slate-500 group-hover:text-emerald-400 group-hover:border-emerald-500/30 transition-colors">
+                      <div className="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex-shrink-0 flex items-center justify-center text-slate-500 group-hover:text-white group-hover:border-slate-600 transition-colors">
                         {notif.type === 'application' ? <Briefcase size={20} /> : notif.type === 'message' ? <MessageSquare size={20} /> : <Calendar size={20} />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors capitalize">{notif.type} Update</h4>
+                          <h4 className="text-sm font-bold text-white group-hover:text-slate-200 transition-colors capitalize">{notif.type} Update</h4>
                           <span className="text-[10px] text-slate-500 font-mono">{new Date(notif.created_at).toLocaleString()}</span>
                         </div>
                         <p className="text-xs text-slate-400 line-clamp-1">{notif.message}</p>
                       </div>
-                      <ChevronRight size={16} className="text-slate-700 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all mt-4 shrink-0" />
+                      <ChevronRight size={16} className="text-slate-700 group-hover:text-white group-hover:translate-x-1 transition-all mt-4 shrink-0" />
                     </button>
                   );
                 })}

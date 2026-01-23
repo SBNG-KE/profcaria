@@ -91,7 +91,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
     };
 
     return (
-        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-emerald-500/30 transition-all group">
+        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-slate-600 transition-all group">
             <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center text-slate-500 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                     {connection.professional.profileImageUrl ? (
@@ -102,13 +102,13 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 </div>
 
                 <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">
+                    <h3 className="text-lg font-bold text-white group-hover:text-slate-200 transition-colors uppercase tracking-tight">
                         {connection.professional.name}
                     </h3>
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">
                         {connection.professional.role || 'Professional'}
                     </p>
-                    <div className="flex items-center gap-2 text-blue-400 text-xs font-bold">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold">
                         <Briefcase size={12} />
                         <span>{connection.job.title}</span>
                     </div>
@@ -124,7 +124,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                                 e.stopPropagation();
                                 window.open(connection.connectionFileUrl, '_blank');
                             }}
-                            className="flex items-center gap-2 text-emerald-500 text-[10px] font-bold uppercase tracking-widest mt-2 cursor-pointer hover:text-emerald-400 transition-colors bg-transparent border-none p-0"
+                            className="flex items-center gap-2 text-white text-[10px] font-bold uppercase tracking-widest mt-2 cursor-pointer hover:text-slate-300 transition-colors bg-transparent border-none p-0"
                         >
                             <FileText size={10} />
                             <span>Attached Document</span>
@@ -133,8 +133,8 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                        connection.status === 'pending_termination' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-slate-700 text-white border border-slate-600' :
+                        connection.status === 'pending_termination' ? 'bg-slate-800 text-slate-300 border border-slate-700' :
                             'bg-slate-800 text-slate-400 border border-white/5'
                         }`}>
                         {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) ? 'Active' :
@@ -163,7 +163,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             {/* Access List Preview */}
             {connection.accessList.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest mb-3">
                         <Shield size={12} />
                         <span>Shared Documents</span>
                     </div>
@@ -185,7 +185,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                             e.stopPropagation();
                             handleShareReason();
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/20'}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'}`}
                     >
                         <Share2 size={10} className={sharing ? "animate-spin" : ""} />
                         <span className="text-[10px] font-bold uppercase tracking-widest">
@@ -201,7 +201,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-2">
                 <button
                     onClick={onViewProfile}
-                    className="flex-1 py-3 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-600/20 hover:border-blue-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                 >
                     <ExternalLink size={14} />
                     Profile
@@ -211,7 +211,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                     <div className="flex-1 flex gap-2">
                         <button
                             onClick={onApproveResignation}
-                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                            className="flex-1 py-3 bg-white hover:bg-slate-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                             Approve Resignation
                         </button>
@@ -222,7 +222,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                     <div className="flex-1 flex gap-2">
                         <button
                             onClick={onApproveMutual}
-                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                            className="flex-1 py-3 bg-white hover:bg-slate-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                             Approve Mutual End
                         </button>
@@ -239,7 +239,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) && !showConfirm && (
                     <button
                         onClick={() => setShowConfirm(true)}
-                        className="py-3 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-500/20"
+                        className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-slate-700"
                     >
                         <XCircle size={14} />
                     </button>
@@ -247,8 +247,8 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             </div>
 
             {showConfirm && (
-                <div className="mt-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl space-y-3">
-                    <div className="flex items-center gap-2 text-red-400 text-xs">
+                <div className="mt-3 p-4 bg-slate-800 border border-slate-700 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs">
                         <AlertTriangle size={14} />
                         <span>Are you sure you want to terminate this connection?</span>
                     </div>
@@ -264,7 +264,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                                 onTerminate();
                                 setShowConfirm(false);
                             }}
-                            className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+                            className="flex-1 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
                         >
                             Confirm
                         </button>
@@ -390,7 +390,7 @@ export default function ConnectionsPage() {
                 {/* Header & Stats (Keep simplified/same as before) */}
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
-                        <div className="flex items-center gap-2 text-emerald-400 mb-2"><Cable size={16} /><span className="text-[10px] font-black uppercase tracking-[0.2em]">Employee Network</span></div>
+                        <div className="flex items-center gap-2 text-slate-400 mb-2"><Cable size={16} /><span className="text-[10px] font-black uppercase tracking-[0.2em]">Employee Network</span></div>
                         <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Connections</h1>
                         <p className="text-slate-500 mt-2 text-sm font-medium">Manage your connected employees and contracts.</p>
                     </div>
@@ -401,7 +401,7 @@ export default function ConnectionsPage() {
                     <button
                         onClick={() => setFilter('all')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            ? 'bg-white text-black shadow-lg'
                             : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                             }`}
                     >
@@ -410,7 +410,7 @@ export default function ConnectionsPage() {
                     <button
                         onClick={() => setFilter('employed')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'employed'
-                            ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            ? 'bg-white text-black shadow-lg'
                             : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                             }`}
                     >
@@ -419,7 +419,7 @@ export default function ConnectionsPage() {
                     <button
                         onClick={() => setFilter('resigned')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'resigned'
-                            ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20'
+                            ? 'bg-white text-black shadow-lg'
                             : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                             }`}
                     >
@@ -428,7 +428,7 @@ export default function ConnectionsPage() {
                     <button
                         onClick={() => setFilter('involuntary')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'involuntary'
-                            ? 'bg-red-600 text-white shadow-lg shadow-red-600/20'
+                            ? 'bg-white text-black shadow-lg'
                             : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                             }`}
                     >
@@ -437,7 +437,7 @@ export default function ConnectionsPage() {
                     <button
                         onClick={() => setFilter('mutual')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'mutual'
-                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                            ? 'bg-white text-black shadow-lg'
                             : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
                             }`}
                     >
@@ -450,7 +450,7 @@ export default function ConnectionsPage() {
                 <div className="flex flex-wrap gap-4 items-center">
                     <div className="relative flex-1 min-w-[300px]">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                        <input type="text" placeholder="Search connections..." className="w-full bg-[#0f172a]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                        <input type="text" placeholder="Search connections..." className="w-full bg-[#0f172a]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
                 </div>
 
@@ -489,7 +489,7 @@ export default function ConnectionsPage() {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowActionModal(false)}></div>
                     <div className="relative w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
-                        <div className="flex items-center gap-3 text-red-400 mb-4">
+                        <div className="flex items-center gap-3 text-slate-400 mb-4">
                             <AlertTriangle size={24} />
                             <h3 className="text-xl font-black text-white uppercase tracking-tight">
                                 Involuntary Termination
@@ -509,7 +509,7 @@ export default function ConnectionsPage() {
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
                                     placeholder="Please specify the reason for termination..."
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-red-500 min-h-[120px] resize-none placeholder:text-slate-600"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-slate-500 min-h-[120px] resize-none placeholder:text-slate-600"
                                     autoFocus
                                 />
                             </div>
@@ -529,7 +529,7 @@ export default function ConnectionsPage() {
                                         }
                                     }}
                                     disabled={!reason.trim()}
-                                    className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 py-3 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Confirm Termination
                                 </button>
@@ -579,7 +579,7 @@ export default function ConnectionsPage() {
                                     type="text"
                                     value={contractValue}
                                     onChange={e => setContractValue(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-500"
                                     placeholder="$..."
                                     required
                                 />
@@ -589,14 +589,14 @@ export default function ConnectionsPage() {
                                 <input
                                     type="file"
                                     onChange={e => setContractFile(e.target.files?.[0] || null)}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600"
                                     accept=".pdf,.doc,.docx"
                                     required
                                 />
                             </div>
                             <div className="pt-4 flex gap-3">
                                 <button type="button" onClick={() => setContractConnection(null)} className="flex-1 py-3 bg-slate-800 text-slate-400 rounded-xl text-xs font-bold uppercase">Cancel</button>
-                                <button type="submit" disabled={isUploadingContract} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-2">
+                                <button type="submit" disabled={isUploadingContract} className="flex-1 py-3 bg-white hover:bg-slate-100 text-black rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-2">
                                     {isUploadingContract ? 'Uploading...' : 'Upload & Activate'}
                                 </button>
                             </div>
@@ -617,7 +617,7 @@ export default function ConnectionsPage() {
                             <div className="flex items-center gap-4">
                                 <h3 className="text-2xl font-black text-white uppercase">{selectedConnection.professional.name}</h3>
                                 <div className="flex flex-col">
-                                    <span className="text-xs text-blue-400 font-bold">{selectedConnection.professional.role}</span>
+                                    <span className="text-xs text-slate-400 font-bold">{selectedConnection.professional.role}</span>
                                     {(selectedConnection.professional.email || selectedConnection.professional.phone) && (
                                         <div className="flex gap-4 mt-1">
                                             {selectedConnection.professional.email && <span className="text-[10px] text-slate-500">{selectedConnection.professional.email}</span>}

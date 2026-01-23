@@ -30,8 +30,8 @@ export default function EmployerNotifications() {
                 urlPattern.lastIndex = 0; // Reset regex
                 // Use lighter colors for sender messages (green/emerald bubbles) for better contrast
                 const linkClass = isSenderMessage
-                    ? 'text-white underline hover:text-emerald-100 break-all font-medium'
-                    : 'text-blue-400 underline hover:text-blue-300 break-all';
+                    ? 'text-white underline hover:text-slate-200 break-all font-medium'
+                    : 'text-slate-300 underline hover:text-white break-all';
                 return (
                     <a key={i} href={part} target="_blank" rel="noopener noreferrer"
                         className={linkClass}>
@@ -279,13 +279,13 @@ export default function EmployerNotifications() {
             <aside className={`md:w-[380px] h-full border-r border-slate-800 flex-col bg-[#0b121e]/50 backdrop-blur-xl shrink-0 w-full ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 <header className="p-5 border-b border-slate-800 flex items-center justify-between bg-[#1e293b]/20 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white">
+                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white">
                             <Briefcase size={20} />
                         </div>
                         <div>
                             <h2 className="text-sm font-black text-white uppercase tracking-wider">Messages</h2>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
                                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Online</span>
                             </div>
                         </div>
@@ -295,13 +295,13 @@ export default function EmployerNotifications() {
                 {/* Search */}
                 <div className="p-3 shrink-0">
                     <div className="relative group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" size={16} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-slate-300 transition-colors" size={16} />
                         <input
                             type="text"
                             placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                            className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500/50 transition-all"
                         />
                     </div>
                 </div>
@@ -311,7 +311,7 @@ export default function EmployerNotifications() {
                     {/* Unread notifications - compact */}
                     {notifications.filter(n => !n.is_read).length > 0 && (
                         <div className="px-3 py-3">
-                            <h3 className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2 px-2 flex items-center gap-1.5">
+                            <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-2 flex items-center gap-1.5">
                                 <Zap size={10} /> New
                             </h3>
                             {notifications.filter(n => !n.is_read).map((notif) => (
@@ -324,10 +324,10 @@ export default function EmployerNotifications() {
                                             if (channel) setActiveConversation(channel);
                                         }
                                     }}
-                                    className="w-full p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 hover:border-emerald-500/40 transition-all cursor-pointer mb-2 text-left"
+                                    className="w-full p-3 rounded-2xl bg-slate-800 border border-slate-700 hover:border-slate-600 transition-all cursor-pointer mb-2 text-left"
                                 >
                                     <div className="flex items-start gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1 shrink-0"></div>
+                                        <div className="w-2 h-2 rounded-full bg-white mt-1 shrink-0"></div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[11px] text-white font-medium leading-snug line-clamp-2">{notif.message}</p>
                                             <span className="text-[9px] text-slate-500 mt-1 block">{new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -353,16 +353,16 @@ export default function EmployerNotifications() {
                                 <button
                                     key={userId}
                                     onClick={() => setActiveConversation(app)}
-                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.user?.id === userId ? 'bg-emerald-600/10' : 'hover:bg-slate-800/30'}`}
+                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.user?.id === userId ? 'bg-slate-700/50' : 'hover:bg-slate-800/30'}`}
                                 >
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.user?.id === userId ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.user?.id === userId ? 'bg-slate-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
                                         {app.user?.profileImageUrl ? (
                                             <img src={app.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <User size={20} />
                                         )}
                                         {hasUnread && (
-                                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0b121e] animate-pulse"></div>
+                                            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white rounded-full border-2 border-[#0b121e] animate-pulse"></div>
                                         )}
                                     </div>
                                     <div className="flex-1 text-left min-w-0 border-b border-slate-800/50 pb-3">
@@ -402,7 +402,7 @@ export default function EmployerNotifications() {
                                 >
                                     <ChevronLeft size={24} />
                                 </button>
-                                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center overflow-hidden shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-slate-700 text-white flex items-center justify-center overflow-hidden shrink-0">
                                     {activeConversation.user?.profileImageUrl ? (
                                         <img src={activeConversation.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
                                     ) : (
@@ -411,10 +411,10 @@ export default function EmployerNotifications() {
                                 </div>
                                 <div className="text-left">
                                     <h2 className="text-base font-bold text-white">{activeConversation.user?.name || 'Candidate'}</h2>
-                                    <p className="text-xs text-emerald-400">{activeConversation.job?.title || 'Job Thread'}</p>
+                                    <p className="text-xs text-slate-400">{activeConversation.job?.title || 'Job Thread'}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setActiveConversation(null)} className="hidden md:flex p-2 hover:bg-red-500/20 hover:text-red-400 text-slate-400 rounded-xl transition-all">
+                            <button onClick={() => setActiveConversation(null)} className="hidden md:flex p-2 hover:bg-slate-700 hover:text-white text-slate-400 rounded-xl transition-all">
                                 <X size={20} />
                             </button>
                         </header>
@@ -423,7 +423,7 @@ export default function EmployerNotifications() {
                         <div className="flex-1 overflow-y-auto p-6 space-y-4" style={{ scrollbarWidth: 'none' }}>
                             <div className="flex justify-center mb-4">
                                 <div className="px-4 py-1.5 bg-slate-900/80 border border-slate-800 rounded-full flex items-center gap-2">
-                                    <Shield size={10} className="text-emerald-500" />
+                                    <Shield size={10} className="text-white" />
                                     <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Encrypted</span>
                                 </div>
                             </div>
@@ -446,7 +446,7 @@ export default function EmployerNotifications() {
                                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                                                         <div className={`px-4 py-2.5 rounded-2xl relative ${isMe
-                                                            ? 'bg-emerald-500 text-white rounded-br-sm'
+                                                            ? 'bg-slate-700 text-white rounded-br-sm'
                                                             : 'bg-slate-800 text-slate-200 rounded-bl-sm'}`}>
                                                             <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{linkifyText(msg.content, isMe)}</p>
 
@@ -459,10 +459,10 @@ export default function EmployerNotifications() {
                                                             )}
 
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                                <span className={`text-[10px] ${isMe ? 'text-emerald-200' : 'text-slate-500'}`}>
+                                                                <span className={`text-[10px] ${isMe ? 'text-slate-400' : 'text-slate-500'}`}>
                                                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
-                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-blue-300" : "text-emerald-200/50"} />}
+                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-slate-400" : "text-slate-500"} />}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -503,7 +503,7 @@ export default function EmployerNotifications() {
                                         }
                                     }}
                                     placeholder="Type a message..."
-                                    className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/50 transition-all text-sm"
+                                    className="flex-1 bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-all text-sm"
                                 />
                                 <button
                                     onClick={() => {
@@ -511,7 +511,7 @@ export default function EmployerNotifications() {
                                         sendMessage();
                                     }}
                                     disabled={!newMessage.trim() || isSending}
-                                    className="w-11 h-11 flex items-center justify-center rounded-full transition-all bg-emerald-600 text-white hover:bg-emerald-500 active:scale-95 disabled:bg-slate-800 disabled:text-slate-600"
+                                    className="w-11 h-11 flex items-center justify-center rounded-full transition-all bg-white text-black hover:bg-slate-100 active:scale-95 disabled:bg-slate-800 disabled:text-slate-600"
                                 >
                                     <Send size={18} />
                                 </button>

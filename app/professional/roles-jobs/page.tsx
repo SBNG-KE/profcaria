@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Calendar, MapPin } from 'lucide-react';
+import { useTheme } from '@/app/context/ThemeContext';
 
 interface Connection {
     id: string;
@@ -18,6 +19,8 @@ interface Connection {
 }
 
 export default function RolesJobsPage() {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [connections, setConnections] = useState<Connection[]>([]);
     const [filter, setFilter] = useState<'all' | 'current' | 'resigned' | 'involuntary' | 'mutual'>('all');
     const [isLoading, setIsLoading] = useState(true);
@@ -100,15 +103,15 @@ export default function RolesJobsPage() {
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
             {/* Header Section */}
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
+            <header className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
                 <div className="text-left">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="p-4 bg-blue-500/20 rounded-2xl text-blue-400">
+                        <div className={`p-4 rounded-2xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <Briefcase size={32} />
                         </div>
                         <div>
-                            <h1 className="text-4xl font-black text-white uppercase tracking-tight">Roles & Jobs</h1>
-                            <p className="text-slate-400 text-sm mt-1">View your career history and current positions</p>
+                            <h1 className={`text-4xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Roles & Jobs</h1>
+                            <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>View your career history and current positions</p>
                         </div>
                     </div>
                 </div>
@@ -117,8 +120,8 @@ export default function RolesJobsPage() {
                     <button
                         onClick={() => setFilter('all')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
+                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         All ({connections.length})
@@ -126,8 +129,8 @@ export default function RolesJobsPage() {
                     <button
                         onClick={() => setFilter('current')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'current'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
+                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Current ({connections.filter(c => !isTerminated(c)).length})
@@ -135,8 +138,8 @@ export default function RolesJobsPage() {
                     <button
                         onClick={() => setFilter('resigned')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'resigned'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
+                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Resigned ({connections.filter(c => c.status === 'resigned').length})
@@ -144,8 +147,8 @@ export default function RolesJobsPage() {
                     <button
                         onClick={() => setFilter('involuntary')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'involuntary'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
+                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Involuntary ({connections.filter(c => c.status === 'involuntary' || c.status === 'terminated').length})
@@ -153,8 +156,8 @@ export default function RolesJobsPage() {
                     <button
                         onClick={() => setFilter('mutual')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'mutual'
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
+                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Mutual ({connections.filter(c => c.status === 'mutual').length})
@@ -165,11 +168,11 @@ export default function RolesJobsPage() {
             {/* Jobs Grid */}
             {
                 isLoading ? (
-                    <div className="text-center py-20 text-slate-500 animate-pulse">Loading positions...</div>
+                    <div className={`text-center py-20 animate-pulse ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Loading positions...</div>
                 ) : filteredConnections.length === 0 ? (
                     <div className="text-center py-20">
-                        <Briefcase size={64} className="mx-auto text-slate-700 mb-4" />
-                        <p className="text-slate-500 text-lg">No {filter !== 'all' ? filter : ''} roles found</p>
+                        <Briefcase size={64} className={`mx-auto mb-4 ${isDark ? 'text-slate-700' : 'text-neutral-300'}`} />
+                        <p className={`text-lg ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>No {filter !== 'all' ? filter : ''} roles found</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -178,16 +181,16 @@ export default function RolesJobsPage() {
                             return (
                                 <div
                                     key={connection.id}
-                                    className="bg-[#0f172a] border border-slate-800 rounded-2xl p-6 hover:border-blue-500/30 transition-all flex flex-col h-full group"
+                                    className={`rounded-2xl p-6 transition-all flex flex-col h-full group border ${isDark ? 'bg-[#0f172a] border-slate-800 hover:border-neutral-600' : 'bg-white border-neutral-200 hover:border-neutral-400 shadow-sm'}`}
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
                                             <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                <h3 className="text-xl font-bold text-white line-clamp-1 group-hover:text-blue-400 transition-colors" title={connection.job?.title}>
+                                                <h3 className={`text-xl font-bold line-clamp-1 transition-colors ${isDark ? 'text-white group-hover:text-neutral-300' : 'text-black group-hover:text-neutral-600'}`} title={connection.job?.title}>
                                                     {connection.job?.title || 'Position'}
                                                 </h3>
                                             </div>
-                                            <p className="text-slate-400 font-medium mb-1 line-clamp-1" title={connection.company?.name}>
+                                            <p className={`font-medium mb-1 line-clamp-1 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`} title={connection.company?.name}>
                                                 {connection.company?.name || 'Company'}
                                             </p>
                                         </div>
@@ -203,16 +206,16 @@ export default function RolesJobsPage() {
                                         </span>
                                     </div>
 
-                                    <div className="mt-auto space-y-3 pt-4 border-t border-slate-800/50">
-                                        <div className="flex items-center gap-2 text-sm text-slate-500">
-                                            <Calendar size={14} className="text-blue-500/70" />
+                                    <div className={`mt-auto space-y-3 pt-4 border-t ${isDark ? 'border-slate-800/50' : 'border-neutral-200'}`}>
+                                        <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                                            <Calendar size={14} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
                                             <span>
                                                 Started: {formatDate(connection.created_at)}
                                             </span>
                                         </div>
 
                                         {terminated && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                                            <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
                                                 <Calendar size={14} className="text-red-500/70" />
                                                 <span>
                                                     Ended: {formatDate(connection.terminated_at || new Date().toISOString())}
@@ -221,14 +224,14 @@ export default function RolesJobsPage() {
                                         )}
 
                                         <div className="flex items-center gap-2 text-sm">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-                                            <span className={terminated ? 'text-slate-500' : 'text-emerald-500/80 font-medium'}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-slate-600' : 'bg-neutral-400'}`} />
+                                            <span className={terminated ? (isDark ? 'text-slate-500' : 'text-neutral-500') : 'text-emerald-500/80 font-medium'}>
                                                 Duration: {calculateDuration(connection.created_at, connection.terminated_at)}
                                             </span>
                                         </div>
 
                                         {connection.job?.location_type && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-500">
+                                            <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
                                                 <MapPin size={14} />
                                                 <span className="capitalize">{connection.job.location_type}</span>
                                             </div>

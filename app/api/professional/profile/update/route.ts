@@ -31,7 +31,8 @@ export async function PUT(req: Request) {
             phone,
             country,
             city,
-            address
+            address,
+            about
         } = body;
 
         // 3. Update User Table (Name, Role, Email, Phone)
@@ -39,6 +40,7 @@ export async function PUT(req: Request) {
         if (firstName) userUpdates.enc_first_name = encryptData(firstName);
         if (lastName) userUpdates.enc_last_name = encryptData(lastName);
         if (role) userUpdates.enc_current_role = encryptData(role);
+        if (about) userUpdates.enc_about = encryptData(about);
         if (email) {
             userUpdates.enc_email = encryptData(email);
             userUpdates.email_index = hashForIndex(email);

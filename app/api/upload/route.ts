@@ -15,18 +15,22 @@ export async function POST(request: Request) {
   const contentType = request.headers.get('content-type')?.split(';')[0] || 'image/png';
   const contentLength = parseInt(request.headers.get('content-length') || '0', 10);
 
+  // Determine validation type based on MIME
+  const isVideo = contentType.startsWith('video/');
+  const validationType = isVideo ? 'video' : 'profileImage';
+
   // Validate file before upload
   const validation = validateFile({
     name: rawFilename,
     type: contentType,
     size: contentLength,
-  }, 'profileImage');
+  }, validationType);
 
   if (!validation.valid) {
     return NextResponse.json({
       error: validation.error || 'Invalid file',
-      allowedTypes: 'JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, SVG',
-      maxSize: '10MB'
+      allowedTypes: isVideo ? 'MP4, WebM, OGG, MOV' : 'JPEG, PNG, WebP, GIF, BMP, TIFF, HEIC, AVIF, SVG',
+      maxSize: isVideo ? '50MB' : '10MB'
     }, { status: 400 });
   }
 
@@ -38,6 +42,7 @@ export async function POST(request: Request) {
   // Since we encrypt the URL in the HTML content stored in DB, it effectively remains private.
   const blob = await put(filename, request.body!, {
     access: 'public',
+    addRandomSuffix: true, // Always generate unique filename - never overwrite
   });
 
   return NextResponse.json(blob);

@@ -6,6 +6,7 @@ import {
     ChevronLeft, Building2, Calendar, MapPin,
     Send, CheckCircle2, AlertCircle, Info, Shield, Check
 } from 'lucide-react';
+import { useTheme } from '@/app/context/ThemeContext';
 
 interface FormField {
     id: string;
@@ -30,6 +31,8 @@ interface Job {
 }
 
 export default function JobApplyPage() {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const router = useRouter();
     const { id } = useParams();
     const [job, setJob] = useState<Job | null>(null);
@@ -122,15 +125,15 @@ export default function JobApplyPage() {
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center">
-            <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className={`w-12 h-12 border-4 rounded-full animate-spin ${isDark ? 'border-white/20 border-t-white' : 'border-black/20 border-t-black'}`}></div>
         </div>
     );
 
     if (!job) return (
         <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
             <AlertCircle size={48} className="text-red-500 opacity-50" />
-            <p className="font-bold text-slate-500 uppercase tracking-widest">Job post no longer available</p>
-            <button onClick={() => router.back()} className="text-blue-500 font-bold hover:underline uppercase text-xs">Go Back</button>
+            <p className={`font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Job post no longer available</p>
+            <button onClick={() => router.back()} className={`font-bold hover:underline uppercase text-xs ${isDark ? 'text-white' : 'text-black'}`}>Go Back</button>
         </div>
     );
 
@@ -140,15 +143,15 @@ export default function JobApplyPage() {
                 <CheckCircle2 size={48} className="text-emerald-500" />
             </div>
             <div className="space-y-4">
-                <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Application Sent!</h1>
-                <p className="text-slate-400 leading-relaxed">
-                    Your encrypted application has been delivered to <span className="text-blue-400 font-bold">{job.company.name}</span>.
+                <h1 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>Application Sent!</h1>
+                <p className={isDark ? 'text-slate-400 leading-relaxed' : 'text-neutral-600 leading-relaxed'}>
+                    Your encrypted application has been delivered to <span className="font-bold">{job.company.name}</span>.
                     The employer now has access to your professional profile. You'll be notified if they request an interview.
                 </p>
             </div>
             <button
                 onClick={() => router.push('/professional/home')}
-                className="px-10 py-4 bg-slate-900 border border-slate-700 hover:border-blue-500/50 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95"
+                className={`px-10 py-4 border rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${isDark ? 'bg-slate-900 border-slate-700 hover:border-white/50 text-white' : 'bg-white border-neutral-200 hover:border-black/50 text-black'}`}
             >
                 Return to Dashboard
             </button>
@@ -158,23 +161,23 @@ export default function JobApplyPage() {
     return (
         <div className="p-8 max-w-4xl mx-auto space-y-12 pb-32">
 
-            <header className="flex flex-col md:flex-row md:items-start justify-between gap-8 border-b border-slate-800 pb-12">
+            <header className={`flex flex-col md:flex-row md:items-start justify-between gap-8 border-b pb-12 ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
                 <div className="space-y-6 text-left">
-                    <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-700 to-slate-800 border-2 border-slate-700 shadow-2xl flex items-center justify-center overflow-hidden">
+                    <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br border-2 shadow-2xl flex items-center justify-center overflow-hidden ${isDark ? 'from-slate-700 to-slate-800 border-slate-700' : 'from-neutral-100 to-neutral-200 border-neutral-200'}`}>
                         {job.company.logoUrl ? (
                             <img src={job.company.logoUrl} alt={job.company.name} className="w-full h-full object-cover" />
                         ) : (
-                            <Building2 size={32} className="text-slate-500" />
+                            <Building2 size={32} className={isDark ? 'text-slate-500' : 'text-neutral-400'} />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <h1 className="text-5xl font-black text-white leading-none uppercase tracking-tighter">{job.title}</h1>
-                        <div className="flex flex-wrap items-center gap-6 text-slate-500 text-xs font-bold uppercase tracking-widest">
-                            <span className="flex items-center gap-2 text-blue-400"><Building2 size={16} /> {job.company.name}</span>
+                        <h1 className={`text-5xl font-black leading-none uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h1>
+                        <div className={`flex flex-wrap items-center gap-6 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                            <span className={`flex items-center gap-2 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}><Building2 size={16} /> {job.company.name}</span>
                             <span className="flex items-center gap-2">
                                 <MapPin size={16} />
                                 {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}
-                                {job.location && <span className="text-slate-400"> — {job.location}</span>}
+                                {job.location && <span className={isDark ? 'text-slate-400' : 'text-neutral-400'}> — {job.location}</span>}
                             </span>
                         </div>
                     </div>
@@ -184,15 +187,15 @@ export default function JobApplyPage() {
             <div className="flex flex-col lg:flex-row gap-12 text-left">
                 {/* APPLICATION FORM - First on mobile */}
                 <div className="lg:w-2/3 order-1">
-                    <form onSubmit={handleSubmit} className="bg-[#0f172a] border border-slate-800 rounded-[40px] p-10 space-y-8 shadow-2xl">
-                        <div className="space-y-2 border-b border-slate-800 pb-6 mb-8">
-                            <h3 className="text-2xl font-black text-white uppercase tracking-tight">Application Questionnaire</h3>
-                            <p className="text-xs text-slate-500 font-bold uppercase">Please answer the following questions to help us evaluate your fit.</p>
+                    <form onSubmit={handleSubmit} className={`border rounded-[40px] p-10 space-y-8 shadow-2xl ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
+                        <div className={`space-y-2 border-b pb-6 mb-8 ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
+                            <h3 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Questionnaire</h3>
+                            <p className={`text-xs font-bold uppercase ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Please answer the following questions to help us evaluate your fit.</p>
                         </div>
 
                         {job.formSchema.map((field) => (
                             <div key={field.id} className="space-y-3">
-                                <label className="text-sm font-black text-slate-300 uppercase tracking-wide flex items-baseline gap-2">
+                                <label className={`text-sm font-black uppercase tracking-wide flex items-baseline gap-2 ${isDark ? 'text-slate-300' : 'text-neutral-700'}`}>
                                     {field.label}
                                     {field.required && <span className="text-red-500 text-xs">*</span>}
                                 </label>
@@ -202,7 +205,7 @@ export default function JobApplyPage() {
                                         type="text"
                                         required={field.required}
                                         onChange={(e) => handleInputChange(field.id, e.target.value)}
-                                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all font-medium"
+                                        className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-medium ${isDark ? 'bg-slate-900 border-slate-800 text-white focus:ring-white/20' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/10'}`}
                                     />
                                 )}
 
@@ -211,14 +214,14 @@ export default function JobApplyPage() {
                                         type="number"
                                         required={field.required}
                                         onChange={(e) => handleInputChange(field.id, e.target.value)}
-                                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all font-medium"
+                                        className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-medium ${isDark ? 'bg-slate-900 border-slate-800 text-white focus:ring-white/20' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/10'}`}
                                     />
                                 )}
 
                                 {field.type === 'radio' && field.options && (
                                     <div className="grid grid-cols-1 gap-2">
                                         {field.options.map((opt, i) => (
-                                            <label key={i} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${formData[field.id] === opt ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700'}`}>
+                                            <label key={i} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${formData[field.id] === opt ? (isDark ? 'bg-white/10 border-white text-white' : 'bg-black/5 border-black text-black') : (isDark ? 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700' : 'bg-neutral-50 border-neutral-200 text-neutral-500 hover:border-neutral-300')}`}>
                                                 <input
                                                     type="radio"
                                                     name={field.id}
@@ -226,8 +229,8 @@ export default function JobApplyPage() {
                                                     onChange={() => handleInputChange(field.id, opt)}
                                                     className="hidden"
                                                 />
-                                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData[field.id] === opt ? 'border-blue-500' : 'border-slate-700'}`}>
-                                                    {formData[field.id] === opt && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData[field.id] === opt ? (isDark ? 'border-white' : 'border-black') : (isDark ? 'border-slate-700' : 'border-neutral-300')}`}>
+                                                    {formData[field.id] === opt && <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-white' : 'bg-black'}`} />}
                                                 </div>
                                                 <span className="text-xs font-bold uppercase tracking-widest">{opt}</span>
                                             </label>
@@ -238,13 +241,13 @@ export default function JobApplyPage() {
                                 {field.type === 'checkbox' && field.options && (
                                     <div className="grid grid-cols-1 gap-2">
                                         {field.options.map((opt, i) => (
-                                            <label key={i} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${formData[field.id]?.includes(opt) ? 'bg-blue-600/10 border-blue-500 text-white' : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700'}`}>
+                                            <label key={i} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${formData[field.id]?.includes(opt) ? (isDark ? 'bg-white/10 border-white text-white' : 'bg-black/5 border-black text-black') : (isDark ? 'bg-slate-900/50 border-slate-800 text-slate-500 hover:border-slate-700' : 'bg-neutral-50 border-neutral-200 text-neutral-500 hover:border-neutral-300')}`}>
                                                 <input
                                                     type="checkbox"
                                                     onChange={(e) => handleCheckboxChange(field.id, opt, e.target.checked)}
                                                     className="hidden"
                                                 />
-                                                <div className={`w-4 h-4 border-2 rounded ${formData[field.id]?.includes(opt) ? 'border-blue-500 bg-blue-500' : 'border-slate-700'}`} />
+                                                <div className={`w-4 h-4 border-2 rounded ${formData[field.id]?.includes(opt) ? (isDark ? 'border-white bg-white' : 'border-black bg-black') : (isDark ? 'border-slate-700' : 'border-neutral-300')}`} />
                                                 <span className="text-xs font-bold uppercase tracking-widest">{opt}</span>
                                             </label>
                                         ))}
@@ -254,16 +257,16 @@ export default function JobApplyPage() {
                         ))}
 
                         {/* PROFILE ACCESS INFO - Auto-applied from home settings */}
-                        <div className="space-y-4 pt-8 border-t border-slate-800">
+                        <div className={`space-y-4 pt-8 border-t ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
                             <div className="flex items-center gap-3">
                                 <Shield size={20} className="text-emerald-400" />
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight">Profile Access</h3>
+                                <h3 className={`text-lg font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Profile Access</h3>
                             </div>
                             <div className="p-5 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
-                                <p className="text-xs text-slate-400 mb-3">The following cards will be shared (managed in Home &gt; Manage Permissions):</p>
+                                <p className={`text-xs mb-3 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>The following cards will be shared (managed in Home &gt; Manage Permissions):</p>
                                 <div className="flex flex-wrap gap-2">
                                     {accessList.length === 0 ? (
-                                        <span className="text-xs text-slate-500 italic">No cards selected - go to Home to manage permissions</span>
+                                        <span className={`text-xs italic ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>No cards selected - go to Home to manage permissions</span>
                                     ) : (
                                         accessList.map((card) => (
                                             <span key={card} className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-lg">
@@ -278,7 +281,7 @@ export default function JobApplyPage() {
                         <button
                             type="submit"
                             disabled={submitting}
-                            className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-2xl shadow-blue-600/30 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-8"
+                            className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-2xl active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3 mt-8 ${isDark ? 'bg-white text-black hover:bg-neutral-200 shadow-white/20' : 'bg-black text-white hover:bg-neutral-800 shadow-black/20'}`}
                         >
                             <Send size={18} />
                             {submitting ? 'Encrypting & Sending...' : 'Submit Secured Application'}
@@ -288,18 +291,18 @@ export default function JobApplyPage() {
 
                 {/* JOB DESCRIPTION - Second on mobile, sidebar on desktop */}
                 <div className="lg:w-1/3 space-y-6 order-2">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                        <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+                    <h3 className={`text-sm font-black uppercase tracking-widest flex items-center gap-3 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <div className={`w-1.5 h-6 rounded-full ${isDark ? 'bg-white' : 'bg-black'}`} />
                         Description
                     </h3>
-                    <p className="text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</p>
+                    <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'text-slate-400' : 'text-neutral-600'}`}>{job.description}</p>
 
-                    <div className="p-6 bg-blue-600/5 border border-blue-500/10 rounded-3xl space-y-4">
-                        <div className="flex items-center gap-3 text-blue-400">
+                    <div className={`p-6 border rounded-3xl space-y-4 ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
+                        <div className={`flex items-center gap-3 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                             <Info size={18} />
                             <h4 className="text-xs font-black uppercase tracking-widest">Secure Info</h4>
                         </div>
-                        <p className="text-[10px] text-slate-500 leading-relaxed font-bold uppercase">
+                        <p className={`text-[10px] leading-relaxed font-bold uppercase ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
                             Your application is protected with End-to-End Encryption.
                             Only authorized recruitment officers from this entity can view your data.
                         </p>

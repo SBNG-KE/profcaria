@@ -30,7 +30,9 @@ export async function PUT(req: Request) {
             email,
             country,
             city,
-            address
+            address,
+            about,
+            foundedYear
         } = body;
 
         // 3. Update Companies Table (Name, Website, Email)
@@ -53,6 +55,8 @@ export async function PUT(req: Request) {
             companyUpdates.company_name_index = companyNameIndex;
         }
         if (website) companyUpdates.enc_website = encryptData(website);
+        if (about) companyUpdates.enc_about = encryptData(about);
+        if (foundedYear) companyUpdates.enc_founded_year = encryptData(foundedYear);
         if (email) {
             companyUpdates.enc_work_email = encryptData(email);
             companyUpdates.work_email_index = hashForIndex(email);

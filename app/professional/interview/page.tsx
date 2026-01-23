@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Video, Calendar, Clock, X, Building2, Link2, FileText, ExternalLink } from 'lucide-react';
+import { useTheme } from '@/app/context/ThemeContext';
 
 interface Interview {
     id: string;
@@ -14,58 +15,57 @@ interface Interview {
     companyLogo?: string;
 }
 
-const InterviewCard = ({ interview, onViewDetails, onJoinSession }: { interview: Interview, onViewDetails: () => void, onJoinSession: () => void }) => {
+const InterviewCard = ({ interview, onViewDetails, onJoinSession, isDark }: { interview: Interview, onViewDetails: () => void, onJoinSession: () => void, isDark: boolean }) => {
     const scheduledDate = new Date(interview.scheduledAt);
     const formattedDate = scheduledDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     const formattedTime = scheduledDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     const isPast = scheduledDate < new Date();
 
     return (
-        <div className={`bg-slate-900/50 border rounded-[32px] p-6 hover:border-blue-500/30 transition-all group ${isPast ? 'border-slate-800 opacity-60' : 'border-slate-800'}`}>
+        <div className={`border rounded-[32px] p-6 transition-all group ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200 shadow-sm'} ${isPast ? 'opacity-60' : ''} ${isDark ? 'hover:border-neutral-600' : 'hover:border-neutral-400'}`}>
             <div className="flex items-start gap-4 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shadow-lg shrink-0">
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br border overflow-hidden flex items-center justify-center shadow-lg shrink-0 ${isDark ? 'from-slate-700 to-slate-800 border-slate-700' : 'from-neutral-100 to-neutral-200 border-neutral-200'}`}>
                     {interview.companyLogo ? (
                         <img src={interview.companyLogo} alt={interview.companyName} className="w-full h-full object-cover" />
                     ) : (
-                        <Building2 size={24} className="text-slate-500" />
+                        <Building2 size={24} className={isDark ? 'text-slate-500' : 'text-neutral-400'} />
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors truncate">{interview.jobTitle}</h3>
-                    <p className="text-sm text-blue-400 font-medium">{interview.companyName}</p>
+                    <h3 className={`text-lg font-bold truncate transition-colors ${isDark ? 'text-white group-hover:text-neutral-300' : 'text-black group-hover:text-neutral-600'}`}>{interview.jobTitle}</h3>
+                    <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{interview.companyName}</p>
                 </div>
             </div>
 
             <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-slate-400">
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center"><Calendar size={14} /></div>
+                <div className={`flex items-center gap-3 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-white/5' : 'bg-black/5'}`}><Calendar size={14} /></div>
                     <span className="text-xs font-medium">{formattedDate}</span>
                 </div>
-                <div className="flex items-center gap-3 text-slate-400">
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center"><Clock size={14} /></div>
+                <div className={`flex items-center gap-3 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDark ? 'bg-white/5' : 'bg-black/5'}`}><Clock size={14} /></div>
                     <span className="text-xs font-medium">{formattedTime}</span>
                 </div>
             </div>
 
-            <div className="flex items-center justify-between pt-6 border-t border-white/5 gap-2">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                    interview.status === 'scheduled' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+            <div className={`flex items-center justify-between pt-6 border-t gap-2 ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
+                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${interview.status === 'scheduled' ? (isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-black/5 text-black border border-black/10') :
                     interview.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                    'bg-slate-800 text-slate-400'
-                }`}>
+                        (isDark ? 'bg-slate-800 text-slate-400' : 'bg-neutral-100 text-neutral-500')
+                    }`}>
                     {isPast ? 'Completed' : interview.status}
                 </span>
                 <div className="flex items-center gap-2">
-                    <button 
+                    <button
                         onClick={onViewDetails}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl border border-slate-700 transition-all"
+                        className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-black border-neutral-200'}`}
                     >
                         Details
                     </button>
                     {interview.meetingLink && !isPast && (
-                        <button 
+                        <button
                             onClick={onJoinSession}
-                            className="px-4 py-2 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl border border-blue-500/20 transition-all"
+                            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl border transition-all ${isDark ? 'bg-white/10 hover:bg-white text-white hover:text-black border-white/20' : 'bg-black/5 hover:bg-black text-black hover:text-white border-black/20'}`}
                         >
                             Join Session
                         </button>
@@ -77,6 +77,8 @@ const InterviewCard = ({ interview, onViewDetails, onJoinSession }: { interview:
 };
 
 export default function InterviewPage() {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [interviews, setInterviews] = useState<Interview[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
@@ -121,23 +123,23 @@ export default function InterviewPage() {
             <div className="relative z-10 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <header className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-4xl font-black text-white uppercase tracking-tight">Interview Center</h1>
-                        <p className="text-slate-400 mt-2">View your scheduled interviews and join sessions.</p>
+                        <h1 className={`text-4xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Interview Center</h1>
+                        <p className={`mt-2 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>View your scheduled interviews and join sessions.</p>
                     </div>
                 </header>
 
                 {/* Upcoming Interviews Summary Card */}
-                <div className="bg-slate-900/50 border border-slate-800 p-6 rounded-2xl">
+                <div className={`border p-6 rounded-2xl ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl">
+                        <div className={`p-3 rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <Calendar size={24} />
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-white">Upcoming Interviews</h3>
-                            <p className="text-slate-400 text-sm">
-                                {loading ? 'Loading...' : 
+                            <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>Upcoming Interviews</h3>
+                            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>
+                                {loading ? 'Loading...' :
                                     upcomingInterviews.length === 0 ? 'No interviews scheduled. Keep applying!' :
-                                    `You have ${upcomingInterviews.length} interview${upcomingInterviews.length > 1 ? 's' : ''} scheduled`
+                                        `You have ${upcomingInterviews.length} interview${upcomingInterviews.length > 1 ? 's' : ''} scheduled`
                                 }
                             </p>
                         </div>
@@ -146,21 +148,21 @@ export default function InterviewPage() {
 
                 {loading ? (
                     <div className="py-20 flex flex-col items-center justify-center space-y-4">
-                        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-                        <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Loading interviews...</p>
+                        <div className={`w-12 h-12 border-4 rounded-full animate-spin ${isDark ? 'border-white/20 border-t-white' : 'border-black/20 border-t-black'}`}></div>
+                        <p className={`font-bold text-xs uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Loading interviews...</p>
                     </div>
                 ) : interviews.length === 0 ? (
-                    <div className="bg-[#0f172a] border border-slate-800 rounded-[40px] overflow-hidden">
-                        <div className="p-8 border-b border-slate-800 flex items-center justify-between">
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Your Interviews</h2>
-                            <Clock className="text-slate-500" />
+                    <div className={`border rounded-[40px] overflow-hidden ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                        <div className={`p-8 border-b flex items-center justify-between ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
+                            <h2 className={`text-2xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>Your Interviews</h2>
+                            <Clock className={isDark ? 'text-slate-500' : 'text-neutral-400'} />
                         </div>
                         <div className="p-12 text-center space-y-4">
-                            <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Video size={32} className="text-slate-600" />
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${isDark ? 'bg-slate-800/50' : 'bg-neutral-100'}`}>
+                                <Video size={32} className={isDark ? 'text-slate-600' : 'text-neutral-400'} />
                             </div>
-                            <h4 className="text-lg font-bold text-slate-300">No Interview History</h4>
-                            <p className="text-slate-500 max-w-md mx-auto">Your upcoming and completed interviews will appear here once they are scheduled by employers.</p>
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-slate-300' : 'text-neutral-700'}`}>No Interview History</h4>
+                            <p className={`max-w-md mx-auto ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Your upcoming and completed interviews will appear here once they are scheduled by employers.</p>
                         </div>
                     </div>
                 ) : (
@@ -168,15 +170,16 @@ export default function InterviewPage() {
                         {/* Upcoming Interviews */}
                         {upcomingInterviews.length > 0 && (
                             <div className="space-y-4">
-                                <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                                    <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+                                <h2 className={`text-sm font-black uppercase tracking-widest flex items-center gap-3 ${isDark ? 'text-white' : 'text-black'}`}>
+                                    <div className={`w-1.5 h-6 rounded-full ${isDark ? 'bg-white' : 'bg-black'}`} />
                                     Upcoming
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {upcomingInterviews.map(interview => (
-                                        <InterviewCard 
-                                            key={interview.id} 
+                                        <InterviewCard
+                                            key={interview.id}
                                             interview={interview}
+                                            isDark={isDark}
                                             onViewDetails={() => setSelectedInterview(interview)}
                                             onJoinSession={() => openJoinConfirmation(interview)}
                                         />
@@ -188,15 +191,16 @@ export default function InterviewPage() {
                         {/* Past Interviews */}
                         {pastInterviews.length > 0 && (
                             <div className="space-y-4">
-                                <h2 className="text-sm font-black text-slate-500 uppercase tracking-widest flex items-center gap-3">
-                                    <div className="w-1.5 h-6 bg-slate-700 rounded-full" />
+                                <h2 className={`text-sm font-black uppercase tracking-widest flex items-center gap-3 ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>
+                                    <div className={`w-1.5 h-6 rounded-full ${isDark ? 'bg-slate-700' : 'bg-neutral-300'}`} />
                                     Past Interviews
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {pastInterviews.map(interview => (
-                                        <InterviewCard 
-                                            key={interview.id} 
+                                        <InterviewCard
+                                            key={interview.id}
                                             interview={interview}
+                                            isDark={isDark}
                                             onViewDetails={() => setSelectedInterview(interview)}
                                             onJoinSession={() => openJoinConfirmation(interview)}
                                         />
@@ -212,22 +216,22 @@ export default function InterviewPage() {
             {selectedInterview && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setSelectedInterview(null)}></div>
-                    <div className="relative w-full max-w-2xl bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95">
-                        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                    <div className={`relative w-full max-w-2xl border rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 ${isDark ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-neutral-200'}`}>
+                        <div className={`p-8 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                             <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-700 overflow-hidden flex items-center justify-center shadow-lg">
+                                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br border overflow-hidden flex items-center justify-center shadow-lg ${isDark ? 'from-slate-700 to-slate-800 border-slate-700' : 'from-neutral-100 to-neutral-200 border-neutral-200'}`}>
                                     {selectedInterview.companyLogo ? (
                                         <img src={selectedInterview.companyLogo} alt={selectedInterview.companyName} className="w-full h-full object-cover" />
                                     ) : (
-                                        <Building2 size={28} className="text-slate-500" />
+                                        <Building2 size={28} className={isDark ? 'text-slate-500' : 'text-neutral-400'} />
                                     )}
                                 </div>
                                 <div className="text-left">
-                                    <h3 className="text-2xl font-black text-white uppercase tracking-tight">{selectedInterview.jobTitle}</h3>
-                                    <p className="text-sm text-blue-400 font-bold">{selectedInterview.companyName}</p>
+                                    <h3 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>{selectedInterview.jobTitle}</h3>
+                                    <p className={`text-sm font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{selectedInterview.companyName}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setSelectedInterview(null)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors">
+                            <button onClick={() => setSelectedInterview(null)} className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-neutral-100 text-neutral-400'}`}>
                                 <X size={24} />
                             </button>
                         </div>
@@ -235,85 +239,84 @@ export default function InterviewPage() {
                         <div className="p-8 space-y-6">
                             {/* Date & Time */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-                                    <div className="flex items-center gap-3 text-blue-400 mb-2">
+                                <div className={`border rounded-2xl p-5 ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                    <div className={`flex items-center gap-3 mb-2 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                         <Calendar size={18} />
                                         <span className="text-xs font-black uppercase tracking-widest">Date</span>
                                     </div>
-                                    <p className="text-lg font-bold text-white">
+                                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>
                                         {new Date(selectedInterview.scheduledAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                                     </p>
                                 </div>
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-                                    <div className="flex items-center gap-3 text-blue-400 mb-2">
+                                <div className={`border rounded-2xl p-5 ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                    <div className={`flex items-center gap-3 mb-2 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                         <Clock size={18} />
                                         <span className="text-xs font-black uppercase tracking-widest">Time</span>
                                     </div>
-                                    <p className="text-lg font-bold text-white">
+                                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>
                                         {new Date(selectedInterview.scheduledAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Meeting Link */}
-                            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-                                <div className="flex items-center gap-3 text-blue-400 mb-2">
+                            <div className={`border rounded-2xl p-5 ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                <div className={`flex items-center gap-3 mb-2 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                     <Link2 size={18} />
                                     <span className="text-xs font-black uppercase tracking-widest">Meeting Link</span>
                                 </div>
                                 {selectedInterview.meetingLink ? (
                                     <div className="flex items-center gap-3">
-                                        <p className="text-sm text-slate-300 font-medium truncate flex-1">{selectedInterview.meetingLink}</p>
-                                        <button 
+                                        <p className={`text-sm font-medium truncate flex-1 ${isDark ? 'text-slate-300' : 'text-neutral-600'}`}>{selectedInterview.meetingLink}</p>
+                                        <button
                                             onClick={() => navigator.clipboard.writeText(selectedInterview.meetingLink)}
-                                            className="text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-widest"
+                                            className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-white hover:text-neutral-300' : 'text-black hover:text-neutral-600'}`}
                                         >
                                             Copy
                                         </button>
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-slate-500 italic">Meeting link will be shared by the employer</p>
+                                    <p className={`text-sm italic ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Meeting link will be shared by the employer</p>
                                 )}
                             </div>
 
                             {/* Notes */}
                             {selectedInterview.notes && (
-                                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5">
-                                    <div className="flex items-center gap-3 text-blue-400 mb-2">
+                                <div className={`border rounded-2xl p-5 ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                    <div className={`flex items-center gap-3 mb-2 ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                         <FileText size={18} />
                                         <span className="text-xs font-black uppercase tracking-widest">Notes from Employer</span>
                                     </div>
-                                    <p className="text-sm text-slate-300 leading-relaxed">{selectedInterview.notes}</p>
+                                    <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-neutral-600'}`}>{selectedInterview.notes}</p>
                                 </div>
                             )}
 
                             {/* Status */}
-                            <div className="flex items-center justify-between p-5 bg-blue-600/5 border border-blue-500/10 rounded-2xl">
+                            <div className={`flex items-center justify-between p-5 border rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
                                 <div className="flex items-center gap-3">
-                                    <Video size={20} className="text-blue-400" />
-                                    <span className="text-sm font-bold text-slate-300">Interview Status</span>
+                                    <Video size={20} className={isDark ? 'text-neutral-300' : 'text-neutral-600'} />
+                                    <span className={`text-sm font-bold ${isDark ? 'text-slate-300' : 'text-neutral-600'}`}>Interview Status</span>
                                 </div>
-                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                    selectedInterview.status === 'scheduled' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${selectedInterview.status === 'scheduled' ? (isDark ? 'bg-white/10 text-white border border-white/20' : 'bg-black/5 text-black border border-black/10') :
                                     selectedInterview.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                                    'bg-slate-800 text-slate-400'
-                                }`}>
+                                        (isDark ? 'bg-slate-800 text-slate-400' : 'bg-neutral-100 text-neutral-500')
+                                    }`}>
                                     {selectedInterview.status}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="p-8 border-t border-white/5 flex gap-4">
+                        <div className={`p-8 border-t flex gap-4 ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                             <button
                                 onClick={() => setSelectedInterview(null)}
-                                className="flex-1 py-4 bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all"
+                                className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${isDark ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-neutral-100 text-black hover:bg-neutral-200'}`}
                             >
                                 Close
                             </button>
                             {selectedInterview.meetingLink && (
                                 <button
                                     onClick={() => handleJoinMeeting(selectedInterview)}
-                                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-600/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                                    className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-neutral-200 shadow-white/20' : 'bg-black text-white hover:bg-neutral-800 shadow-black/20'}`}
                                 >
                                     <ExternalLink size={16} />
                                     Join Meeting
@@ -328,66 +331,66 @@ export default function InterviewPage() {
             {showJoinConfirm && interviewToJoin && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowJoinConfirm(false)}></div>
-                    <div className="relative w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95">
-                        <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                    <div className={`relative w-full max-w-md border rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 ${isDark ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-neutral-200'}`}>
+                        <div className={`p-8 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                                <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${isDark ? 'bg-white/10 border-white/20 text-white' : 'bg-black/5 border-black/10 text-black'}`}>
                                     <Video size={24} />
                                 </div>
                                 <div className="text-left">
-                                    <h3 className="text-xl font-black text-white uppercase tracking-tight">Join Interview</h3>
-                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Confirm before joining</p>
+                                    <h3 className={`text-xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Join Interview</h3>
+                                    <p className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Confirm before joining</p>
                                 </div>
                             </div>
-                            <button onClick={() => setShowJoinConfirm(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors">
+                            <button onClick={() => setShowJoinConfirm(false)} className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-400' : 'hover:bg-neutral-100 text-neutral-400'}`}>
                                 <X size={24} />
                             </button>
                         </div>
 
                         <div className="p-8 space-y-6">
-                            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <div className={`border rounded-2xl p-5 space-y-4 ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-neutral-50 border-neutral-200'}`}>
                                 <div className="flex items-center gap-3">
-                                    <Building2 size={18} className="text-blue-400" />
+                                    <Building2 size={18} className={isDark ? 'text-neutral-300' : 'text-neutral-500'} />
                                     <div>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Company</p>
-                                        <p className="text-sm font-bold text-white">{interviewToJoin.companyName}</p>
+                                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Company</p>
+                                        <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{interviewToJoin.companyName}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <FileText size={18} className="text-blue-400" />
+                                    <FileText size={18} className={isDark ? 'text-neutral-300' : 'text-neutral-500'} />
                                     <div>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Position</p>
-                                        <p className="text-sm font-bold text-white">{interviewToJoin.jobTitle}</p>
+                                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Position</p>
+                                        <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{interviewToJoin.jobTitle}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Calendar size={18} className="text-blue-400" />
+                                    <Calendar size={18} className={isDark ? 'text-neutral-300' : 'text-neutral-500'} />
                                     <div>
-                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Date & Time</p>
-                                        <p className="text-sm font-bold text-white">
+                                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Date & Time</p>
+                                        <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>
                                             {new Date(interviewToJoin.scheduledAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {new Date(interviewToJoin.scheduledAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-blue-600/5 border border-blue-500/10 rounded-2xl">
-                                <p className="text-xs text-slate-400 text-center">
-                                    You'll be redirected to <span className="text-blue-400 font-bold">{new URL(interviewToJoin.meetingLink).hostname}</span>
+                            <div className={`p-4 border rounded-2xl ${isDark ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'}`}>
+                                <p className={`text-xs text-center ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>
+                                    You'll be redirected to <span className="font-bold">{new URL(interviewToJoin.meetingLink).hostname}</span>
                                 </p>
                             </div>
                         </div>
 
-                        <div className="p-8 border-t border-white/5 flex gap-4">
+                        <div className={`p-8 border-t flex gap-4 ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                             <button
                                 onClick={() => setShowJoinConfirm(false)}
-                                className="flex-1 py-4 bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all"
+                                className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${isDark ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-neutral-100 text-black hover:bg-neutral-200'}`}
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={() => handleJoinMeeting(interviewToJoin)}
-                                className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-600/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                                className={`flex-1 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl active:scale-[0.98] flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-neutral-200 shadow-white/20' : 'bg-black text-white hover:bg-neutral-800 shadow-black/20'}`}
                             >
                                 <ExternalLink size={16} />
                                 Join Now
