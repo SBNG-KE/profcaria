@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, PenLine, Check, Copy, ArrowRight, Shield, Move, Link2, Plus, X } from 'lucide-react';
+import LinkPreview from '@/app/components/LinkPreview';
+import ProfileAnalytics from '@/app/components/professional/ProfileAnalytics'; // Reuse analytics
+import PostsPreview from '@/app/components/professional/PostsPreview';
+import PostCard from '@/app/components/professional/PostCard';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
 import SubscribersModal from './SubscribersModal';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -111,6 +115,22 @@ export default function EmployerProfilePage() {
     const [sectionLoading, setSectionLoading] = useState(false);
     const [formData, setFormData] = useState<any>({});
     const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
+    const [postCount, setPostCount] = useState(0);
+
+    const [industry, setIndustry] = useState('');
+    const [isEditingIndustry, setIsEditingIndustry] = useState(false);
+
+    // List of Industries
+    const INDUSTRIES = [
+        "Technology", "Software", "Hardware", "Telecommunications", "Financial Services", "Banking", "Insurance", "FinTech",
+        "Healthcare", "Biotech", "Pharmaceuticals", "Medical Devices", "Education", "EdTech", "Higher Education",
+        "Retail", "E-commerce", "Consumer Goods", "Manufacturing", "Automotive", "Aerospace", "Energy", "Oil & Gas",
+        "Renewables", "Construction", "Real Estate", "Media", "Entertainment", "Gaming", "Advertising", "Marketing",
+        "Hospitality", "Travel", "Food & Beverage", "Agriculture", "Logistics", "Supply Chain", "Transportation",
+        "Consulting", "Professional Services", "Legal", "Non-Profit", "Government", "Other"
+    ];
+
+    const openEditIndustry = () => setIsEditingIndustry(true);
 
     const handleCopyLink = () => {
         const link = `https://profcaria.com/c/${companyName.toLowerCase().replace(/ /g, '-')}`;
@@ -121,7 +141,18 @@ export default function EmployerProfilePage() {
 
     useEffect(() => {
         fetchProfile();
+        fetchPostCount();
     }, []);
+
+    const fetchPostCount = async () => {
+        try {
+            const res = await fetch('/api/employer/posts');
+            if (res.ok) {
+                const data = await res.json();
+                setPostCount(data.posts?.length || 0); // Simple count for now
+            }
+        } catch (e) { console.error(e); }
+    };
 
     const fetchProfile = async () => {
         try {
@@ -139,6 +170,7 @@ export default function EmployerProfilePage() {
                 setLogoUrl(p?.logoUrl || '');
                 setAbout(p?.about || '');
                 setFoundedYear(p?.foundedYear || '');
+                setIndustry(p?.industry || '');
                 // Load persisted position
                 setImagePosition(p?.imagePosition || 'center');
 
@@ -171,7 +203,7 @@ export default function EmployerProfilePage() {
             const res = await fetch('/api/employer/profile/update', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ companyName, website, email, country, city, address, about, foundedYear, imagePosition })
+                body: JSON.stringify({ companyName, website, email, country, city, address, about, foundedYear, imagePosition, industry })
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
@@ -347,9 +379,7 @@ export default function EmployerProfilePage() {
                             </div>
                         </div>
                         <div className="flex-1 pb-2">
-                            <div className={`px-4 py-2 rounded-xl inline-block mt-4 font-bold text-lg ${isDark ? 'bg-neutral-800 text-white border border-neutral-700' : 'bg-white text-black border border-neutral-200 shadow-sm'}`}>
-                                Pro Plan
-                            </div>
+                            {/* Space for future badges or empty */}
                         </div>
                     </div>
                 </div>
@@ -568,17 +598,13 @@ export default function EmployerProfilePage() {
                             </div>
                         </div>
 
-                        {/* Company Stats Button */}
+                        {/* Company Stats & Posts */}
                         <div className="pt-2">
-                            <button className={`group flex items-center gap-3 px-6 py-4 rounded-2xl w-full md:w-auto transition-all border ${isDark ? 'bg-neutral-800/50 border-neutral-700 hover:bg-neutral-800 text-white' : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm text-black'}`}>
-                                <div className="flex flex-col items-start">
-                                    <span className="font-black text-2xl">0</span>
-                                    <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Active Jobs</span>
-                                </div>
-                                <div className={`ml-auto p-2 rounded-full ${isDark ? 'bg-neutral-700 group-hover:bg-neutral-600' : 'bg-neutral-100 group-hover:bg-neutral-200'}`}>
-                                    <ArrowRight size={20} />
-                                </div>
-                            </button>
+                            <PostsPreview
+                                userId={profile?.id} // Use profile.id (which is user_id)
+                                isDark={isDark}
+                                userType="employer"
+                            />
                         </div>
                     </div>
                 </div>

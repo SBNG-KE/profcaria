@@ -1,127 +1,179 @@
-
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { User, MapPin, Calendar, Briefcase, Users, Link as LinkIcon, Building2 } from 'lucide-react';
+import { Briefcase, MapPin, Link2 } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
-import { getAuthenticatedUser } from '@/lib/auth-helper';
+import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
+import PostsPreview from '@/app/components/professional/PostsPreview';
+import PostCard from '@/app/components/professional/PostCard';
+import { formatDistanceToNow } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const currentUser = await getAuthenticatedUser();
 
-    // Fetch User Data
-    const { data: user, error } = await supabaseAdmin
+    // Fetch User Profile
+    const { data: profile, error } = await supabaseAdmin
         .schema('professional')
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', id)
         .single();
 
-    if (error || !user) {
-        notFound();
+    if (error || !profile) {
+        return notFound();
     }
 
+    const isDark = false;
+
     // Decrypt Data
-    const firstName = decryptData(user.enc_first_name) || '';
-    const lastName = decryptData(user.enc_last_name) || '';
-    const fullName = `${firstName} ${lastName}`.trim() || 'Professional';
-    const profileImage = decryptData(user.enc_profile_image_url);
-    const about = decryptData(user.enc_about);
-    const location = decryptData(user.enc_location);
-    const role = user.primary_role;
-    const headline = decryptData(user.enc_headline) || role;
+    const firstName = profile.first_name;
+    const lastName = profile.last_name;
+    const role = profile.role;
+    const about = profile.about;
+    const country = profile.country;
+    const city = profile.city;
+    const profileImageUrl = profile.profile_image_url;
+    const imagePosition = profile.image_position || '50% 50%';
 
-    // Check generic follower status server-side or let FollowButton handle it client-side.
-    // FollowButton handles it client-side via API 'check'.
-    // But we pass initialIsFollowing if possible to avoid flicker?
-    // Let's keep it simple and let FollowButton check.
+    // Fetch Sections
+    const { data: employment } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', profile.user_id).order('start_date', { ascending: false });
+    const { data: education } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', profile.user_id).order('start_date', { ascending: false });
+    const { data: skills } = await supabaseAdmin.schema('professional').from('skills').select('*').eq('user_id', profile.user_id);
+    const { data: certifications } = await supabaseAdmin.schema('professional').from('certifications').select('*').eq('user_id', profile.user_id);
+    const { data: awards } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', profile.user_id);
+    const { data: otherProfiles } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', profile.user_id);
 
-    // Also fetch generic stats (connections etc) if needed, but follower_count is on user.
+    // Fetch Latest Post
+    // This requires a similar query to `api/professional/profile/posts` but for a specific user.
+    const { data: latestPosts } = await supabaseAdmin
+        .schema('professional')
+        .from('posts')
+        .select(`
+            *,
+            post_likes (count),
+            post_comments (count),
+            author:author_id (
+                id,
+                first_name,
+                last_name,
+                role,
+                profile_image_url
+            )
+        `)
+        .eq('author_id', profile.user_id)
+        .order('created_at', { ascending: false })
+        .limit(3) as any;
+
+    const formattedPosts = latestPosts?.map((p: any) => ({
+        id: p.id,
+        content: decryptData(p.enc_content),
+        media: p.media_urls?.map((url: string) => ({ url, type: url.match(/\.(mp4|webm)$/) ? 'video' : 'image' })),
+        timestamp: formatDistanceToNow(new Date(p.created_at), { addSuffix: true }),
+        likesCount: p.post_likes?.[0]?.count || 0,
+        commentsCount: p.post_comments?.[0]?.count || 0,
+        author: {
+            id: p.author?.id,
+            name: `${p.author?.first_name} ${p.author?.last_name}`,
+            role: p.author?.role,
+            image: p.author?.profile_image_url
+        }
+    })) || [];
+
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 pb-20">
-            {/* Header / Cover */}
-            <div className="h-48 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
-                {/* Back Button handled by Layout usually, or browser */}
-            </div>
-
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-20">
-                {/* Profile Card */}
-                <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 p-6 sm:p-8">
-                    <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6">
-                        {/* Avatar */}
-                        <div className="relative">
-                            <div className="w-40 h-40 rounded-full border-4 border-white dark:border-neutral-900 overflow-hidden bg-white shadow-md">
-                                {profileImage ? (
-                                    <img src={profileImage} alt={fullName} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-neutral-100 text-neutral-400">
-                                        <User size={64} />
-                                    </div>
-                                )}
+        <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 p-6 pb-20">
+            <div className="max-w-5xl mx-auto space-y-8">
+                {/* Header Card */}
+                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900" />
+                    <div className="px-6 pb-6">
+                        <div className="flex items-end gap-4 -mt-12">
+                            <div className="relative">
+                                <div className="w-32 h-32 rounded-full border-4 overflow-hidden flex items-center justify-center bg-white border-white shadow-lg dark:bg-neutral-800 dark:border-neutral-900">
+                                    {profileImageUrl ? (
+                                        <img
+                                            src={profileImageUrl}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                            style={{ objectPosition: imagePosition }}
+                                        />
+                                    ) : (
+                                        <div className="text-3xl font-black text-neutral-300">{firstName?.[0]}</div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Basic Info */}
-                        <div className="flex-1 text-center sm:text-left space-y-2 pb-2">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{fullName}</h1>
-                            {headline && <p className="text-lg font-medium text-gray-600 dark:text-neutral-300">{headline}</p>}
-
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-gray-500 dark:text-neutral-400 mt-2">
-                                {location && (
-                                    <div className="flex items-center gap-1">
-                                        <MapPin size={16} />
-                                        <span>{location}</span>
+                            <div className="flex-1 pb-2 flex justify-between items-end">
+                                <div>
+                                    <h1 className="text-3xl font-black text-black dark:text-white">{firstName} {lastName}</h1>
+                                    <p className="font-medium text-lg text-neutral-600 dark:text-neutral-400">{role}</p>
+                                    <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
+                                        {city && <span className="flex items-center gap-1"><MapPin size={14} /> {city}{country ? `, ${country}` : ''}</span>}
                                     </div>
-                                )}
-                                <div className="flex items-center gap-1">
-                                    <Users size={16} />
-                                    <span>{user.follower_count || 0} followers</span>
+                                </div>
+                                <div>
+                                    <FollowButton targetId={profile.user_id || profile.id} type="user" />
                                 </div>
                             </div>
                         </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-col gap-3 min-w-[140px]">
-                            {currentUser?.id !== user.id && (
-                                <FollowButton
-                                    targetId={user.id}
-                                    type="user"
-                                    size="lg"
-                                    className="w-full"
-                                />
-                            )}
-                            {/* Message button placeholder */}
-                            {/* <button className="px-4 py-2 rounded-lg border border-neutral-300 font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800">
-                                Message
-                            </button> */}
-                        </div>
                     </div>
-
-                    {/* Divider */}
-                    <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-8" />
-
-                    {/* About Section */}
-                    {about && (
-                        <div className="space-y-4">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white">About</h2>
-                            <p className="whitespace-pre-wrap text-gray-600 dark:text-neutral-300 leading-relaxed">
-                                {about}
-                            </p>
-                        </div>
-                    )}
-
-                    {!about && (
-                        <div className="text-center py-8 text-neutral-500 italic">
-                            No about information provided.
-                        </div>
-                    )}
-
                 </div>
+
+                {/* About */}
+                {about && (
+                    <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                        <h3 className="text-xl font-bold mb-4">About</h3>
+                        <p className="whitespace-pre-wrap text-neutral-600 dark:text-neutral-400">{about}</p>
+                    </div>
+                )}
+
+                {/* Profile Sections (Read Only) */}
+                <ProfileInfoSection
+                    isDark={isDark}
+                    readOnly={true}
+                    employmentHistory={employment?.map((e: any) => ({
+                        ...e,
+                        startDate: e.start_date,
+                        endDate: e.end_date,
+                        isCurrent: e.is_current,
+                        source: e.source
+                    })) || []}
+                    education={education?.map((e: any) => ({
+                        ...e,
+                        startDate: e.start_date,
+                        endDate: e.end_date,
+                        isCurrent: e.is_current,
+                        fieldOfStudy: e.field_of_study
+                    })) || []}
+                    skills={skills || []}
+                    certifications={certifications?.map((c: any) => ({
+                        ...c,
+                        issueDate: c.issue_date
+                    })) || []}
+                    awards={awards || []}
+                    otherProfiles={otherProfiles || []}
+                />
+
+                {/* Posts */}
+                <div className="space-y-6">
+                    <h3 className="text-xl font-bold px-4">Latest Activity</h3>
+                    {formattedPosts.length > 0 ? (
+                        formattedPosts.map((post: any) => (
+                            <PostCard
+                                key={post.id}
+                                post={post}
+                                isDark={isDark}
+                                currentUserId="" // Read only
+                                onLike={() => { }}
+                            />
+                        ))
+                    ) : (
+                        <p className="text-center text-neutral-500 py-10">No recent activity.</p>
+                    )}
+                </div>
+
             </div>
         </div>
     );

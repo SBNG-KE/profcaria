@@ -33,13 +33,19 @@ export async function POST(
         }
 
         // Check if already liked
-        const { data: existingLike } = await supabaseAdmin
+        let query = supabaseAdmin
             .schema(schema)
             .from(table)
             .select('id')
-            .eq('post_id', postId)
-            .eq('user_id', user.id)
-            .single();
+            .eq('post_id', postId);
+
+        if (user.schema === 'employer') {
+            query = query.eq('company_id', user.id);
+        } else {
+            query = query.eq('user_id', user.id);
+        }
+
+        const { data: existingLike } = await query.single();
 
         if (existingLike) {
             // Unlike
@@ -53,13 +59,18 @@ export async function POST(
             return NextResponse.json({ liked: false, message: 'Post unliked' });
         } else {
             // Like
+            const likeData: any = { post_id: postId };
+            // Check if user is an employer or professional
+            if (user.schema === 'employer') {
+                likeData.company_id = user.id; // user.id is company_id for employers
+            } else {
+                likeData.user_id = user.id;
+            }
+
             const { error } = await supabaseAdmin
                 .schema(schema)
                 .from(table)
-                .insert({
-                    post_id: postId,
-                    user_id: user.id
-                });
+                .insert(likeData);
 
             if (error) throw error;
             return NextResponse.json({ liked: true, message: 'Post liked' });

@@ -7,9 +7,10 @@ interface SlideOverPanelProps {
     title: string;
     children: React.ReactNode;
     isDark?: boolean;
+    className?: string; // Allow custom width overrides
 }
 
-export default function SlideOverPanel({ isOpen, onClose, title, children, isDark = false }: SlideOverPanelProps) {
+export default function SlideOverPanel({ isOpen, onClose, title, children, isDark = false, className = '' }: SlideOverPanelProps) {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -35,7 +36,7 @@ export default function SlideOverPanel({ isOpen, onClose, title, children, isDar
 
             {/* Panel - Sliding from LEFT */}
             <div
-                className={`relative w-full max-w-md h-full shadow-2xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isDark ? 'bg-neutral-900 border-r border-neutral-800' : 'bg-white border-r border-neutral-200'}`}
+                className={`relative w-full h-full shadow-2xl transform transition-transform duration-300 ease-in-out ${className || 'max-w-md'} ${isOpen ? 'translate-x-0' : '-translate-x-full'} ${isDark ? 'bg-neutral-900 border-r border-neutral-800' : 'bg-white border-r border-neutral-200'}`}
             >
                 {/* Header */}
                 <div className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>

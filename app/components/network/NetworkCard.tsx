@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link';
 import React from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
 import FollowButton from './FollowButton';
@@ -27,6 +28,8 @@ export default function NetworkCard({
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
+    const messageLink = `/professional/notifications?chat=${id}`;
+
     return (
         <div className={`
             flex flex-col items-center p-6 rounded-2xl border transition-all duration-300
@@ -50,24 +53,42 @@ export default function NetworkCard({
 
             {/* Info */}
             <div className="text-center w-full mb-4 flex-1">
-                <h3 className={`font-bold text-lg mb-1 truncate w-full ${isDark ? 'text-white' : 'text-black'}`}>
-                    {name}
-                </h3>
+                <Link href={type === 'company' ? `/professional/companies/${id}` : `/professional/people/${id}`} className="block hover:underline">
+                    <h3 className={`font-bold text-lg mb-1 truncate w-full ${isDark ? 'text-white' : 'text-black'}`}>
+                        {name}
+                    </h3>
+                </Link>
                 <p className={`text-xs flex items-center justify-center gap-1.5 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                     <Briefcase size={12} />
                     <span className="truncate max-w-[150px]">{role || (type === 'company' ? 'Company' : 'Professional')}</span>
                 </p>
             </div>
 
-            {/* Action */}
-            <FollowButton
-                targetId={id}
-                type={type}
-                initialIsFollowing={isFollowing}
-                onToggle={onToggle}
-                className="w-full"
-                variant="outline"
-            />
+            {/* Actions */}
+            <div className="w-full space-y-2">
+                {type === 'user' && (
+                    <Link
+                        href={messageLink}
+                        className={`
+                            flex items-center justify-center w-full py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors
+                            ${isDark
+                                ? 'bg-neutral-800 text-white hover:bg-neutral-700'
+                                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-black'}
+                        `}
+                    >
+                        Message
+                    </Link>
+                )}
+
+                <FollowButton
+                    targetId={id}
+                    type={type}
+                    initialIsFollowing={isFollowing}
+                    onToggle={onToggle}
+                    className="w-full"
+                    variant={isFollowing ? "outline" : "primary"}
+                />
+            </div>
         </div>
     );
 }

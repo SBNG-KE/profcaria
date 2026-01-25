@@ -52,41 +52,64 @@ export async function POST(
             .single();
 
         if (existingRepost) {
-            // Undo repost
-            const { error } = await supabaseAdmin
-                .schema(schema)
-                .from(table)
-                .delete()
-                .eq('id', existingRepost.id);
-
-            if (error) throw error;
-            return NextResponse.json({ reposted: false, message: 'Repost removed' });
-        } else {
-            // Create repost
-            const { data: repost, error } = await supabaseAdmin
-                .schema(schema)
-                .from(table)
-                .insert({
-                    original_post_id: postId,
-                    user_id: user.id,
-                    // comment: comment?.trim() || null // employer schema might not have comment column yet? In migration I defined it? I defined original_post_id, user_id. I didn't verify if I added comment.
-                    // Wait, I checked my migration: CREATE TABLE IF NOT EXISTS employer.post_reposts (id UUID..., original_post_id UUID..., user_id UUID..., created_at...).
-                    // I DID NOT add 'comment' column to employer.post_reposts in the migration I requested earlier. 
-                    // So I should skip comment for employer schema OR update migration.
-                    // Updating migration is better. But user already might be running it.
-                    // Let's assume professional schema has comment? Yes line 47.
-                    // I should update migration to include comment if I want parity.
-                    // For now, let's omit comment for employer schema to be safe with current migration file I generated.
-                    ...(schema === 'professional' ? { comment: comment?.trim() || null } : {})
-                })
-                .select()
-                .single();
-
-            if (error) throw error;
-            return NextResponse.json({ reposted: true, repost, message: 'Post reposted' });
+            return NextResponse.json({ error: 'You have already reposted this.' }, { status: 409 });
         }
+
+        // Create repost
+        const { data: repost, error } = await supabaseAdmin
+            .schema(schema)
+            .from(table)
+            .insert({
+                original_post_id: postId,
+                user_id: user.id,
+                ...(schema === 'professional' ? { comment: comment?.trim() || null } : {})
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return NextResponse.json({ reposted: true, repost, message: 'Post reposted' });
+
     } catch (error: any) {
         console.error('Error reposting:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+// DELETE - Remove Repost
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id: postId } = await params;
+        const user = await getAuthenticatedUser();
+        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        // Determine schema (same logic as POST)
+        let schema = 'professional';
+        let table = 'post_reposts';
+        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).single();
+        if (!profPost) {
+            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).single();
+            if (empPost) {
+                schema = 'employer';
+            } else {
+                return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+            }
+        }
+
+        const { error } = await supabaseAdmin
+            .schema(schema)
+            .from(table)
+            .delete()
+            .eq('original_post_id', postId)
+            .eq('user_id', user.id);
+
+        if (error) throw error;
+        return NextResponse.json({ message: 'Repost removed' });
+
+    } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

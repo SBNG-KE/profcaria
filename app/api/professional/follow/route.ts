@@ -181,16 +181,23 @@ export async function GET(request: NextRequest) {
                     .eq('id', f.company_id)
                     .single();
 
+                console.log(`Following Company: ID=${c?.id}, EncName=${c?.enc_company_name ? 'Present' : 'Missing'}, Industry=${c?.industry}`);
+                const decryptedName = c?.enc_company_name ? decryptData(c.enc_company_name) : null;
+                console.log(`Decrypted Name: ${decryptedName}`);
+
                 return {
                     id: c?.id,
-                    name: c?.enc_company_name ? decryptData(c.enc_company_name) : 'Unknown Company',
+                    name: decryptedName || 'Unknown Company',
                     profileImage: c?.enc_logo_url ? decryptData(c.enc_logo_url) : null,
                     role: c?.industry || 'Company',
                     type: 'company'
                 };
             }));
 
-            return NextResponse.json({ following: formattedCompanies });
+            // Filter out invalid/unknown companies to clean up the view
+            const validCompanies = formattedCompanies.filter((c: any) => c.name && c.name !== 'Unknown Company');
+
+            return NextResponse.json({ following: validCompanies });
 
         } else if (type === 'check') {
             // Check if following specific user/company
