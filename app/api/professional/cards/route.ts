@@ -30,7 +30,7 @@ export async function GET(req: Request) {
         }
 
         // Default cards
-        const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+        const baseCards = ['RESUME', 'CV', 'COVER LETTER'];
 
         // Decrypt DB cards
         const dbCards = data.map((c: { enc_title: string; }) => decryptData(c.enc_title)).filter(Boolean) as string[];
@@ -62,7 +62,7 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: 'oldTitle and newTitle required' }, { status: 400 });
         }
 
-        const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+        const baseCards = ['RESUME', 'CV', 'COVER LETTER'];
         if (baseCards.includes(oldTitle.toUpperCase())) {
             return NextResponse.json({ error: 'Cannot rename base cards' }, { status: 400 });
         }
@@ -153,7 +153,7 @@ export async function DELETE(req: Request) {
         const { title } = await req.json();
         if (!title) return NextResponse.json({ error: 'Title required' }, { status: 400 });
 
-        const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+        const baseCards = ['RESUME', 'CV', 'COVER LETTER'];
         if (baseCards.includes(title.toUpperCase())) {
             return NextResponse.json({ error: 'Cannot delete base cards' }, { status: 400 });
         }

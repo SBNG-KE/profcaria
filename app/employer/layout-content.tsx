@@ -208,9 +208,6 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                                 <Building2 size={sidebarOpen ? 28 : 20} />
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Plus className="text-white" size={sidebarOpen ? 16 : 12} />
-                        </div>
                     </button>
                     {sidebarOpen && (
                         <div className="w-full text-center mb-4">

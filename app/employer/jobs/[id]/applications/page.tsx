@@ -7,6 +7,7 @@ import {
     Send, ChevronRight, UserCircle, CheckCircle2, X, Eye, Lock, Unlock
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
+import EmployerProfileViewModal from '../../../components/EmployerProfileViewModal';
 
 interface Application {
     id: string;
@@ -26,6 +27,7 @@ export default function ViewApplicationsPage() {
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+    const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
 
     // Interview State
     const [showInterviewModal, setShowInterviewModal] = useState(false);
@@ -234,7 +236,7 @@ export default function ViewApplicationsPage() {
                                             Message
                                         </button>
                                         <button
-                                            onClick={() => window.open(`/employer/applications/${selectedApp.id}/view`, '_blank')}
+                                            onClick={() => setViewingProfileId(selectedApp.id)}
                                             className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border border-slate-700 whitespace-nowrap"
                                         >
                                             <Eye size={12} className="inline mr-1.5" />
@@ -415,6 +417,14 @@ export default function ViewApplicationsPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* PROFILE VIEW MODAL */}
+            {viewingProfileId && (
+                <EmployerProfileViewModal
+                    applicationId={viewingProfileId}
+                    onClose={() => setViewingProfileId(null)}
+                />
             )}
         </div>
     );

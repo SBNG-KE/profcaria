@@ -7,6 +7,7 @@ import {
     Send, CheckCircle2, AlertCircle, Info, Shield, Check
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
+import FollowButton from '@/app/components/network/FollowButton';
 
 interface FormField {
     id: string;
@@ -150,7 +151,7 @@ export default function JobApplyPage() {
                 </p>
             </div>
             <button
-                onClick={() => router.push('/professional/home')}
+                onClick={() => router.push('/professional/feed')}
                 className={`px-10 py-4 border rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${isDark ? 'bg-slate-900 border-slate-700 hover:border-white/50 text-white' : 'bg-white border-neutral-200 hover:border-black/50 text-black'}`}
             >
                 Return to Dashboard
@@ -173,7 +174,10 @@ export default function JobApplyPage() {
                     <div className="space-y-2">
                         <h1 className={`text-5xl font-black leading-none uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h1>
                         <div className={`flex flex-wrap items-center gap-6 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
-                            <span className={`flex items-center gap-2 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}><Building2 size={16} /> {job.company.name}</span>
+                            <span className={`flex items-center gap-2 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                <Building2 size={16} /> {job.company.name}
+                                <FollowButton targetId={job.company.id} type="company" size="sm" variant="ghost" className="ml-2" />
+                            </span>
                             <span className="flex items-center gap-2">
                                 <MapPin size={16} />
                                 {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}

@@ -38,9 +38,9 @@ export async function GET(req: Request) {
         let selectFields = `has_passkey, has_totp, has_email_otp, requires_2fa, default_2fa_method, created_at, ${emailField}`;
 
         if (isProfessional) {
-            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number, enc_about`;
+            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number, enc_about, follower_count`;
         } else {
-            selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email, enc_about, enc_founded_year`; // Add employer fields
+            selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email, enc_about, enc_founded_year, follower_count`; // Add employer fields
         }
 
         const { data: user, error } = await supabaseAdmin
@@ -65,7 +65,8 @@ export async function GET(req: Request) {
                 profileImageUrl: decryptData(user.enc_profile_image_url),
                 email: decryptData(user.enc_email) || payload.email || '',
                 phone: decryptData(user.enc_phone_number) || '',
-                about: decryptData(user.enc_about) || ''
+                about: decryptData(user.enc_about) || '',
+                followerCount: user.follower_count || 0
             };
 
             // Fetch Latest Location from Activity Logs
@@ -123,7 +124,8 @@ export async function GET(req: Request) {
                 website: decryptData(user.enc_website), // Assuming website might be needed
                 email: decryptData(user.enc_work_email) || payload.email || '',
                 about: decryptData(user.enc_about) || '',
-                foundedYear: decryptData(user.enc_founded_year) || ''
+                foundedYear: decryptData(user.enc_founded_year) || '',
+                followerCount: user.follower_count || 0
             };
 
             // Fetch Latest Location from Employer Activity Logs

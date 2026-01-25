@@ -119,28 +119,9 @@ function LandingPageContent() {
             // So if hasAny is true, Middleware sends to /security/verify.
 
             // So:
+            // If has methods, proceed to redirect logic below
             if (hasAny) {
-              // We have methods. Try redirecting to Home.
-              // If we are not verified, middleware will bounce to /security/verify.
-              // Can we detect that? 
-              // Not easily without a custom endpoint.
-
-              // User asked to "read the hanging card".
-              // Maybe we just redirect to home and let the standalone page handle verification?
-              // User said "jwt pages to read the hanging card".
-              // Implies they want the hanging card to handle it.
-
-              // OK, I will assume if I have methods, I prompt Verify if I'm not sure.
-              // But invalid for valid users.
-
-              // Compromise: Use the same logic as HangingAuthCard gatekeeper.
-              // If I am logged in, I attempt to redirect.
-              // If I am bounced, I am bounced.
-
-              // BUT for SETUP (when !hasAny), we definitely know we need Setup.
-              setInitialAuthScreen('security_setup');
-              setIsAuthOpen(true);
-              return;
+              // Do nothing, let it fall through to schema check
             }
           }
 

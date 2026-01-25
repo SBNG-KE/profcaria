@@ -32,11 +32,13 @@ export async function PUT(req: Request) {
             country,
             city,
             address,
-            about
+            about,
+            imagePosition // Add this
         } = body;
 
         // 3. Update User Table (Name, Role, Email, Phone)
         const userUpdates: any = {};
+        if (imagePosition) userUpdates.image_position = imagePosition; // Save unencrypted
         if (firstName) userUpdates.enc_first_name = encryptData(firstName);
         if (lastName) userUpdates.enc_last_name = encryptData(lastName);
         if (role) userUpdates.enc_current_role = encryptData(role);

@@ -32,16 +32,11 @@ export async function GET(request: NextRequest) {
             .from('users')
             .select('id, enc_first_name, enc_last_name, enc_profile_image_url, follower_count');
 
-        // Fetch Employers
+        // Employers
         const { data: employers } = await supabaseAdmin
             .schema('employer')
             .from('companies')
-            .select('id, enc_company_name, enc_logo_url'); // Employers may not have follower_count yet in companies table? Let's check schema.
-        // Wait, migration `feed_social.sql` adds follower tables but not necessarily counts to companies if it's new.
-        // Actually `professional.users` has `follower_count` added in `prof_settings_v4` or similar? 
-        // In layout user view, I saw `followerCount`.
-
-        // Let's assume we filter in memory.
+            .select('id, enc_company_name, enc_logo_url, follower_count');
 
         const results: any[] = [];
         const lowerQuery = query.toLowerCase();
@@ -65,18 +60,16 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // Process Employers
         if (employers) {
             for (const e of employers) {
                 const name = decryptData(e.enc_company_name) || '';
                 if (name.toLowerCase().includes(lowerQuery)) {
-                    // Employer follower count might be missing, default to 0
                     results.push({
                         id: e.id,
                         name: name,
                         image: decryptData(e.enc_logo_url) || '/default-logo.png',
                         type: 'employer',
-                        followers: 0 // TODO: Add follower_count to companies if needed
+                        followers: e.follower_count || 0
                     });
                 }
             }

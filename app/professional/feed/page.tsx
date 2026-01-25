@@ -303,12 +303,10 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                                     alt={post.author.name}
                                     className="w-12 h-12 rounded-full object-cover bg-neutral-100 dark:bg-neutral-800"
                                 />
-                                {((post.author.followerCount !== undefined && post.author.followerCount !== null)) && (
-                                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
-                                        {new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(post.author.followerCount)}
-                                        {post.author.type === 'employer' ? ' subs' : ' followers'}
-                                    </span>
-                                )}
+                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
+                                    {new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(post.author.followerCount)}
+                                    {post.author.type === 'employer' ? ' subscribers' : ' followers'}
+                                </span>
                             </div>
                             <div className="min-w-0">
                                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -874,6 +872,15 @@ export default function FeedPage() {
                             {searchResults.map((result) => (
                                 <button
                                     key={result.id}
+                                    onClick={() => {
+                                        if (result.type === 'employer') {
+                                            router.push(`/professional/companies/${result.id}`);
+                                        } else {
+                                            router.push(`/professional/people/${result.id}`);
+                                        }
+                                        setIsSearching(false);
+                                        setSearchQuery('');
+                                    }}
                                     className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-neutral-50'}`}
                                 >
                                     <img src={result.image} alt={result.name} className="w-10 h-10 rounded-full object-cover" />
@@ -883,7 +890,7 @@ export default function FeedPage() {
                                             {result.type === 'employer' && <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">CORP</span>}
                                         </div>
                                         <div className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                            {result.followers} followers
+                                            {result.followers} {result.type === 'employer' ? 'subscribers' : 'followers'}
                                         </div>
                                     </div>
                                 </button>

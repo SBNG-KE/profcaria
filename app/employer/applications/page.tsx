@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import ScrollableContainer from '@/app/components/ScrollableContainer';
 import { sanitizeHtml } from '@/lib/sanitize';
+import EmployerProfileViewModal from '../components/EmployerProfileViewModal';
 
 interface Application {
     id: string;
@@ -37,6 +38,7 @@ function ApplicationsPageContent() {
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+    const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'profile' | 'chat'>('profile');
     const [viewingArtifact, setViewingArtifact] = useState<string | null>(null);
 
@@ -400,7 +402,7 @@ function ApplicationsPageContent() {
                                                     <p className="text-xs text-slate-500 mt-1">View the professional's profile and shared documents.</p>
                                                 </div>
                                                 <button
-                                                    onClick={() => window.open(`/employer/applications/${selectedApp.id}/view`, '_blank')}
+                                                    onClick={() => setViewingProfileId(selectedApp.id)}
                                                     className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
                                                 >
                                                     <ExternalLink size={16} /> View Candidate Profile
@@ -568,6 +570,14 @@ function ApplicationsPageContent() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* PROFILE VIEW MODAL */}
+            {viewingProfileId && (
+                <EmployerProfileViewModal
+                    applicationId={viewingProfileId}
+                    onClose={() => setViewingProfileId(null)}
+                />
             )}
         </div >
     );

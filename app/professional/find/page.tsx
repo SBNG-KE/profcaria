@@ -289,7 +289,7 @@ export default function FindJobsPage() {
 
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-8">
-            <header className={`space-y-6 pb-8 border-b ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
+            <header className={`space-y-6 pb-8 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
                         <div className={`flex items-center gap-2 mb-2 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
@@ -297,57 +297,57 @@ export default function FindJobsPage() {
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Job Discovery</span>
                         </div>
                         <h1 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>Find Opportunities</h1>
-                        <p className={`mt-2 text-sm ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>Discover job roles that match your profile.</p>
+                        <p className={`mt-2 text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Discover job roles that match your profile.</p>
                     </div>
                 </div>
 
                 <div className="flex flex-col md:flex-row items-stretch gap-4 md:gap-6 w-full">
-                    <div className={`flex p-1 rounded-xl border overflow-x-auto scrollbar-hide shrink-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-neutral-100 border-neutral-200'}`}>
-                        <button onClick={() => setViewMode('find')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'find' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black'}`}>Find Work</button>
-                        <button onClick={() => setViewMode('saved')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black'}`}><Heart size={12} className="inline mr-1" />Saved<span className={`ml-2 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-slate-800 text-white' : 'bg-white text-black'}`}>{jobs.filter(j => savedJobIds.has(j.id) && !j.applicationStatus).length}</span></button>
-                        <button onClick={() => setViewMode('invited')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'invited' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black'}`}>Invited<span className={`ml-2 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-slate-800 text-white' : 'bg-white text-black'}`}>{jobs.filter(j => j.isInvited && !j.applicationStatus).length}</span></button>
-                        <button onClick={() => setViewMode('applied')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'applied' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black'}`}>Applied<span className={`ml-2 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-slate-800 text-white' : 'bg-white text-black'}`}>{appliedCounts.all}</span></button>
+                    <div className={`flex p-1 rounded-xl border overflow-x-auto scrollbar-hide shrink-0 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
+                        <button onClick={() => setViewMode('find')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'find' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-black'}`}>Find Work</button>
+                        <button onClick={() => setViewMode('saved')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'saved' ? 'bg-red-600 text-white shadow-lg' : isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-black'}`}><Heart size={12} className="inline mr-1" />Saved<span className={`ml-2 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-neutral-800 text-white' : 'bg-white text-black'}`}>{jobs.filter(j => savedJobIds.has(j.id) && !j.applicationStatus).length}</span></button>
+                        <button onClick={() => setViewMode('invited')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'invited' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-black'}`}>Invited<span className={`ml-2 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-neutral-800 text-white' : 'bg-white text-black'}`}>{jobs.filter(j => j.isInvited && !j.applicationStatus).length}</span></button>
+                        <button onClick={() => setViewMode('applied')} className={`px-4 md:px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${viewMode === 'applied' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-black'}`}>Applied<span className={`ml-2 px-1.5 py-0.5 rounded-md ${isDark ? 'bg-neutral-800 text-white' : 'bg-white text-black'}`}>{appliedCounts.all}</span></button>
                     </div>
 
                     <div className="relative group flex-1 w-full flex items-center gap-2 min-w-0">
-                        <div className={`relative z-10 flex rounded-full p-1 border shrink-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-neutral-100 border-neutral-200'}`}>
-                            <button onClick={() => setSearchType('job')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'job' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : isDark ? 'text-slate-500 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>Jobs</button>
-                            <button onClick={() => setSearchType('company')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'company' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : isDark ? 'text-slate-500 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>Companies</button>
+                        <div className={`relative z-10 flex rounded-full p-1 border shrink-0 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
+                            <button onClick={() => setSearchType('job')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'job' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>Jobs</button>
+                            <button onClick={() => setSearchType('company')} className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${searchType === 'company' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>Companies</button>
                         </div>
-                        <div className={`relative z-10 flex-1 min-w-0 flex items-center gap-3 border-2 rounded-[28px] px-6 py-3 transition-all ${isDark ? 'bg-[#0f172a] border-slate-800 group-focus-within:border-neutral-600' : 'bg-white border-neutral-200 group-focus-within:border-neutral-400'}`}>
-                            <Search className={`shrink-0 transition-colors ${isDark ? 'text-slate-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`} size={20} />
-                            <input type="text" placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : viewMode === 'saved' ? 'saved jobs' : 'applications'}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`flex-1 min-w-0 bg-transparent focus:outline-none font-medium text-sm ${isDark ? 'text-white placeholder:text-slate-600' : 'text-black placeholder:text-neutral-400'}`} />
-                            {searchTerm && <button onClick={() => setSearchTerm('')} className={`p-1.5 rounded-full transition-colors ${isDark ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-neutral-100 text-neutral-400 hover:text-black'}`}>×</button>}
+                        <div className={`relative z-10 flex-1 min-w-0 flex items-center gap-3 border-2 rounded-[28px] px-6 py-3 transition-all ${isDark ? 'bg-black border-neutral-800 group-focus-within:border-neutral-600' : 'bg-white border-neutral-200 group-focus-within:border-neutral-400'}`}>
+                            <Search className={`shrink-0 transition-colors ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`} size={20} />
+                            <input type="text" placeholder={`Search ${searchType === 'company' ? 'companies' : viewMode === 'find' ? 'smart matching jobs' : viewMode === 'saved' ? 'saved jobs' : 'applications'}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`flex-1 min-w-0 bg-transparent focus:outline-none font-medium text-sm ${isDark ? 'text-white placeholder:text-neutral-600' : 'text-black placeholder:text-neutral-400'}`} />
+                            {searchTerm && <button onClick={() => setSearchTerm('')} className={`p-1.5 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500 hover:text-white' : 'hover:bg-neutral-100 text-neutral-400 hover:text-black'}`}>×</button>}
                         </div>
                     </div>
                 </div>
 
                 {viewMode === 'applied' && (
                     <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2">
-                        <button onClick={() => setAppliedFilter('all')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'all' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>All ({appliedCounts.all})</button>
-                        <button onClick={() => setAppliedFilter('waiting')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'waiting' ? 'bg-amber-600 text-white border-amber-500' : isDark ? 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Waiting ({appliedCounts.waiting})</button>
-                        <button onClick={() => setAppliedFilter('pre_qualified')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'pre_qualified' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Pre-qualified ({appliedCounts.pre_qualified})</button>
-                        <button onClick={() => setAppliedFilter('employed')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'employed' ? 'bg-emerald-600 text-white border-emerald-500' : isDark ? 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Employed ({appliedCounts.employed})</button>
-                        <button onClick={() => setAppliedFilter('rejected')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'rejected' ? 'bg-red-600 text-white border-red-500' : isDark ? 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Rejected ({appliedCounts.rejected})</button>
-                        <button onClick={() => setAppliedFilter('declined')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'declined' ? 'bg-slate-600 text-white border-slate-500' : isDark ? 'bg-slate-800/50 text-slate-400 border-slate-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Declined ({appliedCounts.declined})</button>
+                        <button onClick={() => setAppliedFilter('all')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'all' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>All ({appliedCounts.all})</button>
+                        <button onClick={() => setAppliedFilter('waiting')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'waiting' ? 'bg-amber-600 text-white border-amber-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Waiting ({appliedCounts.waiting})</button>
+                        <button onClick={() => setAppliedFilter('pre_qualified')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'pre_qualified' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Pre-qualified ({appliedCounts.pre_qualified})</button>
+                        <button onClick={() => setAppliedFilter('employed')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'employed' ? 'bg-emerald-600 text-white border-emerald-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Employed ({appliedCounts.employed})</button>
+                        <button onClick={() => setAppliedFilter('rejected')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'rejected' ? 'bg-red-600 text-white border-red-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Rejected ({appliedCounts.rejected})</button>
+                        <button onClick={() => setAppliedFilter('declined')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'declined' ? 'bg-neutral-600 text-white border-neutral-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Declined ({appliedCounts.declined})</button>
                     </div>
                 )}
             </header>
 
             {viewMode === 'applied' && !loading && (
                 <div className="flex items-center justify-between">
-                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}><span className={isDark ? 'text-neutral-400' : 'text-neutral-600'}>{filteredJobs.length}</span> Applications{appliedFilter !== 'all' && <span className="text-slate-500 text-sm ml-2">({appliedFilter.replace('_', ' ')})</span>}</h2>
-                    {totalPages > 1 && <p className="text-slate-500 text-sm">Page {currentPage} of {totalPages}</p>}
+                    <h2 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}><span className={isDark ? 'text-neutral-400' : 'text-neutral-600'}>{filteredJobs.length}</span> Applications{appliedFilter !== 'all' && <span className="text-neutral-500 text-sm ml-2">({appliedFilter.replace('_', ' ')})</span>}</h2>
+                    {totalPages > 1 && <p className="text-neutral-500 text-sm">Page {currentPage} of {totalPages}</p>}
                 </div>
             )}
 
             {loading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-4">
                     <div className={`w-12 h-12 border-4 rounded-full animate-spin ${isDark ? 'border-neutral-700 border-t-white' : 'border-neutral-200 border-t-black'}`}></div>
-                    <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Scanning network for roles...</p>
+                    <p className="font-bold text-xs text-neutral-500 uppercase tracking-widest">Scanning network for roles...</p>
                 </div>
             ) : paginatedJobs.length === 0 ? (
-                <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4">
+                <div className="py-32 flex flex-col items-center justify-center text-neutral-600 space-y-4">
                     <Briefcase size={64} className="opacity-10" />
                     <p className="font-bold text-sm uppercase tracking-widest">
                         {viewMode === 'find' ? 'No open roles found matching your search' :
@@ -360,15 +360,15 @@ export default function FindJobsPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {paginatedJobs.map((job) => (
-                            <div key={job.id} data-job-id={job.id} className={`group relative flex flex-col text-left border rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] ${isDark ? 'bg-[#0f172a] border-slate-800 hover:border-neutral-600 hover:shadow-2xl hover:shadow-white/5' : 'bg-white border-neutral-200 hover:border-neutral-400 hover:shadow-xl'}`}>
+                            <div key={job.id} data-job-id={job.id} className={`group relative flex flex-col text-left border rounded-[32px] overflow-hidden transition-all duration-300 hover:scale-[1.02] ${isDark ? 'bg-black border-neutral-800 hover:border-neutral-600 hover:shadow-2xl hover:shadow-white/5' : 'bg-white border-neutral-200 hover:border-neutral-400 hover:shadow-xl'}`}>
                                 <div className="p-5 md:p-8 space-y-6 flex-1">
                                     <div className="flex items-center justify-between">
-                                        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br border overflow-hidden flex items-center justify-center shadow-lg ${isDark ? 'from-slate-700 to-slate-800 border-slate-700' : 'from-neutral-100 to-neutral-200 border-neutral-200'}`}>
-                                            {job.company?.logoUrl ? <img src={job.company.logoUrl} alt={job.company.name} className="w-full h-full object-cover" /> : <Building2 size={24} className={isDark ? 'text-slate-500' : 'text-neutral-400'} />}
+                                        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br border overflow-hidden flex items-center justify-center shadow-lg ${isDark ? 'from-neutral-800 to-neutral-900 border-neutral-700' : 'from-neutral-100 to-neutral-200 border-neutral-200'}`}>
+                                            {job.company?.logoUrl ? <img src={job.company.logoUrl} alt={job.company.name} className="w-full h-full object-cover" /> : <Building2 size={24} className={isDark ? 'text-neutral-500' : 'text-neutral-400'} />}
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {!job.applicationStatus && (
-                                                <button onClick={(e) => handleSaveJob(job.id, e)} disabled={savingJobId === job.id} className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id) ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : isDark ? 'bg-slate-800 border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-500/20' : 'bg-neutral-100 border-neutral-200 text-neutral-400 hover:text-red-400 hover:border-red-500/20'}`} title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}>
+                                                <button onClick={(e) => handleSaveJob(job.id, e)} disabled={savingJobId === job.id} className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id) ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-red-400 hover:border-red-500/20' : 'bg-neutral-100 border-neutral-200 text-neutral-400 hover:text-red-400 hover:border-red-500/20'}`} title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}>
                                                     <Heart size={16} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} />
                                                 </button>
                                             )}
@@ -376,7 +376,7 @@ export default function FindJobsPage() {
                                         </div>
                                     </div>
                                     {job.applicationStatus && (
-                                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : job.applicationStatus === 'pre_qualified' ? (isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/10 text-black border-black/20') : ['employed', 'hired', 'accepted'].includes(job.applicationStatus) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : job.applicationStatus === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' : isDark ? 'bg-slate-800 text-slate-500 border-slate-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
+                                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : job.applicationStatus === 'pre_qualified' ? (isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/10 text-black border-black/20') : ['employed', 'hired', 'accepted'].includes(job.applicationStatus) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : job.applicationStatus === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' : isDark ? 'bg-neutral-800 text-neutral-500 border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
                                             <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
                                         </div>
                                     )}
@@ -384,15 +384,15 @@ export default function FindJobsPage() {
                                         <h2 className={`text-2xl font-black leading-tight transition-colors uppercase tracking-tighter line-clamp-2 ${isDark ? 'text-white group-hover:text-neutral-300' : 'text-black group-hover:text-neutral-600'}`}>{job.title}</h2>
                                         <p className={`font-bold text-sm tracking-tight ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.company?.name || 'Unknown Company'}</p>
                                     </div>
-                                    <p className={`text-sm line-clamp-3 leading-relaxed ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>{job.description}</p>
+                                    <p className={`text-sm line-clamp-3 leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{job.description}</p>
                                 </div>
-                                <div className={`px-5 md:px-8 py-4 md:py-5 border-t transition-colors ${isDark ? 'bg-slate-900/50 border-slate-800 group-hover:bg-white/5' : 'bg-neutral-50 border-neutral-200 group-hover:bg-neutral-100'}`}>
+                                <div className={`px-5 md:px-8 py-4 md:py-5 border-t transition-colors ${isDark ? 'bg-neutral-900/50 border-neutral-800 group-hover:bg-white/5' : 'bg-neutral-50 border-neutral-200 group-hover:bg-neutral-100'}`}>
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                                        <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                                             <span className="flex items-center gap-1.5"><Clock size={12} /> {new Date(job.createdAt).toLocaleDateString()}</span>
                                             <span className="flex items-center gap-1.5"><MapPin size={12} className={isDark ? 'text-neutral-400' : 'text-neutral-600'} /> {job.location_type ? job.location_type.charAt(0).toUpperCase() + job.location_type.slice(1) : 'Remote'}</span>
                                             <span className="flex items-center gap-1.5"><Briefcase size={12} className="text-emerald-500" /> {job.employment_type ? job.employment_type.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) : 'Full Time'}</span>
-                                            {job.location && <span className={`flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}><span className="hidden sm:inline">—</span> {job.location}</span>}
+                                            {job.location && <span className={`flex items-center gap-1.5 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}><span className="hidden sm:inline">—</span> {job.location}</span>}
                                         </div>
                                         <div className="flex items-center justify-end shrink-0">
                                             {job.applicationStatus === 'pending' ? (
@@ -400,7 +400,7 @@ export default function FindJobsPage() {
                                             ) : !job.applicationStatus ? (
                                                 <button onClick={() => handleJobView(job.id)} className={`group-hover:translate-x-1 transition-transform z-20 ${isDark ? 'text-white' : 'text-black'}`}><ChevronRight size={20} /></button>
                                             ) : (
-                                                <span className={`font-bold text-xs uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}><CheckCircle2 size={14} /> Applied</span>
+                                                <span className={`font-bold text-xs uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}><CheckCircle2 size={14} /> Applied</span>
                                             )}
                                         </div>
                                     </div>
@@ -411,9 +411,9 @@ export default function FindJobsPage() {
                     </div>
                     {totalPages > 1 && (
                         <div className="flex items-center justify-center gap-4 pt-8">
-                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'}`}><ChevronLeft size={16} /> Previous</button>
-                            <div className="flex items-center gap-2"><span className={`text-sm ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>Page <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{currentPage}</span> of <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{totalPages}</span></span></div>
-                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-slate-800 hover:bg-slate-700 text-slate-300' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'}`}>Next <ChevronRight size={16} /></button>
+                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'}`}><ChevronLeft size={16} /> Previous</button>
+                            <div className="flex items-center gap-2"><span className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Page <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{currentPage}</span> of <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{totalPages}</span></span></div>
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'}`}>Next <ChevronRight size={16} /></button>
                         </div>
                     )}
                 </>

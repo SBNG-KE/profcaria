@@ -1,0 +1,5 @@
+﻿app/api/professional/profile/employment/route.ts(62,41): error TS7006: Parameter 'a' implicitly has an 'any' type.
+app/employer/candidate/[id]/page.tsx(138,46): error TS7006: Parameter 'skill' implicitly has an 'any' type.
+app/employer/candidate/[id]/page.tsx(155,50): error TS7006: Parameter 'job' implicitly has an 'any' type.
+app/employer/candidate/[id]/page.tsx(187,49): error TS7006: Parameter 'edu' implicitly has an 'any' type.
+app/employer/candidate/[id]/page.tsx(214,53): error TS7006: Parameter 'prof' implicitly has an 'any' type.

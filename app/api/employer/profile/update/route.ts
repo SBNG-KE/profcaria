@@ -32,11 +32,13 @@ export async function PUT(req: Request) {
             city,
             address,
             about,
-            foundedYear
+            foundedYear,
+            imagePosition // Add this
         } = body;
 
         // 3. Update Companies Table (Name, Website, Email)
         const companyUpdates: any = {};
+        if (imagePosition) companyUpdates.image_position = imagePosition; // Save unencrypted
         if (companyName) {
             companyUpdates.enc_company_name = encryptData(companyName);
 

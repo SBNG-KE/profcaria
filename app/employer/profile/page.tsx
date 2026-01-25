@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, PenLine, Check, Copy, ArrowRight, Shield } from 'lucide-react';
+import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, PenLine, Check, Copy, ArrowRight, Shield, Move, Link2, Plus, X } from 'lucide-react';
+import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
+import SubscribersModal from './SubscribersModal';
 import { useTheme } from '@/app/context/ThemeContext';
 
 export default function EmployerProfilePage() {
@@ -31,6 +33,91 @@ export default function EmployerProfilePage() {
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingFounded, setIsEditingFounded] = useState(false);
     const [isEditingAbout, setIsEditingAbout] = useState(false);
+    const [isEditingEmail, setIsEditingEmail] = useState(false);
+    const [isEditingWebsite, setIsEditingWebsite] = useState(false);
+
+    // Image Positioning State
+    const [imagePosition, setImagePosition] = useState<string>('50% 50%');
+    const [isRepositioning, setIsRepositioning] = useState(false);
+    const [dragStart, setDragStart] = useState<{ x: number, y: number } | null>(null);
+    const imageRef = useRef<HTMLImageElement>(null);
+
+    // Initialize position from profile data if legacy keywords are used
+    useEffect(() => {
+        if (profile?.imagePosition) {
+            const pos = profile.imagePosition;
+            if (pos === 'center') setImagePosition('50% 50%');
+            else if (pos === 'top') setImagePosition('50% 0%');
+            else if (pos === 'bottom') setImagePosition('50% 100%');
+            else setImagePosition(pos);
+        }
+    }, [profile]);
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (!isRepositioning) return;
+        e.preventDefault();
+        setDragStart({ x: e.clientX, y: e.clientY });
+    };
+
+    // Global Drag Logic
+    useEffect(() => {
+        if (!isRepositioning || !dragStart) return;
+
+        const handleWindowMouseMove = (e: MouseEvent) => {
+            const deltaX = e.clientX - dragStart.x;
+            const deltaY = e.clientY - dragStart.y;
+
+            const sensitivity = 0.2;
+
+            // Get current with fallback
+            let [currentX, currentY] = [50, 50];
+            try {
+                const parts = imagePosition.split(' ');
+                if (parts.length === 2 && parts[0].endsWith('%')) {
+                    currentX = parseFloat(parts[0]);
+                    currentY = parseFloat(parts[1]);
+                }
+            } catch (error) { }
+
+            let newX = currentX - (deltaX * sensitivity);
+            let newY = currentY - (deltaY * sensitivity);
+
+            // Clamp
+            newX = Math.max(0, Math.min(100, newX));
+            newY = Math.max(0, Math.min(100, newY));
+
+            setImagePosition(`${newX.toFixed(1)}% ${newY.toFixed(1)}%`);
+            setDragStart({ x: e.clientX, y: e.clientY });
+        };
+
+        const handleWindowMouseUp = () => {
+            setDragStart(null);
+        };
+
+        window.addEventListener('mousemove', handleWindowMouseMove);
+        window.addEventListener('mouseup', handleWindowMouseUp);
+
+        return () => {
+            window.removeEventListener('mousemove', handleWindowMouseMove);
+            window.removeEventListener('mouseup', handleWindowMouseUp);
+        };
+    }, [isRepositioning, dragStart, imagePosition]);
+
+    // Other Profiles State
+    const [otherProfiles, setOtherProfiles] = useState<any[]>([]);
+    const [activeSection, setActiveSection] = useState<string | null>(null);
+    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
+    const [sectionLoading, setSectionLoading] = useState(false);
+    const [formData, setFormData] = useState<any>({});
+    const [isSubscribersModalOpen, setIsSubscribersModalOpen] = useState(false);
+
+    const handleCopyLink = () => {
+        const link = `https://profcaria.com/c/${companyName.toLowerCase().replace(/ /g, '-')}`;
+        navigator.clipboard.writeText(link);
+        setMessage({ type: 'success', text: 'Profile link copied!' });
+        setTimeout(() => setMessage(null), 3000);
+    };
 
     useEffect(() => {
         fetchProfile();
@@ -52,11 +139,20 @@ export default function EmployerProfilePage() {
                 setLogoUrl(p?.logoUrl || '');
                 setAbout(p?.about || '');
                 setFoundedYear(p?.foundedYear || '');
+                // Load persisted position
+                setImagePosition(p?.imagePosition || 'center');
 
                 const followRes = await fetch('/api/professional/follow?type=followers');
                 if (followRes.ok) {
                     const followData = await followRes.json();
                     setFollowerCount(followData.followers?.length || 0);
+                }
+
+                // Fetch Other Profiles
+                const otherRes = await fetch('/api/employer/profile/other-profiles');
+                if (otherRes.ok) {
+                    const { data: others } = await otherRes.json();
+                    setOtherProfiles(others || []);
                 }
             }
         } catch (error) {
@@ -65,6 +161,8 @@ export default function EmployerProfilePage() {
             setIsLoading(false);
         }
     };
+    // ... saving logic ...
+
 
     const handleSaveProfile = async () => {
         setIsSaving(true);
@@ -73,7 +171,7 @@ export default function EmployerProfilePage() {
             const res = await fetch('/api/employer/profile/update', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ companyName, website, email, country, city, address, about, foundedYear })
+                body: JSON.stringify({ companyName, website, email, country, city, address, about, foundedYear, imagePosition })
             });
             if (res.ok) {
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
@@ -87,6 +185,15 @@ export default function EmployerProfilePage() {
             setIsSaving(false);
         }
     };
+
+    // Auto-save image position when it changes
+    useEffect(() => {
+        if (profile) { // Only if profile loaded
+            // Debounce or just relying on user to click save?
+            // User said "not working", maybe they want it to save immediately?
+            // I'll leave it to manual save for now but make sure it loads correctly.
+        }
+    }, [imagePosition]);
 
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -116,6 +223,8 @@ export default function EmployerProfilePage() {
 
     const handleLogoDelete = async () => {
         if (!logoUrl) return;
+        if (!confirm("Are you sure you want to remove your company logo?")) return;
+
         setIsUploadingLogo(true);
         setMessage(null);
         try {
@@ -130,6 +239,76 @@ export default function EmployerProfilePage() {
             setMessage({ type: 'error', text: 'An error occurred while removing' });
         } finally {
             setIsUploadingLogo(false);
+        }
+    };
+
+    // --- SECTION HANDLERS ---
+    const openAddSection = (section: string) => {
+        setActiveSection(section);
+        setEditingItem(null);
+        setFormData({});
+        setIsSlideOverOpen(true);
+    };
+
+    const openEditSection = (section: string, item: any) => {
+        setActiveSection(section);
+        setEditingItem(item);
+        setFormData(item);
+        setIsSlideOverOpen(true);
+    };
+
+    const handleSaveSection = async (data: any) => {
+        setSectionLoading(true);
+        try {
+            const method = editingItem ? 'PUT' : 'POST';
+            const body = editingItem ? { ...data, id: editingItem.id } : data;
+
+            const res = await fetch('/api/employer/profile/other-profiles', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                setMessage({ type: 'success', text: 'Saved successfully!' });
+                setIsSlideOverOpen(false);
+                // Refresh
+                const otherRes = await fetch('/api/employer/profile/other-profiles');
+                if (otherRes.ok) {
+                    const { data: others } = await otherRes.json();
+                    setOtherProfiles(others || []);
+                }
+            } else {
+                const err = await res.json();
+                setMessage({ type: 'error', text: err.error || 'Failed to save' });
+            }
+        } catch (e) {
+            setMessage({ type: 'error', text: 'Error saving data' });
+        } finally {
+            setSectionLoading(false);
+        }
+    };
+
+    const handleDeleteSection = async (id: string) => {
+        if (!confirm('Are you sure you want to remove this profile link?')) return;
+        setSectionLoading(true);
+        try {
+            const res = await fetch(`/api/employer/profile/other-profiles?id=${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setMessage({ type: 'success', text: 'Deleted successfully!' });
+                // Refresh
+                const otherRes = await fetch('/api/employer/profile/other-profiles');
+                if (otherRes.ok) {
+                    const { data: others } = await otherRes.json();
+                    setOtherProfiles(others || []);
+                }
+            } else {
+                setMessage({ type: 'error', text: 'Failed to delete' });
+            }
+        } catch (e) {
+            setMessage({ type: 'error', text: 'Error deleting data' });
+        } finally {
+            setSectionLoading(false);
         }
     };
 
@@ -177,50 +356,88 @@ export default function EmployerProfilePage() {
             </div>
 
             {/* 1. Identity Card */}
-            <div className={`p-8 rounded-[40px] ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
+            <div className={`p-8 rounded-[40px] ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <div className="flex flex-col md:flex-row gap-8 items-start">
 
                     {/* Left: Company Logo (Interactive) */}
                     <div className="flex-shrink-0 relative group">
-                        <div className={`w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white border-white shadow-lg`}>
+                        <div className={`w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white border-white shadow-lg ${isRepositioning ? 'cursor-move ring-4 ring-blue-500 ring-offset-2' : ''}`}>
                             {isUploadingLogo ? (
                                 <Loader2 size={32} className="text-neutral-400 animate-spin" />
                             ) : logoUrl ? (
-                                <img src={logoUrl} alt="Company Logo" className="w-full h-full object-cover" />
+                                <img
+                                    ref={imageRef}
+                                    src={logoUrl}
+                                    alt="Company Logo"
+                                    className={`w-full h-full object-cover transition-none select-none ${isRepositioning ? '' : 'transition-all duration-300'}`}
+                                    style={{ objectPosition: imagePosition }}
+                                    onMouseDown={handleMouseDown}
+                                    draggable={false}
+                                />
                             ) : (
                                 <Building2 size={48} className="text-neutral-300" />
                             )}
                         </div>
-                        {/* Upload/Delete overlay */}
-                        <div className={`absolute inset-0 rounded-[2rem] flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? 'bg-black/80' : 'bg-black/60'}`}>
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploadingLogo}
-                                className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
-                                title="Upload Logo"
-                            >
-                                <Camera size={20} className="text-white" />
-                            </button>
-                            {logoUrl && (
+                        {/* Upload/Delete/Align overlay */}
+                        <div className={`absolute inset-0 rounded-[2rem] flex flex-col items-center justify-center gap-2 transition-opacity ${isRepositioning ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100'} ${isDark ? 'bg-black/80' : 'bg-black/60'}`}>
+                            <div className="flex items-center gap-2">
                                 <button
-                                    onClick={handleLogoDelete}
+                                    onClick={() => fileInputRef.current?.click()}
                                     disabled={isUploadingLogo}
                                     className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
-                                    title="Remove Logo"
+                                    title="Upload Logo"
                                 >
-                                    <Trash2 size={20} className="text-white" />
+                                    <Camera size={20} className="text-white" />
                                 </button>
-                            )}
+                                {logoUrl && (
+                                    <>
+                                        <button
+                                            onClick={() => setIsRepositioning(true)}
+                                            className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
+                                            title="Reposition Image"
+                                        >
+                                            <Move size={20} className="text-white" />
+                                        </button>
+                                        <button
+                                            onClick={handleLogoDelete}
+                                            disabled={isUploadingLogo}
+                                            className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
+                                            title="Remove Logo"
+                                        >
+                                            <Trash2 size={20} className="text-white" />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                             <span className="text-white text-xs font-medium">Change Logo</span>
                         </div>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleLogoUpload}
-                            className="hidden"
-                        />
+                        {isRepositioning && (
+                            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-50">
+                                <button
+                                    onClick={() => { setIsRepositioning(false); handleSaveProfile(); }}
+                                    className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all active:scale-95"
+                                    title="Save Position"
+                                >
+                                    <Check size={20} />
+                                </button>
+                                <button
+                                    onClick={() => { setIsRepositioning(false); fetchProfile(); }}
+                                    className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all active:scale-95"
+                                    title="Cancel"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        )}
+                        <span className="text-white text-xs font-medium">Change Logo</span>
                     </div>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                    />
 
                     {/* Right: Details */}
                     <div className="flex-1 w-full space-y-6">
@@ -268,7 +485,7 @@ export default function EmployerProfilePage() {
                                 ) : (
                                     <>
                                         <p className={`text-xl font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                                            Founded on {foundedYear || '[Year]'}
+                                            Founded {foundedYear || '[Year]'}
                                         </p>
                                         <button onClick={() => setIsEditingFounded(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
                                             <PenLine size={18} />
@@ -282,17 +499,56 @@ export default function EmployerProfilePage() {
 
                         {/* Contact Info */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1">
+                            {/* Email */}
+                            <div className="space-y-1 group">
                                 <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Work Email</label>
-                                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                    <Mail size={16} /> {email || 'No email provided'}
-                                </div>
+                                {isEditingEmail ? (
+                                    <div className="flex gap-2">
+                                        <input
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="shared@company.com"
+                                            className={`flex-1 px-3 py-1.5 rounded-lg font-medium outline-none border focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                            autoFocus
+                                        />
+                                        <button onClick={() => { handleSaveProfile(); setIsEditingEmail(false); }} className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Check size={16} /></button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                            <Mail size={16} /> {email || 'No email provided'}
+                                        </div>
+                                        <button onClick={() => setIsEditingEmail(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                            <PenLine size={14} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                            <div className="space-y-1">
+
+                            {/* Website */}
+                            <div className="space-y-1 group">
                                 <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Website</label>
-                                <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                    <Globe size={16} /> {website || 'No website provided'}
-                                </div>
+                                {isEditingWebsite ? (
+                                    <div className="flex gap-2">
+                                        <input
+                                            value={website}
+                                            onChange={(e) => setWebsite(e.target.value)}
+                                            placeholder="https://company.com"
+                                            className={`flex-1 px-3 py-1.5 rounded-lg font-medium outline-none border focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                            autoFocus
+                                        />
+                                        <button onClick={() => { handleSaveProfile(); setIsEditingWebsite(false); }} className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Check size={16} /></button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                            <Globe size={16} /> {website || 'No website provided'}
+                                        </div>
+                                        <button onClick={() => setIsEditingWebsite(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                            <PenLine size={14} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -303,7 +559,10 @@ export default function EmployerProfilePage() {
                                 <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                     https://profcaria.com/c/{companyName.toLowerCase().replace(/ /g, '-')}
                                 </div>
-                                <button className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}>
+                                <button
+                                    onClick={handleCopyLink}
+                                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
+                                >
                                     <Copy size={16} />
                                 </button>
                             </div>
@@ -325,21 +584,23 @@ export default function EmployerProfilePage() {
                 </div>
             </div>
 
+
+
             {/* 2. Analytics Card */}
-            <div className={`p-8 rounded-[40px] grid grid-cols-3 gap-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                <div className="text-center space-y-1">
-                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{followerCount}</div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Followers</div>
-                </div>
-                <div className="text-center space-y-1 border-l border-r border-neutral-200/10">
-                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>0</div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Visits</div>
-                </div>
-                <div className="text-center space-y-1">
-                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>0</div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Job Views</div>
+            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div
+                    onClick={() => setIsSubscribersModalOpen(true)}
+                    className="flex flex-col items-center justify-center space-y-1 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                    <div className={`text-4xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{followerCount}</div>
+                    <div className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Subscribers</div>
                 </div>
             </div>
+
+            <SubscribersModal
+                isOpen={isSubscribersModalOpen}
+                onClose={() => setIsSubscribersModalOpen(false)}
+            />
 
             {/* 3. About Section */}
             <div className={`p-8 rounded-[40px] space-y-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
@@ -379,6 +640,83 @@ export default function EmployerProfilePage() {
                     </p>
                 )}
             </div>
-        </div>
+
+            {/* 4. Other Profiles */}
+            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Link2 size={20} /> Other Profiles
+                    </h3>
+                    <button onClick={() => openAddSection('other_profiles')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                    </button>
+                </div>
+                <div className="space-y-4">
+                    {otherProfiles.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No other profiles linked. Add your LinkedIn, GitHub, or other social links.</p>}
+                    {otherProfiles.map((prof) => (
+                        <div key={prof.id} className={`group flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                            <div className="flex items-center gap-4">
+                                <Link2 size={20} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
+                                <div>
+                                    <h4 className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{prof.network}</h4>
+                                    <a href={prof.url} target="_blank" rel="noopener noreferrer" className={`text-sm hover:underline ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{prof.url}</a>
+                                </div>
+                            </div>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                <button onClick={() => openEditSection('other_profiles', prof)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={16} /></button>
+                                <button onClick={() => handleDeleteSection(prof.id)} className={`p-2 rounded-lg text-red-500 ${isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'}`}><Trash2 size={16} /></button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Slide Over Panel */}
+            <SlideOverPanel
+                isOpen={isSlideOverOpen}
+                onClose={() => setIsSlideOverOpen(false)}
+                title={editingItem ? `Edit Profile Link` : `Add Profile Link`}
+                isDark={isDark}
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Network / Platform</label>
+                        <input
+                            className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                            value={formData.network || ''}
+                            onChange={e => setFormData({ ...formData, network: e.target.value })}
+                            placeholder="LinkedIn, X, GitHub..."
+                        />
+                    </div>
+                    <div>
+                        <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>URL</label>
+                        <input
+                            className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                            value={formData.url || ''}
+                            onChange={e => setFormData({ ...formData, url: e.target.value })}
+                            placeholder="https://..."
+                        />
+                    </div>
+                    <div>
+                        <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Description (Optional)</label>
+                        <textarea
+                            className={`w-full p-3 h-24 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                            value={formData.description || ''}
+                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                            placeholder="Brief description..."
+                        />
+                    </div>
+                    <div className="pt-4">
+                        <button
+                            onClick={() => handleSaveSection(formData)}
+                            disabled={sectionLoading}
+                            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50"
+                        >
+                            {sectionLoading ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            </SlideOverPanel>
+        </div >
     );
 }

@@ -596,6 +596,15 @@ export default function EmployerFeedPage() {
                             {searchResults.map((result) => (
                                 <button
                                     key={result.id}
+                                    onClick={() => {
+                                        if (result.type === 'employer') {
+                                            router.push(`/professional/companies/${result.id}`);
+                                        } else {
+                                            router.push(`/employer/candidate/${result.id}`);
+                                        }
+                                        setIsSearching(false);
+                                        setSearchQuery('');
+                                    }}
                                     className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-neutral-50'}`}
                                 >
                                     <img src={result.image} alt={result.name} className="w-10 h-10 rounded-full object-cover" />

@@ -8,12 +8,15 @@ import {
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Image as ImageIcon, Palette,
   Shield, Check, ChevronDown, Type, Share2, Pencil,
-  User, MapPin, Globe, Briefcase, Activity, Save, Users,
-  Phone, Mail, ArrowRight, PenLine, Copy
+  GraduationCap, Award, BadgeCheck, Briefcase, Link2, Trash2, PenLine, Move, Copy,
+  Building2, Globe, MapPin, Mail, Camera, Save, Loader2, ArrowRight,
+  Eye, ThumbsUp, MessageSquare, MoreHorizontal, User, Activity, Phone, Users
 } from 'lucide-react';
+import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
 import LinkPreview from '@/app/components/LinkPreview';
 import { useTheme } from '@/app/context/ThemeContext';
 import { EXPERIENCE_YEAR_RANGES } from '@/lib/experience-level';
+import Link from 'next/link';
 
 const FONTS = [
   "Default", "Arial", "Verdana", "Tahoma", "Trebuchet MS", "Times New Roman",
@@ -231,6 +234,7 @@ export default function ProfessionalHome() {
   const [about, setAbout] = useState('');
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
+  const [profileImageUrl, setProfileImageUrl] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
@@ -240,6 +244,8 @@ export default function ProfessionalHome() {
   const [isEditingRole, setIsEditingRole] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [isEditingAbout, setIsEditingAbout] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
 
   // Job Preferences state (moved from Settings)
   const [targetRoleInput, setTargetRoleInput] = useState('');
@@ -251,10 +257,105 @@ export default function ProfessionalHome() {
   const [isOpenToRelocation, setIsOpenToRelocation] = useState(false);
   const [experienceYearsRanges, setExperienceYearsRanges] = useState<string[]>([]);
 
-  const [documents, setDocuments] = useState<string[]>(['RESUME', 'CV', 'CERTIFICATES']);
+  // Image Positioning State (Professional)
+  const [imagePosition, setImagePosition] = useState<string>('50% 50%');
+  const [isRepositioning, setIsRepositioning] = useState(false);
+  const [dragStart, setDragStart] = useState<{ x: number, y: number } | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  // Initialize position to center/top/bottom if legacy
+  useEffect(() => {
+    // Check if we need to convert legacy keywords
+    if (imagePosition === 'center' || imagePosition === 'top' || imagePosition === 'bottom') {
+      if (imagePosition === 'center') setImagePosition('50% 50%');
+      else if (imagePosition === 'top') setImagePosition('50% 0%');
+      else if (imagePosition === 'bottom') setImagePosition('50% 100%');
+    }
+  }, []); // Run once on mount if state was preloaded (or relies on useEffect below)
+
+  // Actually, imagePosition is initialized from API in fetchDashboardData
+  // We should add a conversion there or a useEffect listening to it?
+  // Let's add a useEffect that listens to changes but only converts if it's a keyword
+  useEffect(() => {
+    if (imagePosition === 'center') setImagePosition('50% 50%');
+    else if (imagePosition === 'top') setImagePosition('50% 0%');
+    else if (imagePosition === 'bottom') setImagePosition('50% 100%');
+  }, [imagePosition]);
+
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isRepositioning) return;
+    e.preventDefault();
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  // Global Drag Logic
+  useEffect(() => {
+    if (!isRepositioning || !dragStart) return;
+
+    const handleWindowMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+
+      const sensitivity = 0.2;
+
+      let [currentX, currentY] = [50, 50];
+      try {
+        const parts = imagePosition.split(' ');
+        if (parts.length === 2 && parts[0].endsWith('%')) {
+          currentX = parseFloat(parts[0]);
+          currentY = parseFloat(parts[1]);
+        }
+      } catch (err) { }
+
+      let newX = currentX - (deltaX * sensitivity);
+      let newY = currentY - (deltaY * sensitivity);
+
+      newX = Math.max(0, Math.min(100, newX));
+      newY = Math.max(0, Math.min(100, newY));
+
+      setImagePosition(`${newX.toFixed(1)}% ${newY.toFixed(1)}%`);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleWindowMouseUp = () => {
+      setDragStart(null);
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+    };
+  }, [isRepositioning, dragStart, imagePosition]);
+
+  const handleCopyLink = () => {
+    const link = `https://profcaria.com/p/${firstName.toLowerCase()}-${lastName.toLowerCase()}`;
+    navigator.clipboard.writeText(link);
+    setProfileMessage({ type: 'success', text: 'Profile link copied!' });
+    setTimeout(() => setProfileMessage(null), 3000);
+  };
+
+  const [documents, setDocuments] = useState<string[]>(['RESUME', 'CV', 'COVER LETTER']);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [selectedCards, setSelectedCards] = useState<string[]>(['RESUME']);
+
+  // --- NEW PROFILE SECTIONS STATE ---
+  const [employmentHistory, setEmploymentHistory] = useState<any[]>([]);
+  const [education, setEducation] = useState<any[]>([]);
+  const [skills, setSkills] = useState<any[]>([]);
+  const [certifications, setCertifications] = useState<any[]>([]);
+  const [awards, setAwards] = useState<any[]>([]);
+  const [otherProfiles, setOtherProfiles] = useState<any[]>([]);
+
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
+  const [sectionLoading, setSectionLoading] = useState(false);
+  const [formData, setFormData] = useState<any>({}); // Form data for active section
 
   const [activeDocument, setActiveDocument] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -263,15 +364,19 @@ export default function ProfessionalHome() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [showFontPicker, setShowFontPicker] = useState(false);
   const [showFontSizePicker, setShowFontSizePicker] = useState(false);
-  const [currentFont, setCurrentFont] = useState('Default');
+  const [isParsing, setIsParsing] = useState(false);
+  const magicImportInputRef = useRef<HTMLInputElement>(null); const [currentFont, setCurrentFont] = useState('Default');
   const [currentFontSize, setCurrentFontSize] = useState('3'); // Default 16px
+
+
 
   // State for editable title
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
 
   const editorRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null); // For Editor
+  const profileImageInputRef = useRef<HTMLInputElement>(null); // For Profile
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   // Link preview state
@@ -328,11 +433,13 @@ export default function ProfessionalHome() {
             setFirstName(userData.profile.firstName || '');
             setLastName(userData.profile.lastName || '');
             setEmail(userData.profile.email || '');
-            setPhone(userData.profile.phoneNumber || '');
-            setRole(userData.profile.currentRole || '');
+            setPhone(userData.profile.phoneNumber || userData.profile.phone || ''); // Check phone field too
+            setRole(userData.profile.role || ''); // Fixed: API returns role key
             setAbout(userData.profile.about || '');
             setCountry(userData.profile.country || 'Auto-detected');
             setCity(userData.profile.city || 'Auto-detected');
+            setProfileImageUrl(userData.profile.profileImageUrl || '');
+            setImagePosition(userData.profile.imagePosition || 'center');
           }
         }
         // Load job preferences
@@ -353,6 +460,24 @@ export default function ProfessionalHome() {
           const followData = await followRes.json();
           setFollowerCount(followData.followers?.length || 0);
         }
+
+        // --- FETCH NEW SECTIONS ---
+        const [empRes, eduRes, skillRes, certRes, awardRes, otherRes] = await Promise.all([
+          fetch('/api/professional/profile/employment'),
+          fetch('/api/professional/profile/sections/education'),
+          fetch('/api/professional/profile/sections/skills'),
+          fetch('/api/professional/profile/sections/certifications'),
+          fetch('/api/professional/profile/sections/awards'),
+          fetch('/api/professional/profile/sections/other_profiles')
+        ]);
+
+        if (empRes.ok) setEmploymentHistory((await empRes.json()).history || []);
+        if (eduRes.ok) setEducation((await eduRes.json()).data || []);
+        if (skillRes.ok) setSkills((await skillRes.json()).data || []);
+        if (certRes.ok) setCertifications((await certRes.json()).data || []);
+        if (awardRes.ok) setAwards((await awardRes.json()).data || []);
+        if (otherRes.ok) setOtherProfiles((await otherRes.json()).data || []);
+
       } catch (error) {
         console.error("Error fetching dashboard data", error);
       } finally {
@@ -376,7 +501,8 @@ export default function ProfessionalHome() {
           email,
           phone,
           role,
-          about
+          about,
+          imagePosition
         })
       });
       if (res.ok) {
@@ -419,6 +545,53 @@ export default function ProfessionalHome() {
     } catch (error) {
       console.error('Error saving preferences:', error);
       setProfileMessage({ type: 'error', text: 'An error occurred while saving.' });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProfileLoading(true);
+    setProfileMessage(null);
+    try {
+      const res = await fetch(`/api/professional/profile/image?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfileImageUrl(data.url);
+        setProfileMessage({ type: 'success', text: 'Photo uploaded successfully!' });
+      } else {
+        setProfileMessage({ type: 'error', text: 'Failed to upload photo' });
+      }
+    } catch (error) {
+      setProfileMessage({ type: 'error', text: 'An error occurred while uploading' });
+    } finally {
+      setProfileLoading(false);
+      if (profileImageInputRef.current) profileImageInputRef.current.value = '';
+    }
+  };
+
+  const handleProfileImageDelete = async () => {
+    if (!profileImageUrl) return;
+    if (!confirm("Are you sure you want to remove your profile photo?")) return;
+
+    setProfileLoading(true);
+    setProfileMessage(null);
+    try {
+      const res = await fetch('/api/professional/profile/image', { method: 'DELETE' });
+      if (res.ok) {
+        setProfileImageUrl('');
+        setProfileMessage({ type: 'success', text: 'Photo removed successfully!' });
+      } else {
+        setProfileMessage({ type: 'error', text: 'Failed to remove photo' });
+      }
+    } catch (error) {
+      setProfileMessage({ type: 'error', text: 'An error occurred while removing' });
     } finally {
       setProfileLoading(false);
     }
@@ -566,6 +739,45 @@ export default function ProfessionalHome() {
     } catch (error) {
       console.error("Image upload error", error);
       alert("Failed to upload image.");
+    }
+  };
+
+  const handleMagicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    setIsParsing(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/documents/parse', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) throw new Error("Parsing failed");
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      if (data.content) {
+        // Replace content while preserving undo history
+        // 1. Focus editor
+        editorRef.current?.focus();
+
+        // 2. Select All
+        execCommand('selectAll');
+
+        // 3. Insert new content (replaces selection)
+        execCommand('insertHTML', data.content);
+      }
+    } catch (error) {
+      console.error("Magic upload error", error);
+      alert("Failed to extract text from file.");
+    } finally {
+      setIsParsing(false);
+      if (magicImportInputRef.current) magicImportInputRef.current.value = '';
     }
   };
 
@@ -789,7 +1001,7 @@ export default function ProfessionalHome() {
 
   // Check if a card is a base card (cannot be renamed)
   const isBaseCard = (title: string) => {
-    const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+    const baseCards = ['RESUME', 'CV', 'COVER LETTER'];
     return baseCards.includes(title.toUpperCase());
   };
 
@@ -830,6 +1042,105 @@ export default function ProfessionalHome() {
       alert('Failed to rename card.');
     } finally {
       setIsEditingTitle(false);
+    }
+  };
+
+  // --- SECTION HANDLERS ---
+  const openAddSection = (section: string) => {
+    setActiveSection(section);
+    setEditingItem(null);
+    setFormData({}); // Reset form
+    setIsSlideOverOpen(true);
+  };
+
+  const openEditSection = (section: string, item: any) => {
+    setActiveSection(section);
+    setEditingItem(item);
+    setFormData(item); // Load item data
+    setIsSlideOverOpen(true);
+  };
+
+  const handleSaveSection = async (formData: any) => {
+    if (!activeSection) return;
+    setSectionLoading(true);
+
+    try {
+      const url = activeSection === 'employment'
+        ? '/api/professional/profile/sections/employment' // Manual employment uses generic CRUD
+        : `/api/professional/profile/sections/${activeSection}`;
+
+      const method = editingItem ? 'PUT' : 'POST';
+      const body = editingItem ? { ...formData, id: editingItem.id } : formData;
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        setProfileMessage({ type: 'success', text: 'Saved successfully!' });
+        setIsSlideOverOpen(false);
+        // Refresh data
+        // For simplicity, we could splice locally, but refetching ensures consistency specifically for hybrid lists like employment
+        if (activeSection === 'employment') {
+          const r = await fetch('/api/professional/profile/employment');
+          if (r.ok) setEmploymentHistory((await r.json()).history || []);
+        } else {
+          const r = await fetch(`/api/professional/profile/sections/${activeSection}`);
+          if (r.ok) {
+            const d = (await r.json()).data || [];
+            if (activeSection === 'education') setEducation(d);
+            if (activeSection === 'skills') setSkills(d);
+            if (activeSection === 'certifications') setCertifications(d);
+            if (activeSection === 'awards') setAwards(d);
+            if (activeSection === 'other_profiles') setOtherProfiles(d);
+          }
+        }
+      } else {
+        const err = await res.json();
+        setProfileMessage({ type: 'error', text: err.error || 'Failed to save.' });
+      }
+    } catch (e) {
+      setProfileMessage({ type: 'error', text: 'Error saving data.' });
+    } finally {
+      setSectionLoading(false);
+    }
+  };
+
+  const handleDeleteSection = async (section: string, id: string) => {
+    if (!confirm('Are you sure you want to delete this?')) return;
+    setSectionLoading(true);
+    try {
+      const url = section === 'employment'
+        ? `/api/professional/profile/sections/employment?id=${id}`
+        : `/api/professional/profile/sections/${section}?id=${id}`;
+
+      const res = await fetch(url, { method: 'DELETE' });
+      if (res.ok) {
+        setProfileMessage({ type: 'success', text: 'Deleted successfully!' });
+        // Refresh data
+        if (section === 'employment') {
+          const r = await fetch('/api/professional/profile/employment');
+          if (r.ok) setEmploymentHistory((await r.json()).history || []);
+        } else {
+          const r = await fetch(`/api/professional/profile/sections/${section}`);
+          if (r.ok) {
+            const d = (await r.json()).data || [];
+            if (section === 'education') setEducation(d);
+            if (section === 'skills') setSkills(d);
+            if (section === 'certifications') setCertifications(d);
+            if (section === 'awards') setAwards(d);
+            if (section === 'other_profiles') setOtherProfiles(d);
+          }
+        }
+      } else {
+        setProfileMessage({ type: 'error', text: 'Failed to delete.' });
+      }
+    } catch (e) {
+      setProfileMessage({ type: 'error', text: 'Error deleting.' });
+    } finally {
+      setSectionLoading(false);
     }
   };
 
@@ -935,18 +1246,102 @@ export default function ProfessionalHome() {
             {/* Profile Info Tab Content */}
             {activeProfileTab === 'profile' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                {/* Message Banner */}
+                {profileMessage && (
+                  <div className={`p-4 rounded-xl text-sm font-medium ${profileMessage.type === 'success' ? (isDark ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') : (isDark ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-200')}`}>
+                    {profileMessage.text}
+                  </div>
+                )}
+
                 {/* 1. Identity Card */}
                 <div className={`p-8 rounded-[40px] ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
                   <div className="flex flex-col md:flex-row gap-8 items-start">
 
                     {/* Left: Profile Image */}
-                    <div className="flex-shrink-0">
-                      <div className={`w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 ${isDark ? 'bg-neutral-800 border-neutral-800' : 'bg-neutral-100 border-white shadow-lg'}`}>
-                        {/* Placeholder for now - can be updated to real image later */}
-                        <div className={`w-full h-full flex items-center justify-center font-black text-6xl ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`}>
-                          {firstName.charAt(0)}{lastName.charAt(0)}
-                        </div>
+                    <div className="flex-shrink-0 relative group">
+                      <div className={`w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white ${isDark ? 'border-neutral-800' : 'border-white shadow-lg'} ${isRepositioning ? 'cursor-move ring-4 ring-blue-500 ring-offset-2' : ''}`}>
+                        {profileLoading ? (
+                          <Loader2 size={32} className="text-neutral-400 animate-spin" />
+                        ) : profileImageUrl ? (
+                          <img
+                            ref={imageRef}
+                            src={profileImageUrl}
+                            alt="Profile"
+                            className={`w-full h-full object-cover transition-none select-none ${isRepositioning ? '' : 'transition-all duration-300'}`}
+                            style={{ objectPosition: imagePosition }}
+                            onMouseDown={handleMouseDown}
+                            draggable={false}
+                          />
+                        ) : (
+                          <div className={`font-black text-6xl ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`}>
+                            {firstName.charAt(0)}{lastName.charAt(0)}
+                          </div>
+                        )}
                       </div>
+
+                      {/* Upload/Delete/Align Overlay */}
+                      <div className={`absolute inset-0 rounded-[2rem] flex flex-col items-center justify-center gap-2 transition-opacity ${isRepositioning ? 'opacity-0 pointer-events-none' : 'opacity-0 group-hover:opacity-100'} ${isDark ? 'bg-black/80' : 'bg-black/60'}`}>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => profileImageInputRef.current?.click()}
+                            className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
+                            title="Upload Photo"
+                          >
+                            <Camera size={20} className="text-white" />
+                          </button>
+                          {profileImageUrl && (
+                            <>
+                              <button
+                                onClick={() => setIsRepositioning(true)}
+                                className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
+                                title="Reposition Photo"
+                              >
+                                <Move size={20} className="text-white" />
+                              </button>
+                              <button
+                                onClick={handleProfileImageDelete}
+                                className="p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md"
+                                title="Remove Photo"
+                              >
+                                <Trash2 size={20} className="text-white" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                        <span className="text-white text-xs font-medium">Change Photo</span>
+                      </div>
+
+                      {isRepositioning && (
+                        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-50">
+                          <button
+                            onClick={() => { setIsRepositioning(false); handleSaveProfile(); }}
+                            className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all active:scale-95"
+                            title="Save Position"
+                          >
+                            <Check size={20} />
+                          </button>
+                          <button
+                            onClick={() => setIsRepositioning(false)}
+                            className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-all active:scale-95"
+                            title="Cancel"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Reuse the existing fileInputRef if it was meant for profile? 
+                          Wait, line 1327 uses fileInputRef for the EDITOR image upload. 
+                          I need a NEW ref for profile image or conditional logic.
+                          I will create a new ref `profileImageInputRef` in the state section first.
+                      */}
+                      <input
+                        ref={profileImageInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfileImageUpload}
+                        className="hidden"
+                      />
                     </div>
 
                     {/* Right: Details */}
@@ -1009,124 +1404,324 @@ export default function ProfessionalHome() {
                             </>
                           )}
                         </div>
+
+                        {/* Follower Count */}
+                        <div className="flex items-center gap-4 mt-1">
+                          <Link href="/professional/connections" className={`flex items-center gap-2 text-sm font-bold hover:underline ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>
+                            <Users size={16} /> {followerCount} Followers
+                          </Link>
+                        </div>
                       </div>
 
                       <div className={`h-px w-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}></div>
 
                       {/* Contact Info */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1">
+                        <div className="space-y-1 group">
                           <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Email</label>
-                          <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                            <Mail size={16} /> {email || 'No email provided'}
-                          </div>
+                          {isEditingEmail ? (
+                            <div className="flex gap-2">
+                              <input
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="name@example.com"
+                                className={`flex-1 px-3 py-1.5 rounded-lg font-medium outline-none border focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                autoFocus
+                              />
+                              <button onClick={() => { handleSaveProfile(); setIsEditingEmail(false); }} className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Check size={16} /></button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                <Mail size={16} /> {email || 'No email provided'}
+                              </div>
+                              <button onClick={() => setIsEditingEmail(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                <PenLine size={14} />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-1 group">
                           <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Phone</label>
-                          <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                            <Phone size={16} /> {phone || 'No phone provided'}
-                          </div>
+                          {isEditingPhone ? (
+                            <div className="flex gap-2">
+                              <input
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                placeholder="+1234567890"
+                                className={`flex-1 px-3 py-1.5 rounded-lg font-medium outline-none border focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                autoFocus
+                              />
+                              <button onClick={() => { handleSaveProfile(); setIsEditingPhone(false); }} className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><Check size={16} /></button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                <Phone size={16} /> {phone || 'No phone provided'}
+                              </div>
+                              <button onClick={() => setIsEditingPhone(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                <PenLine size={14} />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      {/* Profile Link */}
                       <div className="space-y-2">
                         <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Link</label>
                         <div className={`flex items-center p-1.5 rounded-xl border ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                           <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                             https://profcaria.com/p/{firstName.toLowerCase()}-{lastName.toLowerCase()}
                           </div>
-                          <button className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}>
+                          <button
+                            onClick={handleCopyLink}
+                            className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
+                          >
                             <Copy size={16} />
                           </button>
                         </div>
                         <p className={`text-[10px] ${isDark ? 'text-neutral-600' : 'text-neutral-500'}`}>Share this link for others to view your professional profile.</p>
                       </div>
 
-                      {/* Posts Activity Button */}
-                      <div className="pt-2">
-                        <button className={`group flex items-center gap-3 px-6 py-4 rounded-2xl w-full md:w-auto transition-all border ${isDark ? 'bg-neutral-800/50 border-neutral-700 hover:bg-neutral-800 text-white' : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm text-black'}`}>
-                          <div className="flex flex-col items-start">
-                            <span className="font-black text-2xl">0</span>
-                            <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Posts Published</span>
+                      {/* Analytics Section */}
+                      <div className="grid grid-cols-2 gap-4 pt-4">
+                        <div className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-800/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                          <div className="flex items-center gap-3 mb-2">
+                            <Users size={18} className="text-blue-500" />
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Profile Views</span>
                           </div>
-                          <div className={`ml-auto p-2 rounded-full ${isDark ? 'bg-neutral-700 group-hover:bg-neutral-600' : 'bg-neutral-100 group-hover:bg-neutral-200'}`}>
-                            <ArrowRight size={20} />
+                          <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>1,248</p>
+                          <p className={`text-[10px] items-center gap-1 flex ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                            <Activity size={10} /> +12% this week
+                          </p>
+                        </div>
+                        <div className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-800/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                          <div className="flex items-center gap-3 mb-2">
+                            <User size={18} className="text-purple-500" />
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Followers</span>
                           </div>
-                        </button>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-                {/* 2. Analytics Card Placeholder */}
-                <div className={`p-8 rounded-[40px] grid grid-cols-3 gap-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                  <div className="text-center space-y-1">
-                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{followerCount}</div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Followers</div>
-                  </div>
-                  <div className="text-center space-y-1 border-l border-r border-neutral-200/10">
-                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>0</div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Visits</div>
-                    <div className="text-[10px] text-green-500 font-bold">+0% this week</div>
-                  </div>
-                  <div className="text-center space-y-1">
-                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>0</div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Post Impressions</div>
-                  </div>
-                </div>
-
-                {/* 3. About Section */}
-                <div className={`p-8 rounded-[40px] space-y-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                  <div className="flex items-center justify-between">
-                    <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>About</h3>
-                    {!isEditingAbout && (
-                      <button onClick={() => setIsEditingAbout(true)} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={18} /></button>
-                    )}
-                  </div>
-
-                  {isEditingAbout ? (
-                    <div className="space-y-4">
-                      <div className="relative">
-                        <textarea
-                          value={about}
-                          onChange={(e) => {
-                            if (e.target.value.length <= 700) {
-                              setAbout(e.target.value);
-                            }
-                          }}
-                          className={`w-full h-32 p-4 rounded-2xl outline-none resize-none border-2 focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
-                          placeholder="Tell us about your professional journey..."
-                          autoFocus
-                        />
-                        <div className={`absolute bottom-4 right-4 text-xs font-bold ${about.length >= 700 ? 'text-red-500' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                          {about.length}/700
+                          <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{followerCount}</p>
+                          <p className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Total audience</p>
                         </div>
                       </div>
-                      <div className="flex justify-end gap-3">
-                        <button onClick={() => setIsEditingAbout(false)} className={`px-4 py-2 rounded-xl font-bold text-sm ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-500 hover:bg-neutral-100'}`}>Cancel</button>
-                        <button onClick={() => { handleSaveProfile(); setIsEditingAbout(false); }} className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700">Save Bio</button>
+
+                      {/* About Section */}
+                      <div className="pt-2 space-y-2 group">
+                        <div className="flex items-center justify-between">
+                          <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>About</label>
+                          <button onClick={() => setIsEditingAbout(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                            <PenLine size={14} />
+                          </button>
+                        </div>
+                        {isEditingAbout ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={about}
+                              onChange={(e) => setAbout(e.target.value)}
+                              className={`w-full p-4 rounded-xl font-medium outline-none border-2 focus:border-blue-500 min-h-[120px] ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                              placeholder="Tell us about yourself..."
+                              autoFocus
+                            />
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => setIsEditingAbout(false)} className={`px-4 py-2 rounded-lg text-sm font-bold ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}>Cancel</button>
+                              <button onClick={() => { handleSaveProfile(); setIsEditingAbout(false); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700">Save</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                            {about || 'No about section added yet.'}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <p className={`leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                      {about || 'Share your professional background, key achievements, and current focus. (Max 700 characters)'}
-                    </p>
-                  )}
-                </div>
-                {/* 4. Sections List (Employment, Education, etc) */}
-                <div className="space-y-4">
-                  {['Employment History', 'Education', 'Skills', 'Licenses & Certifications', 'Honors & Awards'].map((section) => (
-                    <div key={section} className={`p-6 rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'} opacity-60`}>
-                      <h3 className={`text-lg font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{section}</h3>
+                  </div>
+
+                  {/* 2. Employment History */}
+                  <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Briefcase size={20} /> Employment History
+                      </h3>
+                      <button onClick={() => openAddSection('employment')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                      </button>
                     </div>
-                  ))}
-                  <button className={`w-full py-6 rounded-[32px] border-2 border-dashed font-bold flex items-center justify-center gap-2 transition-all ${isDark ? 'border-neutral-800 text-neutral-500 hover:border-neutral-700 hover:text-neutral-300' : 'border-neutral-200 text-neutral-400 hover:border-neutral-300 hover:text-neutral-600'}`}>
-                    <Plus size={20} /> Add Section
-                  </button>
+                    <div className="space-y-6">
+                      {employmentHistory.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No employment history added.</p>}
+                      {employmentHistory.map((job) => (
+                        <div key={job.id} className="group relative flex gap-4">
+                          <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                            {job.logoUrl ? <img src={job.logoUrl} className="w-full h-full object-cover rounded-xl" /> : <Building2 size={24} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />}
+                          </div>
+                          <div>
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h4>
+                            <p className={`font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>{job.company}</p>
+                            <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                              {job.startDate} - {job.isCurrent ? 'Present' : job.endDate}
+                            </p>
+                          </div>
+                          {/* Only allow edit/delete for manual entries */}
+                          {job.source === 'manual' && (
+                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                              <button onClick={() => openEditSection('employment', job)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={16} /></button>
+                              <button onClick={() => handleDeleteSection('employment', job.id)} className={`p-2 rounded-lg text-red-500 ${isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'}`}><Trash2 size={16} /></button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 3. Education */}
+                  <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <GraduationCap size={20} /> Education
+                      </h3>
+                      <button onClick={() => openAddSection('education')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                    <div className="space-y-6">
+                      {education.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No education added.</p>}
+                      {education.map((edu) => (
+                        <div key={edu.id} className="group flex gap-4">
+                          <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                            <GraduationCap size={24} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
+                          </div>
+                          <div>
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{edu.school}</h4>
+                            <p className={`font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>{edu.degree}, {edu.fieldOfStudy}</p>
+                            <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                              {edu.startDate} - {edu.isCurrent ? 'Present' : edu.endDate}
+                            </p>
+                          </div>
+                          <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button onClick={() => openEditSection('education', edu)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={16} /></button>
+                            <button onClick={() => handleDeleteSection('education', edu.id)} className={`p-2 rounded-lg text-red-500 ${isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'}`}><Trash2 size={16} /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 4. Skills */}
+                  <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <BadgeCheck size={20} /> Skills
+                      </h3>
+                      <button onClick={() => openAddSection('skills')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {skills.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No skills added.</p>}
+                      {skills.map((skill) => (
+                        <div key={skill.id} className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'}`}>
+                          {skill.name}
+                          <button onClick={() => handleDeleteSection('skills', skill.id)} className="opacity-50 hover:opacity-100 hover:text-red-500"><X size={14} /></button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 5. Licenses & Certifications */}
+                  <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Award size={20} /> Licenses & Certifications
+                      </h3>
+                      <button onClick={() => openAddSection('certifications')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                    <div className="space-y-6">
+                      {certifications.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No certifications added.</p>}
+                      {certifications.map((cert) => (
+                        <div key={cert.id} className="group flex gap-4">
+                          <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                            <Award size={24} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
+                          </div>
+                          <div>
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{cert.name}</h4>
+                            <p className={`font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>{cert.issuer}</p>
+                            {cert.issueDate && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Issued {cert.issueDate}</p>}
+                          </div>
+                          <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button onClick={() => openEditSection('certifications', cert)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={16} /></button>
+                            <button onClick={() => handleDeleteSection('certifications', cert.id)} className={`p-2 rounded-lg text-red-500 ${isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'}`}><Trash2 size={16} /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 6. Honors & Awards */}
+                  <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Award size={20} /> Honors & Awards
+                      </h3>
+                      <button onClick={() => openAddSection('awards')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                    <div className="space-y-6">
+                      {awards.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No awards added.</p>}
+                      {awards.map((award) => (
+                        <div key={award.id} className="group flex gap-4">
+                          <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                            <Award size={24} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
+                          </div>
+                          <div>
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{award.title}</h4>
+                            <p className={`font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>{award.issuer}</p>
+                            {award.date && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{award.date}</p>}
+                          </div>
+                          <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button onClick={() => openEditSection('awards', award)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={16} /></button>
+                            <button onClick={() => handleDeleteSection('awards', award.id)} className={`p-2 rounded-lg text-red-500 ${isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'}`}><Trash2 size={16} /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 7. Other Profiles */}
+                  <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Link2 size={20} /> Other Profiles
+                      </h3>
+                      <button onClick={() => openAddSection('other_profiles')} className={`p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      {otherProfiles.length === 0 && <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No other profiles linked.</p>}
+                      {otherProfiles.map((prof) => (
+                        <div key={prof.id} className={`group flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                          <div className="flex items-center gap-4">
+                            <Link2 size={20} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
+                            <div>
+                              <h4 className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{prof.network}</h4>
+                              <a href={prof.url} target="_blank" rel="noopener noreferrer" className={`text-sm hover:underline ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{prof.url}</a>
+                            </div>
+                          </div>
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                            <button onClick={() => openEditSection('other_profiles', prof)} className={`p-2 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><PenLine size={16} /></button>
+                            <button onClick={() => handleDeleteSection('other_profiles', prof.id)} className={`p-2 rounded-lg text-red-500 ${isDark ? 'hover:bg-red-500/10' : 'hover:bg-red-50'}`}><Trash2 size={16} /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                 </div>
               </div>
             )}
+
 
             {/* Job Preferences Tab Content */}
             {activeProfileTab === 'preferences' && (
@@ -1178,7 +1773,7 @@ export default function ProfessionalHome() {
       </div>
 
       {/* --- THE SLIDER (OVERLAY) --- */}
-      <div
+      < div
         className={`
                 fixed inset-0 z-[105] h-[100dvh] border-l backdrop-blur-2xl flex flex-col
                 transition-all duration-500 ease-in-out
@@ -1365,6 +1960,27 @@ export default function ProfessionalHome() {
                   </>
                 )}
               </div>
+
+              <div className="flex flex-col items-center gap-0.5">
+                <button
+                  onClick={() => magicImportInputRef.current?.click()}
+                  disabled={isParsing}
+                  className={`flex items-center gap-2 px-3 py-2 border rounded-lg transition-all ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white' : 'bg-white border-neutral-300 text-slate-600 hover:text-black shadow-sm'} ${isParsing ? 'opacity-50 cursor-wait' : ''}`}
+                  title="Import from File (PDF/Word)"
+                >
+                  {isParsing ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+                  <span className="text-xs font-bold hidden sm:inline">Import</span>
+                </button>
+                <span className={`text-[9px] font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>pdf/docx/txt only</span>
+              </div>
+              <input
+                ref={magicImportInputRef}
+                type="file"
+                accept=".pdf,.docx,.txt"
+                onChange={handleMagicUpload}
+                className="hidden"
+              />
+
             </div>
           </div>
 
@@ -1452,7 +2068,7 @@ export default function ProfessionalHome() {
             />
           </div>
         </ScrollableContainer>
-      </div>
+      </div >
 
       <AccessModal
         isOpen={isAccessModalOpen}
@@ -1472,14 +2088,156 @@ export default function ProfessionalHome() {
       />
 
       {/* Link Preview Popup */}
-      {linkPreviewUrl && linkPreviewPosition && (
-        <LinkPreview
-          url={linkPreviewUrl}
-          position={linkPreviewPosition}
-          onClose={closeLinkPreview}
-          onInsert={() => insertLinkFromPreview()}
-        />
-      )}
+      {
+        linkPreviewUrl && linkPreviewPosition && (
+          <LinkPreview
+            url={linkPreviewUrl}
+            position={linkPreviewPosition}
+            onClose={closeLinkPreview}
+            onInsert={() => insertLinkFromPreview()}
+          />
+        )
+      }
+      <SlideOverPanel
+        isOpen={isSlideOverOpen}
+        onClose={() => setIsSlideOverOpen(false)}
+        title={editingItem ? `Edit ${activeSection}` : `Add ${activeSection}`}
+        isDark={isDark}
+      >
+        <div className="space-y-4">
+          {/* EMPLOYMENT FORM */}
+          {activeSection === 'employment' && (
+            <>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Company / Organization</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="Company Name" />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Title</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.title || ''} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Job Title" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Start Date</label>
+                  <input type="date" className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.startDate || ''} onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
+                </div>
+                <div>
+                  <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>End Date</label>
+                  <input type="date" disabled={formData.isCurrent} className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'} ${formData.isCurrent ? 'opacity-50' : ''}`} value={formData.endDate || ''} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="isCurrent" checked={formData.isCurrent || false} onChange={e => setFormData({ ...formData, isCurrent: e.target.checked })} />
+                <label htmlFor="isCurrent" className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>I currently work here</label>
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Description</label>
+                <textarea className={`w-full p-3 h-32 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Describe your role..." />
+              </div>
+            </>
+          )}
+
+          {/* EDUCATION FORM */}
+          {activeSection === 'education' && (
+            <>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>School / University</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.school || ''} onChange={e => setFormData({ ...formData, school: e.target.value })} placeholder="School Name" />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Degree</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.degree || ''} onChange={e => setFormData({ ...formData, degree: e.target.value })} placeholder="Bachelor's, Master's..." />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Field of Study</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.fieldOfStudy || ''} onChange={e => setFormData({ ...formData, fieldOfStudy: e.target.value })} placeholder="Computer Science..." />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Start Date</label>
+                  <input type="date" className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.startDate || ''} onChange={e => setFormData({ ...formData, startDate: e.target.value })} />
+                </div>
+                <div>
+                  <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>End Date</label>
+                  <input type="date" disabled={formData.isCurrent} className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'} ${formData.isCurrent ? 'opacity-50' : ''}`} value={formData.endDate || ''} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="isCurrentEdu" checked={formData.isCurrent || false} onChange={e => setFormData({ ...formData, isCurrent: e.target.checked })} />
+                <label htmlFor="isCurrentEdu" className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>I am currently studying here</label>
+              </div>
+            </>
+          )}
+
+          {/* SKILLS FORM */}
+          {activeSection === 'skills' && (
+            <div>
+              <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Skill Name</label>
+              <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="React, Python, Design..." />
+            </div>
+          )}
+
+          {/* CERTIFICATIONS FORM */}
+          {activeSection === 'certifications' && (
+            <>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Name</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Certification Name" />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Issuer</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.issuer || ''} onChange={e => setFormData({ ...formData, issuer: e.target.value })} placeholder="Google, AWS..." />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Issue Date</label>
+                <input type="date" className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.issueDate || ''} onChange={e => setFormData({ ...formData, issueDate: e.target.value })} />
+              </div>
+            </>
+          )}
+
+          {/* AWARDS FORM */}
+          {activeSection === 'awards' && (
+            <>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Title</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.title || ''} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Award Title" />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Issuer</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.issuer || ''} onChange={e => setFormData({ ...formData, issuer: e.target.value })} placeholder="Organization..." />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Date</label>
+                <input type="date" className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.date || ''} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+              </div>
+            </>
+          )}
+
+          {/* OTHER PROFILES FORM */}
+          {activeSection === 'other_profiles' && (
+            <>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Network</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.network || ''} onChange={e => setFormData({ ...formData, network: e.target.value })} placeholder="LinkedIn, GitHub..." />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>URL</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.url || ''} onChange={e => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." />
+              </div>
+            </>
+          )}
+
+          <div className="pt-4">
+            <button
+              onClick={() => handleSaveSection(formData)}
+              disabled={sectionLoading}
+              className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50"
+            >
+              {sectionLoading ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      </SlideOverPanel>
     </>
   );
 }

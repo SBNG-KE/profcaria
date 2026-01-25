@@ -40,7 +40,7 @@ export const encryptData = (text: string) => {
  * DECRYPT: Converts the DB string back to "John Doe" for the UI.
  * Only runs on your server (Next.js API routes), never in the browser logic if possible.
  */
-export const decryptData = (encryptedString: string) => {
+export const decryptData = (encryptedString: string | null | undefined) => {
   if (!encryptedString) return null;
 
   const parts = encryptedString.split(':');
