@@ -1,18 +1,18 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
 import PostCard from '@/app/components/professional/PostCard';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Loader2 } from 'lucide-react';
 
-interface CompanyPostsSectionProps {
-    companyId: string;
+interface ProfessionalPostsSectionProps {
+    userId: string;
     latestPost: any; // Initial latest post passed from server
 }
 
-export default function CompanyPostsSection({ companyId, latestPost }: CompanyPostsSectionProps) {
+export default function ProfessionalPostsSection({ userId, latestPost }: ProfessionalPostsSectionProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
@@ -26,14 +26,14 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
         if (!hasFetched) {
             setLoading(true);
             try {
-                // Fetch all posts for this company
-                const res = await fetch(`/api/employer/posts?companyId=${companyId}`);
+                // Fetch all posts for this professional
+                const res = await fetch(`/api/professional/posts?userId=${userId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setPosts(data.posts || []);
                 }
             } catch (error) {
-                console.error("Error fetching company posts", error);
+                console.error("Error fetching professional posts", error);
             } finally {
                 setLoading(false);
                 setHasFetched(true);
@@ -47,15 +47,15 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                 isDark={isDark}
                 latestPost={latestPost}
                 onViewAll={handleViewAll}
-                title="Posts"
-                userId={companyId}
-                userType="employer"
+                title="Activity"
+                userId={userId}
+                userType="professional"
             />
 
             <SlideOverPanel
                 isOpen={isSlideOverOpen}
                 onClose={() => setIsSlideOverOpen(false)}
-                title="Company Posts"
+                title="Activity"
                 isDark={isDark}
                 className="max-w-2xl"
             >
@@ -85,9 +85,9 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                             posts.map(post => (
                                 <PostCard
                                     key={post.id}
-                                    post={{ ...post, author: { ...post.author, type: 'employer' } }}
+                                    post={post}
                                     isDark={isDark}
-                                    currentUserId=""
+                                    currentUserId="" // View only
                                     onLike={() => { }}
                                     onRepost={() => { }}
                                     onShare={() => { }}

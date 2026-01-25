@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { Building2, Globe, MapPin, Mail, Link2, Copy } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
-import PostCard from '@/app/components/professional/PostCard';
+import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import { formatDistanceToNow } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +35,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
     // Decrypt Data
     const companyName = profile.enc_company_name ? decryptData(profile.enc_company_name) : 'N/A';
     const website = profile.enc_website ? decryptData(profile.enc_website) : '';
-    const email = profile.enc_email ? decryptData(profile.enc_email) : '';
+    const email = profile.enc_work_email ? decryptData(profile.enc_work_email) : '';
     const about = profile.enc_about ? decryptData(profile.enc_about) : '';
     const city = profile.city;
     const country = profile.country;
@@ -211,28 +211,19 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 </div>
                             </div>
 
-                            {/* Latest Updates (Posts) - Moved inside Identity Card */}
-                            <div className="space-y-6 pt-4">
-                                <h3 className="text-xl font-bold px-4">Latest Update</h3>
-                                {formattedPosts.length > 0 ? (
-                                    formattedPosts.map((post: any) => (
-                                        <PostCard
-                                            key={post.id}
-                                            post={post}
-                                            isDark={isDark}
-                                            currentUserId=""
-                                            onLike={() => { }}
-                                        />
-                                    ))
-                                ) : (
-                                    <div className="p-4 rounded-2xl border bg-white border-neutral-200 shadow-sm dark:bg-neutral-800 dark:border-neutral-700">
-                                        <p className="text-center text-neutral-500 py-4">No updates yet.</p>
-                                    </div>
-                                )}
-                            </div>
+
 
                         </div>
                     </div>
+                </div>
+
+
+                {/* Company Posts Section */}
+                <div className="pt-4">
+                    <CompanyPostsSection
+                        companyId={id}
+                        latestPost={formattedPosts[0] || null}
+                    />
                 </div>
 
                 {/* 2. Subscribers Card */}
@@ -275,6 +266,6 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 }

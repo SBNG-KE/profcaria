@@ -300,10 +300,10 @@ export default function NotificationsPage() {
     );
 
     return (
-        <div className={`flex h-full w-full overflow-hidden font-sans ${isDark ? 'bg-[#050b14] text-slate-200' : 'bg-neutral-50 text-neutral-800'}`}>
+        <div className={`flex h-full w-full overflow-hidden font-sans ${isDark ? 'bg-black text-neutral-200' : 'bg-neutral-50 text-neutral-800'}`}>
             {/* LEFT SIDEBAR - Fixed, doesn't scroll with content */}
-            <aside className={`md:w-[380px] h-full border-r flex-col backdrop-blur-xl shrink-0 w-full ${isDark ? 'border-slate-800 bg-[#0b121e]/50' : 'border-neutral-200 bg-white'} ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
-                <header className={`p-5 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-slate-800 bg-[#0f172a]/80' : 'border-neutral-200 bg-white'}`}>
+            <aside className={`md:w-[380px] h-full border-r flex-col backdrop-blur-xl shrink-0 w-full ${isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-white'} ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+                <header className={`p-5 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-neutral-800 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
                     <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
                             <UserCircle size={20} />
@@ -318,7 +318,7 @@ export default function NotificationsPage() {
                     </div>
                 </header>
 
-                <div className={`p-3 shrink-0 ${isDark ? 'bg-[#0b121e]/80' : 'bg-neutral-50'}`}>
+                <div className={`p-3 shrink-0 ${isDark ? 'bg-neutral-900/80' : 'bg-neutral-50'}`}>
                     <div className="relative group">
                         <Search className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isDark ? 'text-slate-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`} size={16} />
                         <input
@@ -326,7 +326,7 @@ export default function NotificationsPage() {
                             placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className={`w-full border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 transition-all ${isDark ? 'bg-slate-900/50 border-slate-800 focus:ring-white/20 focus:border-neutral-600 placeholder:text-slate-600' : 'bg-white border-neutral-200 focus:ring-black/10 focus:border-neutral-400 placeholder:text-neutral-400'}`}
+                            className={`w-full border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 transition-all ${isDark ? 'bg-neutral-900/50 border-neutral-800 focus:ring-white/20 focus:border-neutral-600 placeholder:text-neutral-600' : 'bg-white border-neutral-200 focus:ring-black/10 focus:border-neutral-400 placeholder:text-neutral-400'}`}
                         />
                     </div>
                 </div>
@@ -379,22 +379,22 @@ export default function NotificationsPage() {
                                     key={companyId}
                                     onClick={() => setActiveConversation(app)}
                                     className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId)
-                                        ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-slate-800/30' : 'hover:bg-neutral-100')}`}
+                                        ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100')}`}
                                 >
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId)
-                                        ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-neutral-100 text-neutral-500')}`}>
+                                        ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')}`}>
                                         {app.companyLogoUrl ? (
                                             <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <Building2 size={20} />
                                         )}
                                         {unreadCount > 0 && (
-                                            <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-[#0b121e] flex items-center justify-center animate-[pulse_3s_infinite]">
+                                            <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-neutral-900 flex items-center justify-center animate-[pulse_3s_infinite]">
                                                 <span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>
                                             </div>
                                         )}
                                     </div>
-                                    <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-slate-800/50' : 'border-neutral-200'}`}>
+                                    <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
                                         <div className="flex items-center justify-between gap-2">
                                             <h4 className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{app.companyName}</h4>
                                             <span className={`text-[9px] shrink-0 ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Now</span>
@@ -411,19 +411,19 @@ export default function NotificationsPage() {
             </aside>
 
             {/* MAIN CHAT AREA - Separate scroll context */}
-            <main className={`flex-1 flex-col relative min-w-0 ${isDark ? 'bg-[#050b14]' : 'bg-white'} ${activeConversation ? 'flex' : 'hidden md:flex'}`}>
+            <main className={`flex-1 flex-col relative min-w-0 ${isDark ? 'bg-black' : 'bg-white'} ${activeConversation ? 'flex' : 'hidden md:flex'}`}>
                 {!activeConversation ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                        <div className={`w-24 h-24 border rounded-full flex items-center justify-center mb-6 ${isDark ? 'bg-[#0b121e] border-slate-800' : 'bg-neutral-100 border-neutral-200'}`}>
-                            <MessageSquare size={36} className={isDark ? 'text-slate-700' : 'text-neutral-300'} />
+                        <div className={`w-24 h-24 border rounded-full flex items-center justify-center mb-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
+                            <MessageSquare size={36} className={isDark ? 'text-neutral-700' : 'text-neutral-300'} />
                         </div>
                         <h2 className={`text-2xl font-black uppercase tracking-tighter mb-3 ${isDark ? 'text-white' : 'text-black'}`}>Select a Conversation</h2>
-                        <p className={`max-w-sm text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Choose a conversation from the left to start messaging.</p>
+                        <p className={`max-w-sm text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Choose a conversation from the left to start messaging.</p>
                     </div>
                 ) : (
                     <>
                         {/* Chat header - Fixed */}
-                        <header className={`px-6 py-4 border-b backdrop-blur-md flex items-center justify-between shrink-0 z-10 ${isDark ? 'border-slate-800 bg-[#0b121e]/80' : 'border-neutral-200 bg-white/80'}`}>
+                        <header className={`px-6 py-4 border-b backdrop-blur-md flex items-center justify-between shrink-0 z-10 ${isDark ? 'border-neutral-800 bg-neutral-900/80' : 'border-neutral-200 bg-white/80'}`}>
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => setActiveConversation(null)}
@@ -453,7 +453,7 @@ export default function NotificationsPage() {
                             {groupedMessages.map((group, groupIndex) => (
                                 <div key={group.label} className="space-y-4">
                                     <div className="flex items-center justify-center sticky top-0 z-10 py-2">
-                                        <span className={`backdrop-blur text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg border ${isDark ? 'bg-slate-800/80 text-slate-400 border-slate-700/50' : 'bg-neutral-100/80 text-neutral-500 border-neutral-200'}`}>
+                                        <span className={`backdrop-blur text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg border ${isDark ? 'bg-neutral-800/80 text-neutral-400 border-neutral-700/50' : 'bg-neutral-100/80 text-neutral-500 border-neutral-200'}`}>
                                             {group.label}
                                         </span>
                                     </div>
@@ -465,19 +465,19 @@ export default function NotificationsPage() {
                                                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
                                                         <div className={`px-4 py-2.5 rounded-2xl relative ${isMe
                                                             ? (isDark ? 'bg-white text-black rounded-br-sm' : 'bg-black text-white rounded-br-sm')
-                                                            : (isDark ? 'bg-slate-800 text-slate-200 rounded-bl-sm' : 'bg-neutral-100 text-neutral-800 rounded-bl-sm')}`}>
+                                                            : (isDark ? 'bg-neutral-800 text-neutral-200 rounded-bl-sm' : 'bg-neutral-100 text-neutral-800 rounded-bl-sm')}`}>
                                                             <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{linkifyText(msg.content, isMe)}</p>
 
                                                             {/* Inline link preview */}
                                                             {extractFirstUrl(msg.content) && (
                                                                 <InlineLinkPreview
                                                                     url={extractFirstUrl(msg.content)!}
-                                                                    className={isMe ? (isDark ? 'text-black' : 'text-white') : (isDark ? 'text-slate-200' : 'text-neutral-800')}
+                                                                    className={isMe ? (isDark ? 'text-black' : 'text-white') : (isDark ? 'text-neutral-200' : 'text-neutral-800')}
                                                                 />
                                                             )}
 
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                                <span className={`text-[10px] ${isMe ? (isDark ? 'text-neutral-500' : 'text-neutral-400') : (isDark ? 'text-slate-500' : 'text-neutral-400')}`}>
+                                                                <span className={`text-[10px] ${isMe ? (isDark ? 'text-neutral-500' : 'text-neutral-400') : (isDark ? 'text-neutral-500' : 'text-neutral-400')}`}>
                                                                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
                                                                 {isMe && <CheckCheck size={12} className={msg.is_read ? "text-emerald-500" : (isDark ? 'text-neutral-400' : 'text-neutral-300')} />}
@@ -494,7 +494,7 @@ export default function NotificationsPage() {
                         </div>
 
                         {/* Message input - Fixed at bottom */}
-                        <footer className={`px-4 py-3 border-t shrink-0 relative ${isDark ? 'border-slate-800 bg-[#0b121e]/80' : 'border-neutral-200 bg-white'}`}>
+                        <footer className={`px-4 py-3 border-t shrink-0 relative ${isDark ? 'border-neutral-800 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
                             {/* Link Preview Popup */}
                             {linkPreviewUrl && linkPreviewPosition && (
                                 <div className="absolute bottom-full left-0 right-0 mb-2 px-4">
@@ -521,7 +521,7 @@ export default function NotificationsPage() {
                                         }
                                     }}
                                     placeholder="Type a message..."
-                                    className={`flex-1 border rounded-2xl px-4 py-3 focus:outline-none transition-all text-sm ${isDark ? 'bg-slate-900 border-slate-800 text-white placeholder:text-slate-600 focus:border-neutral-600' : 'bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400 focus:border-neutral-400'}`}
+                                    className={`flex-1 border rounded-2xl px-4 py-3 focus:outline-none transition-all text-sm ${isDark ? 'bg-neutral-900 border-neutral-800 text-white placeholder:text-neutral-600 focus:border-neutral-600' : 'bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400 focus:border-neutral-400'}`}
                                 />
                                 <button
                                     onClick={() => {
@@ -529,7 +529,7 @@ export default function NotificationsPage() {
                                         sendMessage();
                                     }}
                                     disabled={!newMessage.trim() || isSending}
-                                    className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200 disabled:bg-slate-800 disabled:text-slate-600' : 'bg-black text-white hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400'}`}
+                                    className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200 disabled:bg-neutral-800 disabled:text-neutral-600' : 'bg-black text-white hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400'}`}
                                 >
                                     <Send size={18} />
                                 </button>

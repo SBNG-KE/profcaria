@@ -169,35 +169,38 @@ export async function GET(request: NextRequest) {
                 .schema('professional')
                 .from('company_follows')
                 .select('company_id')
-                .eq('user_id', targetUserId); // company_follows uses user_id
+                .eq('user_id', targetUserId);
 
             if (error) throw error;
+            if (!following || following.length === 0) {
+                return NextResponse.json({ following: [] });
+            }
 
-            const formattedCompanies = await Promise.all((following || []).map(async (f: any) => {
-                const { data: c } = await supabaseAdmin
-                    .schema('employer')
-                    .from('companies')
-                    .select('id, enc_company_name, enc_logo_url, industry')
-                    .eq('id', f.company_id)
-                    .single();
+            const companyIds = following.map((f: any) => f.company_id);
 
-                console.log(`Following Company: ID=${c?.id}, EncName=${c?.enc_company_name ? 'Present' : 'Missing'}, Industry=${c?.industry}`);
-                const decryptedName = c?.enc_company_name ? decryptData(c.enc_company_name) : null;
-                console.log(`Decrypted Name: ${decryptedName}`);
+            // Fetch all companies in one go
+            const { data: companies, error: companiesError } = await supabaseAdmin
+                .schema('employer')
+                .from('companies')
+                .select('id, enc_company_name, enc_logo_url')
+                .in('id', companyIds);
+
+            if (companiesError) throw companiesError;
+
+            const formattedCompanies = (companies || []).map((c: any) => {
+                const decryptedName = c.enc_company_name ? decryptData(c.enc_company_name) : null;
+                const decryptedLogo = c.enc_logo_url ? decryptData(c.enc_logo_url) : null;
 
                 return {
-                    id: c?.id,
-                    name: decryptedName || 'Unknown Company',
-                    profileImage: c?.enc_logo_url ? decryptData(c.enc_logo_url) : null,
-                    role: c?.industry || 'Company',
+                    id: c.id,
+                    name: decryptedName || 'Unnamed Company',
+                    profileImage: decryptedLogo,
+                    role: 'Company',
                     type: 'company'
                 };
-            }));
+            });
 
-            // Filter out invalid/unknown companies to clean up the view
-            const validCompanies = formattedCompanies.filter((c: any) => c.name && c.name !== 'Unknown Company');
-
-            return NextResponse.json({ following: validCompanies });
+            return NextResponse.json({ following: formattedCompanies });
 
         } else if (type === 'check') {
             // Check if following specific user/company

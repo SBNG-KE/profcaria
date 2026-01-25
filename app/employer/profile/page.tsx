@@ -5,6 +5,7 @@ import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, P
 import LinkPreview from '@/app/components/LinkPreview';
 import ProfileAnalytics from '@/app/components/professional/ProfileAnalytics'; // Reuse analytics
 import EmployerAnalytics from '@/app/components/employer/EmployerAnalytics';
+import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -160,7 +161,7 @@ export default function EmployerProfilePage() {
             const res = await fetch('/api/auth/me');
             if (res.ok) {
                 const data = await res.json();
-                const p = data.profile;
+                const p = { ...data.profile, id: data.id };
                 setProfile(p);
                 setCompanyName(p?.companyName || '');
                 setWebsite(p?.website || '');
@@ -599,14 +600,7 @@ export default function EmployerProfilePage() {
                             </div>
                         </div>
 
-                        {/* Company Stats & Posts */}
-                        <div className="pt-2">
-                            <PostsPreview
-                                userId={profile?.id} // Use profile.id (which is user_id)
-                                isDark={isDark}
-                                userType="employer"
-                            />
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -616,15 +610,16 @@ export default function EmployerProfilePage() {
             {/* 2. Analytics System */}
             <EmployerAnalytics isDark={isDark} subscriberCount={followerCount} />
 
-            {/* View Subscribers Button (Optional helper) */}
-            <div className="flex justify-end px-4">
-                <button
-                    onClick={() => setIsSubscribersModalOpen(true)}
-                    className={`text-xs font-bold uppercase tracking-widest hover:underline ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600'}`}
-                >
-                    View Subscribers List
-                </button>
+
+            {/* 3. Posts Section */}
+            <div className="pt-4">
+                <CompanyPostsSection
+                    companyId={profile?.id}
+                    latestPost={null} // Will fetch automatically
+                />
             </div>
+
+
 
             <SubscribersModal
                 isOpen={isSubscribersModalOpen}

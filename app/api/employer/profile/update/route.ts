@@ -65,6 +65,10 @@ export async function PUT(req: Request) {
             companyUpdates.enc_work_email = encryptData(email);
             companyUpdates.work_email_index = hashForIndex(email);
         }
+        // Update Location Fields Directly in Companies Table
+        if (country) companyUpdates.country = country;
+        if (city) companyUpdates.city = city;
+        if (address) companyUpdates.enc_address = encryptData(address);
 
         if (Object.keys(companyUpdates).length > 0) {
             const { error: dbError } = await supabaseAdmin

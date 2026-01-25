@@ -6,6 +6,8 @@ import {
     CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
+import EmployerProfileViewModal from '../components/EmployerProfileViewModal';
+
 interface Connection {
     id: string;
     applicationId: string;
@@ -91,9 +93,9 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
     };
 
     return (
-        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-slate-600 transition-all group">
+        <div className="bg-neutral-900/50 border border-white/5 rounded-[32px] p-6 hover:border-neutral-600 transition-all group">
             <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center text-slate-500 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-white/5 flex items-center justify-center text-neutral-500 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                     {connection.professional.profileImageUrl ? (
                         <img src={connection.professional.profileImageUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -102,17 +104,17 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 </div>
 
                 <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold text-white group-hover:text-slate-200 transition-colors uppercase tracking-tight">
+                    <h3 className="text-lg font-bold text-white group-hover:text-neutral-200 transition-colors uppercase tracking-tight">
                         {connection.professional.name}
                     </h3>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">
+                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mb-2">
                         {connection.professional.role || 'Professional'}
                     </p>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold">
+                    <div className="flex items-center gap-2 text-neutral-400 text-xs font-bold">
                         <Briefcase size={12} />
                         <span>{connection.job.title}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">
+                    <div className="flex items-center gap-2 text-neutral-500 text-[10px] font-bold uppercase tracking-widest mt-1">
                         <Clock size={10} />
                         <span>Employed {new Date(connection.connectedAt).toLocaleDateString()}</span>
                     </div>
@@ -124,7 +126,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                                 e.stopPropagation();
                                 window.open(connection.connectionFileUrl, '_blank');
                             }}
-                            className="flex items-center gap-2 text-white text-[10px] font-bold uppercase tracking-widest mt-2 cursor-pointer hover:text-slate-300 transition-colors bg-transparent border-none p-0"
+                            className="flex items-center gap-2 text-white text-[10px] font-bold uppercase tracking-widest mt-2 cursor-pointer hover:text-neutral-300 transition-colors bg-transparent border-none p-0"
                         >
                             <FileText size={10} />
                             <span>Attached Document</span>
@@ -133,9 +135,9 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-slate-700 text-white border border-slate-600' :
-                        connection.status === 'pending_termination' ? 'bg-slate-800 text-slate-300 border border-slate-700' :
-                            'bg-slate-800 text-slate-400 border border-white/5'
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${connection.status === 'accepted' ? 'bg-neutral-700 text-white border border-neutral-600' :
+                        connection.status === 'pending_termination' ? 'bg-neutral-800 text-neutral-300 border border-neutral-700' :
+                            'bg-neutral-800 text-neutral-400 border border-white/5'
                         }`}>
                         {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) ? 'Active' :
                             connection.status === 'pending_termination' ? 'Termination Requested' :
@@ -151,7 +153,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                                 e.stopPropagation();
                                 window.open(connection.connectionFileUrl, '_blank');
                             }}
-                            className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-all cursor-pointer"
+                            className="p-2 bg-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-700 rounded-full transition-all cursor-pointer"
                             title="View Attached Document"
                         >
                             <FileText size={12} />
@@ -163,13 +165,13 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             {/* Access List Preview */}
             {connection.accessList.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                    <div className="flex items-center gap-2 text-neutral-400 text-[10px] font-black uppercase tracking-widest mb-3">
                         <Shield size={12} />
                         <span>Shared Documents</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {connection.accessList.map(doc => (
-                            <span key={doc} className="px-3 py-1 bg-slate-800 text-slate-400 rounded-lg text-[10px] font-bold uppercase">
+                            <span key={doc} className="px-3 py-1 bg-neutral-800 text-neutral-400 rounded-lg text-[10px] font-bold uppercase">
                                 {doc}
                             </span>
                         ))}
@@ -185,7 +187,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                             e.stopPropagation();
                             handleShareReason();
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-neutral-700 border-neutral-600 text-white' : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300 border-neutral-700'}`}
                     >
                         <Share2 size={10} className={sharing ? "animate-spin" : ""} />
                         <span className="text-[10px] font-bold uppercase tracking-widest">
@@ -201,7 +203,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             <div className="mt-4 pt-4 border-t border-white/5 flex flex-wrap gap-2">
                 <button
                     onClick={onViewProfile}
-                    className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-neutral-700 hover:bg-neutral-600 text-white border border-neutral-600 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                 >
                     <ExternalLink size={14} />
                     Profile
@@ -211,7 +213,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                     <div className="flex-1 flex gap-2">
                         <button
                             onClick={onApproveResignation}
-                            className="flex-1 py-3 bg-white hover:bg-slate-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                            className="flex-1 py-3 bg-white hover:bg-neutral-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                             Approve Resignation
                         </button>
@@ -222,13 +224,13 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                     <div className="flex-1 flex gap-2">
                         <button
                             onClick={onApproveMutual}
-                            className="flex-1 py-3 bg-white hover:bg-slate-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                            className="flex-1 py-3 bg-white hover:bg-neutral-100 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
                         >
                             Approve Mutual End
                         </button>
                         <button
                             onClick={onDisapprove}
-                            className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-white/5"
+                            className="flex-1 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-white/5"
                         >
                             Decline
                         </button>
@@ -239,7 +241,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 {['accepted', 'hired', 'employed', 'offered'].includes(connection.status) && !showConfirm && (
                     <button
                         onClick={() => setShowConfirm(true)}
-                        className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-slate-700"
+                        className="py-3 px-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-neutral-700"
                     >
                         <XCircle size={14} />
                     </button>
@@ -247,15 +249,15 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
             </div>
 
             {showConfirm && (
-                <div className="mt-3 p-4 bg-slate-800 border border-slate-700 rounded-xl space-y-3">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs">
+                <div className="mt-3 p-4 bg-neutral-800 border border-neutral-700 rounded-xl space-y-3">
+                    <div className="flex items-center gap-2 text-neutral-400 text-xs">
                         <AlertTriangle size={14} />
                         <span>Are you sure you want to terminate this connection?</span>
                     </div>
                     <div className="flex gap-2">
                         <button
                             onClick={() => setShowConfirm(false)}
-                            className="flex-1 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs font-bold uppercase tracking-widest transition-all hover:bg-slate-700"
+                            className="flex-1 py-2 bg-neutral-800 text-neutral-300 rounded-lg text-xs font-bold uppercase tracking-widest transition-all hover:bg-neutral-700"
                         >
                             Cancel
                         </button>
@@ -264,7 +266,7 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                                 onTerminate();
                                 setShowConfirm(false);
                             }}
-                            className="flex-1 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+                            className="flex-1 py-2 bg-neutral-600 hover:bg-neutral-500 text-white rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
                         >
                             Confirm
                         </button>
@@ -288,6 +290,7 @@ export default function ConnectionsPage() {
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const [activeDocument, setActiveDocument] = useState<string | null>(null);
+    const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
 
     // Action State
     const [showActionModal, setShowActionModal] = useState(false);
@@ -331,7 +334,7 @@ export default function ConnectionsPage() {
     };
 
     const handleViewProfile = (connection: Connection) => {
-        window.open(`/employer/applications/${connection.applicationId}/view`, '_blank');
+        setViewingProfileId(connection.applicationId);
     };
 
     const handleUploadContract = async (e: React.FormEvent) => {
@@ -390,9 +393,9 @@ export default function ConnectionsPage() {
                 {/* Header & Stats (Keep simplified/same as before) */}
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
-                        <div className="flex items-center gap-2 text-slate-400 mb-2"><Cable size={16} /><span className="text-[10px] font-black uppercase tracking-[0.2em]">Employee Network</span></div>
+                        <div className="flex items-center gap-2 text-neutral-400 mb-2"><Cable size={16} /><span className="text-[10px] font-black uppercase tracking-[0.2em]">Employee Network</span></div>
                         <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Connections</h1>
-                        <p className="text-slate-500 mt-2 text-sm font-medium">Manage your connected employees and contracts.</p>
+                        <p className="text-neutral-500 mt-2 text-sm font-medium">Manage your connected employees and contracts.</p>
                     </div>
                 </header>
 
@@ -402,7 +405,7 @@ export default function ConnectionsPage() {
                         onClick={() => setFilter('all')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
                             ? 'bg-white text-black shadow-lg'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white'
                             }`}
                     >
                         All ({connections.length})
@@ -411,7 +414,7 @@ export default function ConnectionsPage() {
                         onClick={() => setFilter('employed')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'employed'
                             ? 'bg-white text-black shadow-lg'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white'
                             }`}
                     >
                         Employed ({connections.filter(c => ['accepted', 'hired', 'employed'].includes(c.status)).length})
@@ -420,7 +423,7 @@ export default function ConnectionsPage() {
                         onClick={() => setFilter('resigned')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'resigned'
                             ? 'bg-white text-black shadow-lg'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white'
                             }`}
                     >
                         Resigned ({connections.filter(c => c.status === 'resigned' || c.terminationType === 'resignation').length})
@@ -429,7 +432,7 @@ export default function ConnectionsPage() {
                         onClick={() => setFilter('involuntary')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'involuntary'
                             ? 'bg-white text-black shadow-lg'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white'
                             }`}
                     >
                         Involuntary ({connections.filter(c => c.terminationType === 'involuntary' || (c.status === 'terminated' && (!c.terminationType || c.terminationType === 'involuntary'))).length})
@@ -438,7 +441,7 @@ export default function ConnectionsPage() {
                         onClick={() => setFilter('mutual')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'mutual'
                             ? 'bg-white text-black shadow-lg'
-                            : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white'
+                            : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white'
                             }`}
                     >
                         Mutual ({connections.filter(c => c.terminationType === 'mutual').length})
@@ -449,8 +452,8 @@ export default function ConnectionsPage() {
                 {/* ... Search ... */}
                 <div className="flex flex-wrap gap-4 items-center">
                     <div className="relative flex-1 min-w-[300px]">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                        <input type="text" placeholder="Search connections..." className="w-full bg-[#0f172a]/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/50 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+                        <input type="text" placeholder="Search connections..." className="w-full bg-neutral-900/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
                 </div>
 
@@ -477,9 +480,9 @@ export default function ConnectionsPage() {
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-center gap-4 pt-6">
-                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
-                        <span className="text-slate-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
-                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
+                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
+                        <span className="text-neutral-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
+                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
                     </div>
                 )}
             </div>
@@ -488,28 +491,28 @@ export default function ConnectionsPage() {
             {showActionModal && selectedConnection && actionType === 'involuntary' && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowActionModal(false)}></div>
-                    <div className="relative w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
-                        <div className="flex items-center gap-3 text-slate-400 mb-4">
+                    <div className="relative w-full max-w-md bg-neutral-900 border border-neutral-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
+                        <div className="flex items-center gap-3 text-neutral-400 mb-4">
                             <AlertTriangle size={24} />
                             <h3 className="text-xl font-black text-white uppercase tracking-tight">
                                 Involuntary Termination
                             </h3>
                         </div>
 
-                        <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                        <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
                             You are terminating <b>{selectedConnection.professional.name}</b>. This action is irreversible.
                         </p>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">
                                     Reason (Required & Encrypted)
                                 </label>
                                 <textarea
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
                                     placeholder="Please specify the reason for termination..."
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-slate-500 min-h-[120px] resize-none placeholder:text-slate-600"
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-neutral-500 min-h-[120px] resize-none placeholder:text-neutral-600"
                                     autoFocus
                                 />
                             </div>
@@ -517,7 +520,7 @@ export default function ConnectionsPage() {
                             <div className="flex gap-3 pt-2">
                                 <button
                                     onClick={() => setShowActionModal(false)}
-                                    className="flex-1 py-3 bg-slate-800 text-slate-400 rounded-xl text-xs font-bold uppercase hover:bg-slate-700 transition-colors"
+                                    className="flex-1 py-3 bg-neutral-800 text-neutral-400 rounded-xl text-xs font-bold uppercase hover:bg-neutral-700 transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -529,7 +532,7 @@ export default function ConnectionsPage() {
                                         }
                                     }}
                                     disabled={!reason.trim()}
-                                    className="flex-1 py-3 bg-slate-600 hover:bg-slate-500 text-white rounded-xl text-xs font-bold uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 py-3 bg-neutral-600 hover:bg-neutral-500 text-white rounded-xl text-xs font-bold uppercase transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Confirm Termination
                                 </button>
@@ -543,21 +546,21 @@ export default function ConnectionsPage() {
             {contactConnection && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setContactConnection(null)}></div>
-                    <div className="relative w-full max-w-sm bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
+                    <div className="relative w-full max-w-sm bg-neutral-900 border border-neutral-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
                         <h3 className="text-xl font-black text-white uppercase tracking-tight mb-6">Contact Info</h3>
 
                         <div className="space-y-4">
-                            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Email</label>
+                            <div className="p-4 bg-neutral-900/50 rounded-xl border border-neutral-800">
+                                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-1">Email</label>
                                 <p className="text-white font-medium select-all">{contactConnection.professional.email || 'Not available'}</p>
                             </div>
-                            <div className="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Phone</label>
+                            <div className="p-4 bg-neutral-900/50 rounded-xl border border-neutral-800">
+                                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-1">Phone</label>
                                 <p className="text-white font-medium select-all">{contactConnection.professional.phone || 'Not available'}</p>
                             </div>
                         </div>
 
-                        <button onClick={() => setContactConnection(null)} className="w-full mt-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all">
+                        <button onClick={() => setContactConnection(null)} className="w-full mt-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all">
                             Close
                         </button>
                     </div>
@@ -568,35 +571,35 @@ export default function ConnectionsPage() {
             {contractConnection && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setContractConnection(null)}></div>
-                    <div className="relative w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
+                    <div className="relative w-full max-w-md bg-neutral-900 border border-neutral-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
                         <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-2">Upload Contract</h3>
-                        <p className="text-slate-400 text-xs mb-6">Upload a signed contract for <b>{contractConnection.professional.name}</b>.</p>
+                        <p className="text-neutral-400 text-xs mb-6">Upload a signed contract for <b>{contractConnection.professional.name}</b>.</p>
 
                         <form onSubmit={handleUploadContract} className="space-y-4">
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Contract Value (e.g. $100k/yr)</label>
+                                <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Contract Value (e.g. $100k/yr)</label>
                                 <input
                                     type="text"
                                     value={contractValue}
                                     onChange={e => setContractValue(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-500"
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-neutral-500"
                                     placeholder="$..."
                                     required
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Contract File (PDF/DOCX)</label>
+                                <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Contract File (PDF/DOCX)</label>
                                 <input
                                     type="file"
                                     onChange={e => setContractFile(e.target.files?.[0] || null)}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600"
+                                    className="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-3 text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-neutral-700 file:text-white hover:file:bg-neutral-600"
                                     accept=".pdf,.doc,.docx"
                                     required
                                 />
                             </div>
                             <div className="pt-4 flex gap-3">
-                                <button type="button" onClick={() => setContractConnection(null)} className="flex-1 py-3 bg-slate-800 text-slate-400 rounded-xl text-xs font-bold uppercase">Cancel</button>
-                                <button type="submit" disabled={isUploadingContract} className="flex-1 py-3 bg-white hover:bg-slate-100 text-black rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-2">
+                                <button type="button" onClick={() => setContractConnection(null)} className="flex-1 py-3 bg-neutral-800 text-neutral-400 rounded-xl text-xs font-bold uppercase">Cancel</button>
+                                <button type="submit" disabled={isUploadingContract} className="flex-1 py-3 bg-white hover:bg-neutral-100 text-black rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-2">
                                     {isUploadingContract ? 'Uploading...' : 'Upload & Activate'}
                                 </button>
                             </div>
@@ -609,37 +612,17 @@ export default function ConnectionsPage() {
 
 
             {/* Profile Modal (Reused) - Only show when NOT in action mode */}
-            {selectedConnection && !showActionModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => { setSelectedConnection(null); setActiveDocument(null); }}></div>
-                    <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 flex flex-col">
-                        <div className="p-8 border-b border-white/5 flex items-center justify-between shrink-0">
-                            <div className="flex items-center gap-4">
-                                <h3 className="text-2xl font-black text-white uppercase">{selectedConnection.professional.name}</h3>
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-slate-400 font-bold">{selectedConnection.professional.role}</span>
-                                    {(selectedConnection.professional.email || selectedConnection.professional.phone) && (
-                                        <div className="flex gap-4 mt-1">
-                                            {selectedConnection.professional.email && <span className="text-[10px] text-slate-500">{selectedConnection.professional.email}</span>}
-                                            {selectedConnection.professional.phone && <span className="text-[10px] text-slate-500">{selectedConnection.professional.phone}</span>}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <button onClick={() => setSelectedConnection(null)}><X size={24} className="text-slate-500" /></button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-8">
-                            {/* ... Profile Content (Simplified for brevity as logic exists in previous versions if needed) ... */}
-                            {isLoadingProfile ? <p>Loading...</p> : (
-                                <div className="grid grid-cols-2 gap-4">
-                                    {profileData?.accessList.map(doc => (
-                                        <div key={doc} className="p-4 bg-slate-900 rounded-xl border border-slate-800 text-slate-300 uppercase text-xs font-bold">{doc}</div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+            {/* The previous modal logic (selectedConnection && !showActionModal) is replaced/superseded by the new viewingProfileId modal for profile viewing actions.
+                selectedConnection is likely only used for termination actions now which have their own modal. 
+                If selectedConnection ends up in a state where showActionModal is false, we might show the old modal, but user flow doesn't seem to trigger that for 'Profile' anymore.
+            */}
+
+            {/* NEW PROFILE VIEW MODAL */}
+            {viewingProfileId && (
+                <EmployerProfileViewModal
+                    applicationId={viewingProfileId}
+                    onClose={() => setViewingProfileId(null)}
+                />
             )}
 
         </div>

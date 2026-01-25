@@ -52,9 +52,9 @@ export default function EmployerHome() {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
       {/* Header Section */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-slate-800">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-neutral-800">
         <div className="text-left">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
+          <div className="flex items-center gap-2 text-neutral-400 mb-2">
             <TrendingUp size={16} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">
               {viewMode === 'activity' ? 'Live Workspace' : 'Strategic Insights'}
@@ -70,15 +70,15 @@ export default function EmployerHome() {
             onClick={() => !isLimitReached && router.push('/employer/jobs/create')}
             disabled={isLimitReached}
             className={`px-5 py-2.5 text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2 ${isLimitReached
-              ? 'bg-slate-800 text-slate-500 cursor-not-allowed shadow-none'
-              : 'bg-white hover:bg-slate-100 text-black shadow-lg'
+              ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed shadow-none'
+              : 'bg-white hover:bg-neutral-100 text-black shadow-lg'
               }`}
           >
             <Plus size={16} />
             <span>{isLimitReached ? 'Job Limit Reached' : 'Post New Job'}</span>
           </button>
           {isLimitReached && (
-            <div className="absolute top-full mt-2 right-0 w-64 p-3 bg-slate-800 text-slate-300 text-[10px] rounded-xl shadow-xl z-20 hidden group-hover:block border border-slate-700">
+            <div className="absolute top-full mt-2 right-0 w-64 p-3 bg-neutral-800 text-neutral-300 text-[10px] rounded-xl shadow-xl z-20 hidden group-hover:block border border-neutral-700">
               You have reached the job posting limit for your current plan. Please upgrade to post more.
             </div>
           )}
@@ -87,12 +87,12 @@ export default function EmployerHome() {
 
       {/* MODE TOGGLE */}
       < div className="flex justify-center" >
-        <div className="bg-[#0f172a] p-1 rounded-2xl border border-slate-800 inline-flex">
+        <div className="bg-neutral-900 p-1 rounded-2xl border border-neutral-800 inline-flex">
           <button
             onClick={() => setViewMode('activity')}
             className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${viewMode === 'activity'
-              ? 'bg-slate-800 text-white shadow-lg'
-              : 'text-slate-500 hover:text-slate-300'
+              ? 'bg-neutral-800 text-white shadow-lg'
+              : 'text-neutral-500 hover:text-neutral-300'
               }`}
           >
             <Activity size={14} /> Activity Feed
@@ -100,8 +100,8 @@ export default function EmployerHome() {
           <button
             onClick={() => setViewMode('analytics')}
             className={`px-8 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${viewMode === 'analytics'
-              ? 'bg-slate-800 text-white shadow-lg'
-              : 'text-slate-500 hover:text-slate-300'
+              ? 'bg-neutral-800 text-white shadow-lg'
+              : 'text-neutral-500 hover:text-neutral-300'
               }`}
           >
             <BarChart2 size={14} /> Analytics
@@ -112,14 +112,14 @@ export default function EmployerHome() {
       {viewMode === 'analytics' ? (
         <AnalyticsDashboard employerData={employerData} />
       ) : (
-        <div className="bg-[#0f172a]/30 border border-slate-800/50 rounded-[32px] overflow-hidden">
+        <div className="bg-neutral-900/30 border border-neutral-800/50 rounded-[32px] overflow-hidden">
           {/* Existing Activity Feed Content */}
-          <div className="px-8 py-6 border-b border-slate-800/50 flex items-center justify-between">
+          <div className="px-8 py-6 border-b border-neutral-800/50 flex items-center justify-between">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-3">
               <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
               Recent Activity
             </h3>
-            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest">
               Latest 10
             </span>
           </div>
@@ -127,7 +127,7 @@ export default function EmployerHome() {
             {loading ? (
               <div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div>
             ) : notifications.length === 0 ? (
-              <p className="text-xs font-bold text-slate-600 uppercase tracking-widest text-center py-10">No recent activity found</p>
+              <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest text-center py-10">No recent activity found</p>
             ) : (
               <div className="space-y-4">
                 {notifications.map((notif) => {

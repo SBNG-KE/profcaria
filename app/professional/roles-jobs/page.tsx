@@ -103,7 +103,7 @@ export default function RolesJobsPage() {
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32">
             {/* Header Section */}
-            <header className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
+            <header className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                 <div className="text-left">
                     <div className="flex items-center gap-4 mb-4">
                         <div className={`p-4 rounded-2xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
@@ -111,7 +111,7 @@ export default function RolesJobsPage() {
                         </div>
                         <div>
                             <h1 className={`text-4xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Roles & Jobs</h1>
-                            <p className={`text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>View your career history and current positions</p>
+                            <p className={`text-sm mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>View your career history and current positions</p>
                         </div>
                     </div>
                 </div>
@@ -121,7 +121,7 @@ export default function RolesJobsPage() {
                         onClick={() => setFilter('all')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'all'
                             ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
-                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
+                            : (isDark ? 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         All ({connections.length})
@@ -130,7 +130,7 @@ export default function RolesJobsPage() {
                         onClick={() => setFilter('current')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'current'
                             ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
-                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
+                            : (isDark ? 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Current ({connections.filter(c => !isTerminated(c)).length})
@@ -139,7 +139,7 @@ export default function RolesJobsPage() {
                         onClick={() => setFilter('resigned')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'resigned'
                             ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
-                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
+                            : (isDark ? 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Resigned ({connections.filter(c => c.status === 'resigned').length})
@@ -168,11 +168,11 @@ export default function RolesJobsPage() {
             {/* Jobs Grid */}
             {
                 isLoading ? (
-                    <div className={`text-center py-20 animate-pulse ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Loading positions...</div>
+                    <div className={`text-center py-20 animate-pulse ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Loading positions...</div>
                 ) : filteredConnections.length === 0 ? (
                     <div className="text-center py-20">
-                        <Briefcase size={64} className={`mx-auto mb-4 ${isDark ? 'text-slate-700' : 'text-neutral-300'}`} />
-                        <p className={`text-lg ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>No {filter !== 'all' ? filter : ''} roles found</p>
+                        <Briefcase size={64} className={`mx-auto mb-4 ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`} />
+                        <p className={`text-lg ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>No {filter !== 'all' ? filter : ''} roles found</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -181,7 +181,7 @@ export default function RolesJobsPage() {
                             return (
                                 <div
                                     key={connection.id}
-                                    className={`rounded-2xl p-6 transition-all flex flex-col h-full group border ${isDark ? 'bg-[#0f172a] border-slate-800 hover:border-neutral-600' : 'bg-white border-neutral-200 hover:border-neutral-400 shadow-sm'}`}
+                                    className={`rounded-2xl p-6 transition-all flex flex-col h-full group border ${isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-600' : 'bg-white border-neutral-200 hover:border-neutral-400 shadow-sm'}`}
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
@@ -190,7 +190,7 @@ export default function RolesJobsPage() {
                                                     {connection.job?.title || 'Position'}
                                                 </h3>
                                             </div>
-                                            <p className={`font-medium mb-1 line-clamp-1 ${isDark ? 'text-slate-400' : 'text-neutral-500'}`} title={connection.company?.name}>
+                                            <p className={`font-medium mb-1 line-clamp-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`} title={connection.company?.name}>
                                                 {connection.company?.name || 'Company'}
                                             </p>
                                         </div>
@@ -206,8 +206,8 @@ export default function RolesJobsPage() {
                                         </span>
                                     </div>
 
-                                    <div className={`mt-auto space-y-3 pt-4 border-t ${isDark ? 'border-slate-800/50' : 'border-neutral-200'}`}>
-                                        <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                                    <div className={`mt-auto space-y-3 pt-4 border-t ${isDark ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+                                        <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                                             <Calendar size={14} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
                                             <span>
                                                 Started: {formatDate(connection.created_at)}
@@ -215,7 +215,7 @@ export default function RolesJobsPage() {
                                         </div>
 
                                         {terminated && (
-                                            <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                                            <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                                                 <Calendar size={14} className="text-red-500/70" />
                                                 <span>
                                                     Ended: {formatDate(connection.terminated_at || new Date().toISOString())}
@@ -224,14 +224,14 @@ export default function RolesJobsPage() {
                                         )}
 
                                         <div className="flex items-center gap-2 text-sm">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-slate-600' : 'bg-neutral-400'}`} />
-                                            <span className={terminated ? (isDark ? 'text-slate-500' : 'text-neutral-500') : 'text-emerald-500/80 font-medium'}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-neutral-600' : 'bg-neutral-400'}`} />
+                                            <span className={terminated ? (isDark ? 'text-neutral-500' : 'text-neutral-500') : 'text-emerald-500/80 font-medium'}>
                                                 Duration: {calculateDuration(connection.created_at, connection.terminated_at)}
                                             </span>
                                         </div>
 
                                         {connection.job?.location_type && (
-                                            <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                                            <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                                                 <MapPin size={14} />
                                                 <span className="capitalize">{connection.job.location_type}</span>
                                             </div>

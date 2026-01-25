@@ -49,7 +49,7 @@ export default function SupportPage() {
                     <h1 className={`text-3xl md:text-4xl font-black tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                         How can we help?
                     </h1>
-                    <p className={`text-sm md:text-base max-w-lg mx-auto ${isDark ? 'text-slate-400' : 'text-neutral-500'}`}>
+                    <p className={`text-sm md:text-base max-w-lg mx-auto ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                         Your feedback drives our innovation. Whether it's a bug or a brilliant idea, we want to hear it.
                     </p>
                 </div>
@@ -60,13 +60,13 @@ export default function SupportPage() {
                         onClick={() => setType('issue')}
                         className={`p-6 rounded-2xl border transition-all duration-300 group relative overflow-hidden ${type === 'issue'
                             ? (isDark ? 'bg-white/10 border-white/30 shadow-xl' : 'bg-black/5 border-black/20 shadow-xl')
-                            : (isDark ? 'bg-[#0f172a] border-slate-800 hover:border-slate-700 hover:bg-slate-800/50' : 'bg-white border-neutral-200 hover:border-neutral-300')
+                            : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50' : 'bg-white border-neutral-200 hover:border-neutral-300')
                             }`}
                     >
                         <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-300 ${type === 'issue' ? 'opacity-100' : 'opacity-0'} ${isDark ? 'from-white/5 to-transparent' : 'from-black/5 to-transparent'}`} />
                         <div className="relative flex flex-col items-center gap-3">
-                            <Bug size={32} className={`transition-colors duration-300 ${type === 'issue' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-slate-500 group-hover:text-white' : 'text-neutral-400 group-hover:text-black')}`} />
-                            <span className={`font-black uppercase tracking-widest text-xs ${type === 'issue' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-slate-400 group-hover:text-white' : 'text-neutral-500 group-hover:text-black')}`}>
+                            <Bug size={32} className={`transition-colors duration-300 ${type === 'issue' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-500 group-hover:text-white' : 'text-neutral-400 group-hover:text-black')}`} />
+                            <span className={`font-black uppercase tracking-widest text-xs ${type === 'issue' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-500 group-hover:text-black')}`}>
                                 Report Issue
                             </span>
                         </div>
@@ -76,13 +76,13 @@ export default function SupportPage() {
                         onClick={() => setType('feature')}
                         className={`p-6 rounded-2xl border transition-all duration-300 group relative overflow-hidden ${type === 'feature'
                             ? (isDark ? 'bg-white/10 border-white/30 shadow-xl' : 'bg-black/5 border-black/20 shadow-xl')
-                            : (isDark ? 'bg-[#0f172a] border-slate-800 hover:border-slate-700 hover:bg-slate-800/50' : 'bg-white border-neutral-200 hover:border-neutral-300')
+                            : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50' : 'bg-white border-neutral-200 hover:border-neutral-300')
                             }`}
                     >
                         <div className={`absolute inset-0 bg-gradient-to-br transition-opacity duration-300 ${type === 'feature' ? 'opacity-100' : 'opacity-0'} ${isDark ? 'from-white/5 to-transparent' : 'from-black/5 to-transparent'}`} />
                         <div className="relative flex flex-col items-center gap-3">
-                            <Lightbulb size={32} className={`transition-colors duration-300 ${type === 'feature' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-slate-500 group-hover:text-white' : 'text-neutral-400 group-hover:text-black')}`} />
-                            <span className={`font-black uppercase tracking-widest text-xs ${type === 'feature' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-slate-400 group-hover:text-white' : 'text-neutral-500 group-hover:text-black')}`}>
+                            <Lightbulb size={32} className={`transition-colors duration-300 ${type === 'feature' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-500 group-hover:text-white' : 'text-neutral-400 group-hover:text-black')}`} />
+                            <span className={`font-black uppercase tracking-widest text-xs ${type === 'feature' ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-400 group-hover:text-white' : 'text-neutral-500 group-hover:text-black')}`}>
                                 Request Feature
                             </span>
                         </div>
@@ -98,13 +98,13 @@ export default function SupportPage() {
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 placeholder={type === 'issue' ? "Describe the issue you're facing..." : "Tell us about your feature idea..."}
-                                className={`w-full h-48 border rounded-2xl p-6 text-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all resize-none font-medium ${isDark ? 'bg-[#0f172a] border-slate-700 text-white placeholder:text-slate-600 focus:ring-white/20' : 'bg-white border-neutral-200 text-black placeholder:text-neutral-400 focus:ring-black/20'}`}
+                                className={`w-full h-48 border rounded-2xl p-6 text-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all resize-none font-medium ${isDark ? 'bg-neutral-900 border-neutral-700 text-white placeholder:text-neutral-600 focus:ring-white/20' : 'bg-white border-neutral-200 text-black placeholder:text-neutral-400 focus:ring-black/20'}`}
                                 style={{
                                     boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)'
                                 }}
                             />
-                            <div className={`absolute top-4 right-4 p-2 rounded-lg border backdrop-blur-sm pointer-events-none ${isDark ? 'bg-slate-900/50 border-t-white/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
-                                <MessageSquare size={16} className={isDark ? 'text-slate-500' : 'text-neutral-400'} />
+                            <div className={`absolute top-4 right-4 p-2 rounded-lg border backdrop-blur-sm pointer-events-none ${isDark ? 'bg-neutral-900/50 border-t-white/10 border-white/5' : 'bg-white/50 border-neutral-200'}`}>
+                                <MessageSquare size={16} className={isDark ? 'text-neutral-500' : 'text-neutral-400'} />
                             </div>
                         </div>
                     </div>

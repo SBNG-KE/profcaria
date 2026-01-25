@@ -1,4 +1,5 @@
 import React from 'react';
+import ProfessionalPostsSection from '@/app/components/professional/ProfessionalPostsSection';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
@@ -87,7 +88,7 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                 <div className="absolute inset-0 bg-gradient-to-r from-neutral-800 to-neutral-900 opacity-80" />
             </div>
 
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-20">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-20 space-y-8">
                 {/* Profile Card */}
                 <div className="bg-white dark:bg-neutral-900 rounded-[40px] shadow-xl border border-neutral-200 dark:border-neutral-800 p-8">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
@@ -109,7 +110,7 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <h1 className="text-4xl font-black text-gray-900 dark:text-white">{fullName}</h1>
-                                        <p className="text-xl font-medium text-blue-600 dark:text-blue-400 mt-1">{headline || role || 'Professional'}</p>
+                                        <p className="text-xl font-medium text-blue-600 dark:text-blue-400 mt-1">{headline || role}</p>
                                     </div>
                                     {cvUrl && (
                                         <a href={cvUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors">
@@ -186,31 +187,46 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
 
                         </div>
                     </div>
-
-                    {/* About Section */}
-                    {bio && (
-                        <div className="py-8 border-b border-neutral-100 dark:border-neutral-800">
-                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">About</h2>
-                            <p className="whitespace-pre-wrap text-gray-600 dark:text-neutral-300 leading-relaxed">
-                                {bio}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Reusable Profile Sections */}
-                    <div className="mt-8">
-                        <ProfileInfoSection
-                            readOnly={true}
-                            employmentHistory={employmentHistory}
-                            education={educationHistory}
-                            skills={skills || []}
-                            certifications={[]}
-                            awards={[]}
-                            otherProfiles={otherProfiles || []}
-                        />
-                    </div>
                 </div>
             </div>
+
+            {/* Followers Card */}
+            <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                <div className="flex flex-col items-center justify-center space-y-1">
+                    <div className="text-4xl font-black text-black dark:text-white">{user.follower_count || 0}</div>
+                    <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Followers</div>
+                </div>
+            </div>
+
+            {/* About Section */}
+            {bio && (
+                <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">About</h2>
+                    <p className="whitespace-pre-wrap text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                        {bio}
+                    </p>
+                </div>
+            )}
+
+            {/* Posts Section */}
+            <div className="pt-4">
+                <ProfessionalPostsSection
+                    userId={id}
+                    latestPost={null} // Will fetch
+                />
+            </div>
+
+            {/* Reusable Profile Sections */}
+            <ProfileInfoSection
+                readOnly={true}
+                employmentHistory={employmentHistory}
+                education={educationHistory}
+                skills={skills || []}
+                certifications={[]}
+                awards={[]}
+                otherProfiles={otherProfiles || []}
+                isDark={true}
+            />
         </div>
     );
 }

@@ -42,13 +42,15 @@ const ConnectionCard = ({
     onResign,
     onMutual,
     onCancel,
-    onManageFile
+    onManageFile,
+    isDark
 }: {
     connection: Connection,
     onResign: () => void,
     onMutual: () => void,
     onCancel: () => void,
-    onManageFile: (action: 'upload' | 'view' | 'remove') => void
+    onManageFile: (action: 'upload' | 'view' | 'remove') => void,
+    isDark: boolean
 }) => {
     const terminated = ['terminated', 'rejected', 'declined', 'resigned'].includes(connection.status);
     const active = ['accepted', 'hired', 'employed', 'offered'].includes(connection.status);
@@ -84,31 +86,31 @@ const ConnectionCard = ({
     };
 
     return (
-        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-emerald-500/30 transition-all group flex flex-col h-full">
+        <div className={`border rounded-[32px] p-6 transition-all group flex flex-col h-full ${isDark ? 'bg-neutral-900/50 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm'}`}>
             <div className="flex items-start gap-4 flex-1">
-                <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center overflow-hidden shrink-0">
+                <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center overflow-hidden shrink-0 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}`}>
                     {connection.company.logoUrl ? (
                         <img src={connection.company.logoUrl} alt={connection.company.name} className="w-full h-full object-cover" />
                     ) : (
-                        <Building2 size={28} className="text-slate-600" />
+                        <Building2 size={28} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
                     )}
                 </div>
                 <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">
+                    <h3 className={`text-lg font-bold group-hover:text-emerald-500 transition-colors uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                         {connection.company.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-neutral-400 text-xs font-bold mt-1">
+                    <div className={`flex items-center gap-2 text-xs font-bold mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                         <Briefcase size={12} />
                         <span>{connection.job.title}</span>
                     </div>
                     <div className="space-y-1 mt-2">
-                        <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+                        <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                             <Clock size={10} />
                             <span>Employed {formatDate(connection.created_at)}</span>
                         </div>
                         {terminated && (
                             <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+                                <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                     <Clock size={10} className="text-red-500/50" />
                                     <span>Ended {formatDate(connection.terminated_at || new Date().toISOString())}</span>
                                 </div>
@@ -118,7 +120,7 @@ const ConnectionCard = ({
                                             e.stopPropagation();
                                             handleShare();
                                         }}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-white/10 hover:bg-white/20 text-white border-white/20'}`}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${copied ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : (isDark ? 'bg-white/5 hover:bg-white/10 text-white border-white/10' : 'bg-black/5 hover:bg-black/10 text-black border-black/10')}`}
                                     >
                                         <Share2 size={10} className={sharing ? "animate-spin" : ""} />
                                         <span className="text-[10px] font-bold uppercase tracking-widest">
@@ -138,10 +140,10 @@ const ConnectionCard = ({
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${active ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                        connection.status === 'pending_resignation' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                            connection.status === 'pending_termination' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
-                                'bg-slate-800 text-slate-400 border border-white/5'
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${active ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                        connection.status === 'pending_resignation' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                            connection.status === 'pending_termination' ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20' :
+                                (isDark ? 'bg-neutral-800 text-neutral-400 border border-neutral-700' : 'bg-neutral-100 text-neutral-500 border border-neutral-200')
                         }`}>
                         {active ? 'Active' :
                             connection.status === 'pending_resignation' ? 'Resignation Pending' :
@@ -151,27 +153,27 @@ const ConnectionCard = ({
 
                     {/* Add File Button (Only Active) */}
                     {active && !connection.connectionFileUrl && (
-                        <button onClick={() => onManageFile('upload')} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-all" title="Attach Document">
+                        <button onClick={() => onManageFile('upload')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="Attach Document">
                             <Plus size={14} />
                         </button>
                     )}
                     {/* Edit/View File Button (Only Active) */}
                     {active && connection.connectionFileUrl && (
                         <div className="flex gap-1">
-                            <button onClick={() => onManageFile('view')} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-all" title="View Document">
+                            <button onClick={() => onManageFile('view')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="View Document">
                                 <FileText size={14} />
                             </button>
-                            <button onClick={() => onManageFile('upload')} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-all" title="Replace Document">
+                            <button onClick={() => onManageFile('upload')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="Replace Document">
                                 <Pencil size={14} />
                             </button>
-                            <button onClick={() => onManageFile('remove')} className="p-2 bg-red-900/20 hover:bg-red-900/40 text-red-400 rounded-full transition-all" title="Remove Document">
+                            <button onClick={() => onManageFile('remove')} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all" title="Remove Document">
                                 <X size={14} />
                             </button>
                         </div>
                     )}
                     {/* Terminated View Only handled by click on status or generic */}
                     {terminated && connection.connectionFileUrl && (
-                        <button onClick={() => onManageFile('view')} className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-all" title="View Document">
+                        <button onClick={() => onManageFile('view')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="View Document">
                             <FileText size={14} />
                         </button>
                     )}
@@ -180,16 +182,16 @@ const ConnectionCard = ({
 
             {/* Active Actions */}
             {active && (
-                <div className="mt-6 pt-4 border-t border-white/5 flex gap-2">
+                <div className={`mt-6 pt-4 border-t flex gap-2 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                     <button
                         onClick={onResign}
-                        className="flex-1 py-3 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-600/20 hover:border-red-600"
+                        className="flex-1 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all border border-red-500/20 hover:border-red-500"
                     >
                         Resign
                     </button>
                     <button
                         onClick={onMutual}
-                        className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
+                        className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`}
                     >
                         Mutual End
                     </button>
@@ -198,23 +200,16 @@ const ConnectionCard = ({
 
             {/* Pending States status messages */}
             {connection.status === 'pending_resignation' && (
-                <div className="mt-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2 text-amber-400 text-xs bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
+                <div className={`mt-4 pt-4 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                    <div className="flex items-center gap-2 text-amber-500 text-xs bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
                         <Clock size={14} />
                         <span>Resignation submitted. Awaiting employer approval.</span>
                     </div>
-                    <button
-                        onClick={onCancel} // Assuming we want to allow cancelling? Maybe not yet. But let's leave generic for now or remove if no backend support.
-                        // Actually I don't have cancel backend yet for professional. Let's omit for MVP or just show text.
-                        className="hidden mt-2 w-full py-2 bg-slate-800 text-slate-400 text-[10px] rounded-lg uppercase font-bold"
-                    >
-                        Cancel Request
-                    </button>
                 </div>
             )}
             {connection.status === 'pending_termination' && (
-                <div className="mt-4 pt-4 border-t border-white/5">
-                    <div className="flex items-center gap-2 text-indigo-400 text-xs bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/20">
+                <div className={`mt-4 pt-4 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                    <div className="flex items-center gap-2 text-indigo-500 text-xs bg-indigo-500/10 p-3 rounded-xl border border-indigo-500/20">
                         <Clock size={14} />
                         <span>Mutual separation requested. Awaiting employer approval.</span>
                     </div>
@@ -367,12 +362,12 @@ export default function ConnectPage() {
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Employment Network</span>
                         </div>
                         <h1 className={`text-4xl font-black uppercase tracking-tighter leading-none ${isDark ? 'text-white' : 'text-black'}`}>Employment</h1>
-                        <p className={`mt-2 text-sm font-medium ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Your employment history and active connections.</p>
+                        <p className={`mt-2 text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Your employment history and active connections.</p>
                     </div>
 
                     {/* Filter Buttons */}
                     <div className="flex flex-col items-end gap-4">
-                        <div className={`flex p-1 rounded-xl border shrink-0 ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-neutral-100 border-neutral-200'}`}>
+                        <div className={`flex p-1 rounded-xl border shrink-0 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
                             <button
                                 onClick={() => setViewMode('current')}
                                 className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'current' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black')}`}
@@ -401,28 +396,28 @@ export default function ConnectPage() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200'}`}>
+                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className={`mx-auto p-3 w-fit rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <CheckCircle2 size={24} />
                         </div>
                         <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{activeConnections.length}</h3>
-                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Active Connections</p>
+                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Active Connections</p>
                     </div>
 
-                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200'}`}>
+                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className={`mx-auto p-3 w-fit rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <Clock size={24} />
                         </div>
                         <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{pendingTerminations.length}</h3>
-                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Pending Actions</p>
+                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Pending Actions</p>
                     </div>
 
-                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-neutral-200'}`}>
+                    <div className={`p-6 rounded-2xl space-y-4 text-center border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className={`mx-auto p-3 w-fit rounded-xl ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
                             <Building2 size={24} />
                         </div>
                         <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{connections.length}</h3>
-                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Total Connections</p>
+                        <p className={`text-xs uppercase font-bold tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Total Connections</p>
                     </div>
                 </div>
 
@@ -431,17 +426,17 @@ export default function ConnectPage() {
                     <h2 className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Your Connections</h2>
 
                     {isLoading ? (
-                        <div className={`rounded-[40px] p-12 text-center border ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
+                        <div className={`rounded-[40px] p-12 text-center border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                             <div className={`animate-spin w-8 h-8 border-2 border-t-transparent rounded-full mx-auto mb-4 ${isDark ? 'border-white' : 'border-black'}`}></div>
                             <p className={isDark ? 'text-slate-500' : 'text-neutral-500'}>Loading connections...</p>
                         </div>
                     ) : connections.length === 0 ? (
-                        <div className={`rounded-[40px] p-12 text-center space-y-4 border ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
-                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${isDark ? 'bg-slate-800/50' : 'bg-neutral-100'}`}>
-                                <Cable size={32} className={isDark ? 'text-slate-600' : 'text-neutral-400'} />
+                        <div className={`rounded-[40px] p-12 text-center space-y-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto ${isDark ? 'bg-neutral-800/50' : 'bg-neutral-100'}`}>
+                                <Cable size={32} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
                             </div>
-                            <h4 className={`text-lg font-bold ${isDark ? 'text-slate-300' : 'text-neutral-700'}`}>No Active Connections</h4>
-                            <p className={`max-w-md mx-auto ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>
+                            <h4 className={`text-lg font-bold ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>No Active Connections</h4>
+                            <p className={`max-w-md mx-auto ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                                 When an employer accepts your application, you'll see your employment connection here.
                             </p>
                         </div>
@@ -477,6 +472,7 @@ export default function ConnectPage() {
                                                     else if (action === 'view') { if (connection.connectionFileUrl) window.open(connection.connectionFileUrl, '_blank'); }
                                                     else if (action === 'remove') { handleFileAction(connection.applicationId, 'remove_file', null); }
                                                 }}
+                                                isDark={isDark}
                                             />
                                         ))}
                                     </div>

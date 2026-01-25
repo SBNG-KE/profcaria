@@ -1,4 +1,12 @@
-import React from 'react';
+import ProfessionalPostsSection from '@/app/components/professional/ProfessionalPostsSection';
+
+// ... (existing imports to line 11)
+
+// (skip to where extra div was inserted)
+// I will target the extra div I see in the diff block from Step 1839.
+// It was inserted at line 168 (new line).
+// Wait, I can't do multiple discontinuous edits easily with one replace_content for imports AND div.
+// I will use multi_replace.
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
@@ -12,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 export const dynamic = 'force-dynamic';
 
 import { cookies } from 'next/headers';
+import React from 'react';
 import Link from 'next/link';
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -159,9 +168,19 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                             Message
                                         </Link>
                                     )}
+
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                </div>
+
+                {/* Followers Card */}
+                <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                    <div className="flex flex-col items-center justify-center space-y-1">
+                        <div className="text-4xl font-black text-black dark:text-white">{profile.follower_count || 0}</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Connections</div>
                     </div>
                 </div>
 
@@ -201,24 +220,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 />
 
                 {/* Posts */}
-                <div className="space-y-6">
-                    <h3 className="text-xl font-bold px-4">Latest Activity</h3>
-                    {formattedPosts.length > 0 ? (
-                        formattedPosts.map((post: any) => (
-                            <PostCard
-                                key={post.id}
-                                post={post}
-                                isDark={isDark}
-                                currentUserId="" // Read only
-                                onLike={() => { }}
-                            />
-                        ))
-                    ) : (
-                        <p className="text-center text-neutral-500 py-10">No recent activity.</p>
-                    )}
+                <div className="pt-4">
+                    <ProfessionalPostsSection
+                        userId={profile.user_id || profile.id}
+                        latestPost={formattedPosts[0] || null}
+                    />
                 </div>
 
             </div>
         </div>
     );
 }
+

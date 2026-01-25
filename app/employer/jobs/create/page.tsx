@@ -680,7 +680,7 @@ function CreateJobPageContent() {
 
 export default function CreateJobPage() {
     return (
-        <Suspense fallback={<div className="p-8 text-slate-500 uppercase tracking-widest text-xs">Initializing Editor...</div>}>
+        <Suspense fallback={<div className="p-8 text-neutral-500 uppercase tracking-widest text-xs">Initializing Editor...</div>}>
             <CreateJobPageContent />
         </Suspense>
     );
