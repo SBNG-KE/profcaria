@@ -11,8 +11,44 @@ import { formatDistanceToNow } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
+import { cookies } from 'next/headers';
+import Link from 'next/link';
+
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+
+    // Check Viewer Type
+    const cookieStore = await cookies();
+    const session = cookieStore.get('profcaria_session')?.value;
+    let viewerType = 'visitor'; // visitor, professional, employer
+
+    if (session) {
+        try {
+            // Simple client-side decode or just check presence isn't enough for type
+            // But for server components we can't easily verify JWT without secret env? 
+            // We can check the schema from the token payload? 
+            // Actually, `dercryptData` helper uses env. 
+            // Let's assume generic 'session' means logged in. 
+            // Ideally we check `schema` claim.
+            // For now, let's just add the button and let the middleware/page logic handle the actual chat access?
+            // Or better: decode the token.
+        } catch (e) { }
+    }
+
+    // Actually, simpler approach:
+    // If I am a professional viewing another professional, show message.
+    // If I am an employer, DO NOT show message.
+    // We can parse the JWT payload part (base64) to get the schema.
+
+    let isViewerProfessional = false;
+    if (session) {
+        try {
+            const payload = JSON.parse(atob(session.split('.')[1]));
+            if (payload.schema === 'professional' && payload.uid !== id) {
+                isViewerProfessional = true;
+            }
+        } catch (e) { }
+    }
 
     // Fetch User Profile
     const { data: profile, error } = await supabaseAdmin
@@ -115,6 +151,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                 </div>
                                 <div>
                                     <FollowButton targetId={profile.user_id || profile.id} type="user" />
+                                    {isViewerProfessional && (
+                                        <Link
+                                            href={`/professional/notifications?chat=${profile.user_id}`}
+                                            className="ml-3 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors"
+                                        >
+                                            Message
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         </div>

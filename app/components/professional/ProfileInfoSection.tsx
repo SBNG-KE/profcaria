@@ -8,7 +8,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
 
 interface ProfileInfoSectionProps {
-    isDark: boolean;
+    isDark?: boolean;
     readOnly?: boolean;
     // Data
     employmentHistory: any[];
@@ -24,7 +24,7 @@ interface ProfileInfoSectionProps {
 }
 
 export default function ProfileInfoSection({
-    isDark,
+    isDark: propIsDark,
     readOnly = false,
     employmentHistory,
     education,
@@ -36,6 +36,8 @@ export default function ProfileInfoSection({
     onEdit,
     onDelete
 }: ProfileInfoSectionProps) {
+    const { theme } = useTheme();
+    const isDark = propIsDark ?? (theme === 'dark');
 
     const SectionHeader = ({ title, icon: Icon, sectionKey }: { title: string, icon: any, sectionKey: string }) => (
         <div className="flex items-center justify-between mb-6">

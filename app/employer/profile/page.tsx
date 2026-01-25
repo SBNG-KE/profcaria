@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, PenLine, Check, Copy, ArrowRight, Shield, Move, Link2, Plus, X } from 'lucide-react';
 import LinkPreview from '@/app/components/LinkPreview';
 import ProfileAnalytics from '@/app/components/professional/ProfileAnalytics'; // Reuse analytics
+import EmployerAnalytics from '@/app/components/employer/EmployerAnalytics';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -612,15 +613,17 @@ export default function EmployerProfilePage() {
 
 
 
-            {/* 2. Analytics Card */}
-            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                <div
+            {/* 2. Analytics System */}
+            <EmployerAnalytics isDark={isDark} subscriberCount={followerCount} />
+
+            {/* View Subscribers Button (Optional helper) */}
+            <div className="flex justify-end px-4">
+                <button
                     onClick={() => setIsSubscribersModalOpen(true)}
-                    className="flex flex-col items-center justify-center space-y-1 cursor-pointer hover:opacity-80 transition-opacity"
+                    className={`text-xs font-bold uppercase tracking-widest hover:underline ${isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600'}`}
                 >
-                    <div className={`text-4xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{followerCount}</div>
-                    <div className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Subscribers</div>
-                </div>
+                    View Subscribers List
+                </button>
             </div>
 
             <SubscribersModal
