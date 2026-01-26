@@ -7,7 +7,7 @@ import LinkPreview from '@/app/components/LinkPreview';
 import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkPreview';
 import { useSearchParams } from 'next/navigation';
 
-export default function EmployerNotifications() {
+function EmployerNotificationsContent() {
     // Consume Global Context
     const { notifications, applications: channels, loading, refresh, markAsRead } = useNotificationContext();
     const searchParams = useSearchParams();
@@ -537,5 +537,17 @@ export default function EmployerNotifications() {
                 )}
             </main>
         </div>
+    );
+}
+
+export default function EmployerNotifications() {
+    return (
+        <React.Suspense fallback={
+            <div className="flex items-center justify-center p-8 h-screen bg-black">
+                <div className="animate-spin w-8 h-8 border-2 border-t-transparent border-neutral-500 rounded-full" />
+            </div>
+        }>
+            <EmployerNotificationsContent />
+        </React.Suspense>
     );
 }

@@ -11,7 +11,7 @@
  * CRITICAL: NO FUNCTION CHANGES - All auth logic preserved exactly.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     User,
@@ -22,7 +22,9 @@ import {
     Eye,
     EyeOff,
     Check,
-    ArrowLeft
+    ArrowLeft,
+    ChevronDown,
+    Search
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import HangingSecurityCard from './HangingSecurityCard';
@@ -128,6 +130,44 @@ export default function HangingAuthCard({
     const [empCompanyName, setEmpCompanyName] = useState('');
     const [empWorkEmail, setEmpWorkEmail] = useState('');
     const [empPassword, setEmpPassword] = useState('');
+    const [empIndustry, setEmpIndustry] = useState('');
+    const [industries, setIndustries] = useState<{ name: string, category: string }[]>([]);
+    const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+    const [industrySearch, setIndustrySearch] = useState('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // Close on click outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsIndustryDropdownOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Focus search on open
+    useEffect(() => {
+        if (isIndustryDropdownOpen && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [isIndustryDropdownOpen]);
+
+    // Fetch Industries
+    useEffect(() => {
+        const fetchIndustries = async () => {
+            try {
+                const res = await fetch('/api/common/industries');
+                if (res.ok) {
+                    const data = await res.json();
+                    setIndustries(data.industries || []);
+                }
+            } catch (e) { console.error('Failed to load industries', e); }
+        };
+        fetchIndustries();
+    }, []);
 
     // Reset state when closed or opened with new screen
     useEffect(() => {
@@ -241,6 +281,7 @@ export default function HangingAuthCard({
                 companyName: empCompanyName,
                 workEmail: empWorkEmail,
                 password: empPassword,
+                industry: empIndustry, // Send Selected Industry
             };
 
             const res = await fetch(endpoint, {
@@ -355,7 +396,91 @@ export default function HangingAuthCard({
                         {activeTab === 'employer' && (
                             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                 {globalMode === 'signup' && (
-                                    <ModernInput theme={theme} placeholder="Company Name" value={empCompanyName} onChange={e => setEmpCompanyName(e.target.value)} icon={Briefcase} />
+                                    <>
+                                        <ModernInput theme={theme} placeholder="Company Name" value={empCompanyName} onChange={e => setEmpCompanyName(e.target.value)} icon={Briefcase} />
+
+                                        {/* Industry Dropdown (Searchable) */}
+                                        <div className="relative group" ref={dropdownRef}>
+                                            <div className={`
+                                                absolute top-3 left-0 flex items-center transition-colors duration-300
+                                                ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}
+                                            `}>
+                                                <Briefcase size={18} />
+                                            </div>
+
+                                            {/* Trigger */}
+                                            <div
+                                                onClick={() => setIsIndustryDropdownOpen(!isIndustryDropdownOpen)}
+                                                className={`
+                                                    w-full bg-transparent border-b-2 py-3 pl-8 pr-4 text-sm cursor-pointer flex items-center justify-between transition-all duration-300
+                                                    ${isDark
+                                                        ? 'border-neutral-800 text-white hover:border-white'
+                                                        : 'border-neutral-200 text-black hover:border-black'
+                                                    }
+                                                    ${isIndustryDropdownOpen ? (isDark ? 'border-white' : 'border-black') : ''}
+                                                `}
+                                            >
+                                                <span className={empIndustry ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-600' : 'text-neutral-400')}>
+                                                    {empIndustry || 'Select Industry'}
+                                                </span>
+                                                <ChevronDown size={18} className={`transition-transform duration-300 ${isIndustryDropdownOpen ? 'rotate-180' : ''} ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
+                                            </div>
+
+                                            {/* Dropdown Menu */}
+                                            {isIndustryDropdownOpen && (
+                                                <div className={`absolute top-full left-0 right-0 mt-2 rounded-2xl shadow-2xl border z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200'}`}>
+
+                                                    {/* Search Header */}
+                                                    <div className={`p-2 border-b sticky top-0 z-10 ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-100'}`}>
+                                                        <div className="relative">
+                                                            <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
+                                                            <input
+                                                                ref={searchInputRef}
+                                                                type="text"
+                                                                value={industrySearch}
+                                                                onChange={(e) => setIndustrySearch(e.target.value)}
+                                                                placeholder="Search industries..."
+                                                                className={`w-full rounded-xl pl-9 pr-4 py-2 text-sm font-medium focus:outline-none ${isDark ? 'bg-neutral-900 text-white placeholder-neutral-600' : 'bg-neutral-50 text-black placeholder-neutral-400'}`}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* List */}
+                                                    <div className="max-h-[200px] overflow-y-auto p-1 custom-scrollbar">
+                                                        {industries.filter(ind => ind.name.toLowerCase().includes(industrySearch.toLowerCase())).length === 0 ? (
+                                                            <div className={`p-4 text-center text-xs font-medium uppercase tracking-widest ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
+                                                                No industries found
+                                                            </div>
+                                                        ) : (
+                                                            industries
+                                                                .filter(ind => ind.name.toLowerCase().includes(industrySearch.toLowerCase()))
+                                                                .map((ind) => {
+                                                                    const isSelected = empIndustry === ind.name;
+                                                                    return (
+                                                                        <button
+                                                                            key={ind.name}
+                                                                            onClick={() => {
+                                                                                setEmpIndustry(ind.name);
+                                                                                setIsIndustryDropdownOpen(false);
+                                                                                setIndustrySearch('');
+                                                                            }}
+                                                                            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-between group ${isSelected
+                                                                                ? (isDark ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-black')
+                                                                                : (isDark ? 'text-neutral-400 hover:bg-neutral-900 hover:text-white' : 'text-neutral-500 hover:bg-neutral-50 hover:text-black')
+                                                                                }`}
+                                                                        >
+                                                                            {ind.name}
+                                                                            {isSelected && <Check size={14} className={isDark ? 'text-white' : 'text-black'} />}
+                                                                        </button>
+                                                                    );
+                                                                })
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
                                 <ModernInput theme={theme} placeholder="Work Email" value={empWorkEmail} onChange={e => setEmpWorkEmail(e.target.value)} icon={Mail} />
                                 <ModernInput theme={theme} placeholder="Password" value={empPassword} onChange={e => setEmpPassword(e.target.value)} icon={Lock} type="password" showPasswordToggle passwordVisible={passwordVisible} onTogglePassword={() => setPasswordVisible(!passwordVisible)} />

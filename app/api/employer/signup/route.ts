@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       companyName,
       workEmail,
       password,
+      industry // Extract industry
     } = body;
 
     // 1. Validation
@@ -85,6 +86,7 @@ export async function POST(req: Request) {
           enc_logo_url: encLogo,
           enc_work_email: encryptData(workEmail),
           enc_phone_number: null,
+          industry: industry || null, // Store Industry
           // Default security settings
           requires_2fa: true,
           allow_passkeys: true

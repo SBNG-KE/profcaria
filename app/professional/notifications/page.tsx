@@ -8,7 +8,7 @@ import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkP
 import { useTheme } from '@/app/context/ThemeContext';
 import { useSearchParams } from 'next/navigation';
 
-export default function NotificationsPage() {
+function NotificationsContent() {
     // Theme
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -555,5 +555,17 @@ export default function NotificationsPage() {
                 )}
             </main>
         </div>
+    );
+}
+
+export default function NotificationsPage() {
+    return (
+        <React.Suspense fallback={
+            <div className="flex items-center justify-center h-screen">
+                <div className="animate-spin w-8 h-8 border-2 border-t-transparent border-neutral-500 rounded-full" />
+            </div>
+        }>
+            <NotificationsContent />
+        </React.Suspense>
     );
 }

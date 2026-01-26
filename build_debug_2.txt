@@ -1,0 +1,148 @@
+﻿
+> profcaria@0.1.0 build
+> next build --webpack
+
+node.exe : ΓÜá 
+Warning: Next.js 
+inferred your 
+workspace root, but 
+it may not be 
+correct.
+At C:\Program Files\n
+odejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (ΓÜá War   
+ ning: Ne...not b    
+e correct.:Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+ We detected 
+multiple lockfiles 
+and selected the 
+directory of C:\Users
+\steve\package-lock.j
+son as the root 
+directory.
+ To silence this 
+warning, set `outputF
+ileTracingRoot` in 
+your Next.js config, 
+or consider removing 
+one of the lockfiles 
+if it's not needed.
+   See https://nextjs
+.org/docs/app/api-ref
+erence/config/next-co
+nfig-js/output#caveat
+s for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\steve\p
+rofcaria\package-lock
+.json
+
+Γû▓ Next.js 16.1.0 (webpack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 16.5s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+ΓÜá Using edge 
+runtime on a page 
+currently disables 
+static generation 
+for that page
+  Generating static pages using 7 workers (0/121) ...
+Γ¿» 
+useSearchParams() 
+should be wrapped in 
+a suspense boundary 
+at page 
+"/employer/feed". 
+Read more: https://ne
+xtjs.org/docs/message
+s/missing-suspense-wi
+th-csr-bailout
+    at Q (C:\Users\st
+eve\profcaria\.next\s
+erver\chunks\7471.js:
+2:2111)
+    at o (C:\Users\st
+eve\profcaria\.next\s
+erver\chunks\7471.js:
+11:50161)
+    at A (C:\Users\st
+eve\profcaria\.next\s
+erver\app\employer\fe
+ed\page.js:1:21329)
+    at an (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:84360)
+    at ai (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:86179)
+    at al (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:107953)
+    at as (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:105368)
+    at aa (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:84712)
+    at ai (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:86228)
+    at ai (C:\Users\s
+teve\profcaria\node_m
+odules\next\dist\comp
+iled\next-server\app-
+page.runtime.prod.js:
+2:104708)
+Error occurred 
+prerendering page 
+"/employer/feed". 
+Read more: https://ne
+xtjs.org/docs/message
+s/prerender-error
+Export encountered 
+an error on 
+/employer/feed/page: 
+/employer/feed, 
+exiting the build.
+Γ¿» Next.js build 
+worker exited with 
+code: 1 and signal: 
+null

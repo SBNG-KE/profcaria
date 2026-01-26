@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, PenLine, Check, Copy, ArrowRight, Shield, Move, Link2, Plus, X } from 'lucide-react';
+import { Building2, Globe, MapPin, Users, Mail, Camera, Trash2, Save, Loader2, PenLine, Check, Copy, ArrowRight, Shield, Move, Link2, Plus, X, Briefcase } from 'lucide-react';
 import LinkPreview from '@/app/components/LinkPreview';
 import ProfileAnalytics from '@/app/components/professional/ProfileAnalytics'; // Reuse analytics
 import EmployerAnalytics from '@/app/components/employer/EmployerAnalytics';
@@ -122,14 +122,21 @@ export default function EmployerProfilePage() {
     const [isEditingIndustry, setIsEditingIndustry] = useState(false);
 
     // List of Industries
-    const INDUSTRIES = [
-        "Technology", "Software", "Hardware", "Telecommunications", "Financial Services", "Banking", "Insurance", "FinTech",
-        "Healthcare", "Biotech", "Pharmaceuticals", "Medical Devices", "Education", "EdTech", "Higher Education",
-        "Retail", "E-commerce", "Consumer Goods", "Manufacturing", "Automotive", "Aerospace", "Energy", "Oil & Gas",
-        "Renewables", "Construction", "Real Estate", "Media", "Entertainment", "Gaming", "Advertising", "Marketing",
-        "Hospitality", "Travel", "Food & Beverage", "Agriculture", "Logistics", "Supply Chain", "Transportation",
-        "Consulting", "Professional Services", "Legal", "Non-Profit", "Government", "Other"
-    ];
+    const [industries, setIndustries] = useState<{ name: string, category: string }[]>([]);
+
+    // Fetch Industries from DB
+    useEffect(() => {
+        const fetchIndustries = async () => {
+            try {
+                const res = await fetch('/api/common/industries');
+                if (res.ok) {
+                    const data = await res.json();
+                    setIndustries(data.industries || []);
+                }
+            } catch (e) { console.error('Failed to load industries', e); }
+        };
+        fetchIndustries();
+    }, []);
 
     const openEditIndustry = () => setIsEditingIndustry(true);
 
@@ -522,6 +529,35 @@ export default function EmployerProfilePage() {
                             </div>
                         </div>
 
+                        {/* Industry Section */}
+                        <div className="flex items-center gap-3 group">
+                            {isEditingIndustry ? (
+                                <div className="flex gap-2 w-full max-w-sm">
+                                    <select
+                                        value={industry}
+                                        onChange={(e) => setIndustry(e.target.value)}
+                                        className={`flex-1 px-4 py-2 rounded-xl font-medium text-lg outline-none border-2 focus:border-blue-500 appearance-none cursor-pointer ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-300' : 'bg-neutral-50 border-neutral-200 text-neutral-700'}`}
+                                        autoFocus
+                                    >
+                                        <option value="">Select Industry</option>
+                                        {industries.map((ind) => (
+                                            <option key={ind.name} value={ind.name}>{ind.name}</option>
+                                        ))}
+                                    </select>
+                                    <button onClick={() => { handleSaveProfile(); setIsEditingIndustry(false); }} className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"><Check size={18} /></button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={`flex items-center gap-2 text-lg font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                        <Briefcase size={20} className="text-blue-500" />
+                                        {industry || 'Select Industry'}
+                                    </div>
+                                    <button onClick={() => setIsEditingIndustry(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                        <PenLine size={18} />
+                                    </button>
+                                </>
+                            )}
+                        </div>
                         <div className={`h-px w-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}></div>
 
                         {/* Contact Info */}

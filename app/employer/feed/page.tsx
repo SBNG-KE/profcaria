@@ -458,7 +458,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     );
 };
 
-export default function EmployerFeedPage() {
+function EmployerFeedContent() {
     const router = useRouter();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -752,5 +752,17 @@ export default function EmployerFeedPage() {
             </div>
             <PostCreationModal isOpen={showPostModal} onClose={() => { setShowPostModal(false); setEditingPost(null); }} isDark={isDark} onPost={handleCreatePost} initialData={editingPost} />
         </div>
+    );
+}
+
+export default function EmployerFeedPage() {
+    return (
+        <React.Suspense fallback={
+            <div className="flex items-center justify-center p-8">
+                <div className="animate-spin w-8 h-8 border-2 border-t-transparent border-neutral-500 rounded-full" />
+            </div>
+        }>
+            <EmployerFeedContent />
+        </React.Suspense>
     );
 }

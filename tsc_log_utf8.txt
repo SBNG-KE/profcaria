@@ -1,0 +1,15 @@
+﻿app/components/professional/ProfessionalPostsSection.tsx(25,14): error TS2304: Cannot find name 'hasFetched'.
+app/components/professional/ProfessionalPostsSection.tsx(26,13): error TS2304: Cannot find name 'setLoading'.
+app/components/professional/ProfessionalPostsSection.tsx(32,21): error TS2552: Cannot find name 'setPosts'. Did you mean 'setReposts'?
+app/components/professional/ProfessionalPostsSection.tsx(37,17): error TS2304: Cannot find name 'setLoading'.
+app/components/professional/ProfessionalPostsSection.tsx(38,17): error TS2304: Cannot find name 'setHasFetched'.
+app/components/professional/ProfessionalPostsSection.tsx(45,32): error TS2304: Cannot find name 'activeTab'.
+app/components/professional/ProfessionalPostsSection.tsx(63,9): error TS2304: Cannot find name 'activeTab'.
+app/components/professional/ProfessionalPostsSection.tsx(88,44): error TS2304: Cannot find name 'setActiveTab'.
+app/components/professional/ProfessionalPostsSection.tsx(89,109): error TS2304: Cannot find name 'activeTab'.
+app/components/professional/ProfessionalPostsSection.tsx(92,30): error TS2304: Cannot find name 'activeTab'.
+app/components/professional/ProfessionalPostsSection.tsx(100,22): error TS2304: Cannot find name 'activeTab'.
+app/components/professional/ProfessionalPostsSection.tsx(101,25): error TS2304: Cannot find name 'loading'.
+app/components/professional/ProfessionalPostsSection.tsx(105,29): error TS2552: Cannot find name 'posts'. Did you mean 'reposts'?
+app/components/professional/ProfessionalPostsSection.tsx(106,29): error TS2304: Cannot find name 'posts'.
+app/components/professional/ProfessionalPostsSection.tsx(106,39): error TS7006: Parameter 'post' implicitly has an 'any' type.

@@ -1,0 +1,89 @@
+﻿
+> profcaria@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.0 (Turbopack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+node.exe : 
+At C:\Program Files\n
+odejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (:String   
+ ) [], RemoteExce    
+ption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+-----
+[1m[31mFATAL[39m[
+0m: An unexpected 
+Turbopack error 
+occurred. A panic 
+log has been written 
+to C:\Users\steve\App
+Data\Local\Temp\next-
+panic-58491e962297e2f
+c2af55caf954973cd.log
+.
+
+To help make 
+Turbopack better, 
+report this error by 
+]8;;https://github.c
+om/vercel/next.js/dis
+cussions/new?category
+=turbopack-error-repo
+rt&title=Turbopack%20
+Error%3A%20create%20s
+ymlink%20to%20..%2F..
+%2Fnode_modules%2Fjsd
+om&body=Turbopack%20v
+ersion%3A%20%60ea1df5
+f2%60%0ANext.js%20ver
+sion%3A%20%600.0.0%60
+%0A%0AError%20message
+%3A%0A%60%60%60%0Acre
+ate%20symlink%20to%20
+..%2F..%2Fnode_module
+s%2Fjsdom%0A%0ACaused
+%20by%3A%0A-%20A%20re
+quired%20privilege%20
+is%20not%20held%20by%
+20the%20client.%20%28
+os%20error%201314%29%
+0A%60%60%60&labels=Tu
+rbopack,Turbopack%20P
+anic%20Backtrace\cli
+cking here.]8;;\
+-----
+
+
+> Build error 
+occurred
+Error [TurbopackInter
+nalError]: create 
+symlink to ../../node
+_modules/jsdom
+
+Caused by:
+- A required 
+privilege is not 
+held by the client. 
+(os error 1314)
+    at ignore-listed 
+frames {
+  type: 'TurbopackInt
+ernalError',
+  location: undefined
+}

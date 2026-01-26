@@ -96,45 +96,65 @@ export async function GET(request: NextRequest) {
 
         // --- CASE 2: FETCH POSTS (Filtered or Feed) ---
 
-        // Fetch professional posts
-        let profQuery = supabaseAdmin
-            .schema('professional')
-            .from('posts')
-            .select('*')
-            .order('created_at', { ascending: false });
-
+        // If specific user targeted (Profile View), stick to simple query
         if (targetUserId) {
-            profQuery = profQuery.eq('user_id', targetUserId);
+            // Fetch professional posts
+            let profQuery = supabaseAdmin
+                .schema('professional')
+                .from('posts')
+                .select('*')
+                .eq('user_id', targetUserId)
+                .order('created_at', { ascending: false })
+                .range(offset, offset + limit - 1);
+
+            // Fetch employer posts
+            let empQuery = supabaseAdmin
+                .schema('employer')
+                .from('posts')
+                .select('*')
+                .eq('company_id', targetUserId)
+                .order('created_at', { ascending: false })
+                .range(offset, offset + limit - 1)
+                .then((res: any) => ({ ...res, isEmployer: true }))
+                .catch(() => ({ data: [], error: null }));
+
+            const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
+
+            // Merge and Sort
+            let allPosts: any[] = [];
+            if (profRes.data) allPosts = [...allPosts, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
+            if ((empRes as any).data) allPosts = [...allPosts, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
+
+            allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+            const processed = await processPosts(allPosts, user);
+            return NextResponse.json({ posts: processed });
         }
 
-        const profPromise = profQuery.range(offset, offset + limit - 1);
+        // MAIN FEED: Use AI Ranking RPC
+        const { data: rankedPosts, error: rpcError } = await supabaseAdmin.rpc('get_ranked_feed', {
+            p_user_id: user.id,
+            p_limit: limit,
+            p_offset: offset
+        });
 
-        // Fetch employer posts
-        let empQuery = supabaseAdmin
-            .schema('employer')
-            .from('posts')
-            .select('*')
-            .order('created_at', { ascending: false });
+        if (rpcError) {
+            console.error('Feed RPC Error:', rpcError);
+            // Fallback to simple query if RPC fails (or migration not applied yet)
+            let profQuery = supabaseAdmin
+                .schema('professional')
+                .from('posts')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .range(offset, offset + limit - 1);
 
-        if (targetUserId) {
-            empQuery = empQuery.eq('company_id', targetUserId);
+            const { data: fallback } = await profQuery;
+
+            const processed = await processPosts(fallback || [], user);
+            return NextResponse.json({ posts: processed });
         }
 
-        const empPromise = empQuery.range(offset, offset + limit - 1)
-            .then((res: any) => ({ ...res, isEmployer: true }))
-            .catch(() => ({ data: [], error: null }));
-
-        const [profRes, empRes] = await Promise.all([profPromise, empPromise]);
-
-        // Merge and Sort
-        let allPosts: any[] = [];
-        if (profRes.data) allPosts = [...allPosts, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
-        if ((empRes as any).data) allPosts = [...allPosts, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
-
-        allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        const slicedPosts = allPosts.slice(0, limit);
-
-        const postsWithStats = await processPosts(slicedPosts, user);
+        const postsWithStats = await processPosts(rankedPosts || [], user);
         return NextResponse.json({ posts: postsWithStats });
 
     } catch (error: any) {

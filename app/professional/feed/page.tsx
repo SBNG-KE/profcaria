@@ -269,7 +269,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     );
 };
 
-export default function FeedPage() {
+function FeedContent() {
     const router = useRouter();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -297,6 +297,14 @@ export default function FeedPage() {
         }
         setIsSearching(true);
         const timer = setTimeout(async () => {
+            // Log Search for AI Training
+            if (searchQuery.length > 2) {
+                fetch('/api/professional/search/log', {
+                    method: 'POST',
+                    body: JSON.stringify({ query: searchQuery })
+                }).catch(() => { });
+            }
+
             try {
                 const res = await fetch(`/api/search/users?q=${encodeURIComponent(searchQuery)}`);
                 if (res.ok) {
@@ -304,7 +312,7 @@ export default function FeedPage() {
                     setSearchResults(data.results || []);
                 }
             } catch (err) { console.error(err); }
-        }, 300);
+        }, 800); // Increased debounce to 800ms to capture "intent" better and reduce log spam
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
@@ -664,5 +672,17 @@ export default function FeedPage() {
             />
 
         </div>
+    );
+}
+
+export default function FeedPage() {
+    return (
+        <React.Suspense fallback={
+            <div className="flex h-[50vh] items-center justify-center">
+                <div className="animate-spin w-8 h-8 border-2 border-t-transparent border-neutral-500 rounded-full" />
+            </div>
+        }>
+            <FeedContent />
+        </React.Suspense>
     );
 }

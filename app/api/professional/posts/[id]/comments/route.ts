@@ -204,7 +204,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Comment not found or unauthorized' }, { status: 404 });
         }
 
-        if (error) throw error;
+
 
         return NextResponse.json({ message: 'Comment deleted' });
     } catch (error: any) {

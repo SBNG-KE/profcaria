@@ -19,6 +19,10 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
     const [reposts, setReposts] = useState<any[]>([]);
     const [hasFetchedReposts, setHasFetchedReposts] = useState(false);
     const [isLoadingReposts, setIsLoadingReposts] = useState(false);
+    const [activeTab, setActiveTab] = useState<'POSTS' | 'REPOSTS'>('POSTS');
+    const [posts, setPosts] = useState<any[]>(latestPost ? [latestPost] : []);
+    const [loading, setLoading] = useState(false);
+    const [hasFetched, setHasFetched] = useState(false);
 
     const handleViewAll = async () => {
         setIsSlideOverOpen(true);
