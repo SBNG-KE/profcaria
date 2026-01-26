@@ -96,6 +96,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             .in('doc_type', accessList);
 
         // 4. Fetch Full Profile Sections
+        // 4. Fetch Full Profile Sections
         const [empRes, eduRes, skillsRes, certsRes, awardsRes, profsRes] = await Promise.all([
             supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', professionalId),
             supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', professionalId),
@@ -104,6 +105,43 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', professionalId),
             supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', professionalId)
         ]);
+
+        // 4b. Fetch Verified Employment History (Connections)
+        const { data: verifiedApps } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .select('*, jobs(id, enc_title, company_id)')
+            .eq('user_id', professionalId)
+            .in('status', ['hired', 'employed', 'terminated', 'resigned', 'pending_termination', 'pending_resignation']);
+
+        let verifiedHistory: any[] = [];
+        if (verifiedApps && verifiedApps.length > 0) {
+            const companyIds = [...new Set(verifiedApps.map((a: any) => a.jobs?.company_id).filter(Boolean))];
+            const { data: companies } = await supabaseAdmin
+                .schema('employer')
+                .from('companies')
+                .select('id, enc_company_name, enc_logo_url')
+                .in('id', companyIds);
+
+            verifiedHistory = verifiedApps.map((app: any) => {
+                const job = app.jobs;
+                const company = companies?.find((c: any) => c.id === job?.company_id);
+                const isCurrent = ['hired', 'employed', 'pending_termination', 'pending_resignation'].includes(app.status);
+
+                return {
+                    id: `verified_${app.id}`,
+                    source: 'automatic', // Flag for frontend
+                    title: job ? decryptData(job.enc_title) : 'Unknown Role',
+                    company: company ? decryptData(company.enc_company_name) : 'Unknown Company',
+                    companyLogo: company ? decryptData(company.enc_logo_url) : null,
+                    startDate: new Date(app.created_at).toISOString().split('T')[0],
+                    endDate: isCurrent ? null : (app.terminated_at ? new Date(app.terminated_at).toISOString().split('T')[0] : null),
+                    isCurrent: isCurrent,
+                    description: 'Verified Employment via Profcaria',
+                    // location: 'Remote' // Optional if we had location data
+                };
+            });
+        }
 
         // Helper to decrypt array of objects
         const decryptList = (list: any[], fields: string[]) => {
@@ -119,7 +157,15 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             });
         };
 
-        const employmentHistory = decryptList(empRes.data || [], ['enc_title', 'enc_company', 'enc_description']);
+        const manualHistory = decryptList(empRes.data || [], ['enc_title', 'enc_company', 'enc_description']).map(item => ({ ...item, source: 'manual' }));
+        
+        // Merge and Sort (Latest first)
+        const employmentHistory = [...manualHistory, ...verifiedHistory].sort((a, b) => {
+             const dateA = new Date(a.startDate || '1900-01-01').getTime();
+             const dateB = new Date(b.startDate || '1900-01-01').getTime();
+             return dateB - dateA;
+        });
+
         const education = decryptList(eduRes.data || [], ['enc_school', 'enc_degree', 'enc_field_of_study']);
         const skills = decryptList(skillsRes.data || [], ['enc_name']);
         const certifications = decryptList(certsRes.data || [], ['enc_name', 'enc_issuer']);

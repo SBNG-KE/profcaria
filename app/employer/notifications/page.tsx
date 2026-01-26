@@ -5,10 +5,12 @@ import { Bell, MessageSquare, ChevronRight, ChevronLeft, Zap, Send, Shield, Cloc
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import LinkPreview from '@/app/components/LinkPreview';
 import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkPreview';
+import { useSearchParams } from 'next/navigation';
 
 export default function EmployerNotifications() {
     // Consume Global Context
     const { notifications, applications: channels, loading, refresh, markAsRead } = useNotificationContext();
+    const searchParams = useSearchParams();
 
     // -- Date Helpers --
     const getMessageDateLabel = (date: Date) => {
@@ -80,6 +82,20 @@ export default function EmployerNotifications() {
             lastMessageCountRef.current = messages.length;
         }
     }, [messages]);
+
+    // Handle URL Params for Direct Messaging
+    useEffect(() => {
+        const targetCandidateId = searchParams.get('candidateId');
+        if (targetCandidateId && channels.length > 0 && !activeConversation) {
+            // Find application with this candidate
+            const targetChannel = channels.find(c => c.user?.id === targetCandidateId);
+            if (targetChannel) {
+                setActiveConversation(targetChannel);
+                // Clean URL
+                window.history.replaceState(null, '', '/employer/notifications');
+            }
+        }
+    }, [searchParams, channels]);
 
     // 1. Fetch Messages when Active Conversation Changes
     useEffect(() => {

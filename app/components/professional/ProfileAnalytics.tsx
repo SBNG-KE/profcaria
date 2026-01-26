@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Users, Heart, MessageCircle, Clock, Repeat2, ArrowUpRight, ArrowDownRight, Eye } from 'lucide-react';
 
@@ -10,26 +10,32 @@ interface AnalyticsProps {
 
 const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
     const [timeRange, setTimeRange] = useState('7d');
+    const [stats, setStats] = useState({ followers: 0, likes: 0, comments: 0, reposts: 0, views: 0, dwell: 0 });
+    const [loading, setLoading] = useState(true);
 
-    // Mock Data Generators
-    const generateViewData = (range: string) => {
-        const data = [];
-        const count = range === '24h' ? 24 : range === '7d' ? 7 : range === '1m' ? 4 : 12; // Simplified
-        const labels = range === '24h' ? Array.from({ length: 24 }, (_, i) => `${i}:00`) :
-            range === '7d' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] :
-                range === '1m' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                const res = await fetch('/api/professional/analytics');
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, []);
 
-        for (let i = 0; i < count; i++) {
-            data.push({
-                name: labels[i % labels.length],
-                views: Math.abs(Math.sin(i + 1) * 1000) % 90 + 10 // Deterministic mock data
-            });
-        }
-        return data;
-    };
-
-    const viewData = generateViewData(timeRange);
+    // Placeholder data for the graph (since historical view tracking is not yet implemented)
+    // "Real" data means showing 0 until we have actual history.
+    const viewData = Array.from({ length: 7 }, (_, i) => ({
+        name: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+        views: 0
+    }));
 
     const StatCard = ({ icon: Icon, label, value, colorClass }: any) => (
         <div className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-800/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
@@ -39,7 +45,7 @@ const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
                 </div>
                 <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{label}</span>
             </div>
-            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{value}</p>
+            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{loading ? '-' : value}</p>
         </div>
     );
 
@@ -70,10 +76,10 @@ const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
                         <p className={`text-sm font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Views</p>
                         <div className="flex items-baseline gap-2 mt-1">
                             <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
-                                {viewData.reduce((a, b) => a + b.views, 0).toLocaleString()}
+                                {stats.views}
                             </h3>
-                            <span className="flex items-center gap-0.5 text-xs font-bold text-emerald-500">
-                                <ArrowUpRight size={12} /> +12%
+                            <span className="flex items-center gap-0.5 text-xs font-bold text-gray-500">
+                                No Data
                             </span>
                         </div>
                     </div>
@@ -111,11 +117,12 @@ const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
             </div>
 
             {/* Interaction Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard icon={Heart} label="Likes" value="842" colorClass="text-red-500" />
-                <StatCard icon={MessageCircle} label="Comments" value="126" colorClass="text-blue-500" />
-                <StatCard icon={Clock} label="Dwell > 3s" value="1.2k" colorClass="text-orange-500" />
-                <StatCard icon={Repeat2} label="Reposts" value="45" colorClass="text-green-500" />
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <StatCard icon={Users} label="Followers" value={stats.followers} colorClass="text-purple-500" />
+                <StatCard icon={Heart} label="Likes" value={stats.likes} colorClass="text-red-500" />
+                <StatCard icon={MessageCircle} label="Comments" value={stats.comments} colorClass="text-blue-500" />
+                <StatCard icon={Clock} label="Dwell > 3s" value={stats.dwell} colorClass="text-orange-500" />
+                <StatCard icon={Repeat2} label="Reposts" value={stats.reposts} colorClass="text-green-500" />
             </div>
         </div>
     );

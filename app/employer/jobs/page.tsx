@@ -152,7 +152,7 @@ export default function EmployerJobsPage() {
                                         {limits && limits.limits.topMatches > 0 && (limits.limits.topMatches >= 9999 || (limits.usage?.topMatches || 0) < limits.limits.topMatches) && (
                                             <button onClick={() => router.push(`/employer/jobs/${job.id}/matches`)} className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5"><Zap size={12} className="text-white" /> Matches</button>
                                         )}
-                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700 hover:text-white' : 'bg-neutral-700 border-neutral-600 text-white hover:bg-neutral-600'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
+                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
                                         <button onClick={() => deleteJob(job.id)} title="Delete" className="p-2 bg-neutral-800 border border-neutral-700 text-neutral-400 rounded-lg hover:bg-neutral-700 hover:text-white transition-all"><Trash2 size={14} /></button>
                                     </div>
                                 </div>

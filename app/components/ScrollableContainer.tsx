@@ -57,20 +57,7 @@ export default function ScrollableContainer({ children, className = "" }: { chil
                     {children}
                 </div>
             </div>
-            {showScrollbar && (
-                <div className="absolute right-1.5 top-4 bottom-4 w-1.5 pointer-events-none z-50 flex flex-col justify-start">
-                    <div
-                        className="absolute right-0 w-full transition-all duration-75 ease-out flex flex-col gap-[3px] items-center"
-                        style={{ top: `calc(${scrollProgress * 100}% - ${scrollProgress * 40}px)` }}
-                    >
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
-                        <div className="w-1 h-1 bg-emerald-500/80 rounded-full shadow-sm"></div>
-                        <div className="w-1 h-1 bg-emerald-500/60 rounded-full shadow-sm"></div>
-                        <div className="w-1 h-1 bg-emerald-500/40 rounded-full shadow-sm"></div>
-                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 };

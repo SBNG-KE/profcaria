@@ -20,6 +20,9 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
     const [loading, setLoading] = useState(false);
     const [hasFetched, setHasFetched] = useState(false);
     const [activeTab, setActiveTab] = useState<'POSTS' | 'REPOSTS'>('POSTS');
+    const [reposts, setReposts] = useState<any[]>([]);
+    const [hasFetchedReposts, setHasFetchedReposts] = useState(false);
+    const [isLoadingReposts, setIsLoadingReposts] = useState(false);
 
     const handleViewAll = async () => {
         setIsSlideOverOpen(true);
@@ -38,6 +41,66 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                 setLoading(false);
                 setHasFetched(true);
             }
+        }
+    };
+
+    // Fetch Reposts when tab changes
+    useEffect(() => {
+        if (isSlideOverOpen && activeTab === 'REPOSTS' && !hasFetchedReposts) {
+            const fetchReposts = async () => {
+                setIsLoadingReposts(true);
+                try {
+                    const res = await fetch(`/api/employer/posts?companyId=${companyId}&type=reposts`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setReposts(data.posts || []);
+                    }
+                } catch (error) {
+                    console.error("Error fetching reposts", error);
+                } finally {
+                    setIsLoadingReposts(false);
+                    setHasFetchedReposts(true);
+                }
+            };
+            fetchReposts();
+        }
+    }, [activeTab, isSlideOverOpen, hasFetchedReposts, companyId]);
+
+    const updatePostState = (postId: string, updates: any) => {
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+        setReposts(prev => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+    };
+
+    const handleLike = async (post: any) => {
+        const isLiking = !post.isLiked;
+        const newCount = post.likesCount + (isLiking ? 1 : -1);
+        updatePostState(post.id, { isLiked: isLiking, likesCount: newCount });
+
+        try {
+            await fetch(`/api/professional/posts/${post.id}/like`, { method: 'POST' });
+        } catch (error) {
+            updatePostState(post.id, { isLiked: !isLiking, likesCount: post.likesCount });
+        }
+    };
+
+    const handleRepost = async (post: any) => {
+        const isReposting = !post.isReposted;
+        const newCount = post.repostsCount + (isReposting ? 1 : -1);
+        updatePostState(post.id, { isReposted: isReposting, repostsCount: newCount });
+
+        try {
+            const method = isReposting ? 'POST' : 'DELETE';
+            const res = await fetch(`/api/professional/posts/${post.id}/repost`, { method });
+
+            // If we tried to repost and got 409 (Already Reposted), treat as success.
+            // The optimistic update set it to true, so we keep it true.
+            if (isReposting && res.status === 409) {
+                return;
+            }
+
+            if (!res.ok) throw new Error();
+        } catch (error) {
+            updatePostState(post.id, { isReposted: !isReposting, repostsCount: post.repostsCount });
         }
     };
 
@@ -76,20 +139,20 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                 </div>
 
                 <div className="space-y-6 pb-20">
-                    {loading ? (
-                        <div className="flex justify-center p-8">
-                            <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} />
-                        </div>
-                    ) : activeTab === 'POSTS' ? (
-                        posts.length > 0 ? (
+                    {activeTab === 'POSTS' ? (
+                        loading ? (
+                            <div className="flex justify-center p-8">
+                                <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} />
+                            </div>
+                        ) : posts.length > 0 ? (
                             posts.map(post => (
                                 <PostCard
                                     key={post.id}
                                     post={{ ...post, author: { ...post.author, type: 'employer' } }}
                                     isDark={isDark}
                                     currentUserId=""
-                                    onLike={() => { }}
-                                    onRepost={() => { }}
+                                    onLike={() => handleLike(post)}
+                                    onRepost={() => handleRepost(post)}
                                     onShare={() => { }}
                                     onFollow={() => { }}
                                 />
@@ -98,7 +161,26 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                             <div className="text-center p-8 text-neutral-500">No posts found.</div>
                         )
                     ) : (
-                        <div className="text-center p-8 text-neutral-500">No reposts yet.</div>
+                        isLoadingReposts ? (
+                            <div className="flex justify-center p-8">
+                                <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} />
+                            </div>
+                        ) : reposts.length > 0 ? (
+                            reposts.map(post => (
+                                <PostCard
+                                    key={post.repostId || post.id}
+                                    post={post}
+                                    isDark={isDark}
+                                    currentUserId=""
+                                    onLike={() => handleLike(post)}
+                                    onRepost={() => handleRepost(post)}
+                                    onShare={() => { }}
+                                    onFollow={() => { }}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center p-8 text-neutral-500">No reposts yet.</div>
+                        )
                     )}
                 </div>
             </SlideOverPanel>

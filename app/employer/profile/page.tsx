@@ -18,7 +18,6 @@ export default function EmployerProfilePage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [profile, setProfile] = useState<any>(null);
-    const [followerCount, setFollowerCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -141,11 +140,6 @@ export default function EmployerProfilePage() {
         setTimeout(() => setMessage(null), 3000);
     };
 
-    useEffect(() => {
-        fetchProfile();
-        fetchPostCount();
-    }, []);
-
     const fetchPostCount = async () => {
         try {
             const res = await fetch('/api/employer/posts');
@@ -155,6 +149,11 @@ export default function EmployerProfilePage() {
             }
         } catch (e) { console.error(e); }
     };
+
+    useEffect(() => {
+        fetchProfile();
+        fetchPostCount();
+    }, []);
 
     const fetchProfile = async () => {
         try {
@@ -176,11 +175,7 @@ export default function EmployerProfilePage() {
                 // Load persisted position
                 setImagePosition(p?.imagePosition || 'center');
 
-                const followRes = await fetch('/api/professional/follow?type=followers');
-                if (followRes.ok) {
-                    const followData = await followRes.json();
-                    setFollowerCount(followData.followers?.length || 0);
-                }
+
 
                 // Fetch Other Profiles
                 const otherRes = await fetch('/api/employer/profile/other-profiles');
@@ -608,7 +603,7 @@ export default function EmployerProfilePage() {
 
 
             {/* 2. Analytics System */}
-            <EmployerAnalytics isDark={isDark} subscriberCount={followerCount} />
+            <EmployerAnalytics isDark={isDark} />
 
 
             {/* 3. Posts Section */}

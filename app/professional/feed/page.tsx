@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect, TouchEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
     ChevronLeft, ChevronRight, Play, Pause, Maximize2, Volume2, VolumeX,
     Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, Globe, MapPin, Users, Send, Trash2, Search, Flag, Edit2
@@ -132,7 +132,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     return (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className={`relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+            <div className={`relative w-full h-[100dvh] sm:h-auto max-w-xl sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl flex flex-col ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
                 {/* Header */}
                 <div className={`sticky top-0 z-10 p-4 flex items-center justify-between border-b ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                     <button onClick={onClose} className={`p-1.5 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
@@ -273,6 +273,9 @@ export default function FeedPage() {
     const router = useRouter();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const searchParams = useSearchParams();
+    const deepLinkPostId = searchParams.get('post');
+
     const [posts, setPosts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showPostModal, setShowPostModal] = useState(false);
@@ -281,6 +284,10 @@ export default function FeedPage() {
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [editingPost, setEditingPost] = useState<any>(null);
+
+    // Single Post View State
+    const [singlePost, setSinglePost] = useState<any | null>(null);
+    const [viewMode, setViewMode] = useState<'feed' | 'single'>('feed');
 
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -302,10 +309,18 @@ export default function FeedPage() {
     }, [searchQuery]);
 
     useEffect(() => {
-        fetchPosts();
         fetchCurrentUser();
     }, []);
 
+    useEffect(() => {
+        if (deepLinkPostId) {
+            setViewMode('single');
+            fetchSinglePost(deepLinkPostId);
+        } else {
+            setViewMode('feed');
+            fetchPosts();
+        }
+    }, [deepLinkPostId]);
 
 
     const fetchCurrentUser = async () => {
@@ -316,6 +331,26 @@ export default function FeedPage() {
                 setCurrentUserId(data.profile?.id || '');
             }
         } catch (err) { console.error(err); }
+    };
+
+    const fetchSinglePost = async (id: string) => {
+        setIsLoading(true);
+        try {
+            const res = await fetch(`/api/professional/posts/${id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSinglePost(data.post);
+            } else {
+                // If not found, revert to feed
+                setShowPostModal(false);
+                router.push('/professional/feed');
+            }
+        } catch (err) {
+            console.error('Error fetching single post:', err);
+            router.push('/professional/feed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const fetchPosts = async () => {
@@ -344,7 +379,11 @@ export default function FeedPage() {
             });
 
             if (res.ok) {
-                fetchPosts();
+                if (viewMode === 'single' && singlePost) {
+                    fetchSinglePost(singlePost.id);
+                } else {
+                    fetchPosts();
+                }
                 setEditingPost(null);
             }
         } catch (err) {
@@ -355,40 +394,77 @@ export default function FeedPage() {
     const handleLike = async (postId: string) => {
         try {
             await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' });
-            fetchPosts();
+            if (viewMode === 'single') fetchSinglePost(postId);
+            else fetchPosts();
         } catch (err) { console.error(err); }
     };
 
     const handleRepost = async (postId: string) => {
+        // Find post to get current state
+        const targetPost = viewMode === 'single' ? singlePost : posts.find(p => p.id === postId);
+        if (!targetPost) return;
+
+        const isReposting = !targetPost.isReposted;
+
+        // Helper to update state
+        const updateState = (reposted: boolean, countDelta: number) => {
+            if (viewMode === 'single' && singlePost) {
+                setSinglePost({ ...singlePost, isReposted: reposted, repostsCount: singlePost.repostsCount + countDelta });
+            } else {
+                setPosts(prev => prev.map(p => p.id === postId ? { ...p, isReposted: reposted, repostsCount: p.repostsCount + countDelta } : p));
+            }
+        };
+
+        // Optimistic Update
+        updateState(isReposting, isReposting ? 1 : -1);
+
         try {
-            await fetch(`/api/professional/posts/${postId}/repost`, {
-                method: 'POST',
+            const method = isReposting ? 'POST' : 'DELETE';
+            const res = await fetch(`/api/professional/posts/${postId}/repost`, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({})
             });
-            fetchPosts();
-        } catch (err) { console.error(err); }
+
+            // If 409 (Conflict) on POST, it means already reposted. Treat as success.
+            if (isReposting && res.status === 409) {
+                return;
+            }
+
+            if (!res.ok) throw new Error();
+        } catch (err) {
+            console.error(err);
+            // Revert on error
+            updateState(!isReposting, isReposting ? -1 : 1);
+        }
     };
 
     const handleShare = async (postId: string) => {
+        const url = `${window.location.origin}/professional/feed?post=${postId}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Check out this post', url });
+            } catch (err: any) {
+                if (err.name !== 'AbortError') console.error('Share failed:', err);
+            }
+            return;
+        }
+
         try {
             const res = await fetch(`/api/shared/posts/${postId}/share`);
             if (res.ok) {
                 const { link } = await res.json();
-                if (navigator.share) {
-                    await navigator.share({ title: 'Check out this post', url: link });
-                } else {
-                    await navigator.clipboard.writeText(link);
-                    alert('Short link copied to clipboard!');
-                }
+                await navigator.clipboard.writeText(link);
+                alert('Short link copied to clipboard!');
             } else {
-                // Fallback
-                const url = `${window.location.origin}/professional/feed?post=${postId}`;
                 await navigator.clipboard.writeText(url);
                 alert('Link copied to clipboard!');
             }
         } catch (err) {
             console.error(err);
+            await navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
         }
     };
 
@@ -399,7 +475,8 @@ export default function FeedPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, type })
             });
-            fetchPosts();
+            if (viewMode === 'single' && singlePost) fetchSinglePost(singlePost.id);
+            else fetchPosts();
         } catch (err) { console.error(err); }
     };
 
@@ -411,6 +488,11 @@ export default function FeedPage() {
         if (!confirm('Are you sure you want to delete this post?')) return;
 
         // Optimistic UI update
+        if (viewMode === 'single') {
+            router.push('/professional/feed');
+            return;
+        }
+
         setPosts(prev => prev.filter(p => p.id !== postId));
 
         try {
@@ -505,13 +587,48 @@ export default function FeedPage() {
                 </button>
             </div>
 
+            {/* Single Post Header */}
+            {viewMode === 'single' && (
+                <div className="max-w-4xl mx-auto px-4 mb-4">
+                    <button
+                        onClick={() => router.push('/professional/feed')}
+                        className={`flex items-center gap-2 mb-4 text-sm font-medium ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                    >
+                        <ChevronLeft size={16} />
+                        Back to Feed
+                    </button>
+                </div>
+            )}
+
             {/* Feed Posts */}
             <div className="max-w-4xl mx-auto space-y-4 px-4">
                 {isLoading ? (
                     <div className={`p-8 text-center rounded-xl ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
                         <div className={`animate-spin w-8 h-8 border-2 border-t-transparent rounded-full mx-auto mb-3 ${isDark ? 'border-white' : 'border-black'}`} />
-                        <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Loading feed...</p>
+                        <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Loading...</p>
                     </div>
+                ) : viewMode === 'single' ? (
+                    singlePost ? (
+                        <PostCard
+                            key={singlePost.id}
+                            post={singlePost}
+                            isDark={isDark}
+                            currentUserId={currentUserId}
+                            onLike={() => handleLike(singlePost.id)}
+                            onRepost={() => handleRepost(singlePost.id)}
+                            onShare={() => handleShare(singlePost.id)}
+                            onFollow={() => handleFollow(singlePost.author.id, singlePost.author.type === 'employer' ? 'company' : 'user')}
+                            onReport={handleReport}
+                            onDelete={handleDeletePost}
+                            onEdit={handleStartEdit}
+                            onCommentAdded={() => fetchSinglePost(singlePost.id)}
+                        />
+                    ) : (
+                        <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                            <p className={`text-base font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Post not found</p>
+                            <button onClick={() => router.push('/professional/feed')} className="mt-2 text-blue-500 hover:underline">Go to Feed</button>
+                        </div>
+                    )
                 ) : posts.length === 0 ? (
                     <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <p className={`text-base font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>No posts yet</p>

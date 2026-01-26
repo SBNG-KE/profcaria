@@ -20,6 +20,8 @@ export async function POST(
         let schema = 'professional';
         let table = 'post_likes';
 
+
+
         const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).single();
 
         if (!profPost) {
@@ -60,9 +62,9 @@ export async function POST(
         } else {
             // Like
             const likeData: any = { post_id: postId };
-            // Check if user is an employer or professional
+
             if (user.schema === 'employer') {
-                likeData.company_id = user.id; // user.id is company_id for employers
+                likeData.company_id = user.id;
             } else {
                 likeData.user_id = user.id;
             }

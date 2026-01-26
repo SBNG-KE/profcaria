@@ -19,19 +19,30 @@ export async function GET(request: NextRequest) {
         let postsData: any[] = [];
 
         if (tab === 'reposts') {
-            // Fetch Reposts
-            const { data: reposts, error } = await supabaseAdmin
+            // 1. Fetch from Professional Schema (reposts of professional posts)
+            const { data: profReposts } = await supabaseAdmin
                 .schema('professional')
                 .from('post_reposts')
                 .select('*')
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            // 2. Fetch from Employer Schema (reposts of employer posts)
+            const { data: empReposts } = await supabaseAdmin
+                .schema('employer')
+                .from('post_reposts')
+                .select('*')
+                .eq('user_id', userId) // Users can repost employer posts
+                .order('created_at', { ascending: false });
+
+            const reposts = [...(profReposts || []), ...(empReposts || [])];
 
             if (reposts && reposts.length > 0) {
+                // Sort merged list
+                reposts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
                 // Resolve original posts
-                const originalPostIds = reposts.map((r: any) => r.original_post_id);
+                const originalPostIds = reposts.map((r: any) => r.original_post_id || r.post_id);
 
                 // Try fetching from Professional posts
                 const { data: profPosts } = await supabaseAdmin
@@ -49,11 +60,12 @@ export async function GET(request: NextRequest) {
 
                 // Map back to reposts to preserve order and structure
                 postsData = reposts.map((repost: any) => {
-                    let original = profPosts?.find((p: any) => p.id === repost.original_post_id);
+                    const targetId = repost.original_post_id || repost.post_id;
+                    let original = profPosts?.find((p: any) => p.id === targetId);
                     let authorType = 'professional';
 
                     if (!original) {
-                        original = empPosts?.find((p: any) => p.id === repost.original_post_id);
+                        original = empPosts?.find((p: any) => p.id === targetId);
                         authorType = 'employer';
                     }
 
@@ -89,16 +101,24 @@ export async function GET(request: NextRequest) {
 
         // Enrich with Stats & Author Info (Duplicated/Shared logic)
         const enrichedPosts = await Promise.all(postsData.map(async (post: any) => {
+            // Determine schema and FK
+            const postSchema = post.authorType === 'employer' ? 'employer' : 'professional';
+            const repostFk = postSchema === 'professional' ? 'post_id' : 'original_post_id';
+
             // Like count
-            const { count: likesCount } = await supabaseAdmin.schema('professional').from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id);
+            const { count: likesCount } = await supabaseAdmin.schema(postSchema).from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', post.id);
             // User like status
-            const { data: userLike } = await supabaseAdmin.schema('professional').from('post_likes').select('id').eq('post_id', post.id).eq('user_id', user.id).single();
+            const { data: userLike } = await supabaseAdmin.schema(postSchema).from('post_likes').select('id').eq('post_id', post.id).eq('user_id', user.id).limit(1).maybeSingle();
+
             // Comments count
-            const { count: commentsCount } = await supabaseAdmin.schema('professional').from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', post.id);
-            // Reposts count
-            const { count: repostsCount } = await supabaseAdmin.schema('professional').from('post_reposts').select('*', { count: 'exact', head: true }).eq('original_post_id', post.id);
-            // User repost status
-            const { data: userRepost } = await supabaseAdmin.schema('professional').from('post_reposts').select('id').eq('original_post_id', post.id).eq('user_id', user.id).single();
+            const { count: commentsCount } = await supabaseAdmin.schema(postSchema).from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', post.id);
+
+            // Reposts count (using correct FK)
+            const { count: repostsCount } = await supabaseAdmin.schema(postSchema).from('post_reposts').select('*', { count: 'exact', head: true }).eq(repostFk, post.id);
+
+            // User repost status (Robust Check)
+            const { data: userReposts } = await supabaseAdmin.schema(postSchema).from('post_reposts').select('id').eq(repostFk, post.id).eq('user_id', user.id).limit(1);
+            const userRepost = (userReposts && userReposts.length > 0) ? userReposts[0] : null;
 
             // Author Info
             let authorData: any = {

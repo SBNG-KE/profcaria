@@ -647,6 +647,11 @@ export default function ProfessionalHome() {
     initData();
   }, []);
 
+  // Refetch posts when tab changes
+  useEffect(() => {
+    fetchProfilePosts();
+  }, [activePostsTab]);
+
   // Fetch content when document is opened
   useEffect(() => {
     const fetchDocContent = async () => {

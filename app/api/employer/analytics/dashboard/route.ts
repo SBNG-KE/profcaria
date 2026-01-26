@@ -83,6 +83,15 @@ export async function GET(req: Request) {
         const totalJobs = jobs?.length || 0;
         const activeJobs = jobs?.filter((j: any) => j.is_active).length || 0;
 
+        // C. Subscriber Count
+        const { count: subCount } = await supabaseAdmin
+            .schema('professional')
+            .from('company_follows')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', employerId);
+
+        const subscriberCount = subCount || 0;
+
         // B. Applications (Traffic & Geography)
         // Fetch last 500 applications across all my jobs
         const jobIds = jobs?.map((j: any) => j.id) || [];
@@ -415,7 +424,8 @@ export async function GET(req: Request) {
                 totalJobs,
                 activeJobs,
                 totalApplications: applications.length,
-                interviewRate: applications.length > 0 ? Math.round((employed / applications.length) * 100) : 0
+                interviewRate: applications.length > 0 ? Math.round((employed / applications.length) * 100) : 0,
+                subscriberCount
             },
             geoHeatmap: Object.entries(countryStats)
                 .map(([name, value]) => ({ name, value }))

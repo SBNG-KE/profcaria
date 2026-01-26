@@ -6,11 +6,13 @@ import { useNotificationContext } from '@/app/context/NotificationContext';
 import LinkPreview from '@/app/components/LinkPreview';
 import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkPreview';
 import { useTheme } from '@/app/context/ThemeContext';
+import { useSearchParams } from 'next/navigation';
 
 export default function NotificationsPage() {
     // Theme
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const searchParams = useSearchParams();
 
     // Consume Global Context
     const { notifications, applications, loading, refresh, markAsRead } = useNotificationContext();
@@ -37,6 +39,20 @@ export default function NotificationsPage() {
             lastMessageCountRef.current = messages.length;
         }
     }, [messages]);
+
+    // Handle URL Params for Direct Messaging
+    useEffect(() => {
+        const targetCompanyId = searchParams.get('companyId');
+        if (targetCompanyId && applications.length > 0 && !activeConversation) {
+            // Find application with this company
+            const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
+            if (targetApp) {
+                setActiveConversation(targetApp);
+                // Clean URL
+                window.history.replaceState(null, '', '/professional/notifications');
+            }
+        }
+    }, [searchParams, applications]);
 
     // 1. Fetch Messages when Active Conversation Changes
     useEffect(() => {

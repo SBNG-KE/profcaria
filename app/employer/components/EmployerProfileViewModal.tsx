@@ -240,14 +240,30 @@ export default function EmployerProfileViewModal({
                                             {sections.employmentHistory.map((job: any, i: number) => (
                                                 <div key={i} className="flex gap-6 group">
                                                     <div className="flex flex-col items-center">
-                                                        <div className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center ${isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'}`}>
-                                                            <Building2 size={20} />
+                                                        <div className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center overflow-hidden border ${isDark ? 'bg-neutral-800 text-white border-neutral-700' : 'bg-neutral-100 text-black border-neutral-200'}`}>
+                                                            {job.companyLogo ? (
+                                                                <img src={job.companyLogo} alt={job.company} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <Building2 size={20} />
+                                                            )}
                                                         </div>
                                                         {i !== sections.employmentHistory.length - 1 && <div className={`w-px h-full my-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}></div>}
                                                     </div>
-                                                    <div className="pb-4">
-                                                        <h4 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h4>
-                                                        <p className={`font-medium text-sm mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.company}</p>
+                                                    <div className="pb-4 flex-1">
+                                                        <div className="flex items-start justify-between">
+                                                            <div>
+                                                                <h4 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h4>
+                                                                <p className={`font-medium text-sm mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.company}</p>
+                                                            </div>
+
+                                                            {job.source === 'automatic' && (
+                                                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`} title="Verified via Profcaria Connection">
+                                                                    <BadgeCheck size={14} className="fill-current" />
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
                                                         <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest mt-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                                                             <span>{job.startDate}</span>
                                                             <span>—</span>

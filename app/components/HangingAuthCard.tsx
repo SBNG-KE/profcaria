@@ -283,20 +283,10 @@ export default function HangingAuthCard({
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto" onClick={onClose} />
 
-            {/* CONNECTOR LINE */}
-            <div
-                className="absolute top-0 right-16 w-[2px] z-[101] origin-top"
-                style={{
-                    height: '120px',
-                    backgroundColor: isDark ? 'white' : 'black',
-                    animation: 'grow-line 0.5s ease-out forwards'
-                }}
-            />
-
-            {/* HANGING CARD */}
+            {/* CARD */}
             <div
                 className={`
-                    relative pointer-events-auto mt-8 mr-[calc(4rem-250px)] w-[90vw] max-w-[500px]
+                    relative pointer-events-auto mt-8 w-[90vw] max-w-[500px]
                     rounded-[2rem] p-8 shadow-2xl overflow-hidden
                     transform transition-all duration-500 origin-top
                     ${isDark ? 'bg-black border border-neutral-800' : 'bg-white border text-black'}
@@ -306,8 +296,6 @@ export default function HangingAuthCard({
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
             >
-                {/* Visual Connector Point */}
-                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 z-20 ${isDark ? 'bg-black border-white' : 'bg-white border-black'}`} />
 
                 {/* --- CONTENT --- */}
                 <div className="flex flex-col gap-6">

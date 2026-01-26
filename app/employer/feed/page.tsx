@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, MapPin, Users, Send, Search, Flag, Edit2, Trash2
+    Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, MapPin, Users, Send, Search, Flag, Edit2, Trash2, ChevronLeft
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -11,7 +11,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 // Scrollable Text Component - With Hashtag Highlighting
 const ScrollableText = ({ text, isDark }: { text: string, isDark: boolean }) => {
     // Parse hashtags
-    const parts = text.split(/(\s+|#[\w]+)/g);
+    const parts = text.split(/(\s+|hashtag#[\w]+|#[\w]+)/g);
 
     return (
         <div className={`max-h-72 overflow-y-auto text-base leading-relaxed pr-2 scrollbar-thin ${isDark ? 'text-neutral-200 scrollbar-thumb-neutral-700' : 'text-neutral-800 scrollbar-thumb-neutral-300'}`}>
@@ -152,7 +152,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onRe
             <div className="flex flex-col sm:flex-row">
                 {(hasMedia || post.linkPreview) && (
                     <div className={`flex-shrink-0 transition-all duration-300 ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
-                        <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[250px] sm:min-h-[300px] max-h-[600px]">
+                        <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px]">
                             {post.media && post.media.length > 0 ? (
                                 <>
                                     {post.media[0].type === 'video' || post.media[0].url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
@@ -257,11 +257,11 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onRe
                             <div className="flex items-center gap-2">{post.commentsCount > 0 && <span>{post.commentsCount} comments</span>}{post.repostsCount > 0 && <span>{post.repostsCount} reposts</span>}</div>
                         </div>
                     )}
-                    <div className={`px-1 py-1 flex items-center justify-around border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                        <button onClick={onLike} className={`flex-1 flex items-center justify-center gap-1 py-3 sm:py-2 rounded-lg transition-colors text-xs ${post.isLiked ? 'text-red-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Heart size={16} fill={post.isLiked ? 'currentColor' : 'none'} /><span className="font-medium inline">Like</span></button>
-                        <button onClick={toggleComments} className={`flex-1 flex items-center justify-center gap-1 py-3 sm:py-2 rounded-lg transition-colors text-xs ${showComments ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><MessageCircle size={16} fill={showComments ? 'currentColor' : 'none'} /><span className="font-medium inline">Comment</span></button>
-                        <button onClick={onRepost} className={`flex-1 flex items-center justify-center gap-1 py-3 sm:py-2 rounded-lg transition-colors text-xs ${post.isReposted ? 'text-green-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Repeat2 size={16} /><span className="font-medium inline">Repost</span></button>
-                        <button onClick={onShare} className={`flex-1 flex items-center justify-center gap-1 py-3 sm:py-2 rounded-lg transition-colors text-xs ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Share2 size={16} /><span className="font-medium inline">Share</span></button>
+                    <div className={`px-2 py-2 flex flex-wrap items-center justify-between gap-1 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                        <button onClick={onLike} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isLiked ? 'text-red-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Heart size={16} fill={post.isLiked ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Like</span></button>
+                        <button onClick={toggleComments} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${showComments ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><MessageCircle size={16} fill={showComments ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Comment</span></button>
+                        <button onClick={onRepost} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isReposted ? 'text-green-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Repeat2 size={16} /><span className="font-medium hidden xs:inline">Repost</span></button>
+                        <button onClick={onShare} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Share2 size={16} /><span className="font-medium hidden xs:inline">Share</span></button>
                     </div>
                 </div>
                 {showComments && (
@@ -387,7 +387,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     return (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className={`relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
+            <div className={`relative w-full h-[100dvh] sm:h-auto max-w-xl sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl flex flex-col ${isDark ? 'bg-neutral-900' : 'bg-white'}`}>
                 <div className={`sticky top-0 z-10 p-4 flex items-center justify-between border-b ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                     <button onClick={onClose} className={`p-1.5 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><X size={20} /></button>
                     <h2 className={`font-bold text-base ${isDark ? 'text-white' : 'text-black'}`}>{initialData ? 'Edit Post' : 'Create Post'}</h2>
@@ -462,6 +462,9 @@ export default function EmployerFeedPage() {
     const router = useRouter();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const searchParams = useSearchParams();
+    const deepLinkPostId = searchParams.get('post');
+
     const [posts, setPosts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showPostModal, setShowPostModal] = useState(false);
@@ -471,6 +474,10 @@ export default function EmployerFeedPage() {
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [editingPost, setEditingPost] = useState<any>(null);
+
+    // Single Post View State
+    const [singlePost, setSinglePost] = useState<any | null>(null);
+    const [viewMode, setViewMode] = useState<'feed' | 'single'>('feed');
 
     useEffect(() => {
         if (!searchQuery.trim()) {
@@ -491,7 +498,19 @@ export default function EmployerFeedPage() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    useEffect(() => { fetchPosts(); fetchCurrentUser(); }, []);
+    useEffect(() => {
+        fetchCurrentUser();
+    }, []);
+
+    useEffect(() => {
+        if (deepLinkPostId) {
+            setViewMode('single');
+            fetchSinglePost(deepLinkPostId);
+        } else {
+            setViewMode('feed');
+            fetchPosts();
+        }
+    }, [deepLinkPostId]);
 
     const fetchCurrentUser = async () => {
         try {
@@ -501,6 +520,25 @@ export default function EmployerFeedPage() {
                 setCurrentUserId(data.profile?.id || data.employer?.id || '');
             }
         } catch (err) { console.error(err); }
+    };
+
+    const fetchSinglePost = async (id: string) => {
+        setIsLoading(true);
+        try {
+            const res = await fetch(`/api/professional/posts/${id}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSinglePost(data.post);
+            } else {
+                setShowPostModal(false);
+                router.push('/employer/feed');
+            }
+        } catch (err) {
+            console.error('Error fetching single post:', err);
+            router.push('/employer/feed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const fetchPosts = async () => {
@@ -515,31 +553,81 @@ export default function EmployerFeedPage() {
             const url = editingPost ? `/api/professional/posts/${editingPost.id}` : '/api/professional/posts';
             const method = editingPost ? 'PUT' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) { fetchPosts(); setEditingPost(null); }
+            if (res.ok) {
+                if (viewMode === 'single' && singlePost) fetchSinglePost(singlePost.id);
+                else fetchPosts();
+                setEditingPost(null);
+            }
         } catch (err) { console.error(err); }
     };
 
     const handleLike = async (postId: string) => {
-        try { await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' }); fetchPosts(); } catch (err) { console.error(err); }
+        try {
+            await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' });
+            if (viewMode === 'single') fetchSinglePost(postId);
+            else fetchPosts();
+        } catch (err) { console.error(err); }
     };
 
     const handleRepost = async (postId: string) => {
-        try { await fetch(`/api/professional/posts/${postId}/repost`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }); fetchPosts(); } catch (err) { console.error(err); }
+        const targetPost = viewMode === 'single' ? singlePost : posts.find(p => p.id === postId);
+        if (!targetPost) return;
+
+        const isReposting = !targetPost.isReposted;
+
+        const updateState = (reposted: boolean, countDelta: number) => {
+            if (viewMode === 'single' && singlePost) {
+                setSinglePost({ ...singlePost, isReposted: reposted, repostsCount: singlePost.repostsCount + countDelta });
+            } else {
+                setPosts(prev => prev.map(p => p.id === postId ? { ...p, isReposted: reposted, repostsCount: p.repostsCount + countDelta } : p));
+            }
+        };
+
+        updateState(isReposting, isReposting ? 1 : -1);
+
+        try {
+            const method = isReposting ? 'POST' : 'DELETE';
+            const res = await fetch(`/api/professional/posts/${postId}/repost`, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
+            });
+
+            if (isReposting && res.status === 409) return; // Already reposted = Success
+            if (!res.ok) throw new Error();
+        } catch (err) {
+            console.error(err);
+            updateState(!isReposting, isReposting ? -1 : 1);
+        }
     };
 
     const handleShare = async (postId: string) => {
+        const url = `${window.location.origin}/employer/feed?post=${postId}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Check out this post', url });
+            } catch (err: any) {
+                if (err.name !== 'AbortError') console.error('Share failed:', err);
+            }
+            return;
+        }
+
         try {
             const res = await fetch(`/api/shared/posts/${postId}/share`);
             if (res.ok) {
                 const { link } = await res.json();
-                if (navigator.share) await navigator.share({ title: 'Check out this post', url: link });
-                else { await navigator.clipboard.writeText(link); alert('Short link copied to clipboard!'); }
+                await navigator.clipboard.writeText(link);
+                alert('Short link copied to clipboard!');
             } else {
-                const url = `${window.location.origin}/employer/feed?post=${postId}`;
                 await navigator.clipboard.writeText(url);
                 alert('Link copied to clipboard!');
             }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+            await navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
+        }
     };
 
 
@@ -550,6 +638,12 @@ export default function EmployerFeedPage() {
 
     const handleDeletePost = async (postId: string) => {
         if (!confirm('Are you sure you want to delete this post?')) return;
+
+        if (viewMode === 'single') {
+            router.push('/employer/feed');
+            return;
+        }
+
         setPosts(prev => prev.filter(p => p.id !== postId));
         try {
             const res = await fetch(`/api/professional/posts/${postId}`, { method: 'DELETE' });
@@ -624,9 +718,32 @@ export default function EmployerFeedPage() {
                 </div>
                 <button onClick={() => setShowPostModal(true)} className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold relative z-40 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}><Edit3 size={16} />Start a post</button>
             </div>
+
+            {/* Single Post Header */}
+            {viewMode === 'single' && (
+                <div className="max-w-4xl mx-auto px-4 mb-4">
+                    <button
+                        onClick={() => router.push('/employer/feed')}
+                        className={`flex items-center gap-2 mb-4 text-sm font-medium ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                    >
+                        <ChevronLeft size={16} />
+                        Back to Feed
+                    </button>
+                </div>
+            )}
+
             <div className="max-w-4xl mx-auto space-y-4 px-4">
                 {isLoading ? (
                     <div className={`p-8 text-center rounded-xl ${isDark ? 'bg-neutral-900' : 'bg-white'}`}><div className={`animate-spin w-8 h-8 border-2 border-t-transparent rounded-full mx-auto mb-3 ${isDark ? 'border-white' : 'border-black'}`} /></div>
+                ) : viewMode === 'single' ? (
+                    singlePost ? (
+                        <PostCard key={singlePost.id} post={singlePost} isDark={isDark} currentUserId={currentUserId} onLike={() => handleLike(singlePost.id)} onRepost={() => handleRepost(singlePost.id)} onShare={() => handleShare(singlePost.id)} onReport={handleReport} onDelete={handleDeletePost} onEdit={handleStartEdit} onCommentAdded={() => fetchSinglePost(singlePost.id)} />
+                    ) : (
+                        <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                            <p className={isDark ? 'text-neutral-400' : 'text-neutral-500'}>Post not found</p>
+                            <button onClick={() => router.push('/employer/feed')} className="mt-2 text-blue-500 hover:underline">Go to Feed</button>
+                        </div>
+                    )
                 ) : posts.length === 0 ? (
                     <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}><p className={isDark ? 'text-neutral-400' : 'text-neutral-500'}>No posts yet</p></div>
                 ) : posts.map((post) => (

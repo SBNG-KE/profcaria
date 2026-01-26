@@ -3,7 +3,7 @@ import ProfessionalPostsSection from '@/app/components/professional/Professional
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail } from 'lucide-react';
+import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail, MessageSquare } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 
@@ -112,12 +112,22 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                                         <h1 className="text-4xl font-black text-gray-900 dark:text-white">{fullName}</h1>
                                         <p className="text-xl font-medium text-blue-600 dark:text-blue-400 mt-1">{headline || role}</p>
                                     </div>
-                                    {cvUrl && (
-                                        <a href={cvUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors">
-                                            <Download size={18} />
-                                            <span className="hidden sm:inline">Download CV</span>
+                                    <div className="flex gap-2">
+                                        <a
+                                            href={`/employer/notifications?candidateId=${id}`}
+                                            className="flex items-center gap-2 px-4 py-2 bg-white border border-neutral-200 text-neutral-700 rounded-xl font-bold text-sm hover:bg-neutral-50 transition-colors dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                                        >
+                                            <MessageSquare size={18} />
+                                            <span className="hidden sm:inline">Message</span>
                                         </a>
-                                    )}
+                                        {cvUrl && (
+                                            <a href={cvUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors">
+                                                <Download size={18} />
+                                                <span className="hidden sm:inline">Download CV</span>
+                                            </a>
+                                        )}
+                                        <FollowButton targetId={id} type="user" />
+                                    </div>
                                 </div>
                             </div>
 

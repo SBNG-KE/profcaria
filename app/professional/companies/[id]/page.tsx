@@ -2,7 +2,7 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { Building2, Globe, MapPin, Mail, Link2, Copy } from 'lucide-react';
+import { Building2, Globe, MapPin, Mail, Link2, Copy, MessageSquare } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import { formatDistanceToNow } from 'date-fns';
@@ -127,7 +127,14 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 <div>
                                     {/* Empty space or badges like 'Pro Plan' if we had that data */}
                                 </div>
-                                <div>
+                                <div className="flex items-center gap-2">
+                                    <a
+                                        href={`/professional/notifications?companyId=${id}`}
+                                        className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white border border-neutral-200 text-black hover:bg-neutral-50 flex items-center gap-2 transition-all shadow-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
+                                    >
+                                        <MessageSquare size={14} />
+                                        <span>Message</span>
+                                    </a>
                                     <FollowButton targetId={id} type="company" />
                                 </div>
                             </div>

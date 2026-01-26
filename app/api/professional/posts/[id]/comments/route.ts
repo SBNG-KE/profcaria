@@ -139,12 +139,14 @@ export async function POST(
             }
         }
 
+        const userField = user.schema === 'employer' ? 'company_id' : 'user_id';
+
         const { data: comment, error } = await supabaseAdmin
             .schema(schema)
             .from(table)
             .insert({
                 post_id: postId,
-                user_id: user.id,
+                [userField]: user.id,
                 content: content.trim()
             })
             .select()
@@ -177,30 +179,29 @@ export async function DELETE(
             return NextResponse.json({ error: 'Comment ID required' }, { status: 400 });
         }
 
-        // Only allow deleting own comments
-        // Try deleting from professional first
-        let { error } = await supabaseAdmin
+        const userField = user.schema === 'employer' ? 'company_id' : 'user_id';
+
+        // Try deleting from professional schema (Post owned by Professional)
+        let { count: profCount, error: profError } = await supabaseAdmin
             .schema('professional')
             .from('post_comments')
-            .delete()
+            .delete({ count: 'exact' })
             .eq('id', commentId)
-            .eq('user_id', user.id);
+            .eq(userField, user.id);
 
-        // If not found/deleted, try employer
-        if (error || !error) { // Try anyway or check count? Delete implies idempotent if not found.
-            // If we really want to be sure, we'd check existence first.
-            // But delete returns rows count usually.
-            // Let's just try deleting from employer schema too if professional didn't throw explicit error?
-            // Or better: try both parallel or sequential
-            const { error: empError } = await supabaseAdmin
-                .schema('employer')
-                .from('post_comments')
-                .delete()
-                .eq('id', commentId)
-                .eq('user_id', user.id);
+        // Try deleting from employer schema (Post owned by Employer)
+        let { count: empCount, error: empError } = await supabaseAdmin
+            .schema('employer')
+            .from('post_comments')
+            .delete({ count: 'exact' })
+            .eq('id', commentId)
+            .eq(userField, user.id);
 
-            // If both fail or one fails?
-            if (error && empError) throw error;
+        if (((profCount || 0) === 0) && ((empCount || 0) === 0)) {
+            // If neither found/deleted, and we had an error, throw it.
+            if (profError) throw profError;
+            if (empError) throw empError;
+            return NextResponse.json({ error: 'Comment not found or unauthorized' }, { status: 404 });
         }
 
         if (error) throw error;

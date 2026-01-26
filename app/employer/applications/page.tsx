@@ -9,11 +9,12 @@ import {
 import ScrollableContainer from '@/app/components/ScrollableContainer';
 import { sanitizeHtml } from '@/lib/sanitize';
 import EmployerProfileViewModal from '../components/EmployerProfileViewModal';
+import { useTheme } from '@/app/context/ThemeContext';
 
 interface Application {
     id: string;
     status: string;
-    createdAt: string; // Ensure backend sends this mapped from created_at or createdAt
+    createdAt: string;
     formData?: Record<string, any>;
     job: {
         id: string;
@@ -29,6 +30,8 @@ interface Application {
 }
 
 function ApplicationsPageContent() {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const router = useRouter();
     const searchParams = useSearchParams();
     const jobIdFilter = searchParams.get('jobId');
@@ -72,10 +75,6 @@ function ApplicationsPageContent() {
             const res = await fetch('/api/employer/applications');
             if (res.ok) {
                 const data = await res.json();
-                // Map created_at to createdAt if needed, though interface expects it.
-                // The API usually returns snake_case from DB but specific routes might have mapped it.
-                // Let's ensure we handle both just in case or trust the interface if API is aligned.
-                // Based on previous reads, the LIST endpoint returns `applications` with joined data.
                 setApplications(data.applications || []);
             }
         } catch (error) {
@@ -91,11 +90,9 @@ function ApplicationsPageContent() {
             if (res.ok) {
                 const data = await res.json();
                 if (data.application) {
-                    // Merge details into the selected app state
                     setSelectedApp(prev => prev ? { ...prev, ...data.application } : data.application);
                 }
             }
-            // Fetch messages too
             const msgRes = await fetch(`/api/shared/messages?applicationId=${appId}`);
             if (msgRes.ok) {
                 const msgData = await msgRes.json();
@@ -108,9 +105,8 @@ function ApplicationsPageContent() {
 
     const handleSelectApp = (app: Application) => {
         setSelectedApp(app);
-        setActiveTab('profile'); // Reset tab
-        setViewingArtifact(null); // Reset artifact view
-        // AUTO OPEN: Fetch details immediately
+        setActiveTab('profile');
+        setViewingArtifact(null);
         fetchApplicationDetails(app.id);
     };
 
@@ -125,8 +121,6 @@ function ApplicationsPageContent() {
                 setApplications(prev => prev.map(a =>
                     a.id === appId ? { ...a, status: newStatus } : a
                 ));
-
-                // If currently selected, update local state too
                 if (selectedApp?.id === appId) {
                     setSelectedApp(prev => prev ? { ...prev, status: newStatus } : null);
                 }
@@ -136,7 +130,6 @@ function ApplicationsPageContent() {
         }
     };
 
-    // Handle reject/decline with confirmation
     const handleRejectOrDecline = (appId: string, type: 'reject' | 'decline') => {
         setConfirmModal({ isOpen: true, type, appId });
     };
@@ -177,11 +170,8 @@ function ApplicationsPageContent() {
         const matchesSearch = app.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             app.job.title.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesJob = jobIdFilter ? app.job.id === jobIdFilter : true;
-
-        // Hide rejected/declined unless we specifically want a 'history' tab (not requested yet)
         const isHidden = app.status === 'rejected' || app.status === 'declined';
         if (isHidden) return false;
-
         const matchesStatus = statusFilter === 'all' ? true : app.status === statusFilter;
         return matchesSearch && matchesJob && matchesStatus;
     });
@@ -195,22 +185,22 @@ function ApplicationsPageContent() {
     };
 
     return (
-        <div className="p-4 md:p-8 h-screen flex flex-col overflow-hidden">
+        <div className={`p-4 md:p-8 h-screen flex flex-col overflow-hidden ${isDark ? 'bg-black text-white' : 'bg-neutral-50 text-black'}`}>
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 shrink-0 mb-8">
                 <div className="text-left">
-                    <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                    <div className="flex items-center gap-2 text-emerald-500 mb-2">
                         <FileText size={16} />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Applicant Tracking</span>
                     </div>
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">
+                    <h1 className={`text-4xl font-black uppercase tracking-tighter leading-none ${isDark ? 'text-white' : 'text-black'}`}>
                         {jobIdFilter ? 'Job Applicants' : 'All Applications'}
                     </h1>
-                    <p className="text-slate-500 mt-2 text-sm font-medium">Review and manage your recruitment pipeline.</p>
+                    <p className={`mt-2 text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Review and manage your recruitment pipeline.</p>
                 </div>
                 {jobIdFilter && (
                     <button
                         onClick={() => router.push('/employer/applications')}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition-all flex items-center gap-2"
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300' : 'bg-white hover:bg-neutral-100 text-neutral-700 shadow-sm border border-neutral-200'}`}
                     >
                         <X size={14} /> Clear Filter
                     </button>
@@ -219,14 +209,14 @@ function ApplicationsPageContent() {
 
             <div className="flex gap-6 flex-1 min-h-0">
                 {/* LEFT LIST PANEL */}
-                <div className={`w-full lg:w-1/3 flex-col bg-[#0f172a]/50 border border-slate-800 rounded-[32px] overflow-hidden ${selectedApp ? 'hidden lg:flex' : 'flex'}`}>
-                    <div className="p-4 border-b border-slate-800 space-y-4">
+                <div className={`w-full lg:w-1/3 flex-col rounded-[32px] overflow-hidden border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'} ${selectedApp ? 'hidden lg:flex' : 'flex'}`}>
+                    <div className={`p-4 border-b space-y-4 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
+                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`} size={16} />
                             <input
                                 type="text"
                                 placeholder="Search..."
-                                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500/50"
+                                className={`w-full rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-emerald-500/50 border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -237,8 +227,8 @@ function ApplicationsPageContent() {
                                     key={s}
                                     onClick={() => setStatusFilter(s)}
                                     className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${statusFilter === s
-                                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                        : 'bg-slate-800 text-slate-500 border-transparent hover:border-slate-700'
+                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
+                                        : (isDark ? 'bg-neutral-800 text-neutral-500 border-transparent hover:border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-transparent hover:border-neutral-300')
                                         }`}
                                 >
                                     {s.replace('_', '-')} ({getCount(s)})
@@ -247,23 +237,23 @@ function ApplicationsPageContent() {
                         </div>
                     </div>
 
-                    <ScrollableContainer className="p-4 space-y-2">
+                    <ScrollableContainer className="p-4 space-y-2 scrollbar-hide">
                         {loading ? (
-                            <div className="text-center py-10 text-slate-500 text-xs uppercase tracking-widest">Loading...</div>
+                            <div className={`text-center py-10 text-xs uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Loading...</div>
                         ) : filteredApps.length === 0 ? (
-                            <div className="text-center py-10 text-slate-500 text-xs uppercase tracking-widest">No applications found</div>
+                            <div className={`text-center py-10 text-xs uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No applications found</div>
                         ) : (
                             filteredApps.map(app => (
                                 <button
                                     key={app.id}
                                     onClick={() => handleSelectApp(app)}
                                     className={`w-full text-left p-4 rounded-2xl border transition-all group relative ${selectedApp?.id === app.id
-                                        ? 'bg-emerald-600/10 border-emerald-500/50'
-                                        : 'bg-slate-900/50 border-slate-800 hover:border-emerald-500/20'
+                                        ? (isDark ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-emerald-50 border-emerald-200')
+                                        : (isDark ? 'bg-neutral-900/50 border-neutral-800 hover:border-emerald-500/20' : 'bg-white border-neutral-100 hover:border-emerald-500/20 shadow-sm')
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500 shrink-0 overflow-hidden">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'}`}>
                                             {app.user.profileImageUrl ? (
                                                 <img src={app.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
                                             ) : (
@@ -271,17 +261,17 @@ function ApplicationsPageContent() {
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <h4 className={`text-sm font-bold truncate ${selectedApp?.id === app.id ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
+                                            <h4 className={`text-sm font-bold truncate ${selectedApp?.id === app.id ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-300 group-hover:text-white' : 'text-neutral-700 group-hover:text-black')}`}>
                                                 {app.user.name}
                                             </h4>
-                                            <p className="text-[10px] text-slate-500 flex items-center gap-1 truncate">
+                                            <p className={`text-[10px] flex items-center gap-1 truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                                 <Briefcase size={10} /> {app.job.title}
                                             </p>
                                         </div>
                                         <div className="shrink-0 flex flex-col items-end gap-1">
                                             <span className={`w-2 h-2 rounded-full ${app.status === 'pending' ? 'bg-amber-500' :
                                                 app.status === 'pre_qualified' ? 'bg-blue-500' :
-                                                    app.status === 'employed' ? 'bg-emerald-500' : 'bg-slate-500'
+                                                    app.status === 'employed' ? 'bg-emerald-500' : (isDark ? 'bg-neutral-500' : 'bg-neutral-300')
                                                 }`} />
                                         </div>
                                     </div>
@@ -292,34 +282,34 @@ function ApplicationsPageContent() {
                 </div>
 
                 {/* RIGHT DETAIL PANEL */}
-                <div className={`flex-1 bg-[#0f172a] border border-slate-800 rounded-[32px] overflow-hidden flex-col relative w-full h-full ${selectedApp ? 'flex' : 'hidden lg:flex'}`}>
+                <div className={`flex-1 rounded-[32px] overflow-hidden flex-col relative w-full h-full border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'} ${selectedApp ? 'flex' : 'hidden lg:flex'}`}>
                     {selectedApp ? (
                         <div className="flex-1 flex flex-col h-full overflow-hidden">
                             {/* Mobile Back Button */}
-                            <div className="lg:hidden p-4 border-b border-slate-800 flex items-center gap-2 bg-slate-900/50">
-                                <button onClick={() => setSelectedApp(null)} className="p-2 -ml-2 text-slate-400 hover:text-white">
+                            <div className={`lg:hidden p-4 border-b flex items-center gap-2 ${isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-white'}`}>
+                                <button onClick={() => setSelectedApp(null)} className={`p-2 -ml-2 ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>
                                     <ChevronLeft size={20} />
                                 </button>
-                                <span className="font-bold text-white">Back to List</span>
+                                <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>Back to List</span>
                             </div>
                             {/* Header */}
-                            <div className="p-8 border-b border-slate-800 shrink-0 flex items-start justify-between bg-slate-900/30">
+                            <div className={`p-8 border-b shrink-0 flex items-start justify-between ${isDark ? 'border-neutral-800 bg-neutral-900/30' : 'border-neutral-200 bg-neutral-50/50'}`}>
                                 <div className="flex items-center gap-6">
-                                    <div className="w-20 h-20 rounded-3xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500 overflow-hidden">
+                                    <div className={`w-20 h-20 rounded-3xl border flex items-center justify-center overflow-hidden ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-500' : 'bg-white border-neutral-200 text-neutral-400 shadow-sm'}`}>
                                         {selectedApp.user.profileImageUrl ? (
                                             <img src={selectedApp.user.profileImageUrl} alt="" className="w-full h-full object-cover" />
                                         ) : <UserCircle size={40} />}
                                     </div>
                                     <div>
-                                        <h2 className="text-3xl font-black text-white uppercase tracking-tighter">{selectedApp.user.name}</h2>
+                                        <h2 className={`text-3xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{selectedApp.user.name}</h2>
                                         <div className="flex items-center gap-4 mt-2">
-                                            <span className="px-3 py-1 bg-slate-800 rounded-lg text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-white text-neutral-600 border border-neutral-200'}`}>
                                                 <Briefcase size={12} /> {selectedApp.job.title}
                                             </span>
                                             <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${selectedApp.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                                                 selectedApp.status === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
                                                     selectedApp.status === 'employed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                                        'bg-slate-800 text-slate-500 border-slate-700'
+                                                        (isDark ? 'bg-neutral-800 text-neutral-500 border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200')
                                                 }`}>
                                                 {selectedApp.status.replace('_', ' ')}
                                             </span>
@@ -329,16 +319,16 @@ function ApplicationsPageContent() {
                             </div>
 
                             {/* Tabs */}
-                            <div className="flex border-b border-slate-800">
+                            <div className={`flex border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                                 <button
                                     onClick={() => setActiveTab('profile')}
-                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? 'bg-slate-800 text-white border-b-2 border-emerald-500' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-neutral-800 text-white border-b-2 border-emerald-500' : 'bg-neutral-50 text-black border-b-2 border-emerald-500') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black')}`}
                                 >
                                     Details & Actions
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('chat')}
-                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'chat' ? 'bg-slate-800 text-white border-b-2 border-blue-500' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'chat' ? (isDark ? 'bg-neutral-800 text-white border-b-2 border-emerald-500' : 'bg-neutral-50 text-black border-b-2 border-emerald-500') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black')}`}
                                 >
                                     Messages
                                 </button>
@@ -346,20 +336,20 @@ function ApplicationsPageContent() {
 
                             {/* Content */}
                             {activeTab === 'profile' ? (
-                                <ScrollableContainer className="bg-[#0f172a]">
+                                <ScrollableContainer className={`${isDark ? 'bg-neutral-950' : 'bg-white'} scrollbar-hide`}>
                                     <div className="p-8 space-y-8">
                                         {/* 1. Application Questions (Form Data) - FIRST */}
                                         {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
                                             <div className="space-y-4">
-                                                <h3 className="text-xs font-black text-emerald-400 uppercase tracking-widest border-b border-slate-800 pb-2 flex items-center gap-2">
+                                                <h3 className={`text-xs font-black uppercase tracking-widest border-b pb-2 flex items-center gap-2 ${isDark ? 'text-emerald-400 border-neutral-800' : 'text-emerald-600 border-neutral-200'}`}>
                                                     <FileText size={14} /> Application Answers
                                                 </h3>
                                                 {Object.entries(selectedApp.formData).map(([key, value]) => (
                                                     <div key={key} className="space-y-2">
-                                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                                        <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                                             <FileText size={12} /> {key}
                                                         </p>
-                                                        <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl overflow-auto text-slate-300 text-sm">
+                                                        <div className={`p-4 rounded-xl overflow-auto text-sm border ${isDark ? 'bg-neutral-900/50 border-neutral-800 text-neutral-300' : 'bg-neutral-50 border-neutral-200 text-neutral-700'}`}>
                                                             {typeof value === 'string' && value.includes('<') ? (
                                                                 <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
                                                             ) : (
@@ -373,37 +363,37 @@ function ApplicationsPageContent() {
 
                                         {/* 2. Candidate Profile - SECOND */}
                                         <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-                                            <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest border-b border-slate-800 pb-2">Candidate Profile</h3>
+                                            <h3 className={`text-xs font-black uppercase tracking-widest border-b pb-2 ${isDark ? 'text-emerald-500 border-neutral-800' : 'text-emerald-600 border-neutral-200'}`}>Candidate Profile</h3>
 
                                             {/* Contact Information */}
                                             {((selectedApp.user as any).email || (selectedApp.user as any).phone) && (
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {(selectedApp.user as any).email && (
-                                                        <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
-                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Email</p>
-                                                            <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).email}</p>
+                                                        <div className={`p-4 rounded-xl border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                                            <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Email</p>
+                                                            <p className={`text-sm font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{(selectedApp.user as any).email}</p>
                                                         </div>
                                                     )}
                                                     {(selectedApp.user as any).phone && (
-                                                        <div className="p-4 bg-slate-900/50 border border-slate-800 rounded-xl">
-                                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Phone</p>
-                                                            <p className="text-sm text-slate-300 font-medium">{(selectedApp.user as any).phone}</p>
+                                                        <div className={`p-4 rounded-xl border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                                            <p className={`text-[10px] font-black uppercase tracking-widest mb-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Phone</p>
+                                                            <p className={`text-sm font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{(selectedApp.user as any).phone}</p>
                                                         </div>
                                                     )}
                                                 </div>
                                             )}
 
-                                            <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800 flex flex-col items-center text-center space-y-4">
-                                                <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                                            <div className={`p-6 rounded-2xl border flex flex-col items-center text-center space-y-4 ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-white border border-neutral-200 text-neutral-400'}`}>
                                                     <FileText size={32} />
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-white font-bold uppercase tracking-tight">Full Profile Snapshot</h4>
-                                                    <p className="text-xs text-slate-500 mt-1">View the professional's profile and shared documents.</p>
+                                                    <h4 className={`font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Full Profile Snapshot</h4>
+                                                    <p className={`text-xs mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>View the professional's profile and shared documents.</p>
                                                 </div>
                                                 <button
                                                     onClick={() => setViewingProfileId(selectedApp.id)}
-                                                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+                                                    className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2 ${isDark ? 'bg-white text-black hover:bg-neutral-200 shadow-white/10' : 'bg-black text-white hover:bg-neutral-800 shadow-black/10'}`}
                                                 >
                                                     <ExternalLink size={16} /> View Candidate Profile
                                                 </button>
@@ -411,20 +401,20 @@ function ApplicationsPageContent() {
                                         </div>
 
                                         {/* 3. Workflow Actions - LAST */}
-                                        <div className="p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
-                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Workflow Actions</h3>
+                                        <div className={`p-6 rounded-2xl border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                                            <h3 className={`text-xs font-black uppercase tracking-widest mb-4 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Workflow Actions</h3>
                                             <div className="flex flex-wrap gap-4">
                                                 {selectedApp.status === 'pending' && (
                                                     <>
                                                         <button
                                                             onClick={() => updateStatus(selectedApp.id, 'pre_qualified')}
-                                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center gap-2"
+                                                            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center gap-2"
                                                         >
                                                             <CheckCircle2 size={16} /> Accept (Pre-qualify)
                                                         </button>
                                                         <button
                                                             onClick={() => handleRejectOrDecline(selectedApp.id, 'reject')}
-                                                            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                                                            className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400' : 'bg-white hover:bg-neutral-100 text-neutral-600 border border-neutral-200'}`}
                                                         >
                                                             <XCircle size={16} /> Reject
                                                         </button>
@@ -440,27 +430,27 @@ function ApplicationsPageContent() {
                                                         </button>
                                                         <button
                                                             onClick={() => handleRejectOrDecline(selectedApp.id, 'decline')}
-                                                            className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
+                                                            className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400' : 'bg-white hover:bg-neutral-100 text-neutral-600 border border-neutral-200'}`}
                                                         >
                                                             <XCircle size={16} /> Decline
                                                         </button>
                                                     </>
                                                 )}
                                                 {selectedApp.status === 'employed' && (
-                                                    <div className="flex items-center gap-2 text-emerald-400 text-sm font-bold">
-                                                        <CheckCircle2 size={16} />
-                                                        Candidate is employed. Use Contracts section for next steps.
+                                                    <div className="w-full flex items-center justify-center gap-2 text-emerald-500 text-sm font-black uppercase tracking-widest py-2">
+                                                        <CheckCircle2 size={18} />
+                                                        Candidate Employed
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Applied On Date */}
-                                        <div className="pt-4 border-t border-slate-800">
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 mb-2">
+                                        <div className={`pt-4 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                                            <p className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 mb-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                                 <Clock size={12} /> Applied On
                                             </p>
-                                            <p className="text-sm text-slate-300">
+                                            <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
                                                 {(selectedApp.createdAt || (selectedApp as any).created_at) ? new Date(selectedApp.createdAt || (selectedApp as any).created_at).toLocaleDateString(undefined, {
                                                     weekday: 'long',
                                                     year: 'numeric',
@@ -478,17 +468,20 @@ function ApplicationsPageContent() {
                                 <div className="flex flex-col h-full">
                                     <ScrollableContainer className="p-6 space-y-4">
                                         {chatMessages.length === 0 ? (
-                                            <div className="text-center text-slate-500 py-10 text-sm">No messages yet.</div>
+                                            <div className={`text-center py-10 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No messages yet.</div>
                                         ) : (
                                             chatMessages.map((msg, i) => {
                                                 const isMe = msg.sender_type === 'employer';
                                                 return (
                                                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                         <div className={`max-w-[80%] space-y-1 ${isMe ? 'text-right' : 'text-left'}`}>
-                                                            <div className={`p-4 rounded-[24px] text-sm font-medium ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 rounded-bl-none'}`}>
+                                                            <div className={`p-4 rounded-[24px] text-sm font-medium ${isMe
+                                                                ? (isDark ? 'bg-neutral-800 text-white rounded-br-none' : 'bg-black text-white rounded-br-none')
+                                                                : (isDark ? 'bg-neutral-900 border border-neutral-800 text-neutral-300 rounded-bl-none' : 'bg-neutral-100 text-neutral-700 rounded-bl-none')
+                                                                }`}>
                                                                 {msg.content}
                                                             </div>
-                                                            <p className="text-[8px] font-bold text-slate-600 uppercase tracking-widest px-2">
+                                                            <p className={`text-[8px] font-bold uppercase tracking-widest px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                                                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </p>
                                                         </div>
@@ -498,7 +491,7 @@ function ApplicationsPageContent() {
                                         )}
                                         <div ref={chatEndRef} />
                                     </ScrollableContainer>
-                                    <div className="p-4 bg-slate-900 border-t border-slate-800 mt-auto">
+                                    <div className={`p-4 border-t mt-auto ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                                         <div className="relative">
                                             <input
                                                 type="text"
@@ -506,12 +499,12 @@ function ApplicationsPageContent() {
                                                 onChange={(e) => setNewMessage(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                                 placeholder="Type a message..."
-                                                className="w-full bg-slate-800 border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                                className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
                                             />
                                             <button
                                                 onClick={handleSendMessage}
                                                 disabled={!newMessage.trim() || isSending}
-                                                className="absolute right-2 top-2 bottom-2 w-10 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-500 disabled:opacity-50"
+                                                className={`absolute right-2 top-2 bottom-2 w-10 rounded-lg flex items-center justify-center disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
                                             >
                                                 <Send size={16} />
                                             </button>
@@ -522,7 +515,7 @@ function ApplicationsPageContent() {
                         </div>
 
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-600 space-y-4">
+                        <div className={`flex-1 flex flex-col items-center justify-center space-y-4 ${isDark ? 'text-neutral-600' : 'text-neutral-300'}`}>
                             <Filter size={64} className="opacity-20" />
                             <p className="font-bold text-sm uppercase tracking-widest">Select an applicant to view details</p>
                         </div>
@@ -534,30 +527,30 @@ function ApplicationsPageContent() {
             {confirmModal.isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmModal({ isOpen: false, type: null, appId: null })} />
-                    <div className="relative bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+                    <div className={`relative border rounded-[32px] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="text-center mb-6">
                             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
                                 <XCircle className="text-amber-500" size={32} />
                             </div>
-                            <h3 className="text-xl font-black text-white uppercase tracking-tight">
+                            <h3 className={`text-xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                                 {confirmModal.type === 'reject' ? 'Reject Application?' : 'Decline Candidate?'}
                             </h3>
                         </div>
 
                         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
-                            <p className="text-amber-200 text-sm text-center font-medium">
+                            <p className="text-amber-500 text-sm text-center font-medium">
                                 ⚠️ <strong>Important:</strong> Please make sure you have written a message to the applicant explaining why you have {confirmModal.type === 'reject' ? 'rejected' : 'declined'} them.
                             </p>
                         </div>
 
-                        <p className="text-slate-400 text-sm text-center mb-8">
+                        <p className={`text-sm text-center mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                             This helps candidates understand your decision and improves their future applications.
                         </p>
 
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setConfirmModal({ isOpen: false, type: null, appId: null })}
-                                className="flex-1 px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95"
+                                className={`flex-1 px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-600'}`}
                             >
                                 No, Cancel
                             </button>

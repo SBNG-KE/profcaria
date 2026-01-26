@@ -16,10 +16,9 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
-    const [posts, setPosts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [hasFetched, setHasFetched] = useState(false);
-    const [activeTab, setActiveTab] = useState<'POSTS' | 'REPOSTS'>('POSTS');
+    const [reposts, setReposts] = useState<any[]>([]);
+    const [hasFetchedReposts, setHasFetchedReposts] = useState(false);
+    const [isLoadingReposts, setIsLoadingReposts] = useState(false);
 
     const handleViewAll = async () => {
         setIsSlideOverOpen(true);
@@ -40,6 +39,28 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
             }
         }
     };
+
+    // Fetch Reposts when tab changes
+    React.useEffect(() => {
+        if (isSlideOverOpen && activeTab === 'REPOSTS' && !hasFetchedReposts) {
+            const fetchReposts = async () => {
+                setIsLoadingReposts(true);
+                try {
+                    const res = await fetch(`/api/professional/posts?userId=${userId}&type=reposts`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setReposts(data.posts || []);
+                    }
+                } catch (error) {
+                    console.error("Error fetching reposts", error);
+                } finally {
+                    setIsLoadingReposts(false);
+                    setHasFetchedReposts(true);
+                }
+            };
+            fetchReposts();
+        }
+    }, [activeTab, isSlideOverOpen, hasFetchedReposts, userId]);
 
     return (
         <>
@@ -76,12 +97,12 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
                 </div>
 
                 <div className="space-y-6 pb-20">
-                    {loading ? (
-                        <div className="flex justify-center p-8">
-                            <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} />
-                        </div>
-                    ) : activeTab === 'POSTS' ? (
-                        posts.length > 0 ? (
+                    {activeTab === 'POSTS' ? (
+                        loading ? (
+                            <div className="flex justify-center p-8">
+                                <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} />
+                            </div>
+                        ) : posts.length > 0 ? (
                             posts.map(post => (
                                 <PostCard
                                     key={post.id}
@@ -95,10 +116,29 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
                                 />
                             ))
                         ) : (
-                            <div className="text-center p-8 text-neutral-500">No posts found.</div>
+                            <div className="text-center p-8 text-neutral-500">No posts.</div>
                         )
                     ) : (
-                        <div className="text-center p-8 text-neutral-500">No reposts yet.</div>
+                        isLoadingReposts ? (
+                            <div className="flex justify-center p-8">
+                                <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} />
+                            </div>
+                        ) : reposts.length > 0 ? (
+                            reposts.map(post => (
+                                <PostCard
+                                    key={post.repostId || post.id}
+                                    post={post}
+                                    isDark={isDark}
+                                    currentUserId="" // View only
+                                    onLike={() => { }}
+                                    onRepost={() => { }}
+                                    onShare={() => { }}
+                                    onFollow={() => { }}
+                                />
+                            ))
+                        ) : (
+                            <div className="text-center p-8 text-neutral-500">No reposts yet.</div>
+                        )
                     )}
                 </div>
             </SlideOverPanel>

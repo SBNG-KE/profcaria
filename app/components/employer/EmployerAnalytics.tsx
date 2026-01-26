@@ -1,37 +1,40 @@
 "use client"
 
-import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Users, Eye, MousePointerClick, TrendingUp, ArrowUpRight, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { Users, Heart, MessageCircle, Clock, Repeat2, ArrowUpRight } from 'lucide-react';
 
 interface AnalyticsProps {
     isDark: boolean;
-    subscriberCount: number;
 }
 
-const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
+const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
     const [timeRange, setTimeRange] = useState('7d');
+    const [stats, setStats] = useState({ subscribers: 0, likes: 0, comments: 0, reposts: 0, views: 0, dwell: 0 });
+    const [loading, setLoading] = useState(true);
 
-    // Mock Data Generators for Subscribers Growth
-    const generateSubscriberData = (range: string) => {
-        const data = [];
-        const count = range === '24h' ? 24 : range === '7d' ? 7 : range === '1m' ? 4 : 12;
-        const labels = range === '24h' ? Array.from({ length: 24 }, (_, i) => `${i}:00`) :
-            range === '7d' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] :
-                range === '1m' ? ['Week 1', 'Week 2', 'Week 3', 'Week 4'] :
-                    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                const res = await fetch('/api/employer/analytics');
+                if (res.ok) {
+                    const data = await res.json();
+                    setStats(data);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, []);
 
-        for (let i = 0; i < count; i++) {
-            // Random growth data
-            data.push({
-                name: labels[i % labels.length],
-                value: Math.floor(Math.random() * 50) + 10
-            });
-        }
-        return data;
-    };
-
-    const analyticsData = generateSubscriberData(timeRange);
+    // Placeholder data (Zeros)
+    const viewData = Array.from({ length: 7 }, (_, i) => ({
+        name: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+        views: 0
+    }));
 
     const StatCard = ({ icon: Icon, label, value, colorClass }: any) => (
         <div className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-800/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
@@ -41,7 +44,7 @@ const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
                 </div>
                 <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{label}</span>
             </div>
-            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{value}</p>
+            <p className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{loading ? '-' : value}</p>
         </div>
     );
 
@@ -50,10 +53,10 @@ const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
             {/* Header + Filter */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <h2 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                    <TrendingUp size={20} /> Impact Analytics
+                    <Users size={20} /> Analytics
                 </h2>
                 <div className={`flex p-1 rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
-                    {['7d', '1m', '3m', '6m', '12m'].map((range) => (
+                    {['24h', '7d', '1m', '3m', '6m', '12m'].map((range) => (
                         <button
                             key={range}
                             onClick={() => setTimeRange(range)}
@@ -65,17 +68,17 @@ const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
                 </div>
             </div>
 
-            {/* Main Graph: Subscriber Growth */}
+            {/* Views Graph */}
             <div className={`p-6 rounded-[2rem] border min-h-[300px] ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <p className={`text-sm font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>New Subscribers</p>
+                        <p className={`text-sm font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Views</p>
                         <div className="flex items-baseline gap-2 mt-1">
                             <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
-                                {analyticsData.reduce((a, b) => a + b.value, 0).toLocaleString()}
+                                {stats.views}
                             </h3>
-                            <span className="flex items-center gap-0.5 text-xs font-bold text-emerald-500">
-                                <ArrowUpRight size={12} /> +{Math.floor(Math.random() * 20) + 5}%
+                            <span className="flex items-center gap-0.5 text-xs font-bold text-gray-500">
+                                No Data
                             </span>
                         </div>
                     </div>
@@ -83,7 +86,7 @@ const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
 
                 <div className="h-[200px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={analyticsData}>
+                        <BarChart data={viewData}>
                             <XAxis
                                 dataKey="name"
                                 axisLine={false}
@@ -102,8 +105,8 @@ const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
                                     color: isDark ? '#ffffff' : '#000000'
                                 }}
                             />
-                            <Bar dataKey="value" radius={[4, 4, 4, 4]}>
-                                {analyticsData.map((entry, index) => (
+                            <Bar dataKey="views" radius={[4, 4, 4, 4]}>
+                                {viewData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={isDark ? '#3b82f6' : '#2563eb'} />
                                 ))}
                             </Bar>
@@ -112,12 +115,13 @@ const EmployerAnalytics = ({ isDark, subscriberCount }: AnalyticsProps) => {
                 </div>
             </div>
 
-            {/* Detailed Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard icon={Users} label="Total Subscribers" value={subscriberCount.toLocaleString()} colorClass="text-blue-500" />
-                <StatCard icon={Eye} label="Profile Views" value={(subscriberCount * 12 + 450).toLocaleString()} colorClass="text-purple-500" />
-                <StatCard icon={MousePointerClick} label="Job Clicks" value={(subscriberCount * 3 + 120).toLocaleString()} colorClass="text-orange-500" />
-                <StatCard icon={Calendar} label="Active Jobs" value="4" colorClass="text-emerald-500" />
+            {/* Interaction Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <StatCard icon={Users} label="Subscribers" value={stats.subscribers} colorClass="text-purple-500" />
+                <StatCard icon={Heart} label="Likes" value={stats.likes} colorClass="text-red-500" />
+                <StatCard icon={MessageCircle} label="Comments" value={stats.comments} colorClass="text-blue-500" />
+                <StatCard icon={Clock} label="Dwell > 3s" value={stats.dwell} colorClass="text-orange-500" />
+                <StatCard icon={Repeat2} label="Reposts" value={stats.reposts} colorClass="text-green-500" />
             </div>
         </div>
     );
