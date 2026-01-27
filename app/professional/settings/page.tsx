@@ -49,7 +49,20 @@ export default function ProfessionalSettingsPage() {
 
     useEffect(() => {
         if (activeTab === 'billing') fetchBilling();
+        if (activeTab === 'security') fetchActivityLogs();
     }, [activeTab]);
+
+    const fetchActivityLogs = async () => {
+        try {
+            const res = await fetch('/api/professional/security/activity');
+            if (res.ok) {
+                const data = await res.json();
+                setActivityLogs(data.logs || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch activity logs:', error);
+        }
+    };
 
     const fetchBilling = async () => {
         try {
@@ -97,7 +110,9 @@ export default function ProfessionalSettingsPage() {
                 <div className="mb-4">
                     <h4 className={`text-lg font-black uppercase tracking-wide flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                         {name}
-                        <CheckCircle size={18} className={colorClass} fill="currentColor" fillOpacity={0.2} />
+                        {badgeColor !== 'none' && (
+                            <CheckCircle size={18} className={colorClass} fill="currentColor" fillOpacity={0.2} />
+                        )}
                     </h4>
                     <div className="mt-2 text-3xl font-black text-white">
                         {price === 0 ? 'Free' : (
