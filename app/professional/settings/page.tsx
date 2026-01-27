@@ -5,6 +5,7 @@ import { Shield, Activity, Lock, AlertCircle, CheckCircle, CreditCard, Clock, Lo
 import { useTheme } from '@/app/context/ThemeContext';
 import { useCurrency } from '@/app/hooks/useCurrency';
 import { usePayment } from '@/app/hooks/usePayment';
+import { PROFESSIONAL_PLANS } from '@/lib/billing-config';
 
 export default function ProfessionalSettingsPage() {
     const { theme } = useTheme();
@@ -244,10 +245,34 @@ export default function ProfessionalSettingsPage() {
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {renderPlanCard('free', 'Free', 0, 'none', ['Standard Profile', 'Basic Feed Access'])}
-                        {renderPlanCard('basic', 'Basic', 5, 'gray', ['Gray Verification Badge', 'Algorithm Boost (1.2x)', 'Priority Support'])}
-                        {renderPlanCard('standard', 'Standard', 15, 'blue', ['Blue Verification Badge', 'Algorithm Boost (1.5x)', 'See Jobs Earlier'])}
-                        {renderPlanCard('premium', 'Premium', 30, 'gold', ['Gold Verification Badge', 'Max Algorithm Boost (2.0x)', 'Direct Human Connection'])}
+                        {renderPlanCard(
+                            'free',
+                            PROFESSIONAL_PLANS.free.name,
+                            PROFESSIONAL_PLANS.free.priceMonthly,
+                            PROFESSIONAL_PLANS.free.badge,
+                            [...PROFESSIONAL_PLANS.free.features]
+                        )}
+                        {renderPlanCard(
+                            'basic',
+                            PROFESSIONAL_PLANS.basic.name,
+                            PROFESSIONAL_PLANS.basic.priceMonthly,
+                            PROFESSIONAL_PLANS.basic.badge,
+                            [...PROFESSIONAL_PLANS.basic.features]
+                        )}
+                        {renderPlanCard(
+                            'standard',
+                            PROFESSIONAL_PLANS.standard.name,
+                            PROFESSIONAL_PLANS.standard.priceMonthly,
+                            PROFESSIONAL_PLANS.standard.badge,
+                            [...PROFESSIONAL_PLANS.standard.features]
+                        )}
+                        {renderPlanCard(
+                            'premium',
+                            PROFESSIONAL_PLANS.premium.name,
+                            PROFESSIONAL_PLANS.premium.priceMonthly,
+                            PROFESSIONAL_PLANS.premium.badge,
+                            [...PROFESSIONAL_PLANS.premium.features]
+                        )}
                     </div>
 
                     <div className={`p-6 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
