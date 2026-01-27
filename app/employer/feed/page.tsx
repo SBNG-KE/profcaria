@@ -6,6 +6,7 @@ import {
     Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, MapPin, Users, Send, Search, Flag, Edit2, Trash2, ChevronLeft
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
+import ProfileImage from '@/app/components/ProfileImage';
 
 // Scrollable Text Component
 // Scrollable Text Component - With Hashtag Highlighting
@@ -84,7 +85,13 @@ const CommentModal = ({ isOpen, onClose, postId, isDark, onCommentAdded }: { isO
                     ) : (
                         comments.map((c) => (
                             <div key={c.id} className="flex gap-3">
-                                <img src={c.author.profileImage} alt={c.author.name} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                                <ProfileImage
+                                    src={c.author.profileImage}
+                                    name={c.author.name}
+                                    type={c.author.type || 'professional'}
+                                    size={16}
+                                    className="w-8 h-8 rounded-full flex-shrink-0"
+                                />
                                 <div className="flex-1">
                                     <div className={`px-3 py-2 rounded-xl ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
                                         <p className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</p>
@@ -213,11 +220,12 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onRe
                     <div className="p-4 flex items-start justify-between">
                         <div className="flex items-start gap-3">
                             <div className="flex flex-col items-center gap-1">
-                                <img
-                                    src={post.author.profileImage || '/default-logo.png'}
-                                    onError={(e) => { e.currentTarget.src = '/default-logo.png'; }}
-                                    alt={post.author.name}
-                                    className="w-12 h-12 rounded-full object-cover bg-neutral-100 dark:bg-neutral-800"
+                                <ProfileImage
+                                    src={post.author.profileImage}
+                                    type={post.author.type}
+                                    name={post.author.name}
+                                    size={24}
+                                    className="w-12 h-12 rounded-full group-hover:opacity-80 transition-opacity"
                                 />
                                 {((post.author.followerCount !== undefined && post.author.followerCount !== null)) && (
                                     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
@@ -279,7 +287,13 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onRe
                                 : comments.length === 0 ? <p className={`text-center py-4 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No comments yet. Be the first!</p>
                                     : comments.map((c) => (
                                         <div key={c.id} className="flex gap-2">
-                                            <img src={c.author.profileImage} alt={c.author.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                                            <ProfileImage
+                                                src={c.author.profileImage}
+                                                name={c.author.name}
+                                                type={c.author.type || 'professional'}
+                                                size={14}
+                                                className="w-7 h-7 rounded-full flex-shrink-0"
+                                            />
                                             <div className="flex-1 min-w-0">
                                                 <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
                                                     <p className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</p>

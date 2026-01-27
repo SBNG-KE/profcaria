@@ -537,10 +537,10 @@ function FeedContent() {
             )}
 
             {/* Search and Post Button */}
-            <div className={`sticky top-0 z-40 py-3 px-4 flex items-center gap-3 transition-colors ${isSearching ? 'bg-transparent' : ''}`}>
+            <div className={`sticky top-0 z-40 py-2 px-3 flex items-center gap-2 transition-colors ${isSearching ? 'bg-transparent' : ''}`}>
                 <div className={`relative flex-1 ${isSearching ? 'z-[45]' : ''}`}>
-                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                        <Search size={16} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                        <Search size={14} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
                         <input
                             type="text"
                             value={searchQuery}
@@ -588,10 +588,10 @@ function FeedContent() {
                 </div>
                 <button
                     onClick={() => setShowPostModal(true)}
-                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold relative z-40 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold relative z-40 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
                 >
-                    <Edit3 size={16} />
-                    Start a post
+                    <Edit3 size={14} />
+                    <span className="hidden xs:inline">Post</span>
                 </button>
             </div>
 

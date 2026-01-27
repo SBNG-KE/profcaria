@@ -34,19 +34,7 @@ export default function FeaturesShowcase() {
                             </p>
                         </div>
 
-                        {/* Vibes Indicators */}
-                        <div className="pt-10 flex gap-12">
-                            {[
-                                { val: "50+", label: "Countries" },
-                                { val: "10k+", label: "Verified Pros" },
-                                { val: "0%", label: "Noise" },
-                            ].map((stat, i) => (
-                                <div key={i}>
-                                    <div className={`text-4xl md:text-5xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{stat.val}</div>
-                                    <div className={`text-xs uppercase tracking-widest mt-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{stat.label}</div>
-                                </div>
-                            ))}
-                        </div>
+
                     </div>
 
                     {/* Right: Abstract Visual */}

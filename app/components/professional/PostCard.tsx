@@ -5,6 +5,40 @@ import Link from 'next/link';
 import {
     Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2
 } from 'lucide-react';
+import ProfileImage from '../ProfileImage';
+
+// Truncated Text Component for Mobile
+const TruncatedText = ({ text, isDark }: { text: string, isDark: boolean }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const parts = text.split(/(\s+|hashtag#[\w]+|#[\w]+)/g);
+
+    return (
+        <div className={`relative ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>
+            <div className={`text-base leading-relaxed whitespace-pre-wrap ${!isExpanded ? 'line-clamp-3' : ''}`}>
+                {parts.map((part, i) => {
+                    let displayPart = part;
+                    let isHashtag = false;
+                    if (part.match(/^(hashtag)?#[\w]+$/i)) {
+                        displayPart = part.replace(/^hashtag/i, '');
+                        isHashtag = true;
+                    }
+                    if (isHashtag) {
+                        return <span key={i} className="text-blue-500 font-medium hover:underline cursor-pointer">{displayPart}</span>;
+                    }
+                    return part;
+                })}
+            </div>
+            {!isExpanded && text.length > 150 && (
+                <button
+                    onClick={() => setIsExpanded(true)}
+                    className={`mt-1 text-sm font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                >
+                    Show more
+                </button>
+            )}
+        </div>
+    );
+};
 
 // Scrollable Text Component
 const ScrollableText = ({ text, isDark }: { text: string, isDark: boolean }) => {
@@ -86,6 +120,60 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
         setShowComments(!showComments);
     };
 
+    // Shared Header Component
+    const PostHeader = ({ isMobile = false }) => (
+        <div className={`flex items-start justify-between ${isMobile ? 'p-4 pb-2' : 'p-4'}`}>
+            <div className="flex items-start gap-3">
+                <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className="flex flex-col items-center gap-1 group">
+                    <ProfileImage
+                        src={post.author.profileImage}
+                        type={post.author.type}
+                        name={post.author.name}
+                        size={24}
+                        className="w-12 h-12 rounded-full group-hover:opacity-80 transition-opacity"
+                    />
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
+                        {new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(post.author.followerCount)}
+                        {post.author.type === 'employer' ? ' subscribers' : ' followers'}
+                    </span>
+                </Link>
+                <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className={`font-bold text-base truncate hover:underline ${isDark ? 'text-white' : 'text-black'}`}>
+                            {post.author.name}
+                        </Link>
+                        {!isOwnPost && !post.author.isFollowing && (
+                            <><span className={`${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>•</span><button onClick={onFollow} className={`text-xs font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>{post.author.type === 'employer' ? 'Subscribe' : 'Follow'}</button></>
+                        )}
+                    </div>
+                    <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                        {isProfessional && post.author.role && <span className="truncate max-w-[100px]">{post.author.role}</span>}
+                        <span>•</span><span>{post.timestamp}</span>
+                    </div>
+                </div>
+            </div>
+            <div className="relative">
+                <button onClick={() => setShowMenu(!showMenu)} className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-neutral-100 text-neutral-400'}`}><MoreHorizontal size={16} /></button>
+                {showMenu && (
+                    <div className={`absolute right-0 top-8 w-40 rounded-lg shadow-lg border z-50 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                        {isOwnPost && (
+                            <>
+                                <button onClick={() => { setShowMenu(false); onEdit?.(post); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Edit2 size={14} /> Edit</button>
+                                <button onClick={() => { setShowMenu(false); onDelete?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Post</button>
+                            </>
+                        )}
+                        {isRepostContext && onDeleteRepost && (
+                            <button onClick={() => { setShowMenu(false); if (post.repostId) onDeleteRepost(post.repostId); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Repost</button>
+                        )}
+                        {!isOwnPost && (
+                            <button onClick={() => { setShowMenu(false); onReport?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Flag size={14} /> Report</button>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
             {/* Repost Header Context (if in profile list) */}
@@ -97,9 +185,19 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
             )}
 
             <div className="flex flex-col sm:flex-row">
-                {/* Left: Media (Top on Mobile) */}
+                {/* Mobile Header (Visible only on mobile) */}
+                <div className="sm:hidden">
+                    <PostHeader isMobile={true} />
+                </div>
+
+                {/* Mobile Text (Visible only on mobile) */}
+                <div className="sm:hidden px-4 pb-3">
+                    <TruncatedText text={post.content} isDark={isDark} />
+                </div>
+
+                {/* Media (Center on Mobile, Left on Desktop) */}
                 {(hasMedia || post.linkPreview) && (
-                    <div className={`flex-shrink-0 transition-all duration-300 ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
+                    <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
                         <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px]">
                             {post.media && post.media.length > 0 ? (
                                 <>
@@ -160,67 +258,20 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                     </div>
                 )}
 
-                {/* Middle: Content */}
+                {/* Content (Desktop: Right Side | Mobile: Bottom Actions) */}
                 <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${showComments && (hasMedia || post.linkPreview) ? 'sm:max-w-[30%]' : ''}`}>
-                    {/* Header */}
-                    <div className="p-4 flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                            <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className="flex flex-col items-center gap-1 group">
-                                <img
-                                    src={post.author.profileImage || '/default-logo.png'}
-                                    onError={(e) => { e.currentTarget.src = '/default-logo.png'; }}
-                                    alt={post.author.name}
-                                    className="w-12 h-12 rounded-full object-cover bg-neutral-100 dark:bg-neutral-800 group-hover:opacity-80 transition-opacity"
-                                />
-                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
-                                    {new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(post.author.followerCount)}
-                                    {post.author.type === 'employer' ? ' subscribers' : ' followers'}
-                                </span>
-                            </Link>
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className={`font-bold text-base truncate hover:underline ${isDark ? 'text-white' : 'text-black'}`}>
-                                        {post.author.name}
-                                    </Link>
-                                    {!isOwnPost && !post.author.isFollowing && (
-                                        <><span className={`${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>•</span><button onClick={onFollow} className={`text-xs font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>{post.author.type === 'employer' ? 'Subscribe' : 'Follow'}</button></>
-                                    )}
-                                </div>
-                                <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                    {isProfessional && post.author.role && <span className="truncate max-w-[100px]">{post.author.role}</span>}
-                                    <span>•</span><span>{post.timestamp}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <button onClick={() => setShowMenu(!showMenu)} className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-neutral-100 text-neutral-400'}`}><MoreHorizontal size={16} /></button>
-                            {showMenu && (
-                                <div className={`absolute right-0 top-8 w-40 rounded-lg shadow-lg border z-50 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
-                                    {isOwnPost && (
-                                        <>
-                                            <button onClick={() => { setShowMenu(false); onEdit?.(post); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Edit2 size={14} /> Edit</button>
-                                            <button onClick={() => { setShowMenu(false); onDelete?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Post</button>
-                                        </>
-                                    )}
 
-                                    {isRepostContext && onDeleteRepost && (
-                                        <button onClick={() => { setShowMenu(false); if (post.repostId) onDeleteRepost(post.repostId); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Repost</button>
-                                    )}
-
-                                    {!isOwnPost && (
-                                        <button onClick={() => { setShowMenu(false); onReport?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Flag size={14} /> Report</button>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                    {/* Desktop Header (Hidden on Mobile) */}
+                    <div className="hidden sm:block">
+                        <PostHeader />
                     </div>
 
-                    {/* Content */}
-                    <div className={`px-4 py-2 flex-1 ${showComments ? 'min-h-[100px]' : 'min-h-[200px]'}`}>
+                    {/* Desktop Content (Hidden on Mobile) */}
+                    <div className={`hidden sm:block px-4 py-2 flex-1 ${showComments ? 'min-h-[100px]' : 'min-h-[200px]'}`}>
                         <ScrollableText text={post.content} isDark={isDark} />
                     </div>
 
-                    {/* Engagement */}
+                    {/* Engagement - Visible on both (but logically belongs here) */}
                     {(post.likesCount > 0 || post.commentsCount > 0 || post.repostsCount > 0) && (
                         <div className={`px-3 py-1.5 flex items-center justify-between text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                             <div className="flex items-center gap-2">
@@ -236,16 +287,21 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                     {/* Actions */}
                     <div className={`px-2 py-2 flex flex-wrap items-center justify-between gap-1 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                         <button onClick={() => onLike?.()} disabled={!onLike} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isLiked ? 'text-red-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onLike ? 'opacity-50 cursor-default' : ''}`}><Heart size={16} fill={post.isLiked ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Like</span></button>
-                        <button onClick={toggleComments} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${showComments ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><MessageCircle size={16} fill={showComments ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Comment</span></button>
+                        <button onClick={toggleComments} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${showComments ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onLike ? 'opacity-50 cursor-default' : ''}`}><MessageCircle size={16} fill={showComments ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Comment</span></button>
                         {!isOwnPost && <button onClick={() => onRepost?.()} disabled={!onRepost} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isReposted ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onRepost ? 'opacity-50 cursor-default' : ''}`}><Repeat2 size={16} /><span className="font-medium hidden xs:inline">{post.isReposted ? 'Reposted' : 'Repost'}</span></button>}
                         <button onClick={() => onShare?.()} disabled={!onShare} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onShare ? 'opacity-50 cursor-default' : ''}`}><Share2 size={16} /><span className="font-medium hidden xs:inline">Share</span></button>
                     </div>
                 </div>
 
-                {/* Right: Comments Panel (Slides in) */}
+                {/* Comments Panel - Slide-in Drawer on Mobile | Inline on Desktop */}
                 {showComments && (
-                    <div className={`w-full sm:w-[35%] sm:min-w-[280px] flex flex-col border-t sm:border-t-0 sm:border-l transition-all duration-300 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
-                        {/* Comments Header with X */}
+                    <div className={`
+                        fixed inset-y-0 right-0 z-50 w-full sm:static sm:z-auto sm:inset-auto 
+                        sm:w-[35%] sm:min-w-[280px] flex flex-col 
+                        border-t sm:border-t-0 sm:border-l transition-all duration-300 shadow-2xl sm:shadow-none
+                        ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}
+                    `}>
+                        {/* Mobile Back/Close Button */}
                         <div className={`p-3 flex items-center justify-between border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                             <h3 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-black'}`}>Comments</h3>
                             <button onClick={() => setShowComments(false)} className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-200 text-neutral-500'}`}><X size={16} /></button>
@@ -273,7 +329,13 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                             ) : (
                                 comments.map((c) => (
                                     <div key={c.id} className="flex gap-2">
-                                        <img src={c.author.profileImage} alt={c.author.name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                                        <ProfileImage
+                                            src={c.author.profileImage}
+                                            name={c.author.name}
+                                            type={c.author.type || 'professional'} // Assuming comments are mostly pros for now
+                                            size={14}
+                                            className="w-7 h-7 rounded-full flex-shrink-0"
+                                        />
                                         <div className="flex-1 min-w-0">
                                             <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
                                                 <p className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</p>

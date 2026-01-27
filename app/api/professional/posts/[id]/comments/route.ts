@@ -40,36 +40,38 @@ export async function GET(
 
         if (error) throw error;
 
-        // Get author info for each comment (check both schemas)
+        // Get author info for each comment
         const formattedComments = await Promise.all((comments || []).map(async (c: any) => {
-            // Try professional.users first
-            let { data: author } = await supabaseAdmin
-                .schema('professional')
-                .from('users')
-                .select('id, enc_first_name, enc_last_name, enc_profile_image_url')
-                .eq('id', c.user_id)
-                .single();
+            let author = null;
 
-            if (author) {
-                const firstName = decryptData(author.enc_first_name);
-                const lastName = decryptData(author.enc_last_name);
-                const profileImage = decryptData(author.enc_profile_image_url);
+            if (c.user_id) {
+                // Try professional.users
+                const { data: profAuthor } = await supabaseAdmin
+                    .schema('professional')
+                    .from('users')
+                    .select('id, enc_first_name, enc_last_name, enc_profile_image_url')
+                    .eq('id', c.user_id)
+                    .single();
 
-                author = {
-                    id: author.id,
-                    first_name: firstName,
-                    last_name: lastName,
-                    profile_image: profileImage || '/default-avatar.png'
-                };
-            }
+                if (profAuthor) {
+                    const firstName = decryptData(profAuthor.enc_first_name);
+                    const lastName = decryptData(profAuthor.enc_last_name);
+                    const profileImage = decryptData(profAuthor.enc_profile_image_url);
 
-            // If not found, try employer schema
-            if (!author) {
+                    author = {
+                        id: profAuthor.id,
+                        name: `${firstName} ${lastName}`,
+                        profileImage: profileImage || '/default-avatar.png',
+                        type: 'professional'
+                    };
+                }
+            } else if (c.company_id) {
+                // Try employer.companies
                 const { data: employerAuthor } = await supabaseAdmin
                     .schema('employer')
                     .from('companies')
                     .select('id, enc_company_name, enc_logo_url')
-                    .eq('id', c.user_id)
+                    .eq('id', c.company_id)
                     .single();
 
                 if (employerAuthor) {
@@ -78,9 +80,9 @@ export async function GET(
 
                     author = {
                         id: employerAuthor.id,
-                        first_name: companyName || 'Company',
-                        last_name: '',
-                        profile_image: logoUrl || '/default-logo.png'
+                        name: companyName || 'Company',
+                        profileImage: logoUrl || '/default-logo.png',
+                        type: 'employer'
                     };
                 }
             }
@@ -89,10 +91,11 @@ export async function GET(
                 id: c.id,
                 content: c.content,
                 createdAt: c.created_at,
-                author: {
-                    id: author?.id || c.user_id,
-                    name: `${author?.first_name || ''} ${author?.last_name || ''}`.trim() || 'Anonymous',
-                    profileImage: author?.profile_image || '/default-avatar.png'
+                author: author || {
+                    id: c.user_id || c.company_id || 'unknown',
+                    name: 'Anonymous',
+                    profileImage: '/default-avatar.png',
+                    type: 'professional'
                 }
             };
         }));
