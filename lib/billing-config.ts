@@ -89,3 +89,55 @@ export const BILLING_PLANS = {
 } as const;
 
 export type PlanType = keyof typeof BILLING_PLANS;
+
+// --- PROFESSIONAL PLANS ---
+const PROF_BASIC = parseFloat(process.env.NEXT_PUBLIC_PRICE_PROF_BASIC || '5');
+const PROF_STANDARD = parseFloat(process.env.NEXT_PUBLIC_PRICE_PROF_STANDARD || '15');
+const PROF_PREMIUM = parseFloat(process.env.NEXT_PUBLIC_PRICE_PROF_PREMIUM || '30');
+
+export const PROFESSIONAL_PLANS = {
+    free: {
+        name: 'Free',
+        badge: 'none',
+        priceMonthly: 0,
+        features: ['Standard Profile', 'Basic Feed Access']
+    },
+    basic: {
+        name: 'Basic',
+        badge: 'gray', // Gray Checkmark
+        priceMonthly: PROF_BASIC,
+        features: ['Gray Verification Badge', 'Algorithm Boost (1.5x)']
+    },
+    standard: {
+        name: 'Standard',
+        badge: 'blue', // Blue Checkmark
+        priceMonthly: PROF_STANDARD,
+        features: ['Blue Verification Badge', 'Algorithm Boost (3.5x)']
+    },
+    premium: {
+        name: 'Premium',
+        badge: 'gold', // Gold Checkmark
+        priceMonthly: PROF_PREMIUM,
+        features: ['Gold Verification Badge', 'Max Algorithm Boost (8.0x)']
+    }
+} as const;
+
+export type ProfessionalPlanType = keyof typeof PROFESSIONAL_PLANS;
+
+// --- AD PACKAGES (One-time purchases) ---
+export const AD_PACKAGES = {
+    'boost_1k': {
+        id: 'boost_1k',
+        name: '1,000 Views Boost',
+        price: 10, // $10
+        credits: 10, // Internal currency
+        description: 'Get approx 1000 extra views on your post.'
+    },
+    'boost_5k': {
+        id: 'boost_5k',
+        name: '5,000 Views Boost',
+        price: 40, // $40
+        credits: 40,
+        description: 'Significant reach expansion for major announcements.'
+    }
+} as const;

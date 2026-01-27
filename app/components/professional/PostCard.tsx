@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2
+    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp
 } from 'lucide-react';
 import ProfileImage from '../ProfileImage';
+import PromotePostModal from './PromotePostModal';
 
 // Truncated Text Component for Mobile
 const TruncatedText = ({ text, isDark }: { text: string, isDark: boolean }) => {
@@ -88,11 +89,13 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
 
     const [showMenu, setShowMenu] = useState(false);
     const [showComments, setShowComments] = useState(false);
+    const [showPromoteModal, setShowPromoteModal] = useState(false);
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
+    // ... (fetchComments, handleSubmitComment, toggleComments remain unchanged)
     const fetchComments = async () => {
         setIsLoadingComments(true);
         try {
@@ -131,6 +134,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                         name={post.author.name}
                         size={24}
                         className="w-12 h-12 rounded-full group-hover:opacity-80 transition-opacity"
+                        badge={post.author.badgeType}
                     />
                     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
                         {new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(post.author.followerCount)}
@@ -149,6 +153,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                     <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                         {isProfessional && post.author.role && <span className="truncate max-w-[100px]">{post.author.role}</span>}
                         <span>•</span><span>{post.timestamp}</span>
+                        {post.isAd && <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500 font-bold uppercase text-[10px]">Promoted</span>}
                     </div>
                 </div>
             </div>
@@ -158,6 +163,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                     <div className={`absolute right-0 top-8 w-40 rounded-lg shadow-lg border z-50 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
                         {isOwnPost && (
                             <>
+                                <button onClick={() => { setShowMenu(false); setShowPromoteModal(true); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-blue-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><TrendingUp size={14} /> Promote Post</button>
                                 <button onClick={() => { setShowMenu(false); onEdit?.(post); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Edit2 size={14} /> Edit</button>
                                 <button onClick={() => { setShowMenu(false); onDelete?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Post</button>
                             </>
@@ -171,6 +177,17 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                     </div>
                 )}
             </div>
+
+            <PromotePostModal
+                post={post}
+                isOpen={showPromoteModal}
+                onClose={() => setShowPromoteModal(false)}
+                onSuccess={() => {
+                    // Ideally refresh post to show 'Promoted' status
+                    setShowPromoteModal(false);
+                }}
+                isDark={isDark}
+            />
         </div>
     );
 

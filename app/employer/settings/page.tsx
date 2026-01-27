@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2 } from 'lucide-react';
 import { useCurrency } from '@/app/hooks/useCurrency';
+import { usePayment } from '@/app/hooks/usePayment';
 
 function SettingsContent() {
     const router = useRouter();
@@ -148,25 +149,20 @@ function SettingsContent() {
         }
     };
 
+    // Payment Hook
+    const { startPayment, isLoading: paymentLoading } = usePayment();
+
     const handleSubscribe = async (plan: 'basic' | 'pro' | 'enterprise') => {
-        setIsLoading(true);
-        try {
-            const res = await fetch('/api/payments/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan, billingCycle })
-            });
-            const data = await res.json();
-            if (data.url) {
-                window.location.href = data.url; // Redirect to Paystack
-            } else {
-                alert('Failed to start checkout: ' + (data.error || 'Unknown error'));
+        startPayment({
+            plan,
+            onSuccess: () => {
+                setMessage({ type: 'success', text: 'Payment successful! Updating subscription...' });
+                fetchBilling(); // Refresh UI
+            },
+            onError: (err: string) => {
+                setMessage({ type: 'error', text: 'Payment failed: ' + err });
             }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
+        });
     };
 
     const handleToggleAutoRenew = async () => {
@@ -414,6 +410,7 @@ function SettingsContent() {
                                 <div className="space-y-3 flex-1">
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
                                         Basic
+                                        <CheckCircle size={18} className="text-neutral-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.basicOffer > 0 && (
                                             <span className="bg-white/20 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
                                                 -{Math.round((1 - pricing.basicOffer / pricing.basic) * 100)}%
@@ -493,6 +490,7 @@ function SettingsContent() {
                                 <div className="space-y-3 flex-1">
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
                                         Pro <span className="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-bold tracking-wide">BEST VALUE</span>
+                                        <CheckCircle size={18} className="text-blue-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.proOffer > 0 && (
                                             <span className="bg-white text-black text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
                                                 -{Math.round((1 - pricing.proOffer / pricing.pro) * 100)}%
@@ -574,6 +572,7 @@ function SettingsContent() {
                                 <div className="space-y-3 flex-1">
                                     <h4 className="font-black text-lg text-white flex items-center gap-2">
                                         Enterprise
+                                        <CheckCircle size={18} className="text-yellow-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.enterpriseOffer > 0 && (
                                             <span className="bg-white/20 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
                                                 -{Math.round((1 - pricing.enterpriseOffer / pricing.enterprise) * 100)}%

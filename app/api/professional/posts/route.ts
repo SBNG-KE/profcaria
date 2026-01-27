@@ -163,10 +163,14 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// Helper: Process stats, caching/batching optimization could be done here but keeping consistent with existing style
+// Helper: Process stats
 async function processPosts(posts: any[], user: any) {
     return Promise.all(posts.map(async (post: any) => {
-        const postSchema = post.authorType === 'employer' ? 'employer' : 'professional';
+        // Normalization: RPC returns snake_case, manual queries return mapped camelCase
+        const authorType = post.authorType || post.author_type || 'professional';
+        const postAuthorId = authorType === 'employer' ? (post.company_id || post.user_id) : post.user_id;
+
+        const postSchema = authorType === 'employer' ? 'employer' : 'professional';
 
         // Like count
         const { count: likesCount } = await supabaseAdmin
@@ -225,23 +229,24 @@ async function processPosts(posts: any[], user: any) {
 
         // Get author info
         let authorData: any = {
-            id: post.user_id,
-            type: post.authorType || 'professional',
+            id: postAuthorId,
+            type: authorType,
             // Default placeholders
             name: 'User',
             profileImage: '/default-avatar.png',
             role: '',
             followerCount: 0,
-            isFollowing: false
+            isFollowing: false,
+            badgeType: null
         };
 
-        if (post.authorType === 'employer') {
+        if (authorType === 'employer' && postAuthorId) {
             try {
                 const { data: comp } = await supabaseAdmin
                     .schema('employer')
                     .from('companies')
-                    .select('id, enc_company_name, enc_logo_url')
-                    .eq('id', post.user_id)
+                    .select('id, enc_company_name, enc_logo_url, badge_type')
+                    .eq('id', postAuthorId)
                     .single();
 
                 if (comp) {
@@ -253,14 +258,15 @@ async function processPosts(posts: any[], user: any) {
                         name: companyName || 'Company',
                         profileImage: logoUrl || '/default-logo.png',
                         role: 'Company',
-                        type: 'employer'
+                        type: 'employer',
+                        badgeType: comp.badge_type
                     };
 
                     const { count: followerCount } = await supabaseAdmin
                         .schema('professional')
                         .from('company_follows')
                         .select('*', { count: 'exact', head: true })
-                        .eq('company_id', post.user_id);
+                        .eq('company_id', postAuthorId);
 
                     authorData.followerCount = followerCount || 0;
 
@@ -269,18 +275,18 @@ async function processPosts(posts: any[], user: any) {
                         .from('company_follows')
                         .select('id')
                         .eq('user_id', user.id)
-                        .eq('company_id', post.user_id)
+                        .eq('company_id', postAuthorId)
                         .single();
 
                     authorData.isFollowing = !!isFollowing;
                 }
             } catch (e) { console.error('Error fetching company details:', e); }
-        } else {
+        } else if (postAuthorId) {
             const { data: profUser } = await supabaseAdmin
                 .schema('professional')
                 .from('users')
-                .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
-                .eq('id', post.user_id)
+                .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
+                .eq('id', postAuthorId)
                 .single();
 
             if (profUser) {
@@ -293,14 +299,14 @@ async function processPosts(posts: any[], user: any) {
                     .schema('professional')
                     .from('user_follows')
                     .select('*', { count: 'exact', head: true })
-                    .eq('following_id', post.user_id);
+                    .eq('following_id', postAuthorId);
 
                 const { data: following } = await supabaseAdmin
                     .schema('professional')
                     .from('user_follows')
                     .select('id')
                     .eq('follower_id', user.id)
-                    .eq('following_id', post.user_id)
+                    .eq('following_id', postAuthorId)
                     .single();
 
                 authorData = {
@@ -309,7 +315,8 @@ async function processPosts(posts: any[], user: any) {
                     profileImage: profileImage,
                     role: role,
                     followerCount: followerCount || 0,
-                    isFollowing: !!following || post.user_id === user.id
+                    isFollowing: !!following || postAuthorId === user.id,
+                    badgeType: profUser.badge_type
                 };
             }
         }
@@ -423,7 +430,7 @@ export async function POST(request: NextRequest) {
                     media_urls: mediaUrls || [],
                     link_preview: linkPreview
                 })
-                .select()
+                .select('id, content, created_at, user_id, media_urls, link_preview')
                 .single();
 
             if (error) throw error;

@@ -138,3 +138,46 @@ export async function incrementUsage(companyId: string, feature: 'jobs' | 'conne
             .insert([{ company_id: companyId, plan_type: 'free', [column]: amount }]);
     }
 }
+
+// --- PROFESSIONAL BILLING HELPERS ---
+
+import { PROFESSIONAL_PLANS } from './billing-config';
+
+export async function getProfessionalPlan(userId: string) {
+    if (!userId) return { plan: PROFESSIONAL_PLANS.free, subscription: null };
+
+    // Fetch active subscription
+    const { data: sub } = await supabaseAdmin
+        .schema('professional')
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+    if (!sub) {
+        return { plan: PROFESSIONAL_PLANS.free, subscription: null };
+    }
+
+    // Map plan_type to config
+    const planType = (sub.plan_type as keyof typeof PROFESSIONAL_PLANS) || 'free';
+    const planConfig = PROFESSIONAL_PLANS[planType] || PROFESSIONAL_PLANS.free;
+
+    return { plan: planConfig, subscription: sub };
+}
+
+export async function checkAdCredits(entityId: string, entityType: 'professional' | 'employer') {
+    const table = entityType === 'professional' ? 'users' : 'companies';
+    const schema = entityType;
+
+    const { data } = await supabaseAdmin
+        .schema(schema)
+        .from(table)
+        .select('ad_credits')
+        .eq('id', entityId)
+        .single();
+
+    return data?.ad_credits || 0;
+}

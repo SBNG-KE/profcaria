@@ -32,18 +32,32 @@ export const useCurrency = () => {
                 }
 
                 // 2. Get User Location & Currency Code
-                const ipRes = await fetch('https://ipapi.co/json/');
-                if (!ipRes.ok) throw new Error('Failed to detect location');
-                const ipData = await ipRes.json();
-                const userCurrency = ipData.currency || 'USD'; // e.g., "GBP", "KES"
+                let userCurrency = 'USD';
+                try {
+                    // Fetch from internal proxy to avoid ad-blockers/CORS
+                    const ipRes = await fetch('/api/location');
+                    if (ipRes.ok) {
+                        const ipData = await ipRes.json();
+                        userCurrency = ipData.currency || 'USD';
+                    }
+                } catch (e) {
+                    console.warn('Location detection failed, defaulting to USD');
+                }
 
-                // 3. Get Exchange Rate (USD Base)
+                //3. Get Exchange Rate (USD Base)
                 let rate = 1;
                 if (userCurrency !== 'USD') {
-                    const rateRes = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
-                    if (!rateRes.ok) throw new Error('Failed to fetch rates');
-                    const rateData = await rateRes.json();
-                    rate = rateData.rates[userCurrency] || 1;
+                    try {
+                        const rateRes = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+                        if (rateRes.ok) {
+                            const rateData = await rateRes.json();
+                            rate = rateData.rates[userCurrency] || 1;
+                        }
+                    } catch (e) {
+                        // Rate fetch failed, revert to USD
+                        userCurrency = 'USD';
+                        rate = 1;
+                    }
                 }
 
                 // 4. Determine Symbol

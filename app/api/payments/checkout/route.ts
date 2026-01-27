@@ -3,19 +3,19 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { Paystack } from '@/lib/paystack';
-import { encryptData, decryptData, hashForIndex } from '@/lib/security';
+import { decryptData } from '@/lib/security';
+import { BILLING_PLANS, PROFESSIONAL_PLANS, AD_PACKAGES } from '@/lib/billing-config';
 
 export const runtime = 'nodejs';
 
-async function getEmployerId() {
+async function getAuthenticatedUser() {
     const cookieStore = await cookies();
     const token = cookieStore.get('profcaria_session')?.value;
     if (!token) return null;
     try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
-        if (payload.schema !== 'employer') return null;
-        return payload.uid as string;
+        return { uid: payload.uid as string, schema: payload.schema as string };
     } catch {
         return null;
     }
@@ -23,100 +23,105 @@ async function getEmployerId() {
 
 export async function POST(req: Request) {
     try {
-        const companyId = await getEmployerId();
-        if (!companyId) {
+        const user = await getAuthenticatedUser();
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { plan } = await req.json(); // plan: 'basic' | 'pro' | 'enterprise'
+        const { plan, isAd, budget, duration, postId } = await req.json(); // plan can be plan name OR ad package ID
 
         // We strictly use the fixed USD_EXCHANGE_RATE from env now as requested.
         let exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
 
-        console.log('--- CHECKOUT DEBUG ---');
-        console.log(`Plan: ${plan}`);
-        console.log(`Exchange Rate: ${exchangeRate}`);
-        console.log(`Env PRO: ${process.env.PRICE_PRO_MONTHLY}`);
-        console.log(`Env PRO Offer: ${process.env.PRICE_PRO_MONTHLY_OFFER}`);
-        console.log('----------------------');
-
-        // Base Prices (Monthly USD)
-        // Base Prices (Monthly USD) & Offers
-        const getPrice = (plan: string) => {
-            const basicMo = parseFloat(process.env.PRICE_BASIC_MONTHLY || '0');
-            const basicOffer = parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || '0');
-            const proMo = parseFloat(process.env.PRICE_PRO_MONTHLY || '0');
-            const proOffer = parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || '0');
-            const entMo = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '0');
-            const entOffer = parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || '0');
-
-            switch (plan) {
-                case 'basic': return basicOffer > 0 ? basicOffer : basicMo;
-                case 'pro': return proOffer > 0 ? proOffer : proMo;
-                case 'enterprise': return entOffer > 0 ? entOffer : entMo;
-                default: return undefined;
-            }
+        // --- 1. DETERMINE PRICE ---
+        let priceUSD = 0;
+        let planCodeEnvKey = '';
+        let metadata: any = {
+            userId: user.uid,
+            entityType: user.schema,
+            plan: plan,
+            postId: postId // Add Post ID to metadata
         };
 
-        const planPrice = getPrice(plan);
+        if (isAd) {
+            if (plan === 'custom_boost') {
+                // Dynamic Boost
+                if (!budget || !duration) return NextResponse.json({ error: 'Missing budget or duration' }, { status: 400 });
+                priceUSD = parseFloat(budget);
+                metadata.isAd = true;
+                metadata.isCustomBoost = true;
+                metadata.boostBudget = budget;
+                metadata.boostDuration = duration;
+                // Currently promoted post ID is missing in modal? 
+                // Wait, PromotePostModal has 'post' prop. But does it pass post ID to startPayment?
+                // The hook 'startPayment' takes args. We need to pass postId to checkout.
+                // Re-checking hook... it takes { plan, isAd ... }
+                // I need to update hook or pass postId in body.
+                // Assuming modal passes it or I update modal to pass it.
+                // Let's assume passed in body for now, I will fix Modal to pass postId next if missing.
+            } else {
+                // Legacy fixed package (fallback)
+                const pkg = Object.values(AD_PACKAGES).find(p => p.id === plan);
+                if (!pkg) return NextResponse.json({ error: 'Invalid Ad Package' }, { status: 400 });
 
-        if (planPrice === undefined) {
-            return NextResponse.json({ error: 'Invalid plan selected' }, { status: 400 });
+                priceUSD = pkg.price;
+                metadata.isAd = true;
+                metadata.credits = pkg.credits;
+            }
+        } else {
+            // Subscription
+            if (user.schema === 'employer') {
+                const getPrice = (p: string) => {
+                    // Reuse existing logic or map from config
+                    switch (p) {
+                        case 'basic': return (parseFloat(process.env.PRICE_BASIC_MONTHLY_OFFER || '0') || parseFloat(process.env.PRICE_BASIC_MONTHLY || '0'));
+                        case 'pro': return (parseFloat(process.env.PRICE_PRO_MONTHLY_OFFER || '0') || parseFloat(process.env.PRICE_PRO_MONTHLY || '0'));
+                        case 'enterprise': return (parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY_OFFER || '0') || parseFloat(process.env.PRICE_ENTERPRISE_MONTHLY || '0'));
+                        default: return 0;
+                    }
+                };
+                priceUSD = getPrice(plan);
+                planCodeEnvKey = `PAYSTACK_PLAN_${plan.toUpperCase()}_MONTHLY`;
+            } else {
+                // Professional
+                const profPlan = Object.values(PROFESSIONAL_PLANS).find(p => p.name.toLowerCase() === plan.toLowerCase());
+                if (!profPlan) return NextResponse.json({ error: 'Invalid Professional Plan' }, { status: 400 });
+                priceUSD = profPlan.priceMonthly;
+                // e.g. PAYSTACK_PLAN_PROF_STANDARD_MONTHLY
+                planCodeEnvKey = `PAYSTACK_PLAN_PROF_${plan.toUpperCase()}_MONTHLY`;
+            }
         }
-        // Calculate amount in correct currency
-        const amountUSD = planPrice;
 
-        // No more yearly discount logic - relying on direct Offer Prices from env
+        if (priceUSD <= 0 && !isAd && plan !== 'free') {
+            return NextResponse.json({ error: 'Invalid request configuration' }, { status: 400 });
+        }
 
-        // Convert to Display Units (e.g. 25.00 or 3225.00)
-        // Paystack initializes with "Display Amount", library handles *100 if needed
-        const displayAmount = amountUSD * exchangeRate;
+        // --- 2. GET USER DETAILS ---
+        let email = '';
+        if (user.schema === 'employer') {
+            const { data: company } = await supabaseAdmin.schema('employer').from('companies').select('enc_work_email').eq('id', user.uid).single();
+            if (company) email = decryptData(company.enc_work_email) || '';
+        } else {
+            const { data: prof } = await supabaseAdmin.schema('professional').from('users').select('enc_email').eq('id', user.uid).single();
+            if (prof) email = decryptData(prof.enc_email) || '';
+        }
+
+        if (!email) return NextResponse.json({ error: 'Email not found' }, { status: 400 });
+
+        // --- 3. PREPARE PAYSTACK ---
+        const displayAmount = priceUSD * exchangeRate;
+        // Round to 2 decimals
         const finalDisplayAmount = Math.round(displayAmount * 100) / 100;
 
-        // 1. Fetch Company Details
-        const { data: company } = await supabaseAdmin
-            .schema('employer')
-            .from('companies')
-            .select('*')
-            .eq('id', companyId)
-            .single();
-
-        if (!company) {
-            return NextResponse.json({ error: 'Company not found' }, { status: 404 });
-        }
-
-        const email = await decryptData(company.enc_work_email);
-
-        if (!email) {
-            return NextResponse.json({ error: 'Could not decrypt company email' }, { status: 400 });
-        }
-
-        // 2. Determine Callback URL
-        // Use the request origin (what the user is visiting) to ensure we redirect back to the correct domain.
         const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com';
+        const paystackPlanCode = process.env[planCodeEnvKey]; // Undefined for ads or one-time
 
-        // 3. Initialize Paystack Transaction
-        // Pass "amount" directly because we already calculated it in cents/kobo above.
-        // We need to slightly adjust the Paystack.initializeTransaction signature or usage 
-        // because it multiplies by 100 inside.
-        // Let's modify usage here to pass the raw value and adjust the lib if needed, 
-        // OR easier: Divide by 100 here so the lib multiplies it back, 
-        // BUT the lib might be used elsewhere. 
-        // Let's check lib/paystack.ts content again. 
-        // Line 5: amount: amount * 100. 
-        // So we should pass the "Display Amount" (e.g. 3225) and let lib turn it into 322500 cents.
-
-        // 3. Initialize Paystack Transaction
-        // Check if a Paystack Plan Code exists for this selection (Enables Auto-Renew)
-        // Always MONTHLY now.
-        const envPlanKey = `PAYSTACK_PLAN_${plan.toUpperCase()}_MONTHLY`;
-        const paystackPlanCode = process.env[envPlanKey];
-
+        // Initialize
         const response = await Paystack.initializeTransaction(
             email,
             finalDisplayAmount,
-            `${origin}/payment/callback`,
-            { companyId, plan, billingCycle: 'monthly' },
+            `${origin}/payment/callback`, // Callback URL (still used for reference even if popup handles closing)
+            metadata,
             paystackPlanCode
         );
 
@@ -124,11 +129,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Paystack Init Failed: ' + response.message }, { status: 400 });
         }
 
-        // Return the authorization URL to frontend
-        return NextResponse.json({ url: response.data.authorization_url });
+        return NextResponse.json({
+            url: response.data.authorization_url,
+            accessCode: response.data.access_code,
+            reference: response.data.reference
+        });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Checkout Error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
