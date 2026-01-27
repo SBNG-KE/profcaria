@@ -327,8 +327,10 @@ export default function HangingAuthCard({
             {/* CARD */}
             <div
                 className={`
-                    relative pointer-events-auto mt-8 w-[90vw] max-w-[500px]
-                    rounded-[2rem] p-8 shadow-2xl overflow-hidden
+                    relative pointer-events-auto mt-8 
+                    w-[95vw] md:w-[90vw] max-w-[500px]
+                    mx-auto lg:mx-0 lg:mr-[calc(4rem-250px)]
+                    rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden
                     transform transition-all duration-500 origin-top
                     ${isDark ? 'bg-black border border-neutral-800' : 'bg-white border text-black'}
                 `}

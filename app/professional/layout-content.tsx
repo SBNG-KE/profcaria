@@ -9,6 +9,7 @@ import {
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import { useTheme } from '@/app/context/ThemeContext';
+import AlertsSidebar from '@/app/components/professional/AlertsSidebar';
 
 export default function ProfessionalLayoutContent({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -286,10 +287,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
 
                     {/* Right Panel - Always visible on desktop */}
                     <aside className={`hidden lg:flex flex-col w-64 shrink-0 border-l p-4 overflow-y-auto ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                        <h3 className={`text-xs font-bold uppercase tracking-wider mb-4 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Alerts</h3>
-                        <div className={`flex-1 flex items-center justify-center ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`}>
-                            <p className="text-sm">No alerts</p>
-                        </div>
+                        <AlertsSidebar />
                     </aside>
                 </div>
             </main>

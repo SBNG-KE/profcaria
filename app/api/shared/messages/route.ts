@@ -191,6 +191,7 @@ export async function POST(req: Request) {
 
         // Encrypt and Insert
         const encContent = encryptData(content);
+
         const { data, error } = await supabaseAdmin
             .schema('employer')
             .from('messages')

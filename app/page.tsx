@@ -26,6 +26,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import HangingAuthCard from './components/HangingAuthCard'; // Import the new component
+import BusinessSolutions from './components/landing/BusinessSolutions';
+import FeaturesShowcase from './components/landing/FeaturesShowcase';
 
 // Scroll Reveal Component
 const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
@@ -205,9 +207,9 @@ function LandingPageContent() {
 
             {/* RIGHT: Main Value Prop - Connecting Focus */}
             <div className="max-w-xl text-right md:text-left">
-              <h2 className={`text-3xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                The <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>exclusive</span> professional network. <br />
-                Connect. Collaborate. Succeed.
+              <h2 className={`text-4xl md:text-5xl font-light leading-tight ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                Where <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>ambition</span> finds its home. <br />
+                <span className="opacity-60 text-3xl">The professional network for the modern era.</span>
               </h2>
             </div>
 
@@ -218,55 +220,26 @@ function LandingPageContent() {
       {/* ============================================
           FEATURES - NO CARDS, JUST CONTENT
           ============================================ */}
-      <section className="py-32 px-6 md:px-20">
-        <div className="max-w-7xl mx-auto space-y-40">
+      <ScrollReveal>
+        <BusinessSolutions onStart={() => setIsAuthOpen(true)} />
+      </ScrollReveal>
 
-          {/* Business Solutions */}
-          <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-              <div className="order-2 md:order-1">
-                {/* Icon only, no background */}
-                <Building2 strokeWidth={1} size={120} className={isDark ? 'text-neutral-800' : 'text-neutral-200'} />
-              </div>
-              <div className="order-1 md:order-2 space-y-6">
-                <h3 className="text-4xl font-black uppercase tracking-tight">Business Solutions</h3>
-                <p className={`text-xl font-light ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                  Connect with industry-leading talent. Accelerate your business growth through meaningful partnerships.
-                </p>
-                <div className="space-y-4 pt-4">
-                  {['Verified Professionals', 'Direct Partnerships', 'Global Reach'].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest">
-                      <span className="w-2 h-2 bg-current rounded-full" /> {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
+      <ScrollReveal>
+        <FeaturesShowcase />
+      </ScrollReveal>
 
-          {/* Social Network */}
-          <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-              <div className="space-y-6">
-                <h3 className="text-4xl font-black uppercase tracking-tight">Social Network</h3>
-                <p className={`text-xl font-light ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                  Build your circle. Engage in real conversations. Grow your influence authentically.
-                </p>
-                <div className="space-y-4 pt-4">
-                  {['Connect Authentically', 'Industry Leaders', 'Meaningful Dialogues'].map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest">
-                      <span className="w-2 h-2 bg-current rounded-full" /> {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <Handshake strokeWidth={1} size={120} className={isDark ? 'text-neutral-800' : 'text-neutral-200'} />
-              </div>
-            </div>
-          </ScrollReveal>
-
-        </div>
+      {/* NEW SECTION: The Standard / Future of Work */}
+      <section className={`py-40 px-6 ${isDark ? 'bg-neutral-900/50' : 'bg-neutral-50'}`}>
+        <ScrollReveal>
+          <div className="max-w-4xl mx-auto text-center space-y-12">
+            <h3 className={`text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none ${isDark ? 'text-white' : 'text-black'}`}>
+              The Standard <br /> Has Been Raised.
+            </h3>
+            <p className={`text-2xl font-light italic font-serif ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+              "We are not just filling positions. We are architecting the future of human collaboration."
+            </p>
+          </div>
+        </ScrollReveal>
       </section>
 
       {/* ============================================

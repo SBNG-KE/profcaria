@@ -406,7 +406,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
         setSelectedMethod(method);
         setVerifyStep('method');
         if (method === 'passkey') {
-            // setTimeout(startPasskeyAuth, 100); 
+            setTimeout(startPasskeyAuth, 100);
         } else if (method === 'email') {
             fetch('/api/security/otp/setup', { method: 'POST' }).catch(console.error);
         }
@@ -435,8 +435,10 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
             {/* HANGING CARD */}
             <div
                 className={`
-                    relative pointer-events-auto mt-8 mr-[calc(4rem-250px)] w-[90vw] max-w-[550px]
-                    rounded-[2rem] p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[80vh]
+                    relative pointer-events-auto mt-8 
+                    w-[95vw] md:w-[90vw] max-w-[550px]
+                    mx-auto lg:mx-0 lg:mr-[calc(4rem-250px)]
+                    rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[80vh]
                     transform transition-all duration-500 origin-top
                     ${isDark ? 'bg-black border border-neutral-800' : 'bg-white border text-black'}
                 `}
@@ -626,7 +628,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                     type="text"
                                     value={totpCode}
                                     onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className={`w-full text-center text-2xl tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
+                                    className={`w-full text-center text-xl md:text-2xl tracking-[0.2em] md:tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
                                     placeholder="000000"
                                     autoFocus
                                 />
@@ -650,7 +652,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                     type="text"
                                     value={emailOtp}
                                     onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className={`w-full text-center text-2xl tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
+                                    className={`w-full text-center text-xl md:text-2xl tracking-[0.2em] md:tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
                                     placeholder="000000"
                                     autoFocus
                                 />
@@ -727,7 +729,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                     type="text"
                                     value={totpCode}
                                     onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className={`w-full text-center text-2xl tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
+                                    className={`w-full text-center text-xl md:text-2xl tracking-[0.2em] md:tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
                                     placeholder="000000"
                                     autoFocus
                                 />
@@ -750,7 +752,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                     type="text"
                                     value={phoneCode}
                                     onChange={(e) => setPhoneCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className={`w-full text-center text-2xl tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
+                                    className={`w-full text-center text-xl md:text-2xl tracking-[0.2em] md:tracking-[0.5em] p-4 rounded-xl border outline-none ${isDark ? 'bg-neutral-900 border-neutral-800 text-white' : 'bg-neutral-100 border-neutral-200'}`}
                                     placeholder="000000"
                                     autoFocus
                                 />
