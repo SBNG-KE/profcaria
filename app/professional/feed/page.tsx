@@ -1,10 +1,9 @@
-"use client"
-
 import React, { useState, useRef, useEffect, TouchEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
     ChevronLeft, ChevronRight, Play, Pause, Maximize2, Volume2, VolumeX,
-    Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, Globe, MapPin, Users, Send, Trash2, Search, Flag, Edit2
+    Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, Globe, MapPin, Users, Send, Trash2, Search, Flag, Edit2,
+    RefreshCw // Added RefreshCw
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -285,6 +284,31 @@ function FeedContent() {
     const [isSearching, setIsSearching] = useState(false);
     const [editingPost, setEditingPost] = useState<any>(null);
 
+    // Scroll Direction & Refresh Button Logic
+    const [showRefreshButton, setShowRefreshButton] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            // Show button after scrolling down 300px
+            if (window.scrollY > 300) {
+                setShowRefreshButton(true);
+            } else {
+                setShowRefreshButton(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const handleRefresh = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Small delay to allow scroll up before refreshing (visual feedback)
+        setTimeout(() => {
+            fetchPosts();
+        }, 500);
+    };
+
     // Single Post View State
     const [singlePost, setSinglePost] = useState<any | null>(null);
     const [viewMode, setViewMode] = useState<'feed' | 'single'>('feed');
@@ -551,6 +575,20 @@ function FeedContent() {
                     onClick={() => { setIsSearching(false); setSearchQuery(''); }}
                 />
             )}
+
+            {/* Refresh Pill Button (Sticky below Search Logic) */}
+            <div className={`fixed top-[3.5rem] left-0 right-0 z-30 flex justify-center pointer-events-none transition-all duration-300 ${showRefreshButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                <button
+                    onClick={handleRefresh}
+                    className={`
+                        pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-xs font-bold uppercase tracking-widest backdrop-blur-md
+                        ${isDark ? 'bg-neutral-800/80 text-white border border-neutral-700' : 'bg-white/80 text-black border border-neutral-200'}
+                    `}
+                >
+                    <RefreshCw size={12} />
+                    <span>New Posts</span>
+                </button>
+            </div>
 
             {/* Search and Post Button */}
             <div className={`sticky top-0 z-40 py-2 px-3 flex items-center gap-2 transition-colors ${isSearching ? 'bg-transparent' : ''}`}>

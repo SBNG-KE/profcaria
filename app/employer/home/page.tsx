@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
 import {
   Briefcase, Plus, ChevronRight,
-  TrendingUp, MessageSquare, Calendar, Activity, BarChart2
+  TrendingUp, MessageSquare, Calendar, Activity, BarChart2,
+  RefreshCw // Added
 } from 'lucide-react';
 import AnalyticsDashboard from './AnalyticsDashboard';
 
@@ -19,6 +20,34 @@ export default function EmployerHome() {
   const [viewMode, setViewMode] = useState<'activity' | 'analytics'>('activity');
 
   const [limits, setLimits] = useState<any>(null);
+
+  // Refresh Pill Logic
+  const [showRefreshButton, setShowRefreshButton] = useState(false);
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowRefreshButton(true);
+      } else {
+        setShowRefreshButton(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleRefresh = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setLoading(true);
+    // Re-fetch notifications
+    fetch('/api/shared/notifications')
+      .then(res => res.json())
+      .then(data => {
+        setNotifications(data.notifications.slice(0, 10));
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  };
+
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +83,21 @@ export default function EmployerHome() {
 
   return (
     <div className={`p-4 md:p-8 max-w-7xl mx-auto space-y-8 pb-32 min-h-screen ${isDark ? 'bg-black' : 'bg-white'}`}>
+
+      {/* Refresh Pill Button (Fixed at top) */}
+      <div className={`fixed top-[5rem] left-0 right-0 z-30 flex justify-center pointer-events-none transition-all duration-300 ${showRefreshButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+        <button
+          onClick={handleRefresh}
+          className={`
+            pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-xs font-bold uppercase tracking-widest backdrop-blur-md
+            ${isDark ? 'bg-neutral-800/80 text-white border border-neutral-700' : 'bg-white/80 text-black border border-neutral-200'}
+          `}
+        >
+          <RefreshCw size={12} />
+          <span>New Updates</span>
+        </button>
+      </div>
+
       {/* Header Section */}
       <header className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
         <div className="text-left">

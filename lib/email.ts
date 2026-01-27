@@ -25,30 +25,30 @@ const EmailWrapper = (content: string) => `
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { margin: 0; padding: 0; background-color: #020617; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         ${getBaseStyles()}
     </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #020617;">
-    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #020617;">
+<body style="margin: 0; padding: 0; background-color: #000000;">
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #000000;">
         <tr>
             <td align="center" style="padding: 40px 0;">
                 <div class="container" style="max-width: 600px; width: 100%; margin: 0 auto;">
                     <!-- Logo -->
                     <div style="text-align: center; margin-bottom: 32px;">
-                        <span style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -1px; text-transform: uppercase;">profcaria</span>
+                        <span style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -1px; text-transform: uppercase;">profcaria</span>
                     </div>
                     
-                    <!-- Content Card -->
-                    <div class="content" style="background-color: #0f172a; border: 1px solid #1e293b; border-radius: 24px; overflow: hidden;">
+                    <!-- Content Card (Black with Subtle Border) -->
+                    <div class="content" style="background-color: #000000; border: 1px solid #333333; border-radius: 24px; overflow: hidden;">
                         <div class="card" style="padding: 48px;">
                             ${content}
                         </div>
                     </div>
 
                     <!-- Footer -->
-                <div style="text-align: center; margin-top: 32px; color: #64748b; font-size: 12px;">
-                    <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Profcaria</p>
+                <div style="text-align: center; margin-top: 32px; color: #525252; font-size: 12px; font-weight: 500;">
+                    <p style="margin: 0 0 8px 0; letter-spacing: 1px; text-transform: uppercase;">&copy; ${new Date().getFullYear()} Profcaria</p>
                     <p style="margin: 0;">All rights reserved</p>
                 </div>
             </div>
@@ -66,14 +66,14 @@ export async function sendEmailOTP(to: string, code: string) {
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">Verification Code</h1>
-        <p style="margin: 0 0 32px 0; color: #94a3b8; font-size: 15px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Verification Code</h1>
+        <p style="margin: 0 0 32px 0; color: #a3a3a3; font-size: 15px; line-height: 1.6; text-align: center;">
             Please use the code below to verify your account. It will expire in 10 minutes.
         </p>
-        <div style="background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
-            <span class="code" style="font-family: monospace; font-size: 42px; font-weight: 700; color: #3b82f6; letter-spacing: 12px; display: block;">${code}</span>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <span class="code" style="font-family: monospace; font-size: 42px; font-weight: 700; color: #ffffff; letter-spacing: 12px; display: block;">${code}</span>
         </div>
-        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center;">If you didn't request this, you can safely ignore this email.</p>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center;">If you didn't request this, you can safely ignore this email.</p>
     `;
 
     try {
@@ -97,35 +97,32 @@ export async function sendJobInvite(to: string, jobTitle: string, companyName: s
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">You're Invited!</h1>
-        <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">You're Invited</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${companyName}</strong> has invited you to apply for their open role:
         </p>
-        <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
             <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${link}" style="display: inline-block; background-color: #10b981; color: #ffffff; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);">View Job & Apply</a>
+            <a href="${link}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">View Job & Apply</a>
         </div>
-        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
             Click the button above to view the full job details. <br>To ensure security, this link is unique to you.
         </p>
     `;
 
     if (!resend) {
-        console.error('Email Error: Resend client not initialized. Check RESEND_API_KEY.');
         throw new Error('Email service unavailable');
     }
 
     try {
-        console.log(`[EMAIL] Attempting to send invite to ${to} via Resend...`);
-        const data = await resend.emails.send({
+        await resend.emails.send({
             from: 'Profcaria Talent <talent@profcaria.com>',
             to,
             subject: `Invited: ${jobTitle} at ${companyName}`,
             html: EmailWrapper(content)
         });
-        console.log('[EMAIL] Resend Response:', data);
         return { success: true };
     } catch (e: any) {
         console.error('Email Error Details:', JSON.stringify(e, null, 2));
@@ -140,19 +137,19 @@ export async function sendUnreadMessageNotification(to: string, senderName: stri
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">New Message</h1>
-        <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Message</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
             You have a new message from <strong>${senderName}</strong> regarding <strong>${jobTitle}</strong>.
         </p>
-        <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
-            <p style="margin: 0; color: #cbd5e1; font-size: 14px; font-style: italic;">
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0; color: #a3a3a3; font-size: 14px; font-style: italic;">
                 "They are waiting for your reply..."
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);">Go to Messages</a>
+            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Messages</a>
         </div>
-        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
             We sent this because you haven't been active recently.
         </p>
     `;
@@ -167,7 +164,6 @@ export async function sendUnreadMessageNotification(to: string, senderName: stri
         return { success: true };
     } catch (e: any) {
         console.error('Email Error:', e);
-        // Don't throw for notifications, just log
         return { success: false, error: e.message };
     }
 }
@@ -200,23 +196,23 @@ export async function sendPreQualifiedNotification(to: string, jobTitle: string,
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 600; color: #ffffff; text-align: center;">Great News! 🎯</h1>
-        <p style="margin: 0 0 24px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
-            You've been <strong style="color: #3b82f6;">pre-qualified</strong> for a position at <strong>${companyName}</strong>!
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Great News! 🎯</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            You've been <strong>pre-qualified</strong> for a position at <strong>${companyName}</strong>!
         </p>
-        <div style="background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
             <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
         </div>
-        <div style="background-color: #3b82f6/10; border: 1px solid #3b82f6; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-            <p style="margin: 0; color: #93c5fd; font-size: 14px; text-align: center;">
+        <div style="background-color: #ffffff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #000000; font-size: 14px; text-align: center;">
                 <strong>🔔 Stay Alert!</strong><br>
                 The employer may reach out with messages soon. Please check your inbox and notifications regularly.
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #3b82f6; color: #ffffff; font-weight: 700; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);">Check Your Dashboard</a>
+            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #e5e5e5;">Check Your Dashboard</a>
         </div>
-        <p style="margin: 0; color: #64748b; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
             This is an important step forward. Keep your profile updated and be ready to respond promptly!
         </p>
     `;
@@ -246,19 +242,21 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         <div style="text-align: center; margin-bottom: 24px;">
             <span style="font-size: 48px;">🎉</span>
         </div>
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 800; color: #ffffff; text-align: center;">Congratulations!</h1>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #ffffff; text-align: center; letter-spacing: -1px;">Congratulations!</h1>
         <p style="margin: 0 0 8px 0; color: #10b981; font-size: 18px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
             You're Officially Employed!
         </p>
-        <p style="margin: 0 0 32px 0; color: #e2e8f0; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${companyName}</strong> has hired you for the position of:
         </p>
-        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);">
+        
+        <!-- Semantic Green preserved for critical success state -->
+        <div style="background-color: #064e3b; border: 1px solid #10b981; border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center; box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.2);">
             <p style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">${jobTitle}</p>
         </div>
         
-        <div style="background-color: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <p style="margin: 0; color: #92400e; font-size: 14px; text-align: center; font-weight: 600;">
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; font-weight: 500;">
                 <strong>⚠️ IMPORTANT</strong><br><br>
                 Please check your emails and Profcaria notifications regularly!<br>
                 The employer will be sending important onboarding information, contracts, and next steps.
@@ -266,10 +264,10 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         </div>
         
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/auth" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.4);">Go to Your Dashboard</a>
+            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
         </div>
         
-        <p style="margin: 0; color: #94a3b8; font-size: 13px; text-align: center; line-height: 1.6;">
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.6;">
             Your journey with <strong>${companyName}</strong> begins now.<br>
             We wish you all the best in your new role! 🚀
         </p>
@@ -285,7 +283,6 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         return { success: true };
     } catch (e: any) {
         console.error('Email Error:', e);
-        // This is critical - we should throw
         throw e;
     }
 }

@@ -24,6 +24,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import HangingAuthCard from './components/HangingAuthCard';
+import HangingContactCard from './components/HangingContactCard';
 import BusinessSolutions from './components/landing/BusinessSolutions';
 import FeaturesShowcase from './components/landing/FeaturesShowcase';
 
@@ -64,6 +65,7 @@ function LandingPageContent() {
   const searchParams = useSearchParams();
   const { theme, toggleTheme } = useTheme();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
   const [initialAuthScreen, setInitialAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>('auth');
   const [initialAuthTab, setInitialAuthTab] = useState<'professional' | 'employer'>('professional');
 
@@ -134,8 +136,28 @@ function LandingPageContent() {
         initialTab={initialAuthTab}
       />
 
+      {/* CONTACT CARD COMPONENT */}
+      <HangingContactCard
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
+
       {/* ============================================
           FLOATING HEADER ELEMENT (No Container)
+...
+        <div className="pointer-events-auto">
+          <button
+            onClick={() => setIsContactOpen(true)}
+            className={`
+              text-xs font-bold uppercase tracking-[0.2em] relative group
+              ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}
+              transition-colors
+            `}
+          >
+            Contact Us
+          </button>
+        </div>
+      </div>
           ============================================ */}
       <div className="fixed top-8 right-8 z-50 flex items-center gap-8">
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
@@ -251,6 +273,12 @@ function LandingPageContent() {
                     <div className="text-xs uppercase tracking-widest mt-2 opacity-60">Opportunities</div>
                   </div>
                 </div>
+
+                <div className="pt-8">
+                  <button disabled className="px-8 py-4 rounded-full bg-neutral-500/10 border border-neutral-500/20 text-neutral-500 font-black uppercase tracking-widest text-xs backdrop-blur-sm cursor-not-allowed opacity-50 hover:opacity-50">
+                    Mobile App Coming Soon
+                  </button>
+                </div>
               </div>
 
               {/* Right Side - The Specific Layout "Card" - CURVED EDGES */}
@@ -300,8 +328,8 @@ function LandingPageContent() {
         </div>
 
         <div className="pointer-events-auto">
-          <Link
-            href="/contact"
+          <button
+            onClick={() => setIsContactOpen(true)}
             className={`
               text-xs font-bold uppercase tracking-[0.2em] relative group
               ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}
@@ -309,7 +337,7 @@ function LandingPageContent() {
             `}
           >
             Contact Us
-          </Link>
+          </button>
         </div>
       </div>
 

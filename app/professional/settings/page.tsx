@@ -217,7 +217,7 @@ export default function ProfessionalSettingsPage() {
                             <button
                                 onClick={handlePasswordChange}
                                 disabled={isLoading || !currentPassword || !newPassword}
-                                className={`px-6 py-3 rounded-xl font-bold text-sm border transition-all ${isDark ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border-emerald-500/20' : 'bg-black text-white hover:bg-neutral-800 border-black'}`}
+                                className={`px-6 py-3 rounded-xl font-bold text-sm border transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200 border-white' : 'bg-black text-white hover:bg-neutral-800 border-black'}`}
                             >
                                 Update Password
                             </button>

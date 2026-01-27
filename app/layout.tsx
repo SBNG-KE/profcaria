@@ -20,37 +20,55 @@ export const metadata: Metadata = {
     default: "Profcaria",
     template: "%s | Profcaria"
   },
-  description: "The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching. No ghosting, just results.",
-  keywords: ["Jobs", "Career", "Privacy", "Smart Matching", "Executive Search", "Private Network"],
+  description: "The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching. No ghosting, just results.",
+  keywords: ["Jobs", "Career", "Smart Matching", "Executive Search", "Growth", "Professional Network", "Exclusive Platform"],
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    apple: '/apple-touch-icon.png', // Using profcaria.png as apple icon since apple-icon.png doesn't exist
+    other: {
+      rel: 'apple-touch-icon-precomposed',
+      url: '/apple-touch-icon.png',
+    },
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.profcaria.com',
     siteName: 'Profcaria',
-    title: 'Profcaria | Encrypted Career Platform',
-    description: 'The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
+    title: 'Profcaria | Exclusive Professional Network',
+    description: 'The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.',
     images: [
       {
         url: 'https://www.profcaria.com/profcaria.png',
         width: 1200,
         height: 630,
-        alt: 'Profcaria Platform Preview',
+        alt: 'Profcaria Platform',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Profcaria | Encrypted Career Platform',
-    description: 'The exclusive, private privacy-first career marketplace. Connect with top employers securely using verified smart matching.',
+    title: 'Profcaria | Exclusive Professional Network',
+    description: 'The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.',
     creator: '@profcaria',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   verification: {
     google: "6xck7xYL-QCWEu1is-U_xcQlkUjfWGxengTW-7mIrk4",
+    other: {
+      me: ['@profcaria'],
+    },
   },
 };
 
