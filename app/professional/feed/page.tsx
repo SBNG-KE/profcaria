@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useRef, useEffect, TouchEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
