@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData, encryptData } from '@/lib/security';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 
@@ -154,6 +156,89 @@ export async function PATCH(req: Request) {
             enc_termination_reason: enc_reason
         };
         let notifMessage = '';
+        let generatedFileUrl = null;
+
+        // Generate PDF if reason is provided
+        if (reason) {
+            try {
+                const pdfDoc = await PDFDocument.create();
+                const page = pdfDoc.addPage();
+                const { width, height } = page.getSize();
+                const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+                const titleFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+                const title = action === 'request_resignation' ? 'RESIGNATION LETTER' : 'MUTUAL TERMINATION REQUEST';
+                const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                page.drawText(title, {
+                    x: 50,
+                    y: height - 50,
+                    size: 20,
+                    font: titleFont,
+                    color: rgb(0, 0, 0),
+                });
+
+                page.drawText(`Date: ${dateStr}`, {
+                    x: 50,
+                    y: height - 80,
+                    size: 12,
+                    font: font,
+                    color: rgb(0, 0, 0),
+                });
+
+                page.drawText(`Application ID: ${applicationId}`, {
+                    x: 50,
+                    y: height - 100,
+                    size: 10,
+                    font: font,
+                    color: rgb(0.5, 0.5, 0.5),
+                });
+
+                page.drawText('Reason / Statement:', {
+                    x: 50,
+                    y: height - 140,
+                    size: 14,
+                    font: titleFont,
+                    color: rgb(0, 0, 0),
+                });
+
+                // Simple text wrapping - VERY basic implementation
+                const fontSize = 12;
+                const maxWidth = width - 100;
+                const words = reason.split(' ');
+                let line = '';
+                let y = height - 160;
+
+                for (const word of words) {
+                    const testLine = line + word + ' ';
+                    const textWidth = font.widthOfTextAtSize(testLine, fontSize);
+                    if (textWidth > maxWidth && y > 50) {
+                        page.drawText(line, { x: 50, y, size: fontSize, font, color: rgb(0, 0, 0) });
+                        line = word + ' ';
+                        y -= 20;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                page.drawText(line, { x: 50, y, size: fontSize, font, color: rgb(0, 0, 0) });
+
+                const pdfBytes = await pdfDoc.save();
+                const filename = `${action}_${applicationId}_${Date.now()}.pdf`;
+
+                const blob = await put(filename, Buffer.from(pdfBytes), {
+                    access: 'public',
+                    contentType: 'application/pdf',
+                });
+
+                generatedFileUrl = blob.url;
+                updateData.connection_file_url = generatedFileUrl;
+
+            } catch (pdfError) {
+                console.error("Failed to generate PDF:", pdfError);
+                // Continue without PDF if fails? Or fail request?
+                // Let's log but continue, keeping only text reason.
+            }
+        }
 
         if (action === 'request_resignation') {
             updateData.status = 'pending_resignation';
@@ -163,8 +248,7 @@ export async function PATCH(req: Request) {
             updateData.termination_type = 'mutual';
             notifMessage = 'An employee has requested a mutual termination of their contract.';
         } else {
-            // Fallback for legacy 'request_termination' call -> assume mutual if not specified? 
-            // Or just leave as pending_termination without type. Let's Map to Mutual for now as user said professional requests usually meant mutual before.
+            // Fallback for legacy
             updateData.status = 'pending_termination';
             updateData.termination_type = 'mutual';
             notifMessage = 'An employee has requested to terminate their employment connection.';
@@ -192,11 +276,10 @@ export async function PATCH(req: Request) {
                 }]);
         }
 
-        return NextResponse.json({ success: true, message: 'Request sent to employer.' });
+        return NextResponse.json({ success: true, message: 'Request sent to employer.', fileUrl: generatedFileUrl });
 
     } catch (error: any) {
         console.error('Request Termination Error:', error);
         return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
     }
 }
-

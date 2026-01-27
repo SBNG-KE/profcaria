@@ -29,6 +29,22 @@ export async function GET(request: NextRequest) {
 
         const postIds = (posts || []).map((p: any) => p.id);
 
+        const { searchParams } = new URL(request.url);
+        const range = searchParams.get('range') || '7d';
+
+        const now = new Date();
+        const startDate = new Date();
+
+        switch (range) {
+            case '24h': startDate.setHours(now.getHours() - 24); break;
+            case '7d': startDate.setDate(now.getDate() - 7); break;
+            case '1m': startDate.setMonth(now.getMonth() - 1); break;
+            case '3m': startDate.setMonth(now.getMonth() - 3); break;
+            case '6m': startDate.setMonth(now.getMonth() - 6); break;
+            case '12m': startDate.setFullYear(now.getFullYear() - 1); break;
+            default: startDate.setDate(now.getDate() - 7);
+        }
+
         let likesCount = 0;
         let commentsCount = 0;
         let repostsCount = 0;
@@ -39,7 +55,8 @@ export async function GET(request: NextRequest) {
                 .schema('professional')
                 .from('post_likes')
                 .select('*', { count: 'exact', head: true })
-                .in('post_id', postIds);
+                .in('post_id', postIds)
+                .gte('created_at', startDate.toISOString());
             likesCount = likes || 0;
 
             // Aggregate Comments
@@ -47,29 +64,25 @@ export async function GET(request: NextRequest) {
                 .schema('professional')
                 .from('post_comments')
                 .select('*', { count: 'exact', head: true })
-                .in('post_id', postIds);
+                .in('post_id', postIds)
+                .gte('created_at', startDate.toISOString());
             commentsCount = comments || 0;
-
-            // Aggregate Reposts (of my posts)
-            // Note: Reposts of my posts are in `professional.post_reposts` (if reposted by pro)
-            // OR `employer.post_reposts` (if reposted by employer)
-            // AND the table column is `original_post_id` (employer) or `post_id` (professional) or `original_post_id` (professional)?
-            // Let's check `professional.post_reposts` schema earlier...
-            // It has `original_post_id`. API used it.
 
             // Reposts by Professionals
             const { count: profReposts } = await supabaseAdmin
                 .schema('professional')
                 .from('post_reposts')
                 .select('*', { count: 'exact', head: true })
-                .in('original_post_id', postIds); // Assuming original_post_id is the FK to my post
+                .in('original_post_id', postIds)
+                .gte('created_at', startDate.toISOString());
 
             // Reposts by Employers
             const { count: empReposts } = await supabaseAdmin
                 .schema('employer')
                 .from('post_reposts')
                 .select('*', { count: 'exact', head: true })
-                .in('original_post_id', postIds);
+                .in('original_post_id', postIds)
+                .gte('created_at', startDate.toISOString());
 
             repostsCount = (profReposts || 0) + (empReposts || 0);
         }

@@ -5,6 +5,7 @@ import { decryptData } from '@/lib/security';
 import { Building2, Globe, MapPin, Mail, Link2, Copy, MessageSquare } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
+import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
@@ -177,46 +178,14 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
                             <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800"></div>
 
-                            {/* Contact Info */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Email */}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Work Email</label>
-                                    <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                        <Mail size={16} /> {email || 'No email provided'}
-                                    </div>
-                                </div>
-
-                                {/* Website */}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Website</label>
-                                    <a href={website || '#'} target={website ? "_blank" : undefined} rel="noopener noreferrer" className={`flex items-center gap-2 font-medium ${website ? 'hover:underline text-neutral-700 dark:text-neutral-300' : 'text-neutral-400 pointer-events-none'}`}>
-                                        <Globe size={16} /> {website || 'No website provided'}
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* Address/Location */}
-                            <div className="space-y-1 pt-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Location</label>
-                                <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                    <MapPin size={16} /> {(city || country) ? `${city || ''}${city && country ? ', ' : ''}${country || ''}` : 'No location provided'}
-                                </div>
-                            </div>
-
-                            {/* Profile Link */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Profile Link</label>
-                                <div className="flex items-center p-1.5 rounded-xl border bg-white border-neutral-200 dark:bg-neutral-950 dark:border-neutral-800">
-                                    <div className="px-3 text-sm truncate flex-1 text-neutral-600 dark:text-neutral-400">
-                                        https://profcaria.com/c/{(companyName || 'company').toLowerCase().replace(/ /g, '-')}
-                                    </div>
-                                    {/* Client component for copy functionality would go here. For now rendering the button visually. */}
-                                    <div className="p-2 rounded-lg text-neutral-400">
-                                        <Copy size={16} />
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Contact Info (Interactivity handled by Client Component) */}
+                            <ContactInfoCard
+                                email={email}
+                                website={website}
+                                city={city || undefined}
+                                country={country || undefined}
+                                profileLink={`https://profcaria.com/c/${(companyName || 'company').toLowerCase().replace(/ /g, '-')}`}
+                            />
 
 
 
@@ -226,7 +195,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
 
                 {/* Company Posts Section */}
-                <div className="pt-4">
+                <div className="pt-4 max-w-4xl mx-auto">
                     <CompanyPostsSection
                         companyId={id}
                         latestPost={formattedPosts[0] || null}

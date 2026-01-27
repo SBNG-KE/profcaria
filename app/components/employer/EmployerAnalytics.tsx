@@ -15,8 +15,9 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
 
     useEffect(() => {
         const fetchAnalytics = async () => {
+            setLoading(true);
             try {
-                const res = await fetch('/api/employer/analytics');
+                const res = await fetch(`/api/employer/analytics?range=${timeRange}`);
                 if (res.ok) {
                     const data = await res.json();
                     setStats(data);
@@ -28,13 +29,42 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
             }
         };
         fetchAnalytics();
-    }, []);
+    }, [timeRange]);
 
-    // Placeholder data (Zeros)
-    const viewData = Array.from({ length: 7 }, (_, i) => ({
-        name: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-        views: 0
-    }));
+    // Generate dynamic chart data based on time range
+    const viewData = React.useMemo(() => {
+        const data = [];
+        const now = new Date();
+
+        if (timeRange === '24h') {
+            for (let i = 0; i < 24; i += 4) { // Every 4 hours
+                const d = new Date(now);
+                d.setHours(d.getHours() - (24 - i));
+                data.push({ name: `${d.getHours()}:00`, views: 0 });
+            }
+        } else if (timeRange === '7d') {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(d.getDate() - i);
+                data.push({ name: days[d.getDay()], views: 0 });
+            }
+        } else if (timeRange === '1m') {
+            for (let i = 4; i >= 0; i--) { // 5 weeks (approx)
+                data.push({ name: `Week ${5 - i}`, views: 0 });
+            }
+        } else {
+            // Months (3m, 6m, 12m)
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const count = timeRange === '3m' ? 3 : (timeRange === '6m' ? 6 : 12);
+            for (let i = count - 1; i >= 0; i--) {
+                const d = new Date(now);
+                d.setMonth(d.getMonth() - i);
+                data.push({ name: months[d.getMonth()], views: 0 });
+            }
+        }
+        return data;
+    }, [timeRange]);
 
     const StatCard = ({ icon: Icon, label, value, colorClass }: any) => (
         <div className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-800/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>

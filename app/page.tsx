@@ -1,10 +1,8 @@
-//app/page.tsx
-
 "use client"
 
 import React, { useState, useEffect, useRef } from 'react';
 export const dynamic = 'force-dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -25,7 +23,7 @@ import {
 import { Analytics } from "@vercel/analytics/next";
 import { useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
-import HangingAuthCard from './components/HangingAuthCard'; // Import the new component
+import HangingAuthCard from './components/HangingAuthCard';
 import BusinessSolutions from './components/landing/BusinessSolutions';
 import FeaturesShowcase from './components/landing/FeaturesShowcase';
 
@@ -63,9 +61,31 @@ const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode,
 // Main Landing Page Content
 function LandingPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { theme, toggleTheme } = useTheme();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [initialAuthScreen, setInitialAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>('auth');
+  const [initialAuthTab, setInitialAuthTab] = useState<'professional' | 'employer'>('professional');
+
+  // Handle URL Query Params
+  useEffect(() => {
+    const authParam = searchParams.get('auth'); // 'login' or 'signup'
+    const modeParam = searchParams.get('mode'); // 'setup', 'verify'
+    const roleParam = searchParams.get('role'); // 'professional', 'employer'
+
+    if (modeParam === 'verify') {
+      setInitialAuthScreen('security_verify');
+      setIsAuthOpen(true);
+    } else if (modeParam === 'setup') {
+      setInitialAuthScreen('security_setup');
+      setIsAuthOpen(true);
+    } else if (authParam) {
+      setInitialAuthScreen('auth');
+      if (roleParam === 'employer') setInitialAuthTab('employer');
+      else setInitialAuthTab('professional');
+      setIsAuthOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -75,59 +95,19 @@ function LandingPageContent() {
           const data = await res.json();
           // Check security status first
           if (data.security) {
-            const { hasPasskey, hasTotp, hasEmail, is2faEnabled } = data.security;
-            // If methods exist but verification needed (how to know if verified? 
-            // Usually api/auth/me doesn't return 'verified' session flag easily without calling middleware logic.
-            // BUT, if we are NOT redirected by middleware on '/', we are technically 'public'.
-            // We rely on the fact that if we were fully verified, we would be allowed to go to Home.
-
-            // Let's rely on data:
+            const { hasPasskey, hasTotp, hasEmail } = data.security;
             const hasAny = hasPasskey || hasTotp || hasEmail;
 
             if (!hasAny) {
-              // Needs setup
               setInitialAuthScreen('security_setup');
               setIsAuthOpen(true);
               return;
             }
 
-            // If has methods, check if we can verify? 
-            // Actually, simpler: Try to verify logic? 
-            // If middleware logic says we need verify, we should probably prompt verify.
-            // But 'data' here might not include AAL.
-
-            // Simplification: logic says if hasAny, assume Verify might be needed if not fully authenticated?
-            // The user said: "when I was in security/verify I went to setup...".
-
-            // Let's implement robust check:
-            // We'll trust that if the user is HERE (on Landing Page) and logged in, they might have been redirected here 
-            // or just arrived. 
-            // If we redirect to Home, and Home bounces us back to /security/verify, that's annoying.
-
-            // Ideally, we replicate Middleware logic? 
-            // hasAny2FA && aal < 2 => Verify.
-            // data.security from /api/auth/me MIGHT NOT HAVE AAL.
-
-            // Let's just check if we stick to the user's flow.
-            // If they have methods, default to Verify screen if we stay here?
-            // No, if they are already verified, we shouldn't show the card.
-
-            // Safe bet: Redirect to Home. If Home redirects to /security/verify, WE CANNOT INTERCEPT IT FROM HERE EASILY
-            // unless we try to fetch Home via ajax to see if it redirects? No.
-
-            // Wait. The user's issue was "It took me to setup page".
-            // If I redirect to Home, and Middleware sends to /security/setup, that's the issue.
-            // Middleware sends to /security/setup ONLY IF !hasAny2FA.
-            // So if hasAny is true, Middleware sends to /security/verify.
-
-            // So:
-            // If has methods, proceed to redirect logic below
-            if (hasAny) {
-              // Do nothing, let it fall through to schema check
-            }
+            // Logic for verified check could go here, but omitted for now to avoid redirect loops
+            // if (hasAny) { ... }
           }
 
-          // If no security object or has methods (and we assume verified??), check schema
           if (data.schema === 'professional') {
             router.push('/professional/feed');
           } else if (data.schema === 'employer') {
@@ -139,7 +119,7 @@ function LandingPageContent() {
       }
     };
     checkSession();
-  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router]);
 
   const isDark = theme === 'dark';
 
@@ -151,6 +131,7 @@ function LandingPageContent() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         initialScreen={initialAuthScreen}
+        initialTab={initialAuthTab}
       />
 
       {/* ============================================

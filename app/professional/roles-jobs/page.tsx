@@ -148,7 +148,7 @@ export default function RolesJobsPage() {
                         onClick={() => setFilter('involuntary')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'involuntary'
                             ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
-                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
+                            : (isDark ? 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Involuntary ({connections.filter(c => c.status === 'involuntary' || c.status === 'terminated').length})
@@ -157,7 +157,7 @@ export default function RolesJobsPage() {
                         onClick={() => setFilter('mutual')}
                         className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${filter === 'mutual'
                             ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg')
-                            : (isDark ? 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
+                            : (isDark ? 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200 hover:text-black')
                             }`}
                     >
                         Mutual ({connections.filter(c => c.status === 'mutual').length})

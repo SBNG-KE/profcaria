@@ -10,9 +10,12 @@ import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import { useTheme } from '@/app/context/ThemeContext';
 import EmployerAlertsSidebar from '@/app/components/employer/AlertsSidebar';
+import ThemeToggle from '@/app/components/ThemeToggle';
+import GlobalSearch from '@/app/components/shared/GlobalSearch';
 
 export default function EmployerLayoutContent({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showAlertsMobile, setShowAlertsMobile] = useState(false);
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const pathname = usePathname();
@@ -24,7 +27,7 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
     const [currentPlan, setCurrentPlan] = useState<string | null>(null);
 
     // Theme
-    const { theme } = useTheme();
+    const { theme, toggleTheme } = useTheme();
     const isDark = theme === 'dark';
 
     // Consume Context
@@ -256,31 +259,65 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
 
             {/* MAIN CONTENT */}
             <main className="flex-1 relative flex flex-col h-full overflow-hidden">
-                {/* Top Bar */}
-                <div className={`w-full px-4 py-3 z-50 shrink-0 flex items-center justify-between ${!showBackButton ? 'md:hidden' : ''}`}>
-                    {/* Mobile Menu */}
-                    <div className={`md:hidden flex items-center gap-2 p-1 pr-3 rounded-full ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className={`p-1.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}
-                        >
-                            <Menu size={14} />
-                        </button>
-                        <span className="font-bold text-xs">Profcaria</span>
+                {/* Top Bar - Desktop & Mobile */}
+                <div className={`w-full px-4 py-3 z-50 shrink-0 flex items-center justify-between`}>
+                    {/* LEFT SIDE */}
+                    <div className="flex items-center gap-3">
+                        {/* Mobile Menu */}
+                        <div className={`md:hidden flex items-center gap-2 p-1 pr-3 rounded-full ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
+                            <button
+                                onClick={() => setSidebarOpen(true)}
+                                className={`p-1.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}
+                            >
+                                <Menu size={14} />
+                            </button>
+                            <span className="font-bold text-xs">Profcaria</span>
+                        </div>
+
+                        {/* Desktop Back */}
+                        {showBackButton && (
+                            <button
+                                onClick={() => router.back()}
+                                className={`hidden md:flex items-center gap-2 transition-colors group ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                            >
+                                <div className={`p-1.5 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                    <ChevronLeft size={14} />
+                                </div>
+                                <span className="text-xs font-medium">Back</span>
+                            </button>
+                        )}
                     </div>
 
-                    {/* Desktop Back */}
-                    {showBackButton && (
-                        <button
-                            onClick={() => router.back()}
-                            className={`hidden md:flex items-center gap-2 transition-colors group ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
-                        >
-                            <div className={`p-1.5 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                                <ChevronLeft size={14} />
-                            </div>
-                            <span className="text-xs font-medium">Back</span>
-                        </button>
-                    )}
+                    {/* RIGHT SIDE - THEME TOGGLE (GLOBAL) */}
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <GlobalSearch />
+                        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
+                        {/* Mobile Only Alerts Icon (Triggers Dropdown) */}
+                        <div className="flex lg:hidden relative items-center">
+                            <button
+                                onClick={() => setShowAlertsMobile(!showAlertsMobile)}
+                                className={`p-2 rounded-full transition-colors ${isDark ? 'bg-neutral-800 text-white hover:bg-neutral-700' : 'bg-white text-black shadow-sm border border-neutral-200 hover:bg-neutral-50'}`}
+                            >
+                                <Bell size={16} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 ring-2 ring-white dark:ring-black"></span>
+                                )}
+                            </button>
+
+                            {/* Dropdown */}
+                            {showAlertsMobile && (
+                                <>
+                                    <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setShowAlertsMobile(false)}></div>
+                                    <div className={`absolute top-12 right-0 w-80 max-h-[70vh] rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                        <div className="flex-1 overflow-y-auto p-4 scroller">
+                                            <EmployerAlertsSidebar />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Main + Right Panel Container */}

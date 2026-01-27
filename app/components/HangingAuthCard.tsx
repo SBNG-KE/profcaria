@@ -101,11 +101,13 @@ const ModernInput = ({
 export default function HangingAuthCard({
     isOpen,
     onClose,
-    initialScreen = 'auth'
+    initialScreen = 'auth',
+    initialTab = 'professional'
 }: {
     isOpen: boolean;
     onClose: () => void;
     initialScreen?: 'auth' | 'security_setup' | 'security_verify';
+    initialTab?: 'professional' | 'employer';
 }) {
     const router = useRouter();
     const { theme } = useTheme();
@@ -116,7 +118,7 @@ export default function HangingAuthCard({
 
     // AUTH STATE (PRESERVED FROM auth/page.tsx)
     const [globalMode, setGlobalMode] = useState<'login' | 'signup'>('login');
-    const [activeTab, setActiveTab] = useState<'professional' | 'employer'>('professional');
+    const [activeTab, setActiveTab] = useState<'professional' | 'employer'>(initialTab);
     const [loading, setLoading] = useState(false);
 
     // Professional State
@@ -169,14 +171,15 @@ export default function HangingAuthCard({
         fetchIndustries();
     }, []);
 
-    // Reset state when closed or opened with new screen
+    // Reset state when closed or opened with new screen/tab
     useEffect(() => {
         if (!isOpen) {
             setScreen('auth');
         } else {
             setScreen(initialScreen);
+            setActiveTab(initialTab);
         }
-    }, [isOpen, initialScreen]);
+    }, [isOpen, initialScreen, initialTab]);
 
     // Password Validation Helper (UNCHANGED)
     const validatePassword = (password: string) => {

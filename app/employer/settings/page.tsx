@@ -326,26 +326,54 @@ function SettingsContent() {
                         </h3>
                         {/* Table... */}
                         <div className="overflow-hidden rounded-xl border border-neutral-800">
-                            <table className="w-full text-left text-sm text-neutral-400">
-                                <thead className="bg-neutral-900 text-neutral-200 font-bold uppercase text-xs tracking-wider">
-                                    <tr>
-                                        <th className="p-4">Action</th>
-                                        <th className="p-4">Location Details</th>
-                                        <th className="p-4">IP Address</th>
-                                        <th className="p-4">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-neutral-800">
-                                    {activityLogs.map((log, i) => (
-                                        <tr key={i} className="hover:bg-neutral-800/30 transition-colors">
-                                            <td className="p-4 font-bold text-white">{log.action}</td>
-                                            <td className="p-4">{log.location_details}</td>
-                                            <td className="p-4 font-mono text-xs">{log.ip_address}</td>
-                                            <td className="p-4">{new Date(log.created_at).toLocaleString()}</td>
+                            {/* Desktop Table */}
+                            <div className="hidden md:block">
+                                <table className="w-full text-left text-sm text-neutral-400">
+                                    <thead className="bg-neutral-900 text-neutral-200 font-bold uppercase text-xs tracking-wider">
+                                        <tr>
+                                            <th className="p-4">Action</th>
+                                            <th className="p-4">Location Details</th>
+                                            <th className="p-4">IP Address</th>
+                                            <th className="p-4">Date</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-neutral-800">
+                                        {activityLogs.map((log, i) => (
+                                            <tr key={i} className="hover:bg-neutral-800/30 transition-colors">
+                                                <td className="p-4 font-bold text-white">{log.action}</td>
+                                                <td className="p-4">{log.location_details}</td>
+                                                <td className="p-4 font-mono text-xs">{log.ip_address}</td>
+                                                <td className="p-4">{new Date(log.created_at).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                        {activityLogs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="p-8 text-center italic text-neutral-500">No activity logs found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Cards */}
+                            <div className="md:hidden divide-y divide-neutral-800">
+                                {activityLogs.map((log, i) => (
+                                    <div key={i} className="p-4 flex flex-col gap-2 bg-neutral-900/20">
+                                        <div className="flex justify-between items-start">
+                                            <span className="font-bold text-white">{log.action}</span>
+                                            <span className="text-[10px] text-neutral-500">{new Date(log.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="text-xs text-neutral-400 flex items-center gap-2">
+                                            <span>{log.location_details}</span>
+                                            <span>•</span>
+                                            <span className="font-mono">{log.ip_address}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                                {activityLogs.length === 0 && (
+                                    <div className="p-8 text-center italic text-sm text-neutral-500">No activity logs found.</div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

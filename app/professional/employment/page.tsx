@@ -151,25 +151,11 @@ const ConnectionCard = ({
                                     connection.status.replace(/_/g, ' ')}
                     </span>
 
-                    {/* Add File Button (Only Active) */}
-                    {active && !connection.connectionFileUrl && (
-                        <button onClick={() => onManageFile('upload')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="Attach Document">
-                            <Plus size={14} />
-                        </button>
-                    )}
-                    {/* Edit/View File Button (Only Active) */}
+                    {/* File Attachment Indicator for Active - View Only if exists */}
                     {active && connection.connectionFileUrl && (
-                        <div className="flex gap-1">
-                            <button onClick={() => onManageFile('view')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="View Document">
-                                <FileText size={14} />
-                            </button>
-                            <button onClick={() => onManageFile('upload')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="Replace Document">
-                                <Pencil size={14} />
-                            </button>
-                            <button onClick={() => onManageFile('remove')} className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all" title="Remove Document">
-                                <X size={14} />
-                            </button>
-                        </div>
+                        <button onClick={() => onManageFile('view')} className={`p-2 rounded-full transition-all ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="View Document">
+                            <FileText size={14} />
+                        </button>
                     )}
                     {/* Terminated View Only handled by click on status or generic */}
                     {terminated && connection.connectionFileUrl && (
@@ -215,7 +201,6 @@ const ConnectionCard = ({
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
@@ -255,63 +240,6 @@ export default function ConnectPage() {
         }
     };
 
-    const handleFileUpload = async (file: File) => {
-        if (!selectedConnection) return;
-        setIsUploading(true);
-        try {
-            // 1. Upload to Blob (using existing API)
-            const uploadRes = await fetch(`/api/upload?filename=${file.name}`, {
-                method: 'POST',
-                body: file
-            });
-            if (!uploadRes.ok) throw new Error("Upload failed");
-            const uploadData = await uploadRes.json();
-            const fileUrl = uploadData.url;
-
-            // 2. Patch Connection
-            const res = await fetch('/api/professional/connections', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ applicationId: selectedConnection.applicationId, action: 'update_file', fileUrl })
-            });
-
-            if (res.ok) {
-                setConnections(prev => prev.map(c =>
-                    c.applicationId === selectedConnection.applicationId
-                        ? { ...c, connectionFileUrl: fileUrl }
-                        : c
-                ));
-                setActionType(null);
-                setSelectedConnection(null);
-            } else {
-                alert("Failed to update connection with file.");
-            }
-
-        } catch (error) {
-            console.error("File upload error:", error);
-            alert("File upload failed.");
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    // handleFileAction for Remove
-    const handleFileAction = async (applicationId: string, action: string, fileUrl: string | null) => {
-        try {
-            const res = await fetch('/api/professional/connections', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ applicationId, action, fileUrl })
-            });
-            if (res.ok) {
-                setConnections(prev => prev.map(c =>
-                    c.applicationId === applicationId
-                        ? { ...c, connectionFileUrl: undefined } // clear it
-                        : c
-                ));
-            }
-        } catch (e) { console.error(e); }
-    };
 
     const handleActionSubmit = async () => {
         if (!selectedConnection || !actionType) return;
@@ -326,12 +254,13 @@ export default function ConnectPage() {
             });
 
             if (res.ok) {
+                const data = await res.json();
                 // Determine new status based on action
                 const newStatus = actionType === 'resign' ? 'pending_resignation' : 'pending_termination';
 
                 setConnections(prev => prev.map(c =>
                     c.applicationId === selectedConnection.applicationId
-                        ? { ...c, status: newStatus }
+                        ? { ...c, status: newStatus, connectionFileUrl: data.fileUrl } // Update with generated file URL
                         : c
                 ));
                 setSelectedConnection(null);
@@ -370,13 +299,13 @@ export default function ConnectPage() {
                         <div className={`flex p-1 rounded-xl border shrink-0 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
                             <button
                                 onClick={() => setViewMode('current')}
-                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'current' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black')}`}
+                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'current' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-black')}`}
                             >
                                 Current
                             </button>
                             <button
                                 onClick={() => setViewMode('past')}
-                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'past' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-slate-500 hover:text-slate-300' : 'text-neutral-500 hover:text-black')}`}
+                                className={`px-6 py-2.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'past' ? (isDark ? 'bg-white text-black shadow-lg' : 'bg-black text-white shadow-lg') : (isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-500 hover:text-black')}`}
                             >
                                 Past
                             </button>
@@ -385,10 +314,10 @@ export default function ConnectPage() {
                         {/* Sub-Filters for Past Connections */}
                         {viewMode === 'past' && (
                             <div className="flex gap-2 animate-in fade-in slide-in-from-top-2">
-                                <button onClick={() => setPastFilter('all')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'all' ? 'bg-slate-800 text-white border-slate-700' : 'text-slate-500 border-transparent hover:text-slate-300'}`}>All</button>
-                                <button onClick={() => setPastFilter('resigned')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'resigned' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'text-slate-500 border-transparent hover:text-slate-300'}`}>Resigned</button>
-                                <button onClick={() => setPastFilter('involuntary')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'involuntary' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'text-slate-500 border-transparent hover:text-slate-300'}`}>Involuntary</button>
-                                <button onClick={() => setPastFilter('mutual')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'mutual' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'text-slate-500 border-transparent hover:text-slate-300'}`}>Mutual</button>
+                                <button onClick={() => setPastFilter('all')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'all' ? 'bg-neutral-800 text-white border-neutral-700' : 'text-neutral-500 border-transparent hover:text-neutral-300'}`}>All</button>
+                                <button onClick={() => setPastFilter('resigned')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'resigned' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'text-neutral-500 border-transparent hover:text-neutral-300'}`}>Resigned</button>
+                                <button onClick={() => setPastFilter('involuntary')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'involuntary' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'text-neutral-500 border-transparent hover:text-neutral-300'}`}>Involuntary</button>
+                                <button onClick={() => setPastFilter('mutual')} className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${pastFilter === 'mutual' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'text-neutral-500 border-transparent hover:text-neutral-300'}`}>Mutual</button>
                             </div>
                         )}
                     </div>
@@ -423,12 +352,12 @@ export default function ConnectPage() {
 
                 {/* Connection List */}
                 <div className="space-y-4">
-                    <h2 className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Your Connections</h2>
+                    <h2 className={`text-sm font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Your Connections</h2>
 
                     {isLoading ? (
                         <div className={`rounded-[40px] p-12 text-center border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                             <div className={`animate-spin w-8 h-8 border-2 border-t-transparent rounded-full mx-auto mb-4 ${isDark ? 'border-white' : 'border-black'}`}></div>
-                            <p className={isDark ? 'text-slate-500' : 'text-neutral-500'}>Loading connections...</p>
+                            <p className={isDark ? 'text-neutral-500' : 'text-neutral-500'}>Loading connections...</p>
                         </div>
                     ) : connections.length === 0 ? (
                         <div className={`rounded-[40px] p-12 text-center space-y-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
@@ -468,9 +397,7 @@ export default function ConnectPage() {
                                                 onMutual={() => { setSelectedConnection(connection); setActionType('mutual'); setReason(''); }}
                                                 onCancel={() => { }}
                                                 onManageFile={(action) => {
-                                                    if (action === 'upload') { setSelectedConnection(connection); setActionType('upload_file'); }
-                                                    else if (action === 'view') { if (connection.connectionFileUrl) window.open(connection.connectionFileUrl, '_blank'); }
-                                                    else if (action === 'remove') { handleFileAction(connection.applicationId, 'remove_file', null); }
+                                                    if (action === 'view') { if (connection.connectionFileUrl) window.open(connection.connectionFileUrl, '_blank'); }
                                                 }}
                                                 isDark={isDark}
                                             />
@@ -478,9 +405,9 @@ export default function ConnectPage() {
                                     </div>
                                     {totalPages > 1 && (
                                         <div className="flex items-center justify-center gap-4 pt-6">
-                                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
-                                            <span className="text-slate-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
-                                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
+                                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed"><ChevronLeft size={16} /> Previous</button>
+                                            <span className="text-neutral-400 text-sm">Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span></span>
+                                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="flex items-center gap-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-xl text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">Next <ChevronRight size={16} /></button>
                                         </div>
                                     )}
                                 </>
@@ -497,7 +424,7 @@ export default function ConnectPage() {
                         className="absolute inset-0 bg-black/80 backdrop-blur-md"
                         onClick={() => { setSelectedConnection(null); setActionType(null); }}
                     />
-                    <div className="relative w-full max-w-md bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
+                    <div className="relative w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
                         <div className="flex items-center gap-3 text-white mb-6">
                             {actionType === 'resign' ? (
                                 <div className="p-3 bg-red-500/20 text-red-400 rounded-xl">
@@ -512,7 +439,7 @@ export default function ConnectPage() {
                                 <h3 className="text-xl font-black uppercase tracking-tight">
                                     {actionType === 'resign' ? 'Resign from Role' : 'Mutual Separation'}
                                 </h3>
-                                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">
+                                <p className="text-[10px] uppercase font-bold text-neutral-500 tracking-widest">
                                     {selectedConnection.company.name}
                                 </p>
                             </div>
@@ -520,13 +447,13 @@ export default function ConnectPage() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                <label className="block text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2">
                                     Reason (Required)
                                 </label>
                                 <textarea
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-emerald-500 min-h-[120px] resize-none placeholder:text-slate-600"
+                                    className="w-full bg-neutral-800 border border-neutral-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-emerald-500 min-h-[120px] resize-none placeholder:text-neutral-600"
                                     placeholder={actionType === 'resign'
                                         ? "Please explain why you are resigning..."
                                         : "Please explain why you are requesting a mutual separation..."}
@@ -537,7 +464,7 @@ export default function ConnectPage() {
                             <div className="flex gap-3 mt-6">
                                 <button
                                     onClick={() => { setSelectedConnection(null); setActionType(null); }}
-                                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
+                                    className="flex-1 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
                                 >
                                     Cancel
                                 </button>
@@ -545,7 +472,7 @@ export default function ConnectPage() {
                                     onClick={handleActionSubmit}
                                     disabled={!reason.trim() || isSubmitting}
                                     className={`flex-1 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all text-white ${!reason.trim() || isSubmitting
-                                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                        ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed'
                                         : actionType === 'resign'
                                             ? 'bg-red-600 hover:bg-red-500'
                                             : 'bg-emerald-600 hover:bg-emerald-500'
@@ -559,51 +486,6 @@ export default function ConnectPage() {
                 </div>
             )}
 
-            {/* File Upload Modal */}
-            {selectedConnection && actionType === 'upload_file' && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => { setSelectedConnection(null); setActionType(null); }}></div>
-                    <div className="relative w-full max-w-sm bg-[#0f172a] border border-slate-700 rounded-[32px] p-8 shadow-2xl animate-in zoom-in-95">
-                        <div className="flex items-center gap-3 text-white mb-6">
-                            <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl">
-                                <FileText size={24} />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-black uppercase tracking-tight">Upload Document</h3>
-                                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">
-                                    {selectedConnection.company.name}
-                                </p>
-                            </div>
-                        </div>
-
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            // Handled via separate helper or inline? Implementing inline for simplicity
-                            // Actually we need a file input ref or state
-                            // Let's rely on standard html form submit with handling
-                            const file = (e.target as any).file.files[0];
-                            if (file) handleFileUpload(file);
-                        }} className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Select File (PDF/DOCX)</label>
-                                <input
-                                    name="file"
-                                    type="file"
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20"
-                                    accept=".pdf,.doc,.docx"
-                                    required
-                                />
-                            </div>
-                            <div className="pt-4 flex gap-3">
-                                <button type="button" onClick={() => { setSelectedConnection(null); setActionType(null); }} className="flex-1 py-3 bg-slate-800 text-slate-400 rounded-xl text-xs font-bold uppercase">Cancel</button>
-                                <button type="submit" disabled={isUploading} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase flex items-center justify-center gap-2">
-                                    {isUploading ? 'Uploading...' : 'Upload'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

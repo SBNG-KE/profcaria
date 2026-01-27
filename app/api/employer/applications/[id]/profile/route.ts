@@ -157,20 +157,50 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             });
         };
 
-        const manualHistory = decryptList(empRes.data || [], ['enc_title', 'enc_company', 'enc_description']).map(item => ({ ...item, source: 'manual' }));
-        
+        // Helper to map snake_case to camelCase
+        const toCamelCase = (obj: any) => {
+            const newObj: any = {};
+            for (const key in obj) {
+                const camelKey = key.replace(/([-_][a-z])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''));
+                newObj[camelKey] = obj[key];
+            }
+            return newObj;
+        };
+
+        const manualHistory = decryptList(empRes.data || [], ['enc_title', 'enc_company', 'enc_description'])
+            .map(item => ({
+                ...toCamelCase(item),
+                source: 'manual'
+            }));
+
         // Merge and Sort (Latest first)
         const employmentHistory = [...manualHistory, ...verifiedHistory].sort((a, b) => {
-             const dateA = new Date(a.startDate || '1900-01-01').getTime();
-             const dateB = new Date(b.startDate || '1900-01-01').getTime();
-             return dateB - dateA;
+            const dateA = new Date(a.startDate || '1900-01-01').getTime();
+            const dateB = new Date(b.startDate || '1900-01-01').getTime();
+            return dateB - dateA;
         });
 
-        const education = decryptList(eduRes.data || [], ['enc_school', 'enc_degree', 'enc_field_of_study']);
-        const skills = decryptList(skillsRes.data || [], ['enc_name']);
-        const certifications = decryptList(certsRes.data || [], ['enc_name', 'enc_issuer']);
-        const awards = decryptList(awardsRes.data || [], ['enc_title', 'enc_issuer']);
-        const otherProfiles = decryptList(profsRes.data || [], []); // Usually not encrypted or minimal
+        // Normalize others
+        const education = decryptList(eduRes.data || [], ['enc_school', 'enc_degree', 'enc_field_of_study'])
+            .map(item => toCamelCase(item));
+
+        const skills = decryptList(skillsRes.data || [], ['enc_name'])
+            .map(item => toCamelCase(item));
+
+        const certifications = decryptList(certsRes.data || [], ['enc_name', 'enc_issuer'])
+            .map(item => toCamelCase(item));
+
+        const awards = decryptList(awardsRes.data || [], ['enc_title', 'enc_issuer'])
+            .map(item => toCamelCase(item));
+
+        const otherProfiles = decryptList(profsRes.data || [], ['enc_network', 'enc_url'])
+            .map(item => {
+                const camel = toCamelCase(item);
+                return {
+                    ...camel,
+                    platform: camel.network, // Map network to platform
+                };
+            });
 
         const sharedDocuments = (documents || []).map((doc: any) => ({
             type: doc.doc_type,

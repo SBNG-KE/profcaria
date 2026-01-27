@@ -9,9 +9,10 @@ import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
 
 // Truncated Text Component for Mobile
-const TruncatedText = ({ text, isDark }: { text: string, isDark: boolean }) => {
+const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const parts = text.split(/(\s+|hashtag#[\w]+|#[\w]+)/g);
+    // Use new RegExp to avoid parser issues
+    const parts = text.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
 
     return (
         <div className={`relative ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>
@@ -19,12 +20,20 @@ const TruncatedText = ({ text, isDark }: { text: string, isDark: boolean }) => {
                 {parts.map((part, i) => {
                     let displayPart = part;
                     let isHashtag = false;
-                    if (part.match(/^(hashtag)?#[\w]+$/i)) {
+                    if (part.match(new RegExp('^(hashtag)?#[\\w]+$', 'i'))) {
                         displayPart = part.replace(/^hashtag/i, '');
                         isHashtag = true;
                     }
                     if (isHashtag) {
-                        return <span key={i} className="text-blue-500 font-medium hover:underline cursor-pointer">{displayPart}</span>;
+                        return (
+                            <button
+                                key={i}
+                                onClick={(e) => { e.stopPropagation(); onHashtagClick?.(displayPart.replace('#', '')); }}
+                                className="text-blue-500 font-medium hover:underline cursor-pointer"
+                            >
+                                {displayPart}
+                            </button>
+                        );
                     }
                     return part;
                 })}
@@ -42,20 +51,28 @@ const TruncatedText = ({ text, isDark }: { text: string, isDark: boolean }) => {
 };
 
 // Scrollable Text Component
-const ScrollableText = ({ text, isDark }: { text: string, isDark: boolean }) => {
-    const parts = text.split(/(\s+|hashtag#[\w]+|#[\w]+)/g);
+const ScrollableText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
+    const parts = text.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
     return (
         <div className={`max-h-72 overflow-y-auto text-base leading-relaxed pr-2 scrollbar-thin ${isDark ? 'text-neutral-200 scrollbar-thumb-neutral-700' : 'text-neutral-800 scrollbar-thumb-neutral-300'}`}>
             <p className="whitespace-pre-wrap">
                 {parts.map((part, i) => {
                     let displayPart = part;
                     let isHashtag = false;
-                    if (part.match(/^(hashtag)?#[\w]+$/i)) {
+                    if (part.match(new RegExp('^(hashtag)?#[\\w]+$', 'i'))) {
                         displayPart = part.replace(/^hashtag/i, '');
                         isHashtag = true;
                     }
                     if (isHashtag) {
-                        return <span key={i} className="text-blue-500 font-medium hover:underline cursor-pointer">{displayPart}</span>;
+                        return (
+                            <button
+                                key={i}
+                                onClick={(e) => { e.stopPropagation(); onHashtagClick?.(displayPart.replace('#', '')); }}
+                                className="text-blue-500 font-medium hover:underline cursor-pointer"
+                            >
+                                {displayPart}
+                            </button>
+                        );
                     }
                     return part;
                 })}
@@ -77,11 +94,13 @@ interface PostCardProps {
     onDeleteRepost?: (repostId: string) => void; // Optional for deleting reposts
     onEdit?: (post: any) => void;
     onCommentAdded?: () => void;
+    onHashtagClick?: (tag: string) => void;
     readOnly?: boolean;
+    forceVertical?: boolean;
 }
 
 
-const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFollow, onReport, onDelete, onDeleteRepost, onEdit, onCommentAdded }: PostCardProps) => {
+const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFollow, onReport, onDelete, onDeleteRepost, onEdit, onCommentAdded, onHashtagClick, forceVertical = false }: PostCardProps) => {
     const isProfessional = post.author.type === 'professional';
     const hasMedia = post.media && post.media.length > 0;
     const isOwnPost = post.author.id === currentUserId;
@@ -201,7 +220,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row">
+            <div className={`flex flex-col ${forceVertical ? '' : 'sm:flex-row'}`}>
                 {/* Mobile Header (Visible only on mobile) */}
                 <div className="sm:hidden">
                     <PostHeader isMobile={true} />
@@ -209,7 +228,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
 
                 {/* Mobile Text (Visible only on mobile) */}
                 <div className="sm:hidden px-4 pb-3">
-                    <TruncatedText text={post.content} isDark={isDark} />
+                    <TruncatedText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
                 </div>
 
                 {/* Media (Center on Mobile, Left on Desktop) */}
@@ -285,7 +304,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
 
                     {/* Desktop Content (Hidden on Mobile) */}
                     <div className={`hidden sm:block px-4 py-2 flex-1 ${showComments ? 'min-h-[100px]' : 'min-h-[200px]'}`}>
-                        <ScrollableText text={post.content} isDark={isDark} />
+                        <ScrollableText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
                     </div>
 
                     {/* Engagement - Visible on both (but logically belongs here) */}

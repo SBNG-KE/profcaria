@@ -61,6 +61,7 @@ const PostsPreview = ({ isDark, latestPost: initialPost, onViewAll, userId, user
                         isDark={isDark}
                         currentUserId=""
                         readOnly={true}
+                        forceVertical={true}
                     // Disable actions since it's a preview
                     />
                 </div>

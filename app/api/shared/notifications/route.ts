@@ -26,6 +26,22 @@ export async function GET(req: Request) {
         const schemaName = schema === 'professional' ? 'professional' : 'employer';
         const userField = schema === 'professional' ? 'user_id' : 'company_id';
 
+        // Auto-cleanup: Delete read notifications older than 7 days
+        try {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            await supabaseAdmin
+                .schema(schemaName)
+                .from('notifications')
+                .delete()
+                .eq(userField, uid)
+                .eq('is_read', true)
+                .lt('created_at', sevenDaysAgo.toISOString());
+        } catch (cleanupError) {
+            console.error('Cleanup Error (Non-fatal):', cleanupError);
+        }
+
         const { data: notifications, error } = await supabaseAdmin
             .schema(schemaName)
             .from('notifications')

@@ -131,6 +131,48 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ posts: processed });
         }
 
+        // --- CASE 3: HASHTAG FILTERING ---
+        const hashtag = searchParams.get('hashtag');
+        if (hashtag) {
+            // Case-insensitive search for hashtag. Use ilike.
+            const tagPattern = `%#${hashtag}%`; // Matches #tag in content (simple approximation)
+
+            // Fetch professional posts
+            let profQuery = supabaseAdmin
+                .schema('professional')
+                .from('posts')
+                .select('*')
+                .ilike('content', tagPattern)
+                .order('created_at', { ascending: false })
+                .limit(limit);
+
+            // Fetch employer posts
+            let empQuery = supabaseAdmin
+                .schema('employer')
+                .from('posts')
+                .select('*')
+                .ilike('content', tagPattern)
+                .order('created_at', { ascending: false })
+                .limit(limit)
+                .then((res: any) => ({ ...res, isEmployer: true }))
+                .catch(() => ({ data: [], error: null }));
+
+            const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
+
+            // Merge and Sort
+            let allPosts: any[] = [];
+            if (profRes.data) allPosts = [...allPosts, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
+            if ((empRes as any).data) allPosts = [...allPosts, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
+
+            allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+            // Limit again after merge (to p_limit approx)
+            allPosts = allPosts.slice(0, limit);
+
+            const processed = await processPosts(allPosts, user);
+            return NextResponse.json({ posts: processed });
+        }
+
         // MAIN FEED: Use AI Ranking RPC
         const { data: rankedPosts, error: rpcError } = await supabaseAdmin.rpc('get_ranked_feed', {
             p_user_id: user.id,

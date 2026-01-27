@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import {
-    Briefcase, GraduationCap, Award, BadgeCheck, Link2, Plus, PenLine, Trash2, X
+    Briefcase, GraduationCap, Award, BadgeCheck, Link2, Plus, PenLine, Trash2, X,
+    Linkedin, Github, Twitter, Globe
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -38,6 +39,14 @@ export default function ProfileInfoSection({
 }: ProfileInfoSectionProps) {
     const { theme } = useTheme();
     const isDark = propIsDark ?? (theme === 'dark');
+
+    const getProfileIcon = (platform: string) => {
+        const p = platform?.toLowerCase() || '';
+        if (p.includes('linkedin')) return <Linkedin size={18} />;
+        if (p.includes('github')) return <Github size={18} />;
+        if (p.includes('twitter') || p.includes('x.com') || p.includes('x')) return <Twitter size={18} />;
+        return <Globe size={18} />;
+    };
 
     const SectionHeader = ({ title, icon: Icon, sectionKey }: { title: string, icon: any, sectionKey: string }) => (
         <div className="flex items-center justify-between mb-6">
@@ -76,7 +85,7 @@ export default function ProfileInfoSection({
     return (
         <div className="space-y-8">
             {/* Experience */}
-            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+            <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <SectionHeader title="Experience" icon={Briefcase} sectionKey="employment" />
                 <div className="space-y-8">
                     {employmentHistory.length === 0 ? (
@@ -105,7 +114,7 @@ export default function ProfileInfoSection({
             </div>
 
             {/* Education */}
-            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+            <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <SectionHeader title="Education" icon={GraduationCap} sectionKey="education" />
                 <div className="space-y-6">
                     {education.length === 0 ? (
@@ -128,7 +137,7 @@ export default function ProfileInfoSection({
             </div>
 
             {/* Skills */}
-            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+            <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <SectionHeader title="Skills" icon={BadgeCheck} sectionKey="skills" />
                 <div className="flex flex-wrap gap-2">
                     {skills.length === 0 ? (
@@ -151,7 +160,7 @@ export default function ProfileInfoSection({
             {/* Certifications & Awards Grid represented as one row if desired, or stacked layout. Keeping stacked for simplicity */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Certifications */}
-                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <SectionHeader title="Certifications" icon={Award} sectionKey="certifications" />
                     <div className="space-y-4">
                         {certifications.length === 0 ? (
@@ -172,7 +181,7 @@ export default function ProfileInfoSection({
                 </div>
 
                 {/* Awards */}
-                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <SectionHeader title="Honors & Awards" icon={Award} sectionKey="awards" />
                     <div className="space-y-4">
                         {awards.length === 0 ? (
@@ -194,22 +203,30 @@ export default function ProfileInfoSection({
             </div>
 
             {/* Other Profiles */}
-            <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+            <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <SectionHeader title="Other Profiles" icon={Link2} sectionKey="other_profiles" />
-                <div className="space-y-4">
+                <div className="flex flex-wrap gap-4">
                     {otherProfiles.length === 0 ? (
                         <p className={`text-sm italic ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>No other profiles linked.</p>
                     ) : (
                         otherProfiles.map((prof) => (
-                            <div key={prof.id} className="group flex items-center justify-between p-4 rounded-2xl border bg-white border-neutral-200 dark:bg-neutral-800 dark:border-neutral-700">
-                                <div className="flex items-center gap-4">
-                                    <Link2 size={20} className="text-neutral-500 dark:text-neutral-400" />
-                                    <div>
-                                        <h4 className="font-bold text-black dark:text-white">{prof.network}</h4>
-                                        <a href={prof.url} target="_blank" rel="noopener noreferrer" className="text-sm hover:underline text-neutral-600 dark:text-neutral-400">{prof.url}</a>
+                            <div key={prof.id} className="group relative">
+                                <a
+                                    href={prof.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`flex items-center gap-3 px-5 py-3 rounded-xl border transition-all ${isDark ? 'bg-neutral-800/50 border-neutral-800 hover:bg-neutral-800 text-white' : 'bg-white border-neutral-200 hover:bg-neutral-50 text-black shadow-sm'}`}
+                                >
+                                    <div className={`p-1.5 rounded-lg ${isDark ? 'bg-neutral-700/50 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
+                                        {getProfileIcon(prof.network || prof.url)}
                                     </div>
+                                    <div className="text-left pr-6">
+                                        <p className="text-xs font-bold uppercase tracking-wider">{prof.network || 'Website'}</p>
+                                    </div>
+                                </a>
+                                <div className="absolute -top-2 -right-2">
+                                    <EditActions section="other_profiles" item={prof} />
                                 </div>
-                                <EditActions section="other_profiles" item={prof} />
                             </div>
                         ))
                     )}

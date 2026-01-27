@@ -289,6 +289,8 @@ function FeedContent() {
     const [singlePost, setSinglePost] = useState<any | null>(null);
     const [viewMode, setViewMode] = useState<'feed' | 'single'>('feed');
 
+    const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
+
     useEffect(() => {
         if (!searchQuery.trim()) {
             setSearchResults([]);
@@ -328,8 +330,7 @@ function FeedContent() {
             setViewMode('feed');
             fetchPosts();
         }
-    }, [deepLinkPostId]);
-
+    }, [deepLinkPostId, activeHashtag]); // Re-fetch if activeHashtag changes
 
     const fetchCurrentUser = async () => {
         try {
@@ -362,8 +363,13 @@ function FeedContent() {
     };
 
     const fetchPosts = async () => {
+        setIsLoading(true);
         try {
-            const res = await fetch('/api/professional/posts');
+            let url = '/api/professional/posts';
+            if (activeHashtag) {
+                url += `?hashtag=${encodeURIComponent(activeHashtag)}`;
+            }
+            const res = await fetch(url);
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data.posts || []);
@@ -526,6 +532,16 @@ function FeedContent() {
         setShowPostModal(true);
     };
 
+    const handleHashtagClick = (tag: string) => {
+        setActiveHashtag(tag);
+        setViewMode('feed');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const clearHashtag = () => {
+        setActiveHashtag(null);
+    };
+
     return (
         <div className="min-h-full pb-20 relative">
             {/* Search Overlay/Blur */}
@@ -608,6 +624,21 @@ function FeedContent() {
                 </div>
             )}
 
+            {/* Hashtag Filtering Banner */}
+            {activeHashtag && (
+                <div className="max-w-4xl mx-auto px-4 mb-4">
+                    <div className={`flex items-center justify-between p-3 rounded-xl border ${isDark ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
+                        <div className="flex items-center gap-2">
+                            <div className="font-bold text-sm">#{activeHashtag}</div>
+                            <span className="text-xs opacity-70">Filtering feed</span>
+                        </div>
+                        <button onClick={clearHashtag} className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                            <X size={14} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Feed Posts */}
             <div className="max-w-4xl mx-auto space-y-4 px-4">
                 {isLoading ? (
@@ -630,6 +661,7 @@ function FeedContent() {
                             onDelete={handleDeletePost}
                             onEdit={handleStartEdit}
                             onCommentAdded={() => fetchSinglePost(singlePost.id)}
+                            onHashtagClick={handleHashtagClick}
                         />
                     ) : (
                         <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
@@ -639,8 +671,17 @@ function FeedContent() {
                     )
                 ) : posts.length === 0 ? (
                     <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                        <p className={`text-base font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>No posts yet</p>
-                        <p className={`text-sm mt-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Be the first to share something!</p>
+                        {activeHashtag ? (
+                            <>
+                                <p className={`text-base font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>No posts found for #{activeHashtag}</p>
+                                <button onClick={clearHashtag} className="mt-2 text-blue-500 hover:underline">Clear filter</button>
+                            </>
+                        ) : (
+                            <>
+                                <p className={`text-base font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>No posts yet</p>
+                                <p className={`text-sm mt-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Be the first to share something!</p>
+                            </>
+                        )}
                     </div>
                 ) : (
                     posts.map((post) => (
@@ -657,6 +698,7 @@ function FeedContent() {
                             onDelete={handleDeletePost}
                             onEdit={handleStartEdit}
                             onCommentAdded={fetchPosts}
+                            onHashtagClick={handleHashtagClick}
                         />
                     ))
                 )}

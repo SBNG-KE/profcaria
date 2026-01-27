@@ -1320,27 +1320,27 @@ export default function ProfessionalHome() {
 
   return (
     <>
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <div className="relative z-10 max-w-7xl mx-auto min-h-full">
           <div className="space-y-6">
 
             {/* Profile Page Tabs */}
-            <div className={`flex space-x-2 p-1 rounded-xl w-fit border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
+            <div className={`flex overflow-x-auto max-w-full space-x-2 p-1 rounded-xl border no-scrollbar ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
               <button
                 onClick={() => setActiveProfileTab('profile')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeProfileTab === 'profile' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
+                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${activeProfileTab === 'profile' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
               >
                 <User size={16} /> Profile Info
               </button>
               <button
                 onClick={() => setActiveProfileTab('documents')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeProfileTab === 'documents' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
+                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${activeProfileTab === 'documents' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
               >
                 <FileText size={16} /> Documents
               </button>
               <button
                 onClick={() => setActiveProfileTab('preferences')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeProfileTab === 'preferences' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
+                className={`flex items-center gap-2 px-4 md:px-6 py-3 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${activeProfileTab === 'preferences' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
               >
                 <Briefcase size={16} /> Job Preferences
               </button>
@@ -1419,7 +1419,7 @@ export default function ProfessionalHome() {
                 )}
 
                 {/* 1. Identity Card */}
-                <div className={`p-8 rounded-[40px] ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
+                <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
                   <div className="flex flex-col md:flex-row gap-8 items-start">
 
                     {/* Left: Profile Image */}
@@ -1535,7 +1535,7 @@ export default function ProfessionalHome() {
                             </div>
                           ) : (
                             <>
-                              <h1 className={`text-4xl md:text-5xl font-black tracking-tighter whitespace-nowrap ${isDark ? 'text-white' : 'text-black'}`}>
+                              <h1 className={`text-3xl md:text-5xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>
                                 {firstName || lastName ? `${firstName} ${lastName}` : <span className="text-neutral-500 text-3xl">Your Name</span>}
                               </h1>
                               <button onClick={() => setIsEditingName(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
@@ -1657,7 +1657,7 @@ export default function ProfessionalHome() {
                 </div>
 
                 {/* About Section (Standalone Card) */}
-                <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div className={`p-5 md:p-8 rounded-[32px] md:rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                   <div className="flex items-center justify-between mb-6">
                     <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                       <User size={20} /> About
@@ -1759,7 +1759,7 @@ export default function ProfessionalHome() {
             {activeProfileTab === 'preferences' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className={`border p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                  <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Briefcase className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Target Roles</h3>
                     <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Add job titles you're interested in.</p>
                     <div className="flex gap-2">
@@ -1767,7 +1767,7 @@ export default function ProfessionalHome() {
                     </div>
                     <div className="flex flex-wrap gap-2">{targetRoles.map((r, i) => (<div key={i} className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/5 text-black border-black/10'}`}>{r}<button onClick={() => setTargetRoles(targetRoles.filter((_, idx) => idx !== i))} className="hover:opacity-70"><X size={12} /></button></div>))}</div>
                   </div>
-                  <div className={`border p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                  <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Globe className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Preferred Locations</h3>
                     <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Select countries and continents where you'd like to work.</p>
 
@@ -1802,7 +1802,7 @@ export default function ProfessionalHome() {
                     </label>
                   </div>
                 </div>
-                <div className={`border p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                   <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Clock className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Experience Years</h3>
                   <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>How many years of relevant experience do you have?</p>
                   <div className="grid grid-cols-2 gap-3">

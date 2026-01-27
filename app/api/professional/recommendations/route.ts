@@ -18,15 +18,18 @@ export async function GET() {
 
         if (error) {
             console.error('Growth Engine Error:', error);
+            // Fallback: Return empty instead of error 500
             return NextResponse.json({
                 companies: [],
-                professionals: [],
-                error: 'Failed to generate recommendations'
+                professionals: []
             });
         }
 
-        // Decrypt Data
-        const companies = (data.companies || []).map((c: any) => ({
+        // Shuffle helper
+        const shuffle = (array: any[]) => array.sort(() => Math.random() - 0.5);
+
+        // Decrypt Data & Shuffle for Variety
+        const companies = shuffle(data.companies || []).map((c: any) => ({
             ...c,
             // Decrypt known fields, keep original enc_ for reference if needed (but frontend uses enc_ names in my code? I should fix frontend too)
             // Actually, frontend I wrote uses `enc_company_name`. 
@@ -45,7 +48,7 @@ export async function GET() {
             logoUrl: c.enc_logo_url ? decryptData(c.enc_logo_url) : null
         }));
 
-        const professionals = (data.professionals || []).map((p: any) => ({
+        const professionals = shuffle(data.professionals || []).map((p: any) => ({
             ...p,
             firstName: decryptData(p.enc_first_name),
             lastName: decryptData(p.enc_last_name),

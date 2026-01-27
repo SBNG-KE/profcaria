@@ -5,7 +5,7 @@ import {
     X, UserCircle, Briefcase, Mail, FileText,
     Download, User, Building2, GraduationCap,
     BadgeCheck, Phone, MapPin, Award, Globe,
-    BookOpen, Linkedin, Github
+    BookOpen, Linkedin, Github, Copy, Check, Twitter
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -53,6 +53,21 @@ export default function EmployerProfileViewModal({
     const [activeTab, setActiveTab] = useState<'profile' | 'documents'>('profile');
     const [activeDocumentType, setActiveDocumentType] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+
+    const handleCopy = (text: string, field: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const getProfileIcon = (platform: string) => {
+        const p = platform?.toLowerCase() || '';
+        if (p.includes('linkedin')) return <Linkedin size={18} />;
+        if (p.includes('github')) return <Github size={18} />;
+        if (p.includes('twitter') || p.includes('x')) return <Twitter size={18} />;
+        return <Globe size={18} />;
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -208,14 +223,34 @@ export default function EmployerProfileViewModal({
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full border-t border-b border-neutral-800 py-8">
                                             <div>
                                                 <label className={`text-[10px] font-black uppercase tracking-widest mb-2 block ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Email</label>
-                                                <div className={`flex items-center gap-2 font-bold ${isDark ? 'text-white' : 'text-black'} break-all`}>
-                                                    <Mail size={16} className="text-neutral-500 shrink-0" /> {data.profile.email}
+                                                <div className="flex items-center gap-2">
+                                                    <a href={`mailto:${data.profile.email}`} className={`flex items-center gap-2 font-bold ${isDark ? 'text-white hover:text-neutral-300' : 'text-black hover:text-neutral-700'} break-all transition-colors`}>
+                                                        <Mail size={16} className="text-neutral-500 shrink-0" /> {data.profile.email}
+                                                    </a>
+                                                    <button
+                                                        onClick={() => handleCopy(data.profile.email, 'email')}
+                                                        className={`p-1.5 rounded-lg transition-all ${copiedField === 'email' ? 'bg-emerald-500/10 text-emerald-500' : 'hover:bg-neutral-800 text-neutral-500 hover:text-white'}`}
+                                                        title="Copy Email"
+                                                    >
+                                                        {copiedField === 'email' ? <Check size={14} /> : <Copy size={14} />}
+                                                    </button>
                                                 </div>
                                             </div>
                                             <div>
                                                 <label className={`text-[10px] font-black uppercase tracking-widest mb-2 block ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Phone</label>
-                                                <div className={`flex items-center gap-2 font-bold ${isDark ? 'text-white' : 'text-black'}`}>
-                                                    <Phone size={16} className="text-neutral-500 shrink-0" /> {data.profile.phone || 'No phone provided'}
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`flex items-center gap-2 font-bold ${isDark ? 'text-white' : 'text-black'}`}>
+                                                        <Phone size={16} className="text-neutral-500 shrink-0" /> {data.profile.phone || 'No phone provided'}
+                                                    </div>
+                                                    {data.profile.phone && (
+                                                        <button
+                                                            onClick={() => handleCopy(data.profile.phone!, 'phone')}
+                                                            className={`p-1.5 rounded-lg transition-all ${copiedField === 'phone' ? 'bg-emerald-500/10 text-emerald-500' : 'hover:bg-neutral-800 text-neutral-500 hover:text-white'}`}
+                                                            title="Copy Phone"
+                                                        >
+                                                            {copiedField === 'phone' ? <Check size={14} /> : <Copy size={14} />}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -369,16 +404,18 @@ export default function EmployerProfileViewModal({
                                         <div>
                                             <h4 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>Other Profiles</h4>
                                             {sections.otherProfiles?.length > 0 ? (
-                                                <div className="flex flex-wrap gap-4">
+                                                <div className="flex flex-wrap gap-3">
                                                     {sections.otherProfiles.map((prof: any, i: number) => (
                                                         <a
                                                             key={i}
                                                             href={prof.url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className={`flex items-center gap-3 px-5 py-3 rounded-xl border transition-all ${isDark ? 'bg-neutral-800/50 border-neutral-800 hover:bg-neutral-800 text-white' : 'bg-white border-neutral-200 hover:bg-neutral-50 text-black'}`}
+                                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${isDark ? 'bg-neutral-800/50 border-neutral-800 hover:bg-neutral-800 text-white' : 'bg-white border-neutral-200 hover:bg-neutral-50 text-black shadow-sm group'}`}
                                                         >
-                                                            <Globe size={16} />
+                                                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-neutral-700/50 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
+                                                                {getProfileIcon(prof.platform || prof.url)}
+                                                            </div>
                                                             <div className="text-left">
                                                                 <p className="text-xs font-bold uppercase tracking-wider">{prof.platform || 'Website'}</p>
                                                             </div>

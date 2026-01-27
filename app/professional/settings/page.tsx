@@ -200,7 +200,7 @@ export default function ProfessionalSettingsPage() {
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-slate-900/50 border-slate-700/50 text-white focus:ring-emerald-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
+                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-emerald-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -229,31 +229,54 @@ export default function ProfessionalSettingsPage() {
                             <Activity className="text-emerald-500" size={24} /> Activity Log
                         </h3>
                         <div className={`overflow-hidden rounded-xl border ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                            <table className={`w-full text-left text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                <thead className={`font-bold uppercase text-xs tracking-wider ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-neutral-50 text-neutral-700'}`}>
-                                    <tr>
-                                        <th className="p-4">Action</th>
-                                        <th className="p-4">Location Details</th>
-                                        <th className="p-4">IP Address</th>
-                                        <th className="p-4">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className={`divide-y ${isDark ? 'divide-slate-800' : 'divide-neutral-200'}`}>
-                                    {activityLogs.map((log, i) => (
-                                        <tr key={i} className={`transition-colors ${isDark ? 'hover:bg-slate-800/30' : 'hover:bg-neutral-50'}`}>
-                                            <td className={`p-4 font-bold ${isDark ? 'text-white' : 'text-black'}`}>{log.action}</td>
-                                            <td className="p-4">{log.location_details}</td>
-                                            <td className="p-4 font-mono text-xs">{log.ip_address}</td>
-                                            <td className="p-4">{new Date(log.created_at).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                    {activityLogs.length === 0 && (
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block">
+                                <table className={`w-full text-left text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                    <thead className={`font-bold uppercase text-xs tracking-wider ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-neutral-50 text-neutral-700'}`}>
                                         <tr>
-                                            <td colSpan={4} className={`p-8 text-center italic ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>No activity logs found.</td>
+                                            <th className="p-4">Action</th>
+                                            <th className="p-4">Location Details</th>
+                                            <th className="p-4">IP Address</th>
+                                            <th className="p-4">Date</th>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className={`divide-y ${isDark ? 'divide-neutral-800' : 'divide-neutral-200'}`}>
+                                        {activityLogs.map((log, i) => (
+                                            <tr key={i} className={`transition-colors ${isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-50'}`}>
+                                                <td className={`p-4 font-bold ${isDark ? 'text-white' : 'text-black'}`}>{log.action}</td>
+                                                <td className="p-4">{log.location_details}</td>
+                                                <td className="p-4 font-mono text-xs">{log.ip_address}</td>
+                                                <td className="p-4">{new Date(log.created_at).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                        {activityLogs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className={`p-8 text-center italic ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>No activity logs found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Mobile Card View */}
+                            <div className="md:hidden divide-y divide-neutral-800">
+                                {activityLogs.map((log, i) => (
+                                    <div key={i} className={`p-4 flex flex-col gap-2 ${isDark ? 'bg-neutral-900/20' : 'bg-white'}`}>
+                                        <div className="flex justify-between items-start">
+                                            <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{log.action}</span>
+                                            <span className="text-[10px] opacity-50">{new Date(log.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                        <div className="text-xs opacity-70 flex items-center gap-2">
+                                            <span>{log.location_details}</span>
+                                            <span>•</span>
+                                            <span className="font-mono">{log.ip_address}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                                {activityLogs.length === 0 && (
+                                    <div className="p-8 text-center italic text-sm opacity-50">No activity logs found.</div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
