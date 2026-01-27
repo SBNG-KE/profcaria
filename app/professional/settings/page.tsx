@@ -100,7 +100,7 @@ export default function ProfessionalSettingsPage() {
         const bgClass = badgeColor === 'gold' ? 'bg-yellow-400/10 border-yellow-400/20' : badgeColor === 'blue' ? 'bg-blue-400/10 border-blue-400/20' : 'bg-neutral-800/50 border-neutral-700';
 
         return (
-            <div key={id} className={`relative p-6 rounded-3xl border flex flex-col ${isCurrent ? 'border-emerald-500 shadow-2xl shadow-emerald-500/10 scale-105 z-10 bg-neutral-900' : `bg-neutral-900/50 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`} transition-all hover:border-neutral-600`}>
+            <div key={id} className={`relative p-6 rounded-3xl border flex flex-col ${isCurrent ? 'border-emerald-500 shadow-2xl shadow-emerald-500/10 scale-105 z-10 bg-neutral-900' : `${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`} transition-all hover:border-neutral-600`}>
                 {isCurrent && (
                     <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl">
                         Current Plan

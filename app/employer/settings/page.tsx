@@ -3,12 +3,15 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2 } from 'lucide-react';
+import { useTheme } from '@/app/context/ThemeContext';
 import { useCurrency } from '@/app/hooks/useCurrency';
 import { usePayment } from '@/app/hooks/usePayment';
 
 function SettingsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     // Currency Hook
     const { currency: currencyCode, symbol: currencySymbol, rate: exchangeRate, loading: currencyLoading } = useCurrency();
@@ -240,26 +243,26 @@ function SettingsContent() {
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8 pb-32">
-            <header className="flex items-center justify-between border-b border-neutral-800 pb-8">
+            <header className={`flex items-center justify-between border-b pb-8 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                 <div className="text-left">
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">Company Settings</h1>
-                    <p className="text-neutral-400 mt-2">Manage company profile, security, and billing.</p>
+                    <h1 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>Company Settings</h1>
+                    <p className={`mt-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Manage company profile, security, and billing.</p>
                 </div>
 
             </header>
 
             {/* Tabs */}
-            <div className="flex space-x-2 bg-neutral-900/50 p-1 rounded-xl w-fit border border-neutral-800">
+            <div className={`flex space-x-2 p-1 rounded-xl w-fit border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
 
                 <button
                     onClick={() => setActiveTab('security')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'security' ? 'bg-white text-black shadow-lg' : 'text-neutral-400 hover:text-white hover:bg-white/5'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'security' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
                 >
                     <Shield size={16} /> Security
                 </button>
                 <button
                     onClick={() => setActiveTab('billing')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'billing' ? 'bg-white text-black shadow-lg' : 'text-neutral-400 hover:text-white hover:bg-white/5'}`}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'billing' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
                 >
                     <CreditCard size={16} /> Billing
                 </button>
@@ -380,18 +383,18 @@ function SettingsContent() {
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                     {/* Billing Details */}
-                    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-[32px] space-y-8">
+                    <div className={`border p-8 rounded-[32px] space-y-8 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div>
-                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <CreditCard className="text-white" size={24} /> Billing & Subscription
+                                <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                                    <CreditCard className={isDark ? "text-white" : "text-black"} size={24} /> Billing & Subscription
                                 </h3>
-                                <p className="text-neutral-400 text-sm mt-1">Simple, transparent monthly pricing.</p>
+                                <p className={`text-sm mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Simple, transparent monthly pricing.</p>
                             </div>
                         </div>
 
                         {exchangeRate > 1 && (
-                            <div className="p-4 bg-neutral-900/50 border border-neutral-800 rounded-xl flex items-center gap-3 text-xs text-neutral-400">
+                            <div className={`p-4 border rounded-xl flex items-center gap-3 text-xs ${isDark ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-600'}`}>
                                 <Activity size={16} />
                                 <span>Prices are converted from USD and may vary slightly depending on current economic exchange rates.</span>
                             </div>
@@ -399,25 +402,25 @@ function SettingsContent() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                             {/* Free Tier */}
-                            <div className="bg-neutral-900 border border-neutral-800 p-5 rounded-[24px] flex flex-col relative overflow-hidden group hover:border-neutral-700 transition-colors">
+                            <div className={`border p-5 rounded-[24px] flex flex-col relative overflow-hidden group transition-colors ${isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-neutral-300'}`}>
                                 <div className="space-y-3 flex-1">
-                                    <h4 className="font-black text-lg text-white">Free</h4>
-                                    <div className="text-2xl font-black text-neutral-500">
+                                    <h4 className={`font-black text-lg ${isDark ? 'text-white' : 'text-black'}`}>Free</h4>
+                                    <div className={`text-2xl font-black ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                         {formatCurrency(0)}
-                                        <span className="text-[10px] text-neutral-600 font-bold ml-1">/mo</span>
+                                        <span className={`text-[10px] font-bold ml-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>/mo</span>
                                     </div>
                                     <div className="pt-2 space-y-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-300 font-medium">
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                             <CheckCircle size={12} className="text-neutral-500" /> 1 Job Post/mo
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-300 font-medium">
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                             <CheckCircle size={12} className="text-neutral-500" /> 1 Year Analytics History
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-neutral-800">
+                                <div className={`mt-6 pt-4 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
                                     {!subscription ? (
-                                        <div className="w-full py-2 bg-neutral-800 text-neutral-400 font-bold rounded-xl text-center text-[9px] uppercase tracking-widest cursor-default">
+                                        <div className={`w-full py-2 font-bold rounded-xl text-center text-[9px] uppercase tracking-widest cursor-default ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
                                             Current Plan
                                         </div>
                                     ) : (
@@ -429,18 +432,18 @@ function SettingsContent() {
                             </div>
 
                             {/* Basic Tier */}
-                            <div className="bg-neutral-900/30 border border-neutral-700/50 p-5 rounded-[24px] flex flex-col relative overflow-hidden hover:border-neutral-500 transition-colors">
+                            <div className={`border p-5 rounded-[24px] flex flex-col relative overflow-hidden transition-colors ${isDark ? 'bg-neutral-900/30 border-neutral-700/50 hover:border-neutral-500' : 'bg-white border-neutral-200 hover:border-neutral-300'}`}>
                                 {derivedPlan === 'basic' && (
-                                    <div className="absolute top-0 right-0 bg-white text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
+                                    <div className={`absolute top-0 right-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
                                         Current
                                     </div>
                                 )}
                                 <div className="space-y-3 flex-1">
-                                    <h4 className="font-black text-lg text-white flex items-center gap-2">
+                                    <h4 className={`font-black text-lg flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                                         Basic
                                         <CheckCircle size={18} className="text-neutral-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.basicOffer > 0 && (
-                                            <span className="bg-white/20 text-white text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider ${isDark ? 'bg-white/20 text-white' : 'bg-black/10 text-black'}`}>
                                                 -{Math.round((1 - pricing.basicOffer / pricing.basic) * 100)}%
                                             </span>
                                         )}
@@ -452,37 +455,37 @@ function SettingsContent() {
                                                 <span className="text-xs text-neutral-500 line-through font-bold">
                                                     {formatCurrency(pricing.basic)}
                                                 </span>
-                                                <div className="text-2xl font-black text-white">
+                                                <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
                                                     <span className="text-xs text-neutral-400 font-bold mr-0.5">{currencyCode}</span>
                                                     {formatCurrency(pricing.basicOffer).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                    <span className="text-[10px] text-neutral-500 font-bold ml-1">/mo</span>
+                                                    <span className={`text-[10px] font-bold ml-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>/mo</span>
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="text-2xl font-black text-white">
+                                            <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
                                                 <span className="text-xs text-neutral-400 font-bold mr-0.5">{currencyCode}</span>
                                                 {formatCurrency(pricing.basic).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                <span className="text-[10px] text-neutral-500 font-bold ml-1">/mo</span>
+                                                <span className={`text-[10px] font-bold ml-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>/mo</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="pt-2 space-y-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> 5 Job Posts/mo
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> 5 Job Posts/mo
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> 3 Years Analytics History
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> 3 Years Analytics History
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> Top Match Access (Limited)
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> Top Match Access (Limited)
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-neutral-800">
+                                <div className={`mt-6 pt-4 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
                                     {subscription?.status === 'active' && derivedPlan === 'basic' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-white/10 text-white font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-white/20">
+                                            <div className={`w-full py-2 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border ${isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/5 text-black border-black/10'}`}>
                                                 Active
                                             </div>
                                             {isAutoRenew ? (
@@ -499,7 +502,7 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('basic')}
                                             disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className="w-full py-2 bg-white hover:bg-neutral-200 text-black font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg shadow-white/10 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className={`w-full py-2 font-black rounded-xl text-center text-[9px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black shadow-white/10' : 'bg-black hover:bg-neutral-800 text-white shadow-black/10'}`}
                                         >
                                             {isLoading ? <Loader2 className="animate-spin" size={12} /> : subscription?.status === 'active' ? 'Switch to Basic' : 'Get Basic'}
                                         </button>
@@ -508,19 +511,19 @@ function SettingsContent() {
                             </div>
 
                             {/* Pro Tier ($99) - BEST OFFER */}
-                            <div className="bg-neutral-900 border border-neutral-600 p-5 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl scale-105 z-10">
-                                <div className="absolute top-0 inset-x-0 h-1 bg-white"></div>
+                            <div className={`border p-5 rounded-[24px] flex flex-col relative overflow-hidden shadow-xl scale-105 z-10 ${isDark ? 'bg-neutral-900 border-neutral-600' : 'bg-white border-neutral-300'}`}>
+                                <div className={`absolute top-0 inset-x-0 h-1 ${isDark ? 'bg-white' : 'bg-black'}`}></div>
                                 {subscription?.plan_type === 'pro' && (
-                                    <div className="absolute top-1 right-0 bg-white text-black text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg">
+                                    <div className={`absolute top-1 right-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-bl-xl shadow-lg ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
                                         Current
                                     </div>
                                 )}
                                 <div className="space-y-3 flex-1">
-                                    <h4 className="font-black text-lg text-white flex items-center gap-2">
-                                        Pro <span className="px-1.5 py-0.5 rounded bg-white text-black text-[8px] font-bold tracking-wide">BEST VALUE</span>
+                                    <h4 className={`font-black text-lg flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                                        Pro <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wide ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>BEST VALUE</span>
                                         <CheckCircle size={18} className="text-blue-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.proOffer > 0 && (
-                                            <span className="bg-white text-black text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider">
+                                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
                                                 -{Math.round((1 - pricing.proOffer / pricing.pro) * 100)}%
                                             </span>
                                         )}
@@ -532,40 +535,40 @@ function SettingsContent() {
                                                 <span className="text-xs text-neutral-500 line-through font-bold">
                                                     {formatCurrency(pricing.pro)}
                                                 </span>
-                                                <div className="text-2xl font-black text-white">
+                                                <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
                                                     <span className="text-xs text-neutral-400 font-bold mr-0.5">{currencyCode}</span>
                                                     {formatCurrency(pricing.proOffer).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                    <span className="text-[10px] text-neutral-500 font-bold ml-1">/mo</span>
+                                                    <span className={`text-[10px] font-bold ml-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>/mo</span>
                                                 </div>
                                             </>
                                         ) : (
-                                            <div className="text-2xl font-black text-white">
+                                            <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
                                                 <span className="text-xs text-neutral-400 font-bold mr-0.5">{currencyCode}</span>
                                                 {formatCurrency(pricing.pro).replace(currencyCode, '').replace(currencySymbol, '')}
-                                                <span className="text-[10px] text-neutral-500 font-bold ml-1">/mo</span>
+                                                <span className={`text-[10px] font-bold ml-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>/mo</span>
                                             </div>
                                         )}
                                     </div>
 
                                     <div className="pt-2 space-y-2">
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> <span className="text-white font-bold">30 Job Postings/mo</span>
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> <span className={isDark ? "text-white font-bold" : "text-black font-bold"}>30 Job Postings/mo</span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> Unlimited Analytics History
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Analytics History
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> Top Matches (Increased Limit)
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> Top Matches (Increased Limit)
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-neutral-200 font-medium">
-                                            <CheckCircle size={12} className="text-white shrink-0" /> Access to Restricted Location Feature
+                                        <div className={`flex items-center gap-2 text-[10px] font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={12} className={isDark ? "text-white" : "text-black"} shrink-0 /> Access to Restricted Location Feature
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-6 pt-4 border-t border-neutral-700">
+                                <div className={`mt-6 pt-4 border-t ${isDark ? 'border-neutral-700' : 'border-neutral-200'}`}>
                                     {subscription?.status === 'active' && derivedPlan === 'pro' ? (
                                         <div className="text-center">
-                                            <div className="w-full py-2 bg-white/10 text-white font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border border-white/20">
+                                            <div className={`w-full py-2 font-bold rounded-xl text-[9px] uppercase tracking-widest mb-1 border ${isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/5 text-black border-black/10'}`}>
                                                 Active
                                             </div>
                                             {isAutoRenew ? (
@@ -582,7 +585,7 @@ function SettingsContent() {
                                         <button
                                             onClick={() => handleSubscribe('pro')}
                                             disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className="w-full py-2.5 bg-white hover:bg-neutral-200 text-black font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className={`w-full py-2.5 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black' : 'bg-black hover:bg-neutral-800 text-white'}`}
                                         >
                                             {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Pro' : 'Get Pro'}
                                         </button>

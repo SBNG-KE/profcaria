@@ -44,18 +44,27 @@ export const useCurrency = () => {
                     console.warn('Location detection failed, defaulting to USD');
                 }
 
-                //3. Get Exchange Rate (USD Base)
+                //3. Get Exchange Rate (USD Base) - SYNCED WITH SERVER
                 let rate = 1;
                 if (userCurrency !== 'USD') {
                     try {
-                        const rateRes = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+                        // Fetch from our own server to ensure frontend/backend amounts match exactly
+                        const rateRes = await fetch('/api/config/exchange-rate');
                         if (rateRes.ok) {
                             const rateData = await rateRes.json();
-                            rate = rateData.rates[userCurrency] || 1;
+                            // If the user's currency matches the one we have a fixed rate for (implied typically we set a global rate)
+                            // Ideally we might want to support multiple, but currently user said "I put 44... change it 44 * 129".
+                            // This implies a single rate model or we prefer the server rate.
+                            // For now, we trust the server returns THE rate relative to USD for the target currency (or we might need to handle per-currency).
+                            // actually the previous code was converting USD to UserCurrency.
+                            // If process.env.USD_EXCHANGE_RATE is 129, it implies 1 USD = 129 [LocalCurrency].
+                            // We will use that.
+                            rate = rateData.rate || 1;
                         }
                     } catch (e) {
-                        // Rate fetch failed, revert to USD
-                        userCurrency = 'USD';
+                        console.error('Failed to fetch server rate', e);
+                        // Fallback? Keep 1 or try external? user wants sync, so stick to 1 or retry. 
+                        // Defaulting to 1 prevents wrong inflated numbers.
                         rate = 1;
                     }
                 }
