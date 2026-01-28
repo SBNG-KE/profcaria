@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { username: string } }
+    props: { params: Promise<{ username: string }> }
 ) {
+    const params = await props.params;
     const username = params.username;
 
     // In a real app, we would look up the user by slug/username in the DB.
