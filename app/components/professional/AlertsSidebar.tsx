@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Added for internal linking if needed, though router.push is used
 import { Bell, UserPlus, Building2, User as UserIcon, Loader2, RefreshCw, Zap } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -16,14 +17,18 @@ export default function AlertsSidebar() {
     // Real Data: New Connections (replacing fake "Follow Backs")
     const [newConnectionCount, setNewConnectionCount] = useState(0);
 
+    // Follow Back Data
+    const [followBacks, setFollowBacks] = useState<any[]>([]);
+
     // Simulate AI Data
     const [recommendations, setRecommendations] = useState<{ companies: any[], professionals: any[] }>({ companies: [], professionals: [] });
     const [recLoading, setRecLoading] = useState(true);
 
-    // Fetch Connections for "Network Sync"
+    // Fetch Connections for "Network Sync" AND Follow Backs
     useEffect(() => {
         const fetchConnections = async () => {
             try {
+                // Network Sync (Employment Connections)
                 const res = await fetch('/api/professional/connections');
                 if (res.ok) {
                     const data = await res.json();
@@ -34,8 +39,19 @@ export default function AlertsSidebar() {
                     const newCount = connections.filter((c: any) => new Date(c.created_at) > oneWeekAgo).length;
                     setNewConnectionCount(newCount);
                 }
+
+                // Follow Backs (Social Followers I don't follow yet)
+                const followRes = await fetch('/api/professional/follow?type=followers');
+                if (followRes.ok) {
+                    const data = await followRes.json();
+                    const followers = data.followers || [];
+                    // Filter: Not following AND type is user (companies follow users? wait, API returns followers)
+                    // API returns my followers. I want to see those I do NOT follow back.
+                    setFollowBacks(followers.filter((f: any) => !f.isFollowing));
+                }
+
             } catch (err) {
-                console.error("Error fetching connections", err);
+                console.error("Error fetching connections/followers", err);
             }
         };
         fetchConnections();
@@ -64,8 +80,9 @@ export default function AlertsSidebar() {
 
     const handleFollow = async (id: string, type: 'user' | 'company') => {
         try {
-            const endpoint = type === 'user' ? '/api/professional/follow/user' : '/api/professional/follow/company';
-            const body = type === 'user' ? { followingId: id } : { companyId: id };
+            const endpoint = '/api/professional/follow';
+            // Server expects 'userId' as the target ID regardless of type being user or company (aliased to targetId)
+            const body = { userId: id, type };
 
             // Optimistic Update
             setRecommendations(prev => ({
@@ -74,11 +91,21 @@ export default function AlertsSidebar() {
                 professionals: type === 'user' ? prev.professionals.filter(p => p.id !== id) : prev.professionals
             }));
 
-            await fetch(endpoint, {
+            // Remove from Follow Back list locally if present
+            if (type === 'user') {
+                setFollowBacks(prev => prev.filter(p => p.id !== id));
+            }
+
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
+
+            if (!res.ok) {
+                console.error('Follow failed', await res.text());
+                // Revert optimistic update? For now just log.
+            }
         } catch (error) {
             console.error("Follow error", error);
         }
@@ -162,6 +189,38 @@ export default function AlertsSidebar() {
                             </div>
                         ) : (
                             <>
+                                {/* FOLLOW BACK */}
+                                {followBacks.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                            <UserIcon size={12} /> Follow Back
+                                        </h4>
+                                        {followBacks.map(p => (
+                                            <div key={p.id} className={`p-3 rounded-xl border transition-all hover:scale-[1.02] cursor-pointer group ${isDark ? 'bg-neutral-800/50 border-neutral-800 hover:bg-neutral-800' : 'bg-white border-neutral-200 hover:shadow-md'}`}>
+                                                <div className="flex items-center gap-3 mb-3" onClick={() => router.push(`/professional/people/${p.id}`)}>
+                                                    <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center overflow-hidden ${isDark ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
+                                                        {p.profileImage ? (
+                                                            <img src={p.profileImage} alt="" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <UserIcon size={18} className="text-neutral-500" />
+                                                        )}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <h5 className={`text-sm font-bold truncate ${isDark ? 'text-neutral-200' : 'text-black'}`}>{p.name}</h5>
+                                                        <p className={`text-[10px] truncate ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>{p.role || 'New Follower'}</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleFollow(p.id, 'user'); }}
+                                                    className={`w-full py-2 rounded-lg text-xs font-bold transition-colors border flex items-center justify-center gap-2 ${isDark ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-500' : 'bg-blue-600 border-blue-600 text-white hover:bg-blue-500'}`}
+                                                >
+                                                    <UserPlus size={14} /> Follow Back
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 {/* COMPANIES */}
                                 <div className="space-y-3">
                                     <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
@@ -229,4 +288,3 @@ export default function AlertsSidebar() {
         </div>
     );
 }
-

@@ -1,9 +1,127 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
 import { decryptData } from '@/lib/security';
+import { unstable_cache } from 'next/cache';
 
-// ... imports
+export const dynamic = 'force-dynamic';
+
+// --- CACHING HELPERS ---
+const getCachedPostCounts = unstable_cache(
+    async (postId: string, schema: string) => {
+        // Like count
+        const { count: likesCount } = await supabaseAdmin
+            .schema(schema)
+            .from('post_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', postId);
+
+        // Comments count
+        const { count: commentsCount } = await supabaseAdmin
+            .schema(schema)
+            .from('post_comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', postId);
+
+        // Reposts count
+        const repostFk = schema === 'professional' ? 'post_id' : 'original_post_id';
+        const { count: repostsCount } = await supabaseAdmin
+            .schema(schema)
+            .from('post_reposts')
+            .select('*', { count: 'exact', head: true })
+            .eq(repostFk, postId);
+
+        return {
+            likesCount: likesCount || 0,
+            commentsCount: commentsCount || 0,
+            repostsCount: repostsCount || 0
+        };
+    },
+    ['post-counts-v1'], // Cache Key
+    { revalidate: 60, tags: ['post_stats'] } // Cache for 60 seconds
+);
+
+const getCachedAuthorProfile = unstable_cache(
+    async (authorId: string, authorType: string) => {
+        let authorData: any = {
+            id: authorId,
+            type: authorType,
+            name: 'User',
+            profileImage: '/default-avatar.png',
+            role: '',
+            followerCount: 0,
+            badgeType: null
+        };
+
+        try {
+            if (authorType === 'employer') {
+                const { data: comp } = await supabaseAdmin
+                    .schema('employer')
+                    .from('companies')
+                    .select('id, enc_company_name, enc_logo_url, badge_type')
+                    .eq('id', authorId)
+                    .single();
+
+                if (comp) {
+                    const companyName = decryptData(comp.enc_company_name);
+                    const logoUrl = comp.enc_logo_url ? decryptData(comp.enc_logo_url) : null;
+
+                    // Fetch follower count
+                    const { count: followerCount } = await supabaseAdmin
+                        .schema('professional')
+                        .from('company_follows')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('company_id', authorId);
+
+                    authorData = {
+                        ...authorData,
+                        name: companyName || 'Company',
+                        profileImage: logoUrl || '/default-logo.png',
+                        role: 'Company',
+                        badgeType: comp.badge_type,
+                        followerCount: followerCount || 0
+                    };
+                }
+            } else {
+                const { data: profUser } = await supabaseAdmin
+                    .schema('professional')
+                    .from('users')
+                    .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
+                    .eq('id', authorId)
+                    .single();
+
+                if (profUser) {
+                    const firstName = decryptData(profUser.enc_first_name) || '';
+                    const lastName = decryptData(profUser.enc_last_name) || '';
+                    const role = decryptData(profUser.enc_current_role) || '';
+                    const profileImage = decryptData(profUser.enc_profile_image_url) || '/default-avatar.png';
+
+                    const { count: followerCount } = await supabaseAdmin
+                        .schema('professional')
+                        .from('user_follows')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('following_id', authorId);
+
+                    authorData = {
+                        ...authorData,
+                        name: `${firstName} ${lastName}`.trim() || 'User',
+                        profileImage: profileImage,
+                        role: role,
+                        badgeType: profUser.badge_type,
+                        followerCount: followerCount || 0
+                    };
+                }
+            }
+        } catch (e) {
+            console.error('Error in cached author profile:', e);
+        }
+
+        return authorData;
+    },
+    ['author-profile-v1'],
+    { revalidate: 300, tags: ['author_profiles'] } // Cache for 5 minutes
+);
 
 // GET - Fetch posts feed
 export async function GET(request: NextRequest) {
@@ -23,17 +141,6 @@ export async function GET(request: NextRequest) {
 
         // --- CASE 1: FETCH REPOSTS for a specific user ---
         if (targetUserId && type === 'reposts') {
-            // we need to know if target is user or company to query correct schema?
-            // Actually post_reposts exists in both schemas.
-            // We'll try fetching from both or guess based on target?
-            // Let's assume we query based on the authenticated user's ability to see? 
-            // No, we need to know where the reposts are stored. 
-            // Usually: professional users -> professional.post_reposts. Employers -> employer.post_reposts.
-            // We can check both or just Query 1 if we knew the target type. 
-            // Since we don't have targetType, we'll try both `professional` and `employer` schemas for the reposts table
-            // WHERE user_id/company_id = targetUserId.
-
-            // 1. Fetch Reposts from Professional Schema (reposts of professional posts)
             const { data: profReposts } = await supabaseAdmin
                 .schema('professional')
                 .from('post_reposts')
@@ -41,7 +148,6 @@ export async function GET(request: NextRequest) {
                 .eq('user_id', targetUserId)
                 .order('created_at', { ascending: false });
 
-            // 2. Fetch Reposts from Employer Schema (reposts of employer posts)
             const { data: empReposts } = await supabaseAdmin
                 .schema('employer')
                 .from('post_reposts')
@@ -49,20 +155,14 @@ export async function GET(request: NextRequest) {
                 .eq('user_id', targetUserId)
                 .order('created_at', { ascending: false });
 
-            console.log(`[DEBUG_PROF_REPOSTS] TargetUser=${targetUserId}`);
-            console.log(`[DEBUG_PROF_REPOSTS] ProfReposts=${profReposts?.length}`);
-            console.log(`[DEBUG_PROF_REPOSTS] EmpReposts=${empReposts?.length}`);
-
             let reposts = [...(profReposts || []), ...(empReposts || [])];
 
             if (!reposts || reposts.length === 0) {
                 return NextResponse.json({ posts: [] });
             }
 
-            // Extract IDs
             const postIds = reposts.map((r: any) => r.original_post_id || r.post_id);
 
-            // Fetch Original Posts from both schemas
             const profPostsPromise = supabaseAdmin.schema('professional').from('posts').select('*').in('id', postIds);
             const empPostsPromise = supabaseAdmin.schema('employer').from('posts').select('*').in('id', postIds).then((res: any) => ({ ...res, isEmployer: true })).catch(() => ({ data: [], error: null }));
 
@@ -72,23 +172,20 @@ export async function GET(request: NextRequest) {
             if (profRes.data) originals = [...originals, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
             if ((empRes as any).data) originals = [...originals, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
 
-            // Re-order based on repost time
             const orderedPosts = reposts.map((r: any) => {
                 const original = originals.find(o => o.id === (r.original_post_id || r.post_id));
                 if (!original) return null;
                 return {
                     ...original,
                     repostId: r.id,
-                    repostCreatedAt: r.created_at, // Use repost time for sorting/display
+                    repostCreatedAt: r.created_at,
                     repostContext: {
-                        repostedBy: targetUserId, // We could fetch name, but frontend knows whose profile it is
+                        repostedBy: targetUserId,
                         createdAt: r.created_at
                     }
                 };
             }).filter(Boolean);
 
-            // Process Stats (Reuse existing logic)
-            // Function extraction would be better but inline for now to save complexity
             const processed = await processPosts(orderedPosts, user);
             return NextResponse.json({ posts: processed });
         }
@@ -96,9 +193,8 @@ export async function GET(request: NextRequest) {
 
         // --- CASE 2: FETCH POSTS (Filtered or Feed) ---
 
-        // If specific user targeted (Profile View), stick to simple query
+        // If specific user targeted (Profile View)
         if (targetUserId) {
-            // Fetch professional posts
             let profQuery = supabaseAdmin
                 .schema('professional')
                 .from('posts')
@@ -107,7 +203,6 @@ export async function GET(request: NextRequest) {
                 .order('created_at', { ascending: false })
                 .range(offset, offset + limit - 1);
 
-            // Fetch employer posts
             let empQuery = supabaseAdmin
                 .schema('employer')
                 .from('posts')
@@ -120,7 +215,6 @@ export async function GET(request: NextRequest) {
 
             const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
 
-            // Merge and Sort
             let allPosts: any[] = [];
             if (profRes.data) allPosts = [...allPosts, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
             if ((empRes as any).data) allPosts = [...allPosts, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
@@ -134,10 +228,8 @@ export async function GET(request: NextRequest) {
         // --- CASE 3: HASHTAG FILTERING ---
         const hashtag = searchParams.get('hashtag');
         if (hashtag) {
-            // Case-insensitive search for hashtag. Use ilike.
-            const tagPattern = `%#${hashtag}%`; // Matches #tag in content (simple approximation)
+            const tagPattern = `%#${hashtag}%`;
 
-            // Fetch professional posts
             let profQuery = supabaseAdmin
                 .schema('professional')
                 .from('posts')
@@ -146,7 +238,6 @@ export async function GET(request: NextRequest) {
                 .order('created_at', { ascending: false })
                 .limit(limit);
 
-            // Fetch employer posts
             let empQuery = supabaseAdmin
                 .schema('employer')
                 .from('posts')
@@ -159,14 +250,11 @@ export async function GET(request: NextRequest) {
 
             const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
 
-            // Merge and Sort
             let allPosts: any[] = [];
             if (profRes.data) allPosts = [...allPosts, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
             if ((empRes as any).data) allPosts = [...allPosts, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
 
             allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-            // Limit again after merge (to p_limit approx)
             allPosts = allPosts.slice(0, limit);
 
             const processed = await processPosts(allPosts, user);
@@ -182,7 +270,7 @@ export async function GET(request: NextRequest) {
 
         if (rpcError) {
             console.error('Feed RPC Error:', rpcError);
-            // Fallback to simple query if RPC fails (or migration not applied yet)
+            // Fallback to simple query
             let profQuery = supabaseAdmin
                 .schema('professional')
                 .from('posts')
@@ -205,23 +293,23 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// Helper: Process stats
+// Optimized Helper: Process stats with caching
 async function processPosts(posts: any[], user: any) {
     return Promise.all(posts.map(async (post: any) => {
-        // Normalization: RPC returns snake_case, manual queries return mapped camelCase
+        // Normalization
         const authorType = post.authorType || post.author_type || 'professional';
         const postAuthorId = authorType === 'employer' ? (post.company_id || post.user_id) : post.user_id;
-
         const postSchema = authorType === 'employer' ? 'employer' : 'professional';
 
-        // Like count
-        const { count: likesCount } = await supabaseAdmin
-            .schema(postSchema)
-            .from('post_likes')
-            .select('*', { count: 'exact', head: true })
-            .eq('post_id', post.id);
+        // 1. Get Cached Public Stats (Counts)
+        const counts = await getCachedPostCounts(post.id, postSchema);
 
-        // User Like Status
+        // 2. Get Cached Author Profile
+        let authorData = await getCachedAuthorProfile(postAuthorId, authorType);
+
+        // 3. Get User-Specific State (Real-time, Uncached)
+
+        // Is Liked?
         let likeQuery = supabaseAdmin
             .schema(postSchema)
             .from('post_likes')
@@ -235,22 +323,8 @@ async function processPosts(posts: any[], user: any) {
         }
         const { data: userLike } = await likeQuery.single();
 
-        // Comments count
-        const { count: commentsCount } = await supabaseAdmin
-            .schema(postSchema)
-            .from('post_comments')
-            .select('*', { count: 'exact', head: true })
-            .eq('post_id', post.id);
-
-        // Reposts count
+        // Is Reposted?
         const repostFk = postSchema === 'professional' ? 'post_id' : 'original_post_id';
-
-        const { count: repostsCount } = await supabaseAdmin
-            .schema(postSchema)
-            .from('post_reposts')
-            .select('*', { count: 'exact', head: true })
-            .eq(repostFk, post.id);
-
         let repostQuery = supabaseAdmin
             .schema(postSchema)
             .from('post_reposts')
@@ -262,106 +336,35 @@ async function processPosts(posts: any[], user: any) {
         } else {
             repostQuery = repostQuery.eq('user_id', user.id);
         }
+        const { data: userReposts } = await repostQuery.limit(1);
+        const isReposted = !!(userReposts && userReposts.length > 0);
 
-        let userRepost = null;
-        try {
-            const { data } = await repostQuery.limit(1);
-            if (data && data.length > 0) userRepost = data[0];
-        } catch (ignore) { }
-
-        // Get author info
-        let authorData: any = {
-            id: postAuthorId,
-            type: authorType,
-            // Default placeholders
-            name: 'User',
-            profileImage: '/default-avatar.png',
-            role: '',
-            followerCount: 0,
-            isFollowing: false,
-            badgeType: null
-        };
-
-        if (authorType === 'employer' && postAuthorId) {
-            try {
-                const { data: comp } = await supabaseAdmin
-                    .schema('employer')
-                    .from('companies')
-                    .select('id, enc_company_name, enc_logo_url, badge_type')
-                    .eq('id', postAuthorId)
-                    .single();
-
-                if (comp) {
-                    const companyName = decryptData(comp.enc_company_name);
-                    const logoUrl = comp.enc_logo_url ? decryptData(comp.enc_logo_url) : null;
-
-                    authorData = {
-                        ...authorData,
-                        name: companyName || 'Company',
-                        profileImage: logoUrl || '/default-logo.png',
-                        role: 'Company',
-                        type: 'employer',
-                        badgeType: comp.badge_type
-                    };
-
-                    const { count: followerCount } = await supabaseAdmin
-                        .schema('professional')
-                        .from('company_follows')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('company_id', postAuthorId);
-
-                    authorData.followerCount = followerCount || 0;
-
-                    const { data: isFollowing } = await supabaseAdmin
-                        .schema('professional')
-                        .from('company_follows')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .eq('company_id', postAuthorId)
-                        .single();
-
-                    authorData.isFollowing = !!isFollowing;
-                }
-            } catch (e) { console.error('Error fetching company details:', e); }
-        } else if (postAuthorId) {
-            const { data: profUser } = await supabaseAdmin
-                .schema('professional')
-                .from('users')
-                .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
-                .eq('id', postAuthorId)
-                .single();
-
-            if (profUser) {
-                const firstName = decryptData(profUser.enc_first_name) || '';
-                const lastName = decryptData(profUser.enc_last_name) || '';
-                const role = decryptData(profUser.enc_current_role) || '';
-                const profileImage = decryptData(profUser.enc_profile_image_url) || '/default-avatar.png';
-
-                const { count: followerCount } = await supabaseAdmin
+        // Is Following Author?
+        let isFollowing = false;
+        if (authorData.id !== user.id) {
+            if (authorType === 'employer') {
+                const { data } = await supabaseAdmin
                     .schema('professional')
-                    .from('user_follows')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('following_id', postAuthorId);
-
-                const { data: following } = await supabaseAdmin
+                    .from('company_follows')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .eq('company_id', authorData.id)
+                    .single();
+                isFollowing = !!data;
+            } else {
+                const { data } = await supabaseAdmin
                     .schema('professional')
                     .from('user_follows')
                     .select('id')
                     .eq('follower_id', user.id)
-                    .eq('following_id', postAuthorId)
+                    .eq('following_id', authorData.id)
                     .single();
-
-                authorData = {
-                    ...authorData,
-                    name: `${firstName} ${lastName}`.trim() || 'User',
-                    profileImage: profileImage,
-                    role: role,
-                    followerCount: followerCount || 0,
-                    isFollowing: !!following || postAuthorId === user.id,
-                    badgeType: profUser.badge_type
-                };
+                isFollowing = !!data;
             }
         }
+
+        // Enrich Author Data with dynamic 'isFollowing'
+        authorData = { ...authorData, isFollowing };
 
         return {
             id: post.id,
@@ -371,12 +374,12 @@ async function processPosts(posts: any[], user: any) {
                 url
             })),
             linkPreview: post.link_preview,
-            timestamp: formatTimestamp(post.repostCreatedAt || post.created_at), // Use repost time if available
-            likesCount: likesCount || 0,
-            commentsCount: commentsCount || 0,
-            repostsCount: repostsCount || 0,
+            timestamp: formatTimestamp(post.repostCreatedAt || post.created_at),
+            likesCount: counts.likesCount,
+            commentsCount: counts.commentsCount,
+            repostsCount: counts.repostsCount,
             isLiked: !!userLike,
-            isReposted: !!userRepost,
+            isReposted: isReposted,
             repostContext: post.repostContext || null,
             author: authorData
         };
@@ -398,17 +401,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Content is required' }, { status: 400 });
         }
 
-        // Word count validation
         const wordCount = content.trim().split(/\s+/).filter((w: string) => w.length > 0).length;
         if (wordCount > 500) {
             return NextResponse.json({ error: 'Post exceeds 500 word limit' }, { status: 400 });
         }
 
-        // Prepare link preview if linkMedia provided
         let linkPreview = null;
         if (linkMedia) {
             try {
-                // Determine base URL dynamically for server-side fetch
                 const protocol = request.headers.get('x-forwarded-proto') || 'http';
                 const host = request.headers.get('host') || 'localhost:3000';
                 const baseUrl = `${protocol}://${host}`;
@@ -421,8 +421,6 @@ export async function POST(request: NextRequest) {
                 }
             } catch (e) {
                 console.error('Link preview generation failed, using fallback:', e);
-                // Fallback: Create a basic preview object so the link is still clickable
-                // Ensure protocol exists
                 const safeUrl = linkMedia.match(/^https?:\/\//i) ? linkMedia : `https://${linkMedia}`;
                 try {
                     const urlObj = new URL(safeUrl);
@@ -434,7 +432,6 @@ export async function POST(request: NextRequest) {
                         image: ''
                     };
                 } catch (err) {
-                    // If URL is completely invalid, we can't do much
                     linkPreview = null;
                 }
             }
@@ -454,7 +451,7 @@ export async function POST(request: NextRequest) {
                 .single();
 
             if (error) {
-                if (error.code === '42P01') { // Undefined Table
+                if (error.code === '42P01') {
                     return NextResponse.json({ error: 'Employer posting is not yet enabled (Migration pending).' }, { status: 503 });
                 }
                 throw error;
@@ -462,7 +459,6 @@ export async function POST(request: NextRequest) {
 
             return NextResponse.json({ post, message: 'Post created successfully' });
         } else {
-            // Professional Posting (Existing)
             const { data: post, error } = await supabaseAdmin
                 .schema('professional')
                 .from('posts')

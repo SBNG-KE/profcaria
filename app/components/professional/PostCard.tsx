@@ -38,12 +38,12 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                     return part;
                 })}
             </div>
-            {!isExpanded && text.length > 150 && (
+            {text.length > 150 && (
                 <button
-                    onClick={() => setIsExpanded(true)}
+                    onClick={() => setIsExpanded(!isExpanded)}
                     className={`mt-1 text-sm font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
                 >
-                    Show more
+                    {isExpanded ? 'Show less' : 'Show more'}
                 </button>
             )}
         </div>
@@ -365,16 +365,18 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                             ) : (
                                 comments.map((c) => (
                                     <div key={c.id} className="flex gap-2">
-                                        <ProfileImage
-                                            src={c.author.profileImage}
-                                            name={c.author.name}
-                                            type={c.author.type || 'professional'} // Assuming comments are mostly pros for now
-                                            size={14}
-                                            className="w-7 h-7 rounded-full flex-shrink-0"
-                                        />
+                                        <Link href={`/professional/people/${c.author.id}`}>
+                                            <ProfileImage
+                                                src={c.author.profileImage}
+                                                name={c.author.name}
+                                                type={c.author.type || 'professional'}
+                                                size={14}
+                                                className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
+                                            />
+                                        </Link>
                                         <div className="flex-1 min-w-0">
                                             <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
-                                                <p className={`text-xs font-semibold ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</p>
+                                                <Link href={`/professional/people/${c.author.id}`} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</Link>
                                                 <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
                                             </div>
                                             <p className={`text-[10px] mt-0.5 ml-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{new Date(c.createdAt).toLocaleDateString()}</p>
