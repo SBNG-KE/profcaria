@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         const { data: profUser, error } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+            .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_location, enc_city')
             .eq('id', user.id)
             .single();
 
@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
         const lastName = decryptData(profUser.enc_last_name) || '';
         const role = decryptData(profUser.enc_current_role) || '';
         const profileImage = decryptData(profUser.enc_profile_image_url) || '/default-avatar.png';
+        const location = decryptData(profUser.enc_location) || decryptData(profUser.enc_city) || '';
 
         const profile = {
             id: profUser.id,
@@ -38,7 +39,8 @@ export async function GET(request: NextRequest) {
             lastName,
             name: `${firstName} ${lastName}`.trim(),
             role,
-            profileImage
+            profileImage,
+            location
         };
 
         return NextResponse.json({ profile });

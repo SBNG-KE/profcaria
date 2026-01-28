@@ -281,9 +281,6 @@ function FeedContent() {
     const [isLoading, setIsLoading] = useState(true);
     const [showPostModal, setShowPostModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<string>('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
     const [editingPost, setEditingPost] = useState<any>(null);
 
     // Scroll Direction & Refresh Button Logic
@@ -317,32 +314,7 @@ function FeedContent() {
 
     const [activeHashtag, setActiveHashtag] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            setSearchResults([]);
-            setIsSearching(false);
-            return;
-        }
-        setIsSearching(true);
-        const timer = setTimeout(async () => {
-            // Log Search for AI Training
-            if (searchQuery.length > 2) {
-                fetch('/api/professional/search/log', {
-                    method: 'POST',
-                    body: JSON.stringify({ query: searchQuery })
-                }).catch(() => { });
-            }
 
-            try {
-                const res = await fetch(`/api/search/users?q=${encodeURIComponent(searchQuery)}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setSearchResults(data.results || []);
-                }
-            } catch (err) { console.error(err); }
-        }, 800); // Increased debounce to 800ms to capture "intent" better and reduce log spam
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
 
     useEffect(() => {
         fetchCurrentUser();
@@ -571,13 +543,6 @@ function FeedContent() {
     return (
         <div className="min-h-full pb-20 relative">
             {/* Search Overlay/Blur */}
-            {isSearching && (
-                <div
-                    className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-md z-[35]"
-                    onClick={() => { setIsSearching(false); setSearchQuery(''); }}
-                />
-            )}
-
             {/* Refresh Pill Button (Sticky below Search Logic) */}
             <div className={`fixed top-[3.5rem] left-0 right-0 z-30 flex justify-center pointer-events-none transition-all duration-300 ${showRefreshButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
                 <button
@@ -592,56 +557,9 @@ function FeedContent() {
                 </button>
             </div>
 
-            {/* Search and Post Button */}
-            <div className={`sticky top-0 z-40 py-2 px-3 flex items-center gap-2 transition-colors ${isSearching ? 'bg-transparent' : ''}`}>
-                <div className={`relative flex-1 ${isSearching ? 'z-[45]' : ''}`}>
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                        <Search size={14} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => { if (searchQuery) setIsSearching(true); }}
-                            placeholder="Search"
-                            className={`flex-1 bg-transparent text-sm focus:outline-none ${isDark ? 'text-white placeholder-neutral-500' : 'text-black placeholder-neutral-400'}`}
-                        />
-                        {searchQuery && (
-                            <button onClick={() => { setSearchQuery(''); setIsSearching(false); }} className={`p-0.5 rounded-full ${isDark ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}><X size={12} /></button>
-                        )}
-                    </div>
-
-                    {/* Search Dropdown */}
-                    {isSearching && searchResults.length > 0 && (
-                        <div className={`absolute top-full left-0 right-0 mt-2 rounded-xl shadow-2xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                            {searchResults.map((result) => (
-                                <button
-                                    key={result.id}
-                                    onClick={() => {
-                                        if (result.type === 'employer') {
-                                            router.push(`/professional/companies/${result.id}`);
-                                        } else {
-                                            router.push(`/professional/people/${result.id}`);
-                                        }
-                                        setIsSearching(false);
-                                        setSearchQuery('');
-                                    }}
-                                    className={`w-full px-4 py-3 flex items-center gap-3 text-left transition-colors ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-neutral-50'}`}
-                                >
-                                    <img src={result.image} alt={result.name} className="w-10 h-10 rounded-full object-cover" />
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`font-semibold text-sm ${isDark ? 'text-white' : 'text-black'}`}>{result.name}</span>
-                                            {result.type === 'employer' && <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">CORP</span>}
-                                        </div>
-                                        <div className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                            {result.followers} {result.type === 'employer' ? 'subscribers' : 'followers'}
-                                        </div>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
+            {/* Post Button (Aligned Right) */}
+            <div className={`sticky top-0 z-40 py-2 px-3 flex items-center justify-end gap-2 transition-colors`}>
+                <div className="flex-1" /> {/* Spacer */}
                 <button
                     onClick={() => setShowPostModal(true)}
                     className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold relative z-40 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
