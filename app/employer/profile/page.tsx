@@ -140,12 +140,7 @@ export default function EmployerProfilePage() {
 
     const openEditIndustry = () => setIsEditingIndustry(true);
 
-    const handleCopyLink = () => {
-        const link = `https://profcaria.com/c/${companyName.toLowerCase().replace(/ /g, '-')}`;
-        navigator.clipboard.writeText(link);
-        setMessage({ type: 'success', text: 'Profile link copied!' });
-        setTimeout(() => setMessage(null), 3000);
-    };
+
 
     const fetchPostCount = async () => {
         try {
@@ -620,10 +615,15 @@ export default function EmployerProfilePage() {
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Link</label>
                             <div className={`flex items-center p-1.5 rounded-xl border ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                                 <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                    https://profcaria.com/c/{companyName.toLowerCase().replace(/ /g, '-')}
+                                    {typeof window !== 'undefined' ? `${window.location.origin}/professional/companies/${profile?.id}` : '...'}
                                 </div>
                                 <button
-                                    onClick={handleCopyLink}
+                                    onClick={() => {
+                                        const link = `${window.location.origin}/professional/companies/${profile?.id}`;
+                                        navigator.clipboard.writeText(link);
+                                        setMessage({ type: 'success', text: 'Profile link copied!' });
+                                        setTimeout(() => setMessage(null), 3000);
+                                    }}
                                     className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
                                 >
                                     <Copy size={16} />

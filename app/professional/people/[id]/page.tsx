@@ -71,7 +71,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         return notFound();
     }
 
-    const isDark = false;
+
 
     // Decrypt Data
     const firstName = profile.first_name;
@@ -194,7 +194,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
                 {/* Profile Sections (Read Only) */}
                 <ProfileInfoSection
-                    isDark={isDark}
                     readOnly={true}
                     employmentHistory={employment?.map((e: any) => ({
                         ...e,
