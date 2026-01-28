@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail, MessageSquare } from 'lucide-react';
-import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 
 export const dynamic = 'force-dynamic';
@@ -126,7 +125,6 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                                                 <span className="hidden sm:inline">Download CV</span>
                                             </a>
                                         )}
-                                        <FollowButton targetId={id} type="user" />
                                     </div>
                                 </div>
                             </div>
@@ -146,26 +144,6 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Phone</label>
                                     <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                        {/* Assuming Phone icon is imported or available, if not explicitly imported checking imports in file */
-                                            /* File imports: User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail */
-                                            /* Phone is NOT in imports. I should add it or use another icon. I will use Globe for now or just text. Wait, I can try to use a generic icon or rely on auto-import if supported? No. */
-                                            /* I will use 'Globe' for location and just 'Mail' for email. I will omit Phone icon if not imported? */
-                                            /* Actually, I should update imports. But I am inside replace_file_content. I cannot update top imports easily unless I do a separate op or unsafe global replace. */
-                                            /* I will use `Mail` for Email. For Phone, I will use `Link2` or just omitted icon? */
-                                            /* Wait, I can use `Building2` or something? No. */
-                                            /* I'll use `Briefcase` as a temporary placeholder? No. */
-                                            /* I'll check imports again: MapPin is there. I can use MapPin for location. */
-                                            /* I will add Location to the grid. */
-                                            /* I will omit Phone icon for now or use `Mail` again? No. */
-                                            /* I can try to use `<Link2 />` since it is imported and user won't notice much difference for a link? */
-                                            /* Wait, I will use `MapPin` for location. For Phone, I will just display text "Phone" without icon if I have to, or use `User`. */
-                                            /* Actually, I will use `Globe` for website if I had it. */
-                                            /* Let's look at the imports again: User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail */
-                                            /* I will likely need to adding `div` text. */
-                                            /* Or I'll just use `User` for phone? No. */
-                                            /* I'll just list Phone: {phone} without icon if I can't import. */
-                                            /* Or I'll use `Link2` for Profile Link. */
-                                        }
                                         {phone || 'No phone provided'}
                                     </div>
                                 </div>
@@ -235,7 +213,6 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                 certifications={[]}
                 awards={[]}
                 otherProfiles={otherProfiles || []}
-                isDark={true}
             />
         </div>
     );
