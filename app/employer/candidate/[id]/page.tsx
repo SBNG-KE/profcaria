@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail, MessageSquare } from 'lucide-react';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
+import CopyableText from '@/app/components/ui/CopyableText';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,8 +84,8 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
 
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 pb-20">
             {/* Header / Cover */}
-            <div className="h-48 bg-neutral-900 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-neutral-800 to-neutral-900 opacity-80" />
+            <div className="h-48 bg-neutral-100 dark:bg-neutral-900 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900 opacity-80" />
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-20 space-y-8">
@@ -133,25 +134,20 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
 
                             {/* Contact Info Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Email */}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Email</label>
-                                    <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                        <Mail size={16} /> {email || 'No email provided'}
-                                    </div>
-                                </div>
-                                {/* Phone */}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Phone</label>
-                                    <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
-                                        {phone || 'No phone provided'}
-                                    </div>
-                                </div>
+                                <CopyableText
+                                    label="Email"
+                                    text={email}
+                                    icon={<Mail size={16} />}
+                                />
+                                <CopyableText
+                                    label="Phone"
+                                    text={phone}
+                                    icon={<User size={16} />} // Using User icon as placeholder if Phone not imported
+                                />
                             </div>
 
                             {/* Location & Profile Link */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Location */}
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Location</label>
                                     <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
@@ -159,18 +155,13 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                                     </div>
                                 </div>
 
-                                {/* Profile Link */}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Profile Link</label>
-                                    <div className="flex items-center p-1.5 rounded-xl border bg-white border-neutral-200 dark:bg-neutral-950 dark:border-neutral-800">
-                                        <div className="px-3 text-sm truncate flex-1 text-neutral-600 dark:text-neutral-400">
-                                            https://profcaria.com/p/{(firstName || 'user').toLowerCase()}-{(lastName || '').toLowerCase()}
-                                        </div>
-                                        <div className="p-2 rounded-lg text-neutral-400">
-                                            <Link2 size={16} />
-                                        </div>
-                                    </div>
-                                </div>
+                                <CopyableText
+                                    label="Profile Link"
+                                    text={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/professional/people/${id}`}
+                                    displayText={`profcaria.com/p/people/${id.slice(0, 8)}...`}
+                                    isLink={true}
+                                    icon={<Link2 size={16} />}
+                                />
                             </div>
 
                         </div>

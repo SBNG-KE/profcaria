@@ -107,7 +107,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
                 {/* Header Card with Logo (Matches Employer Dashboard Static View) */}
                 <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
-                    <div className="h-32 bg-gradient-to-r from-neutral-800 to-neutral-900" />
+                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900" />
                     <div className="px-6 pb-6">
                         <div className="flex items-end gap-4 -mt-12">
                             <div className="relative">
