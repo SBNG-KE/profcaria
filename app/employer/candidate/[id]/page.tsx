@@ -84,8 +84,9 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
 
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 pb-20">
             {/* Header / Cover */}
-            <div className="h-48 bg-neutral-100 dark:bg-neutral-900 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900 opacity-80" />
+            {/* Header / Cover */}
+            <div className="h-48 bg-white dark:bg-neutral-900 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-white to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 opacity-80" />
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-20 space-y-8">

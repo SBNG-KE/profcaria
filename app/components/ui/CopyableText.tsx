@@ -47,7 +47,7 @@ export default function CopyableText({ text, label, icon, isLink, displayText, c
                 </div>
                 <button
                     onClick={handleCopy}
-                    className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
+                    className="opacity-50 hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
                     title="Copy"
                 >
                     {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
