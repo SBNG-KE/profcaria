@@ -677,56 +677,7 @@ function SettingsContent() {
                         </div>
                     </div>
 
-                    {/* Payment Method / Status */}
-                    <div className={`border p-8 rounded-[24px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
-                            <div className="space-y-4 max-w-2xl">
-                                <h3 className={`font-bold flex items-center gap-3 text-lg ${isDark ? 'text-white' : 'text-black'}`}>
-                                    <Activity className={isAutoRenew ? (isDark ? "text-white" : "text-black") : "text-neutral-400"} size={24} />
-                                    Subscription Status: <span className={isAutoRenew ? (isDark ? "text-white" : "text-black") : "text-neutral-400"}>{isAutoRenew ? 'Automatic Detection' : 'Manual / Expiring'}</span>
-                                </h3>
 
-                                <div className="space-y-3 text-neutral-400 text-sm leading-relaxed">
-                                    <p>
-                                        <strong className="text-neutral-300">Automatic:</strong> Your subscription renews automatically every month. This ensures uninterrupted access to all features.
-                                    </p>
-                                    <p>
-                                        <strong className="text-neutral-300">Manual:</strong> Recurring charges are disabled. Your plan will arguably expire at the end of the current period.
-                                    </p>
-                                    <div className="p-4 bg-neutral-900/50 rounded-xl border border-neutral-800/50 mt-2">
-                                        <p className="text-xs text-neutral-500">
-                                            <span className="text-white font-bold uppercase tracking-wide mr-2">Important Policy:</span>
-                                            If your subscription expires (Manual Mode) and is not renewed within <span className="text-white font-bold">60 days</span>, your billing account will be automatically reset to the <span className="text-white font-bold">Free Plan</span>. You will effectively start fresh and need to choose a new plan to regain paid features.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {subscription?.status === 'active' && (
-                                <div className="flex flex-col gap-3 w-full md:w-auto min-w-[200px]">
-                                    <button
-                                        onClick={handleToggleAutoRenew}
-                                        disabled={isLoading}
-                                        className={`w-full py-4 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${isAutoRenew
-                                            ? 'bg-neutral-800 hover:bg-neutral-700 text-white shadow-lg'
-                                            : 'bg-white hover:bg-neutral-200 text-black shadow-lg'}`}
-                                    >
-                                        {isLoading ? <Loader2 className="animate-spin" size={16} /> : isAutoRenew ? 'Switch to Manual' : 'Enable Auto-Renew'}
-                                    </button>
-
-                                    {isAutoRenew && (
-                                        <button
-                                            onClick={handleToggleAutoRenew}
-                                            disabled={isLoading}
-                                            className="w-full py-3 px-6 bg-transparent hover:bg-white/5 border border-neutral-700 hover:border-neutral-500 text-neutral-500 hover:text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
-                                        >
-                                            Cancel Subscription
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
             )
             }
