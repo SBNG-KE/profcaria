@@ -6,6 +6,7 @@ import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
 import PostCard from '@/app/components/professional/PostCard';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface CompanyPostsSectionProps {
     companyId: string;
@@ -14,6 +15,7 @@ interface CompanyPostsSectionProps {
 
 export default function CompanyPostsSection({ companyId, latestPost }: CompanyPostsSectionProps) {
     const { theme } = useTheme();
+    const router = useRouter();
     const isDark = theme === 'dark';
     const [isSlideOverOpen, setIsSlideOverOpen] = useState(false);
     const [posts, setPosts] = useState<any[]>([]);
@@ -155,6 +157,7 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                                     onRepost={() => handleRepost(post)}
                                     onShare={() => { }}
                                     onFollow={() => { }}
+                                    onHashtagClick={(tag) => router.push(`/professional/feed?hashtag=${encodeURIComponent(tag)}`)}
                                 />
                             ))
                         ) : (
@@ -174,8 +177,8 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                                     currentUserId=""
                                     onLike={() => handleLike(post)}
                                     onRepost={() => handleRepost(post)}
-                                    onShare={() => { }}
                                     onFollow={() => { }}
+                                    onHashtagClick={(tag) => router.push(`/professional/feed?hashtag=${encodeURIComponent(tag)}`)}
                                 />
                             ))
                         ) : (
