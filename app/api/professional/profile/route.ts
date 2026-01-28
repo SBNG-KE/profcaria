@@ -5,7 +5,9 @@ import { getAuthenticatedUser } from '@/lib/auth-helper';
 import { decryptData } from '@/lib/security';
 
 // Force Node.js runtime
+// Force Node.js runtime and disable caching
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
     try {

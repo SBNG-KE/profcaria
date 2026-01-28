@@ -24,33 +24,30 @@ export const useCurrency = () => {
             // Priority: User Profile > IP Detection > Default USD
             let userCurrency = 'USD';
 
-            // Try fetching user profile first
+            // Try fetching user profile first (Professional)
             try {
                 const profileRes = await fetch('/api/professional/profile');
                 if (profileRes.ok) {
                     const profileData = await profileRes.json();
                     if (profileData.profile && profileData.profile.location) {
-                        const loc = profileData.profile.location.toLowerCase();
-                        // Map common countries to currencies
-                        if (loc.includes('kenya') || loc.includes('nairobi')) userCurrency = 'KES';
-                        else if (loc.includes('nigeria') || loc.includes('lagos')) userCurrency = 'NGN';
-                        else if (loc.includes('ghana') || loc.includes('accra')) userCurrency = 'GHS';
-                        else if (loc.includes('south africa') || loc.includes('johannesburg') || loc.includes('cape town')) userCurrency = 'ZAR';
-                        else if (loc.includes('india') || loc.includes('mumbai') || loc.includes('delhi')) userCurrency = 'INR';
-                        else if (loc.includes('uk') || loc.includes('united kingdom') || loc.includes('london')) userCurrency = 'GBP';
-                        else if (loc.includes('europe') || loc.includes('germany') || loc.includes('france') || loc.includes('spain')) userCurrency = 'EUR';
-                        else if (loc.includes('japan') || loc.includes('tokyo')) userCurrency = 'JPY';
-                        else if (loc.includes('canada') || loc.includes('toronto')) userCurrency = 'CAD';
-                        else if (loc.includes('australia') || loc.includes('sydney')) userCurrency = 'AUD';
-
-                        if (userCurrency !== 'USD') {
-                            console.log('Detected currency from profile:', userCurrency);
-                            // If found, skip IP check to save time/bandwidth
+                        userCurrency = detectCurrencyFromLocation(profileData.profile.location);
+                    }
+                } else {
+                    // If professional fetch fails (e.g. 401/403), try Employer Profile
+                    const employerRes = await fetch('/api/employer/profile');
+                    if (employerRes.ok) {
+                        const empData = await employerRes.json();
+                        if (empData.profile && empData.profile.location) {
+                            userCurrency = detectCurrencyFromLocation(empData.profile.location);
                         }
                     }
                 }
             } catch (e) {
                 // Ignore profile fetch error (might be logged out)
+            }
+
+            if (userCurrency !== 'USD') {
+                console.log('Detected currency from profile:', userCurrency);
             }
 
             // Fallback to IP if still USD (or if profile fetch failed/didn't have location)
@@ -159,4 +156,19 @@ export const useCurrency = () => {
 
 function getSymbol(currency: string): string {
     return CURRENCY_SYMBOLS[currency] || currency + ' ';
+}
+
+function detectCurrencyFromLocation(location: string): string {
+    const loc = location.toLowerCase();
+    if (loc.includes('kenya') || loc.includes('nairobi')) return 'KES';
+    if (loc.includes('nigeria') || loc.includes('lagos')) return 'NGN';
+    if (loc.includes('ghana') || loc.includes('accra')) return 'GHS';
+    if (loc.includes('south africa') || loc.includes('johannesburg') || loc.includes('cape town')) return 'ZAR';
+    if (loc.includes('india') || loc.includes('mumbai') || loc.includes('delhi')) return 'INR';
+    if (loc.includes('uk') || loc.includes('united kingdom') || loc.includes('london')) return 'GBP';
+    if (loc.includes('europe') || loc.includes('germany') || loc.includes('france') || loc.includes('spain')) return 'EUR';
+    if (loc.includes('japan') || loc.includes('tokyo')) return 'JPY';
+    if (loc.includes('canada') || loc.includes('toronto') || loc.includes('vancouver')) return 'CAD';
+    if (loc.includes('australia') || loc.includes('sydney')) return 'AUD';
+    return 'USD';
 }

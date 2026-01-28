@@ -82,20 +82,20 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
 
     return (
 
-        <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 pb-20">
+        <div className="min-h-screen bg-gray-50 pb-20">
             {/* Header / Cover */}
             {/* Header / Cover */}
-            <div className="h-48 bg-white dark:bg-neutral-900 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-white to-neutral-50 dark:from-neutral-800 dark:to-neutral-900 opacity-80" />
+            <div className="h-48 bg-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-white to-neutral-50 opacity-80" />
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 relative -mt-20 space-y-8">
                 {/* Profile Card */}
-                <div className="bg-white dark:bg-neutral-900 rounded-[40px] shadow-xl border border-neutral-200 dark:border-neutral-800 p-8">
+                <div className="bg-white rounded-[40px] shadow-xl border border-neutral-200 p-8">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                         {/* Avatar */}
                         <div className="flex-shrink-0 relative">
-                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] border-4 border-white dark:border-neutral-900 overflow-hidden bg-white dark:bg-neutral-800 shadow-lg flex items-center justify-center">
+                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] border-4 border-white overflow-hidden bg-white shadow-lg flex items-center justify-center">
                                 {profileImage ? (
                                     <img src={profileImage} alt={fullName} className="w-full h-full object-cover" />
                                 ) : (
@@ -110,8 +110,8 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                             <div className="space-y-2">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h1 className="text-4xl font-black text-gray-900 dark:text-white">{fullName}</h1>
-                                        <p className="text-xl font-medium text-blue-600 dark:text-blue-400 mt-1">{headline || role}</p>
+                                        <h1 className="text-4xl font-black text-gray-900">{fullName}</h1>
+                                        <p className="text-xl font-medium text-blue-600 mt-1">{headline || role}</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <a
@@ -150,16 +150,16 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                             {/* Location & Profile Link */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Location</label>
-                                    <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Location</label>
+                                    <div className="flex items-center gap-2 font-medium text-neutral-700">
                                         <MapPin size={16} /> {location || 'No location provided'}
                                     </div>
                                 </div>
 
                                 <CopyableText
                                     label="Profile Link"
-                                    text={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/professional/people/${id}`}
-                                    displayText={`profcaria.com/p/people/${id.slice(0, 8)}...`}
+                                    text={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.profcaria.com'}/professional/people/${id}`}
+                                    displayText={`profcaria.com/professional/people/${id.slice(0, 8)}...`}
                                     isLink={true}
                                     icon={<Link2 size={16} />}
                                 />

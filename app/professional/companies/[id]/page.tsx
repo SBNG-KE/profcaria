@@ -102,12 +102,12 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 p-6 pb-20">
+        <div className="min-h-screen bg-gray-50 p-6 pb-20">
             <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header Card with Logo (Matches Employer Dashboard Static View) */}
-                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
-                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900" />
+                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm">
+                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300" />
                     <div className="px-6 pb-6">
                         <div className="flex items-end gap-4 -mt-12">
                             <div className="relative">
@@ -144,7 +144,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                 </div>
 
                 {/* 1. Identity Card */}
-                <div className="p-8 rounded-[40px] bg-white border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                <div className="p-8 rounded-[40px] bg-white border border-neutral-200 shadow-sm">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                         {/* Left: Company Logo (Read Only) */}
                         <div className="flex-shrink-0 relative">
@@ -166,17 +166,17 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                         <div className="flex-1 w-full space-y-6">
                             {/* Name & Founded */}
                             <div className="space-y-2">
-                                <h1 className="text-4xl md:text-5xl font-black text-black dark:text-white">
+                                <h1 className="text-4xl md:text-5xl font-black text-black">
                                     {companyName}
                                 </h1>
                                 {foundedYear && (
-                                    <p className="text-xl font-medium text-neutral-500 dark:text-neutral-400">
+                                    <p className="text-xl font-medium text-neutral-500">
                                         Founded {foundedYear}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800"></div>
+                            <div className="h-px w-full bg-neutral-100"></div>
 
                             {/* Contact Info (Interactivity handled by Client Component) */}
                             <ContactInfoCard
@@ -184,7 +184,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 website={website}
                                 city={city || undefined}
                                 country={country || undefined}
-                                profileLink={`https://profcaria.com/c/${(companyName || 'company').toLowerCase().replace(/ /g, '-')}`}
+                                profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.profcaria.com'}/professional/companies/${id}`}
                             />
 
 
