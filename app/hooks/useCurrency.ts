@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { COUNTRY_TO_CURRENCY, CURRENCY_SYMBOLS } from '@/lib/currency-map';
 
 interface CurrencyData {
     currency: string;
@@ -157,18 +158,5 @@ export const useCurrency = () => {
 };
 
 function getSymbol(currency: string): string {
-    const symbols: Record<string, string> = {
-        USD: '$',
-        EUR: '€',
-        GBP: '£',
-        KES: 'KSh',
-        NGN: '₦',
-        GHS: '₵',
-        ZAR: 'R',
-        INR: '₹',
-        JPY: '¥',
-        CAD: 'C$',
-        AUD: 'A$'
-    };
-    return symbols[currency] || currency + ' ';
+    return CURRENCY_SYMBOLS[currency] || currency + ' ';
 }
