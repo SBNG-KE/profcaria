@@ -38,15 +38,22 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                     return part;
                 })}
             </div>
-            {text.length > 150 && (
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className={`mt-1 text-sm font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
-                >
-                    {isExpanded ? 'Show less' : 'Show more'}
-                </button>
-            )}
-        </div>
+
+            {/* Show button if text is long enough OR has multiple newlines (likely truncated by line-clamp-3) */}
+            {
+                (text.length > 150 || text.split('\n').length > 3) && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsExpanded(!isExpanded);
+                        }}
+                        className={`mt-1 text-sm font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                    >
+                        {isExpanded ? 'Show less' : 'Show more'}
+                    </button>
+                )
+            }
+        </div >
     );
 };
 
