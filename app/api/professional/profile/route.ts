@@ -31,7 +31,36 @@ export async function GET(request: NextRequest) {
         const lastName = decryptData(profUser.enc_last_name) || '';
         const role = decryptData(profUser.enc_current_role) || '';
         const profileImage = decryptData(profUser.enc_profile_image_url) || '/default-avatar.png';
-        const location = decryptData(profUser.enc_location) || decryptData(profUser.enc_city) || '';
+        // Fetch latest location from Activity Logs (Dynamic Location)
+        const { data: latestLog } = await supabaseAdmin
+            .schema('professional')
+            .from('activity_logs')
+            .select('enc_location_details')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        let activityLocation = '';
+        if (latestLog && latestLog.enc_location_details) {
+            const dec = decryptData(latestLog.enc_location_details);
+            if (dec) {
+                try {
+                    // Try parsing JSON if stored as such
+                    const jsonObj = JSON.parse(dec);
+                    const parts = [];
+                    if (jsonObj.city) parts.push(jsonObj.city);
+                    if (jsonObj.country) parts.push(jsonObj.country);
+                    activityLocation = parts.join(', ');
+                } catch (e) {
+                    // Plain string
+                    activityLocation = dec;
+                }
+            }
+        }
+
+        // Use Profile Location if set, otherwise use latest Activity Log location
+        const location = decryptData(profUser.enc_location) || decryptData(profUser.enc_city) || activityLocation || '';
 
         const profile = {
             id: profUser.id,
