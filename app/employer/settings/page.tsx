@@ -277,9 +277,9 @@ function SettingsContent() {
             {activeTab === 'security' ? (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
-                    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-[32px] space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Lock className="text-white" size={24} /> Change Password
+                    <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                            <Lock className={isDark ? "text-white" : "text-black"} size={24} /> Change Password
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* ...fields... */}
@@ -323,16 +323,16 @@ function SettingsContent() {
                     </div>
 
                     {/* Logs */}
-                    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-[32px] space-y-6">
-                        <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                            <Activity className="text-white" size={24} /> Activity Log
+                    <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                            <Activity className={isDark ? "text-white" : "text-black"} size={24} /> Activity Log
                         </h3>
                         {/* Table... */}
                         <div className="overflow-hidden rounded-xl border border-neutral-800">
                             {/* Desktop Table */}
                             <div className="hidden md:block">
-                                <table className="w-full text-left text-sm text-neutral-400">
-                                    <thead className="bg-neutral-900 text-neutral-200 font-bold uppercase text-xs tracking-wider">
+                                <table className={`w-full text-left text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                    <thead className={`font-bold uppercase text-xs tracking-wider ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-neutral-50 text-neutral-700'}`}>
                                         <tr>
                                             <th className="p-4">Action</th>
                                             <th className="p-4">Location Details</th>
@@ -340,7 +340,7 @@ function SettingsContent() {
                                             <th className="p-4">Date</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-neutral-800">
+                                    <tbody className={`divide-y ${isDark ? 'divide-neutral-800' : 'divide-neutral-200'}`}>
                                         {activityLogs.map((log, i) => (
                                             <tr key={i} className="hover:bg-neutral-800/30 transition-colors">
                                                 <td className="p-4 font-bold text-white">{log.action}</td>
@@ -678,12 +678,12 @@ function SettingsContent() {
                     </div>
 
                     {/* Payment Method / Status */}
-                    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-[24px] space-y-6">
+                    <div className={`border p-8 rounded-[24px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
                             <div className="space-y-4 max-w-2xl">
-                                <h3 className="font-bold text-white flex items-center gap-3 text-lg">
-                                    <Activity className={isAutoRenew ? "text-white" : "text-neutral-400"} size={24} />
-                                    Subscription Status: <span className={isAutoRenew ? "text-white" : "text-neutral-400"}>{isAutoRenew ? 'Automatic Detection' : 'Manual / Expiring'}</span>
+                                <h3 className={`font-bold flex items-center gap-3 text-lg ${isDark ? 'text-white' : 'text-black'}`}>
+                                    <Activity className={isAutoRenew ? (isDark ? "text-white" : "text-black") : "text-neutral-400"} size={24} />
+                                    Subscription Status: <span className={isAutoRenew ? (isDark ? "text-white" : "text-black") : "text-neutral-400"}>{isAutoRenew ? 'Automatic Detection' : 'Manual / Expiring'}</span>
                                 </h3>
 
                                 <div className="space-y-3 text-neutral-400 text-sm leading-relaxed">

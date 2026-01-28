@@ -286,3 +286,47 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         throw e;
     }
 }
+
+// NEW: Follower Notification
+export async function sendNewFollowerNotification(to: string, followerName: string, followerType: string, link: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] New Follower to ${to}: ${followerName}`);
+        return { success: true };
+    }
+
+    const title = followerType === 'company' ? 'New Subscriber' : 'New Follower';
+    const actionText = followerType === 'company' ? 'subscribed to' : 'started following';
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">${title} 🚀</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            <strong>${followerName}</strong> has ${actionText} your profile!
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <div style="width: 64px; height: 64px; background-color: #262626; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <span style="font-size: 24px;">👤</span> 
+                <!-- Ideally render actual image if available in email, but keeping it simple for now -->
+            </div>
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${followerName}</p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${link}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">View Profile</a>
+        </div>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+            Expand your network by checking out their profile.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Notifications <notifications@profcaria.com>',
+            to,
+            subject: `New ${title}: ${followerName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
 import { decryptData } from '@/lib/security';
+import { sendNewFollowerNotification } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,6 +66,51 @@ export async function POST(request: NextRequest) {
                 .insert(insertData);
 
             if (error) throw error;
+
+            // Send Email Notification (Async - non-blocking)
+            (async () => {
+                try {
+                    // 1. Get Target Email
+                    // If following a User
+                    let targetEmail = null;
+                    if (type === 'user') {
+                        const { data: targetUser, error: uErr } = await supabaseAdmin.auth.admin.getUserById(targetId);
+                        if (!uErr && targetUser?.user) targetEmail = targetUser.user.email;
+                    } else {
+                        // Following a Company - Get Company Owner's Email
+                        const { data: company } = await supabaseAdmin.schema('employer').from('companies').select('user_id').eq('id', targetId).single();
+                        if (company) {
+                            const { data: owner } = await supabaseAdmin.auth.admin.getUserById(company.user_id);
+                            if (owner?.user) targetEmail = owner.user.email;
+                        }
+                    }
+
+                    if (targetEmail) {
+                        // 2. Get Follower Name/Details (Current User)
+                        let followerName = 'Someone';
+                        if (user.schema === 'professional') {
+                            const { data: prof } = await supabaseAdmin.schema('professional').from('users').select('enc_first_name, enc_last_name').eq('id', user.id).single();
+                            if (prof) {
+                                followerName = `${decryptData(prof.enc_first_name)} ${decryptData(prof.enc_last_name)}`.trim();
+                            }
+                        } else {
+                            const { data: comp } = await supabaseAdmin.schema('employer').from('companies').select('enc_company_name').eq('id', user.id).single();
+                            if (comp) followerName = decryptData(comp.enc_company_name) || 'A Company';
+                        }
+
+                        // 3. Send Email
+                        // Determine profile link for follower
+                        const followerLink = user.schema === 'employer'
+                            ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/professional/companies/${user.id}`
+                            : `${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/professional/people/${user.id}`;
+
+                        await sendNewFollowerNotification(targetEmail, followerName, type === 'company' ? 'user' : 'user', followerLink);
+                    }
+                } catch (err) {
+                    console.error('Failed to send follow notification:', err);
+                }
+            })();
+
             return NextResponse.json({ following: true, message: 'Now following' });
         }
     } catch (error: any) {

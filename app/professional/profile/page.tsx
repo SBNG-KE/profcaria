@@ -1599,11 +1599,27 @@ export default function ProfessionalHome() {
                             ) : (
                               <div className="flex items-center gap-2">
                                 <div className={`flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                  <Mail size={16} className="shrink-0" /> <span className="truncate">{email || 'No email provided'}</span>
+                                  <Mail size={16} className="shrink-0" />
+                                  <span className="truncate select-all">{email || 'No email provided'}</span>
                                 </div>
-                                <button onClick={() => setIsEditingEmail(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
-                                  <PenLine size={14} />
-                                </button>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => {
+                                      if (email) {
+                                        navigator.clipboard.writeText(email);
+                                        setProfileMessage({ type: 'success', text: 'Email copied!' });
+                                        setTimeout(() => setProfileMessage(null), 2000);
+                                      }
+                                    }}
+                                    className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}
+                                    title="Copy Email"
+                                  >
+                                    <Copy size={14} />
+                                  </button>
+                                  <button onClick={() => setIsEditingEmail(true)} className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                    <PenLine size={14} />
+                                  </button>
+                                </div>
                               </div>
                             )}
                           </div>

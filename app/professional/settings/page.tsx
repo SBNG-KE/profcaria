@@ -114,7 +114,7 @@ export default function ProfessionalSettingsPage() {
                             <CheckCircle size={18} className={colorClass} fill="currentColor" fillOpacity={0.2} />
                         )}
                     </h4>
-                    <div className="mt-2 text-3xl font-black text-white">
+                    <div className={`mt-2 text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
                         {price === 0 ? 'Free' : (
                             <>
                                 {formatPrice(price)}<span className="text-sm text-neutral-500 font-bold">/mo</span>

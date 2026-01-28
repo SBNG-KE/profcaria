@@ -363,26 +363,33 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                             ) : comments.length === 0 ? (
                                 <p className={`text-center py-4 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No comments yet. Be the first!</p>
                             ) : (
-                                comments.map((c) => (
-                                    <div key={c.id} className="flex gap-2">
-                                        <Link href={`/professional/people/${c.author.id}`}>
-                                            <ProfileImage
-                                                src={c.author.profileImage}
-                                                name={c.author.name}
-                                                type={c.author.type || 'professional'}
-                                                size={14}
-                                                className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
-                                            />
-                                        </Link>
-                                        <div className="flex-1 min-w-0">
-                                            <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
-                                                <Link href={`/professional/people/${c.author.id}`} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</Link>
-                                                <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
+                                comments.map((c) => {
+                                    const authorType = c.author.type || 'professional';
+                                    const authorLink = authorType === 'employer'
+                                        ? `/professional/companies/${c.author.id}`
+                                        : `/professional/people/${c.author.id}`;
+
+                                    return (
+                                        <div key={c.id} className="flex gap-2">
+                                            <Link href={authorLink}>
+                                                <ProfileImage
+                                                    src={c.author.profileImage}
+                                                    name={c.author.name}
+                                                    type={authorType}
+                                                    size={14}
+                                                    className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
+                                                />
+                                            </Link>
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
+                                                    <Link href={authorLink} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</Link>
+                                                    <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
+                                                </div>
+                                                <p className={`text-[10px] mt-0.5 ml-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{new Date(c.createdAt).toLocaleDateString()}</p>
                                             </div>
-                                            <p className={`text-[10px] mt-0.5 ml-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{new Date(c.createdAt).toLocaleDateString()}</p>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>
