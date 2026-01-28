@@ -615,11 +615,11 @@ export default function EmployerProfilePage() {
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Link</label>
                             <div className={`flex items-center p-1.5 rounded-xl border ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                                 <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                    {typeof window !== 'undefined' ? `${window.location.origin}/professional/companies/${profile?.id}` : '...'}
+                                    {typeof window !== 'undefined' ? `${window.location.origin}/public/companies/${profile?.id}` : '...'}
                                 </div>
                                 <button
                                     onClick={() => {
-                                        const link = `${window.location.origin}/professional/companies/${profile?.id}`;
+                                        const link = `${window.location.origin}/public/companies/${profile?.id}`;
                                         navigator.clipboard.writeText(link);
                                         setMessage({ type: 'success', text: 'Profile link copied!' });
                                         setTimeout(() => setMessage(null), 3000);

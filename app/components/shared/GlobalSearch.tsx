@@ -51,7 +51,7 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
         setIsOpen(false);
         setQuery('');
         if (result.type === 'employer') {
-            router.push(`/professional/companies/${result.id}`);
+            router.push(`/public/companies/${result.id}`);
             // Note: If curr user is employer, they might see it differently? 
             // Employers viewing companies? Usually specific route. 
             // But stick to professional route for now or check user role.
@@ -62,12 +62,12 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
             // This is tricky if reused exactly. 
             // We'll use a prop or context if needed, but for now specific paths.
             // Let's safe-guess:
-            const isInEmployerPath = window.location.pathname.startsWith('/employer');
-            if (isInEmployerPath) {
-                router.push(`/employer/candidate/${result.id}`);
-            } else {
-                router.push(`/professional/people/${result.id}`);
-            }
+            // const isInEmployerPath = window.location.pathname.startsWith('/employer');
+            // if (isInEmployerPath) {
+            //    router.push(`/employer/candidate/${result.id}`);
+            // } else {
+            router.push(`/public/people/${result.id}`);
+            // }
         }
     };
 

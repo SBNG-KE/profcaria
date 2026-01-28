@@ -346,7 +346,7 @@ export default function ProfessionalHome() {
   }, [isRepositioning, dragStart, imagePosition]);
 
   const handleCopyLink = () => {
-    const link = `${window.location.origin}/professional/people/${userId}`;
+    const link = `${window.location.origin}/public/people/${userId}`;
     navigator.clipboard.writeText(link);
     setProfileMessage({ type: 'success', text: 'Profile link copied!' });
     setTimeout(() => setProfileMessage(null), 3000);
@@ -1652,7 +1652,7 @@ export default function ProfessionalHome() {
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Link</label>
                             <div className={`flex items-center p-1.5 rounded-xl border ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                               <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                {typeof window !== 'undefined' ? `${window.location.origin}/professional/people/${userId}` : '...'}
+                                {typeof window !== 'undefined' ? `${window.location.origin}/public/people/${userId}` : '...'}
                               </div>
                               <button
                                 onClick={handleCopyLink}
