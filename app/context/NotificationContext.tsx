@@ -35,7 +35,7 @@ export function NotificationProvider({
     role
 }: {
     children: React.ReactNode,
-    role: 'professional' | 'employer'
+    role: 'professional' | 'employer' | 'public'
 }) {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [applications, setApplications] = useState<Application[]>([]); // For conversations list
@@ -54,6 +54,7 @@ export function NotificationProvider({
         : '/api/employer/applications';
 
     const fetchNotifications = useCallback(async () => {
+        if (role === 'public') return; // No notifications for public
         try {
             const res = await fetch(`${NOTIFICATION_ENDPOINT}?t=${Date.now()}`, { cache: 'no-store' });
             if (res.ok) {
@@ -97,6 +98,7 @@ export function NotificationProvider({
     }, [NOTIFICATION_ENDPOINT]);
 
     const fetchApplications = useCallback(async () => {
+        if (role === 'public') return; // No applications for public
         try {
             const res = await fetch(`${APP_ENDPOINT}?t=${Date.now()}`, { cache: 'no-store' });
             if (res.ok) {

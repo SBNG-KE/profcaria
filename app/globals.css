@@ -110,23 +110,43 @@ body {
 }
 
 /* ============================================
-   PROFESSIONAL SCOPE GLOBAL STYLES
+   PROFESSIONAL + EMPLOYER + PUBLIC SCOPE GLOBAL STYLES
    ============================================ */
 .professional-scope a:not([class*="text-"]),
 .professional-scope .mention,
-.professional-scope .hashtag {
-  color: #2563eb; /* text-blue-600 */
+.professional-scope .hashtag,
+.employer-scope a:not([class*="text-"]),
+.employer-scope .mention,
+.employer-scope .hashtag,
+.public-scope a:not([class*="text-"]),
+.public-scope .mention,
+.public-scope .hashtag {
+  color: #2563eb;
+  /* text-blue-600 */
   text-decoration: none;
 }
 
 .professional-scope a:not([class*="text-"]):hover,
 .professional-scope .mention:hover,
-.professional-scope .hashtag:hover {
+.professional-scope .hashtag:hover,
+.employer-scope a:not([class*="text-"]):hover,
+.employer-scope .mention:hover,
+.employer-scope .hashtag:hover,
+.public-scope a:not([class*="text-"]):hover,
+.public-scope .mention:hover,
+.public-scope .hashtag:hover {
   text-decoration: underline;
 }
 
 .dark .professional-scope a:not([class*="text-"]),
 .dark .professional-scope .mention,
-.dark .professional-scope .hashtag {
-  color: #3b82f6; /* text-blue-500 */
+.dark .professional-scope .hashtag,
+.dark .employer-scope a:not([class*="text-"]),
+.dark .employer-scope .mention,
+.dark .employer-scope .hashtag,
+.dark .public-scope a:not([class*="text-"]),
+.dark .public-scope .mention,
+.dark .public-scope .hashtag {
+  color: #3b82f6;
+  /* text-blue-500 */
 }
