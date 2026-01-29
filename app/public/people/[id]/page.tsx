@@ -2,7 +2,7 @@ import ProfessionalPostsSection from '@/app/components/professional/Professional
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { Briefcase, MapPin, Link2, MessageSquare } from 'lucide-react';
+import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import PostsPreview from '@/app/components/professional/PostsPreview';
@@ -60,7 +60,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const { data: profile, error } = await supabaseAdmin
         .schema('professional')
         .from('users')
-        .select('*')
+        .select('*') // Includes enc_email, enc_phone_number
         .eq('id', id)
         .single();
 
@@ -76,6 +76,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     // Location handling
     const city = profile.enc_city ? decryptData(profile.enc_city) : '';
     const country = profile.enc_location ? decryptData(profile.enc_location) : '';
+    const email = profile.enc_email ? decryptData(profile.enc_email) : '';
+    const phone = profile.enc_phone_number ? decryptData(profile.enc_phone_number) : '';
     const profileImageUrl = profile.enc_profile_image_url ? decryptData(profile.enc_profile_image_url) : '';
     const imagePosition = profile.image_position || '50% 50%';
 
@@ -126,94 +128,174 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 p-6 pb-20">
-            <div className="max-w-5xl mx-auto space-y-8">
-                {/* Header Card */}
-                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm transition-colors">
-                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300" />
-                    <div className="px-6 pb-6">
-                        <div className="flex items-end gap-4 -mt-12">
-                            <div className="relative">
-                                <div className="w-32 h-32 rounded-full border-4 overflow-hidden flex items-center justify-center bg-white border-white shadow-lg">
-                                    {profileImageUrl ? (
-                                        <img
-                                            src={profileImageUrl}
-                                            alt="Profile"
-                                            className="w-full h-full object-cover"
-                                            style={{ objectPosition: imagePosition }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-3xl font-black text-neutral-300">
-                                            {firstName?.[0]}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex-1 pb-2 flex flex-col md:flex-row justify-between items-end md:items-end gap-4">
-                                <div>
-                                    <h1 className="text-3xl font-black text-black">{firstName} {lastName}</h1>
-                                    <p className="font-medium text-lg text-neutral-600">{role}</p>
-                                    <div className="flex flex-col gap-1 mt-2 text-sm text-neutral-500">
-                                        {city && <span className="flex items-center gap-1"><MapPin size={14} /> {city}{country ? `, ${country}` : ''}</span>}
-                                        {/* Show Email if needed or requested? Typically professional emails are private unless shared. 
-                                            User asked for "email" and "profile link". 
-                                            We'll add a section for Contact/Link below or here. 
-                                        */}
+            <div className="max-w-7xl mx-auto space-y-8">
+
+                {/* 1. Identity Card (Exact Copy of Private Profile Design) */}
+                <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white border-neutral-200 shadow-sm">
+                    <div className="flex flex-col md:flex-row gap-8 items-start">
+
+                        {/* Left: Profile Image */}
+                        <div className="flex-shrink-0 relative group">
+                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white border-white shadow-lg">
+                                {profileImageUrl ? (
+                                    <img
+                                        src={profileImageUrl}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover transition-none select-none"
+                                        style={{ objectPosition: imagePosition }}
+                                        draggable={false}
+                                    />
+                                ) : (
+                                    <div className="font-black text-6xl text-neutral-300">
+                                        {firstName?.[0]}{lastName?.[0]}
                                     </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right: Details */}
+                        <div className="flex-1 w-full space-y-6">
+
+                            {/* Name & Role Section */}
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-black">
+                                        {firstName} {lastName}
+                                    </h1>
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
-                                    {/* Hide Follow/Subscribe if viewer is Company or Self */}
-                                    {(!isViewerEmployer && viewerId !== id) && (
-                                        <FollowButton targetId={id} type="user" />
-                                    )}
 
-                                    {isViewerProfessional && viewerId !== id && (
-                                        <Link
-                                            href={`/professional/notifications?chat=${id}`}
-                                            className="ml-3 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center gap-2"
-                                        >
-                                            <MessageSquare size={14} />
-                                            <span>Message</span>
-                                        </Link>
-                                    )}
+                                <div className="flex items-center gap-3">
+                                    <p className="text-xl font-medium text-neutral-600">
+                                        {role}
+                                    </p>
+                                </div>
+                            </div>
 
+                            {/* Content Section: Contact & Links */}
+                            <div className="space-y-6 pt-2">
+                                <div className="flex flex-col md:flex-row gap-8">
+
+                                    {/* Contact Info Column */}
+                                    <div className="space-y-4 flex-1 min-w-0 w-full max-w-full">
+
+                                        {/* Email */}
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600">Email</label>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 font-medium truncate text-black">
+                                                    <Mail size={16} className="shrink-0" />
+                                                    {email ? (
+                                                        <a href={`mailto:${email}`} className="truncate hover:text-blue-600 transition-colors">{email}</a>
+                                                    ) : (
+                                                        <span className="truncate text-neutral-400">No email provided</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Phone */}
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600">Phone</label>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 font-medium truncate text-black">
+                                                    <Phone size={16} className="shrink-0" />
+                                                    <span className="truncate">{phone || 'No phone provided'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Profile Link */}
+                                        <div className="space-y-2 min-w-0">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600">Profile Link</label>
+                                            <div className="flex items-center p-1.5 rounded-xl border min-w-0 bg-neutral-50 border-neutral-200">
+                                                <a
+                                                    href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/public/people/${id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-3 text-sm truncate flex-1 min-w-0 text-black hover:text-blue-600 hover:underline"
+                                                >
+                                                    {process.env.NEXT_PUBLIC_APP_URL || 'profcaria.com'}/public/people/{id}
+                                                </a>
+                                                <div className="p-2 rounded-lg bg-white text-black shadow-sm">
+                                                    <Link2 size={16} />
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] text-neutral-600">Share this link for others to view your professional profile.</p>
+                                        </div>
+
+                                    </div>
+
+                                    {/* Action Buttons (Follow/Message) can go here or top right. Private Profile has them top right or not at all (editing). 
+                                We should keep the Follow/Message logic. Let's place it nicely.
+                                In Private Profile, there are no action buttons. 
+                                In Public, we need them. Let's put them absolute top right or in a flex column on the far right.
+                                The private profile "Right: Details" (line 1513) takes full width. 
+                                I'll add a separate column or just put it below Details? 
+                                Let's put it top-right relative to the card.
+                            */}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {/* Extra Contact Bar for Link/Email if requested */}
-                    <div className="px-8 pb-8 pt-2 flex flex-wrap gap-6 text-sm">
-                        <div className="flex items-center gap-2 text-neutral-600 bg-neutral-50 px-3 py-1.5 rounded-lg border border-neutral-100">
-                            <Link2 size={14} />
-                            <span className="font-mono text-xs select-all">
-                                {process.env.NEXT_PUBLIC_APP_URL || 'profcaria.com'}/public/people/{id}
-                            </span>
-                        </div>
-                        {/* Only show email if allowed? User complained "no email". We'll try to decrypt email if we have it? 
-                            We didn't fetch enc_email in the query above. Fix that.
-                        */}
+
+                    {/* Action Buttons (Absolute Positioned for Desktop, or Flex for Mobile) */}
+                    <div className="mt-6 md:mt-0 md:absolute md:top-8 md:right-8 flex flex-wrap gap-2">
+                        {/* Hide Follow/Subscribe if viewer is Company or Self */}
+                        {(!isViewerEmployer && viewerId !== id) && (
+                            <FollowButton targetId={id} type="user" />
+                        )}
+
+                        {isViewerProfessional && viewerId !== id && (
+                            <Link
+                                href={`/professional/notifications?chat=${id}`}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                            >
+                                <MessageSquare size={14} />
+                                <span>Message</span>
+                            </Link>
+                        )}
                     </div>
+                </div>
 
-                </div >
+                {/* Connections (Renamed from Followers) - Private Profile DOES NOT show this prominently as a card.
+                    Wait, private profile has "Follower Count" in settings? 
+                    The user previously asked to rename "Connections" to "Followers".
+                    The private profile screenshot didn't show a big followers card.
+                    BUT user "make it an exact copy... what will not be shown... is analytics".
+                    Does private profile show followers? I didn't see it in the snippet.
+                    I saw `const [followerCount, setFollowerCount] = useState(0);` in Private Profile.
+                    But I didn't see it rendered in the main view.
+                    If the user wants EXACT copy, and private doesn't have it, maybe remove it?
+                    However, Public Profiles usually show social proof.
+                    I will KEEP it but style it to match or integrate it. 
+                    Actually, let's look at the Private Profile code again. 
+                    Ah, I don't see it rendered in the "Identity Card" or "About Card".
+                    MAYBE it is in "Profile Info Section"? No.
+                    I will HIDE the Big Followers Card to stick to "Exact Copy" request unless I see it in screenshots.
+                    Screenshots: The 1st screenshot provided by user SHOWS "0 CONNECTIONS" big card. 
+                    Wait, that's the PUBLIC profile screenshot the user provided ("uploaded_media_0...").
+                    Wait, User said: "make it an exact copy of the profile page of that person let me give you images to see how the profile page of someone looks like".
+                    User uploaded 5 images. Those images likely show the PRIVATE profile (with "Updates", "Suggestions" sidebar etc.).
+                    Therefore, if the Private Profile (images) DOES NOT have a big "0 Connections" card, I should REMOVE it.
+                    I will remove the Big Connections Card.
+                */}
 
-                {/* Connections Card (Renamed from Followers) */}
-                < div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm" >
-                    <div className="flex flex-col items-center justify-center space-y-1">
-                        <div className="text-4xl font-black text-black">{profile.follower_count || 0}</div>
-                        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400">Connections</div>
-                    </div>
-                </div >
-
-                {/* About */}
-                {
-                    about && (
-                        <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm">
-                            <h3 className="text-xl font-bold mb-4 text-black">About</h3>
-                            <p className="whitespace-pre-wrap text-neutral-600">{about}</p>
+                {/* About Section */}
+                {about && (
+                    <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white border-neutral-200 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2 text-black">
+                                <Briefcase size={20} className="text-neutral-600" /> About
+                            </h3>
                         </div>
-                    )
-                }
+                        <p className="text-lg leading-relaxed whitespace-pre-wrap text-neutral-600">
+                            {about}
+                        </p>
+                    </div>
+                )}
 
                 {/* Profile Sections (Read Only) */}
+                {/* Note: ProfileInfoSection handles Experience, Education, etc. */}
                 <ProfileInfoSection
                     readOnly={true}
                     employmentHistory={employment?.map((e: any) => ({
@@ -241,13 +323,20 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
                 {/* Posts */}
                 <div className="pt-4">
+                    {/* Match Private Profile Posts Header */}
+                    <div className="flex items-center justify-between mb-4 px-2">
+                        <h3 className="text-xl font-bold flex items-center gap-2 text-black">
+                            <Briefcase size={20} className="text-neutral-600" /> Posts
+                        </h3>
+                    </div>
+
                     <ProfessionalPostsSection
                         userId={id}
                         latestPost={formattedPosts[0] || null}
                     />
                 </div>
 
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }
