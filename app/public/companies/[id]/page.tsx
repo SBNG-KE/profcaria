@@ -243,6 +243,6 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
             </div>
         </div>
-        </div >
+
     );
 }
