@@ -1581,7 +1581,7 @@ export default function ProfessionalHome() {
                       {/* Row 1: Contact & Links */}
                       <div className="flex flex-col md:flex-row gap-8">
                         {/* Contact Info */}
-                        <div className="space-y-4 min-w-[200px]">
+                        <div className="space-y-4 flex-1 min-w-0 w-full max-w-full">
                           <div className="space-y-1 group">
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Email</label>
                             {isEditingEmail ? (

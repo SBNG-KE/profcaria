@@ -108,3 +108,25 @@ body {
     border-color: var(--accent-gold);
   }
 }
+
+/* ============================================
+   PROFESSIONAL SCOPE GLOBAL STYLES
+   ============================================ */
+.professional-scope a:not([class*="text-"]),
+.professional-scope .mention,
+.professional-scope .hashtag {
+  color: #2563eb; /* text-blue-600 */
+  text-decoration: none;
+}
+
+.professional-scope a:not([class*="text-"]):hover,
+.professional-scope .mention:hover,
+.professional-scope .hashtag:hover {
+  text-decoration: underline;
+}
+
+.dark .professional-scope a:not([class*="text-"]),
+.dark .professional-scope .mention,
+.dark .professional-scope .hashtag {
+  color: #3b82f6; /* text-blue-500 */
+}

@@ -29,7 +29,7 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                             <button
                                 key={i}
                                 onClick={(e) => { e.stopPropagation(); onHashtagClick?.(displayPart.replace('#', '')); }}
-                                className="text-blue-500 font-medium hover:underline cursor-pointer"
+                                className="hashtag font-medium hover:underline cursor-pointer"
                             >
                                 {displayPart}
                             </button>
@@ -75,7 +75,7 @@ const ScrollableText = ({ text, isDark, onHashtagClick }: { text: string, isDark
                             <button
                                 key={i}
                                 onClick={(e) => { e.stopPropagation(); onHashtagClick?.(displayPart.replace('#', '')); }}
-                                className="text-blue-500 font-medium hover:underline cursor-pointer"
+                                className="hashtag font-medium hover:underline cursor-pointer"
                             >
                                 {displayPart}
                             </button>

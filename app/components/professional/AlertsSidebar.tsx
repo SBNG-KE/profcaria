@@ -168,7 +168,7 @@ export default function AlertsSidebar() {
                                         {!n.is_read && (
                                             <span className="bg-blue-500 text-[8px] px-1.5 py-0.5 rounded-full text-white font-bold tracking-wide shadow-sm animate-pulse">NEW</span>
                                         )}
-                                        <span className={`text-[10px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                        <span className={`text-[10px] ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                             {new Date(n.created_at).toLocaleDateString()}
                                         </span>
                                     </div>
@@ -178,7 +178,7 @@ export default function AlertsSidebar() {
                                 </div>
                             </div>
                         )) : (
-                            <p className="text-center text-xs text-neutral-500 py-8">No new updates found.</p>
+                            <p className="text-center text-xs text-neutral-600 py-8">No new updates found.</p>
                         )}
                     </div>
                 ) : (
@@ -192,7 +192,7 @@ export default function AlertsSidebar() {
                                 {/* FOLLOW BACK */}
                                 {followBacks.length > 0 && (
                                     <div className="space-y-3">
-                                        <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                        <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                             <UserIcon size={12} /> Follow Back
                                         </h4>
                                         {followBacks.map(p => (
@@ -207,7 +207,7 @@ export default function AlertsSidebar() {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <h5 className={`text-sm font-bold truncate ${isDark ? 'text-neutral-200' : 'text-black'}`}>{p.name}</h5>
-                                                        <p className={`text-[10px] truncate ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{p.role || 'New Follower'}</p>
+                                                        <p className={`text-[10px] truncate ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{p.role || 'New Follower'}</p>
                                                     </div>
                                                 </div>
                                                 <button
@@ -223,7 +223,7 @@ export default function AlertsSidebar() {
 
                                 {/* COMPANIES */}
                                 <div className="space-y-3">
-                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                         <Building2 size={12} /> Companies to Subscribe
                                     </h4>
                                     {recommendations.companies.length > 0 ? recommendations.companies.map(c => (
@@ -248,12 +248,12 @@ export default function AlertsSidebar() {
                                                 Subscribe
                                             </button>
                                         </div>
-                                    )) : <p className="text-xs text-neutral-500 italic">No companies found.</p>}
+                                    )) : <p className="text-xs text-neutral-600 italic">No companies found.</p>}
                                 </div>
 
                                 {/* PROFESSIONALS */}
                                 <div className="space-y-3">
-                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                         <UserIcon size={12} /> People to Follow
                                     </h4>
                                     {recommendations.professionals.length > 0 ? recommendations.professionals.map(p => (
@@ -278,7 +278,7 @@ export default function AlertsSidebar() {
                                                 <UserPlus size={14} /> Follow
                                             </button>
                                         </div>
-                                    )) : <p className="text-xs text-neutral-500 italic">No professionals found.</p>}
+                                    )) : <p className="text-xs text-neutral-600 italic">No professionals found.</p>}
                                 </div>
                             </>
                         )}

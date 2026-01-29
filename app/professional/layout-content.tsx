@@ -160,7 +160,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     ));
 
     return (
-        <div className={`flex h-screen font-sans overflow-hidden ${isDark ? 'bg-black text-white selection:bg-white/30' : 'bg-neutral-50 text-black selection:bg-black/20'}`}>
+        <div className={`professional-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 ${isDark ? 'bg-black text-neutral-200 selection:bg-white/30' : 'bg-neutral-50 text-neutral-900 selection:bg-black/20'}`}>
 
             {/* SIDEBAR BACKDROP (Mobile) */}
             {sidebarOpen && (
