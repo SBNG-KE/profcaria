@@ -100,6 +100,9 @@ export async function GET(request: NextRequest) {
         // Process Professionals (Fallback to name search)
         if (professionals) {
             for (const p of professionals) {
+                // Exclude Self
+                if (p.id === user.id) continue;
+
                 const fName = decryptData(p.enc_first_name) || '';
                 const lName = decryptData(p.enc_last_name) || '';
                 const fullName = `${fName} ${lName}`.trim();
@@ -118,6 +121,9 @@ export async function GET(request: NextRequest) {
 
         if (employers) {
             for (const e of employers) {
+                // Exclude Own Company
+                if (e.id === user.id) continue;
+
                 const name = decryptData(e.enc_company_name) || '';
                 if (name.toLowerCase().includes(lowerQuery)) {
                     results.push({

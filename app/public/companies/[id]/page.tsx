@@ -7,11 +7,23 @@ import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PublicCompanyPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
+
+    // Check Viewer (to hide Follow button if owner)
+    const cookieStore = await cookies();
+    const session = cookieStore.get('profcaria_session')?.value;
+    let viewerId = '';
+    if (session) {
+        try {
+            const payload = JSON.parse(atob(session.split('.')[1]));
+            viewerId = payload.uid || payload.id;
+        } catch (e) { }
+    }
 
     // Fetch Company Profile
     const { data: profile, error } = await supabaseAdmin
@@ -136,7 +148,9 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                         <MessageSquare size={14} />
                                         <span>Message</span>
                                     </a>
-                                    <FollowButton targetId={id} type="company" />
+                                    {viewerId !== id && (
+                                        <FollowButton targetId={id} type="company" />
+                                    )}
                                 </div>
                             </div>
                         </div>

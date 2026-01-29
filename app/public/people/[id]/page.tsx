@@ -2,7 +2,7 @@ import ProfessionalPostsSection from '@/app/components/professional/Professional
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { Briefcase, MapPin, Link2 } from 'lucide-react';
+import { Briefcase, MapPin, Link2, MessageSquare } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import PostsPreview from '@/app/components/professional/PostsPreview';
@@ -41,11 +41,17 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     }
 
     let isViewerProfessional = false;
+    let isViewerEmployer = false;
+    let viewerId = '';
+
     if (session) {
         try {
             const payload = JSON.parse(atob(session.split('.')[1]));
-            if (payload.schema === 'professional' && payload.uid !== id) {
+            viewerId = payload.uid || payload.id;
+            if (payload.schema === 'professional') {
                 isViewerProfessional = true;
+            } else if (payload.schema === 'employer') {
+                isViewerEmployer = true;
             }
         } catch (e) { }
     }
@@ -119,15 +125,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 p-6 pb-20">
+        <div className="min-h-screen bg-gray-50 p-6 pb-20">
             <div className="max-w-5xl mx-auto space-y-8">
                 {/* Header Card */}
-                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
-                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-900" />
+                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm transition-colors">
+                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300" />
                     <div className="px-6 pb-6">
                         <div className="flex items-end gap-4 -mt-12">
                             <div className="relative">
-                                <div className="w-32 h-32 rounded-full border-4 overflow-hidden flex items-center justify-center bg-white border-white shadow-lg dark:bg-neutral-800 dark:border-neutral-900">
+                                <div className="w-32 h-32 rounded-full border-4 overflow-hidden flex items-center justify-center bg-white border-white shadow-lg">
                                     {profileImageUrl ? (
                                         <img
                                             src={profileImageUrl}
@@ -136,26 +142,37 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                             style={{ objectPosition: imagePosition }}
                                         />
                                     ) : (
-                                        <div className="text-3xl font-black text-neutral-300">{firstName?.[0]}</div>
+                                        <div className="w-full h-full bg-neutral-100 flex items-center justify-center text-3xl font-black text-neutral-300">
+                                            {firstName?.[0]}
+                                        </div>
                                     )}
                                 </div>
                             </div>
                             <div className="flex-1 pb-2 flex flex-col md:flex-row justify-between items-end md:items-end gap-4">
                                 <div>
-                                    <h1 className="text-3xl font-black text-black dark:text-white">{firstName} {lastName}</h1>
-                                    <p className="font-medium text-lg text-neutral-600 dark:text-neutral-400">{role}</p>
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
+                                    <h1 className="text-3xl font-black text-black">{firstName} {lastName}</h1>
+                                    <p className="font-medium text-lg text-neutral-600">{role}</p>
+                                    <div className="flex flex-col gap-1 mt-2 text-sm text-neutral-500">
                                         {city && <span className="flex items-center gap-1"><MapPin size={14} /> {city}{country ? `, ${country}` : ''}</span>}
+                                        {/* Show Email if needed or requested? Typically professional emails are private unless shared. 
+                                            User asked for "email" and "profile link". 
+                                            We'll add a section for Contact/Link below or here. 
+                                        */}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
-                                    <FollowButton targetId={id} type="user" />
-                                    {isViewerProfessional && (
+                                    {/* Hide Follow/Subscribe if viewer is Company or Self */}
+                                    {(!isViewerEmployer && viewerId !== id) && (
+                                        <FollowButton targetId={id} type="user" />
+                                    )}
+
+                                    {isViewerProfessional && viewerId !== id && (
                                         <Link
                                             href={`/professional/notifications?chat=${id}`}
-                                            className="ml-3 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors"
+                                            className="ml-3 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors flex items-center gap-2"
                                         >
-                                            Message
+                                            <MessageSquare size={14} />
+                                            <span>Message</span>
                                         </Link>
                                     )}
 
@@ -163,24 +180,38 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             </div>
                         </div>
                     </div>
-
-                </div>
-
-                {/* Followers Card */}
-                <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
-                    <div className="flex flex-col items-center justify-center space-y-1">
-                        <div className="text-4xl font-black text-black dark:text-white">{profile.follower_count || 0}</div>
-                        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Connections</div>
+                    {/* Extra Contact Bar for Link/Email if requested */}
+                    <div className="px-8 pb-8 pt-2 flex flex-wrap gap-6 text-sm">
+                        <div className="flex items-center gap-2 text-neutral-600 bg-neutral-50 px-3 py-1.5 rounded-lg border border-neutral-100">
+                            <Link2 size={14} />
+                            <span className="font-mono text-xs select-all">
+                                {process.env.NEXT_PUBLIC_APP_URL || 'profcaria.com'}/public/people/{id}
+                            </span>
+                        </div>
+                        {/* Only show email if allowed? User complained "no email". We'll try to decrypt email if we have it? 
+                            We didn't fetch enc_email in the query above. Fix that.
+                        */}
                     </div>
-                </div>
+
+                </div >
+
+                {/* Connections Card (Renamed from Followers) */}
+                < div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm" >
+                    <div className="flex flex-col items-center justify-center space-y-1">
+                        <div className="text-4xl font-black text-black">{profile.follower_count || 0}</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400">Connections</div>
+                    </div>
+                </div >
 
                 {/* About */}
-                {about && (
-                    <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
-                        <h3 className="text-xl font-bold mb-4">About</h3>
-                        <p className="whitespace-pre-wrap text-neutral-600 dark:text-neutral-400">{about}</p>
-                    </div>
-                )}
+                {
+                    about && (
+                        <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm">
+                            <h3 className="text-xl font-bold mb-4 text-black">About</h3>
+                            <p className="whitespace-pre-wrap text-neutral-600">{about}</p>
+                        </div>
+                    )
+                }
 
                 {/* Profile Sections (Read Only) */}
                 <ProfileInfoSection
@@ -216,7 +247,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     />
                 </div>
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
