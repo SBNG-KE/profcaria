@@ -127,13 +127,13 @@ export default function AlertsSidebar() {
             <div className={`flex items-center gap-1 p-1 rounded-xl mb-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                 <button
                     onClick={() => setActiveTab('updates')}
-                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'updates' ? (isDark ? 'bg-neutral-800 text-white shadow-sm' : 'bg-black text-white shadow-md') : 'text-neutral-500 hover:text-neutral-700'}`}
+                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'updates' ? (isDark ? 'bg-neutral-800 text-white shadow-sm' : 'bg-black text-white shadow-md') : 'text-neutral-600 hover:text-neutral-900'}`}
                 >
                     Updates
                 </button>
                 <button
                     onClick={() => setActiveTab('suggestions')}
-                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'suggestions' ? (isDark ? 'bg-neutral-800 text-white shadow-sm' : 'bg-black text-white shadow-md') : 'text-neutral-500 hover:text-neutral-700'}`}
+                    className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${activeTab === 'suggestions' ? (isDark ? 'bg-neutral-800 text-white shadow-sm' : 'bg-black text-white shadow-md') : 'text-neutral-600 hover:text-neutral-900'}`}
                 >
                     Suggestions
                 </button>
@@ -168,11 +168,11 @@ export default function AlertsSidebar() {
                                         {!n.is_read && (
                                             <span className="bg-blue-500 text-[8px] px-1.5 py-0.5 rounded-full text-white font-bold tracking-wide shadow-sm animate-pulse">NEW</span>
                                         )}
-                                        <span className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                        <span className={`text-[10px] ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                             {new Date(n.created_at).toLocaleDateString()}
                                         </span>
                                     </div>
-                                    <p className={`text-xs leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                    <p className={`text-xs leading-relaxed ${isDark ? 'text-neutral-200' : 'text-neutral-900'}`}>
                                         <span dangerouslySetInnerHTML={{ __html: n.message }} />
                                     </p>
                                 </div>
@@ -192,7 +192,7 @@ export default function AlertsSidebar() {
                                 {/* FOLLOW BACK */}
                                 {followBacks.length > 0 && (
                                     <div className="space-y-3">
-                                        <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                        <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                             <UserIcon size={12} /> Follow Back
                                         </h4>
                                         {followBacks.map(p => (
@@ -207,7 +207,7 @@ export default function AlertsSidebar() {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <h5 className={`text-sm font-bold truncate ${isDark ? 'text-neutral-200' : 'text-black'}`}>{p.name}</h5>
-                                                        <p className={`text-[10px] truncate ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>{p.role || 'New Follower'}</p>
+                                                        <p className={`text-[10px] truncate ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{p.role || 'New Follower'}</p>
                                                     </div>
                                                 </div>
                                                 <button
@@ -223,7 +223,7 @@ export default function AlertsSidebar() {
 
                                 {/* COMPANIES */}
                                 <div className="space-y-3">
-                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                         <Building2 size={12} /> Companies to Subscribe
                                     </h4>
                                     {recommendations.companies.length > 0 ? recommendations.companies.map(c => (
@@ -238,7 +238,7 @@ export default function AlertsSidebar() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <h5 className={`text-sm font-bold truncate ${isDark ? 'text-neutral-200' : 'text-black'}`}>{c.companyName}</h5>
-                                                    <p className={`text-[10px] truncate ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>{c.industry || 'Company'}</p>
+                                                    <p className={`text-[10px] truncate ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{c.industry || 'Company'}</p>
                                                 </div>
                                             </div>
                                             <button
@@ -253,7 +253,7 @@ export default function AlertsSidebar() {
 
                                 {/* PROFESSIONALS */}
                                 <div className="space-y-3">
-                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    <h4 className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                         <UserIcon size={12} /> People to Follow
                                     </h4>
                                     {recommendations.professionals.length > 0 ? recommendations.professionals.map(p => (
@@ -268,7 +268,7 @@ export default function AlertsSidebar() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <h5 className={`text-sm font-bold truncate ${isDark ? 'text-neutral-200' : 'text-black'}`}>{p.firstName} {p.lastName}</h5>
-                                                    <p className={`text-[10px] truncate ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>{p.currentRole || 'Professional'}</p>
+                                                    <p className={`text-[10px] truncate ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{p.currentRole || 'Professional'}</p>
                                                 </div>
                                             </div>
                                             <button

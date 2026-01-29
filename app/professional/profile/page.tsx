@@ -157,7 +157,7 @@ const AccessModal = ({ isOpen, onClose, cards, selectedCards, onToggle, onSave, 
             <div className={`p-2.5 rounded-xl ${isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'}`}><Shield size={20} /></div>
             <div className="text-left">
               <h3 className={`text-lg font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Access Control</h3>
-              <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Enable cards for employer visibility.</p>
+              <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Enable cards for employer visibility.</p>
             </div>
           </div>
           <button onClick={onClose} className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><X size={18} /></button>
@@ -214,7 +214,7 @@ const SystemPopup = ({ isOpen, onClose, onSave, isDark }: { isOpen: boolean, onC
               autoFocus
             />
           </div>
-          <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>This will create a new encrypted section in your professional profile.</p>
+          <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>This will create a new encrypted section in your professional profile.</p>
         </div>
         <div className={`p-5 border-t flex gap-3 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
           <button onClick={onClose} className={`flex-1 py-3 px-4 rounded-xl border font-bold text-sm transition-all ${isDark ? 'border-neutral-700 text-neutral-300 hover:bg-neutral-800' : 'border-neutral-200 text-neutral-600 hover:bg-neutral-100'}`}>Cancel</button>
@@ -1560,7 +1560,7 @@ export default function ProfessionalHome() {
                             </div>
                           ) : (
                             <>
-                              <p className={`text-xl font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                              <p className={`text-xl font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                 {role || 'No role set'}
                               </p>
                               <button onClick={() => setIsEditingRole(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
@@ -1583,7 +1583,7 @@ export default function ProfessionalHome() {
                         {/* Contact Info */}
                         <div className="space-y-4 min-w-[200px]">
                           <div className="space-y-1 group">
-                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Email</label>
+                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Email</label>
                             {isEditingEmail ? (
                               <div className="flex gap-2">
                                 <input
@@ -1597,7 +1597,7 @@ export default function ProfessionalHome() {
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                <div className={`flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                <div className={`flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-black'}`}>
                                   <Mail size={16} className="shrink-0" />
                                   <span className="truncate select-all">{email || 'No email provided'}</span>
                                 </div>
@@ -1623,7 +1623,7 @@ export default function ProfessionalHome() {
                             )}
                           </div>
                           <div className="space-y-1 group">
-                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Phone</label>
+                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Phone</label>
                             {isEditingPhone ? (
                               <div className="flex gap-2">
                                 <input
@@ -1637,7 +1637,7 @@ export default function ProfessionalHome() {
                               </div>
                             ) : (
                               <div className="flex items-center gap-2">
-                                <div className={`flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                <div className={`flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-black'}`}>
                                   <Phone size={16} className="shrink-0" /> <span className="truncate">{phone || 'No phone provided'}</span>
                                 </div>
                                 <button onClick={() => setIsEditingPhone(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
@@ -1648,10 +1648,10 @@ export default function ProfessionalHome() {
                           </div>
 
                           {/* Profile Link */}
-                          <div className="space-y-2">
-                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Link</label>
-                            <div className={`flex items-center p-1.5 rounded-xl border ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
-                              <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                          <div className="space-y-2 min-w-0">
+                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Profile Link</label>
+                            <div className={`flex items-center p-1.5 rounded-xl border min-w-0 ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                              <div className={`px-3 text-sm truncate flex-1 min-w-0 ${isDark ? 'text-neutral-400' : 'text-black'}`}>
                                 {typeof window !== 'undefined' ? `${window.location.origin}/public/people/${userId}` : '...'}
                               </div>
                               <button
@@ -1661,7 +1661,7 @@ export default function ProfessionalHome() {
                                 {profileMessage?.text === 'Profile link copied!' ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
                               </button>
                             </div>
-                            <p className={`text-[10px] ${isDark ? 'text-neutral-600' : 'text-neutral-500'}`}>Share this link for others to view your professional profile.</p>
+                            <p className={`text-[10px] ${isDark ? 'text-neutral-600' : 'text-neutral-600'}`}>Share this link for others to view your professional profile.</p>
                           </div>
                         </div>
 
@@ -1739,7 +1739,7 @@ export default function ProfessionalHome() {
                     </div>
                   ) : (
                     <div className={`p-8 rounded-[32px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                      <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No posts yet.</p>
+                      <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>No posts yet.</p>
                     </div>
                   )}
                 </div>
@@ -1777,7 +1777,7 @@ export default function ProfessionalHome() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Briefcase className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Target Roles</h3>
-                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Add job titles you're interested in.</p>
+                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>Add job titles you're interested in.</p>
                     <div className="flex gap-2">
                       <input type="text" value={targetRoleInput} onChange={(e) => setTargetRoleInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && targetRoleInput) { setTargetRoles([...targetRoles, targetRoleInput]); setTargetRoleInput(''); } }} placeholder="Type role and hit Enter..." className={`flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200'}`} />
                     </div>
@@ -1785,11 +1785,11 @@ export default function ProfessionalHome() {
                   </div>
                   <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Globe className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Preferred Locations</h3>
-                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Select countries and continents where you'd like to work.</p>
+                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>Select countries and continents where you'd like to work.</p>
 
                     {/* Countries Dropdown */}
                     <div className="space-y-2">
-                      <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Countries</label>
+                      <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Countries</label>
                       <SearchableDropdown
                         options={COUNTRY_OPTIONS}
                         selectedValues={preferredCountries}
@@ -1820,7 +1820,7 @@ export default function ProfessionalHome() {
                 </div>
                 <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                   <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Clock className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Experience Years</h3>
-                  <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>How many years of relevant experience do you have?</p>
+                  <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>How many years of relevant experience do you have?</p>
                   <div className="grid grid-cols-2 gap-3">
                     {EXPERIENCE_YEAR_RANGES.map((range) => (
                       <label key={range.value} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${isDark ? 'bg-neutral-800 border-neutral-700 hover:bg-neutral-700' : 'bg-white border-neutral-200 hover:bg-neutral-50'}`}>
@@ -2066,7 +2066,7 @@ export default function ProfessionalHome() {
                   {isParsing ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
                   <span className="text-xs font-bold hidden sm:inline">Import</span>
                 </button>
-                <span className={`text-[9px] font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>pdf/docx/txt only</span>
+                <span className={`text-[9px] font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>pdf/docx/txt only</span>
               </div>
               <input
                 ref={magicImportInputRef}

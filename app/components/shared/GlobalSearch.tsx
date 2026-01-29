@@ -75,7 +75,7 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className={`p-2 rounded-full transition-colors ${isMobile ? '' : ''} ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}
+                className={`p-2 rounded-full transition-colors ${isMobile ? '' : ''} ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-700'}`}
                 title="Search"
             >
                 <Search size={20} />

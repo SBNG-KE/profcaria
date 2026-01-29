@@ -124,11 +124,11 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                     )}
                                 </div>
                             </div>
-                            <div className="flex-1 pb-2 flex justify-between items-end">
+                            <div className="flex-1 pb-2 flex flex-col md:flex-row justify-between items-end md:items-end gap-4">
                                 <div>
                                     {/* Empty space or badges like 'Pro Plan' if we had that data */}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
                                     <a
                                         href={`/professional/notifications?companyId=${id}`}
                                         className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white border border-neutral-200 text-black hover:bg-neutral-50 flex items-center gap-2 transition-all shadow-sm dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
@@ -195,7 +195,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
 
                 {/* Company Posts Section */}
-                <div className="pt-4 max-w-4xl mx-auto">
+                <div className="pt-4 max-w-2xl mx-auto">
                     <CompanyPostsSection
                         companyId={id}
                         latestPost={formattedPosts[0] || null}

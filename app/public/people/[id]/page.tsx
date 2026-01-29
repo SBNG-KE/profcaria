@@ -127,7 +127,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                     )}
                                 </div>
                             </div>
-                            <div className="flex-1 pb-2 flex justify-between items-end">
+                            <div className="flex-1 pb-2 flex flex-col md:flex-row justify-between items-end md:items-end gap-4">
                                 <div>
                                     <h1 className="text-3xl font-black text-black dark:text-white">{firstName} {lastName}</h1>
                                     <p className="font-medium text-lg text-neutral-600 dark:text-neutral-400">{role}</p>
@@ -135,7 +135,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         {city && <span className="flex items-center gap-1"><MapPin size={14} /> {city}{country ? `, ${country}` : ''}</span>}
                                     </div>
                                 </div>
-                                <div>
+                                <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
                                     <FollowButton targetId={profile.user_id || profile.id} type="user" />
                                     {isViewerProfessional && (
                                         <Link

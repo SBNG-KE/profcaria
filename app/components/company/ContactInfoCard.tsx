@@ -28,7 +28,7 @@ export default function ContactInfoCard({ email, website, city, country, profile
                     <div className="space-y-1 group">
                         <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Work Email</label>
                         <div className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800 overflow-hidden bg-transparent transition-colors">
-                            <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300 truncate">
+                            <div className="flex items-center gap-2 font-medium text-black dark:text-neutral-300 truncate">
                                 <Mail size={16} /> <span className="truncate">{email}</span>
                             </div>
                             <button
@@ -47,7 +47,7 @@ export default function ContactInfoCard({ email, website, city, country, profile
                     <div className="space-y-1 group">
                         <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Website</label>
                         <div className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800 overflow-hidden bg-transparent transition-colors">
-                            <a href={website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-medium hover:underline text-neutral-700 dark:text-neutral-300 truncate">
+                            <a href={website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-medium hover:underline text-black dark:text-neutral-300 truncate">
                                 <Globe size={16} /> <span className="truncate">{website}</span>
                             </a>
                             <button
@@ -66,7 +66,7 @@ export default function ContactInfoCard({ email, website, city, country, profile
             {(city || country) && (
                 <div className="space-y-1 pt-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Location</label>
-                    <div className="flex items-center gap-2 font-medium text-neutral-700 dark:text-neutral-300 px-2">
+                    <div className="flex items-center gap-2 font-medium text-black dark:text-neutral-300 px-2">
                         <MapPin size={16} /> {city || ''}{city && country ? ', ' : ''}{country || ''}
                     </div>
                 </div>
@@ -76,7 +76,7 @@ export default function ContactInfoCard({ email, website, city, country, profile
             <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Profile Link</label>
                 <div className="flex items-center p-1.5 rounded-xl border bg-white border-neutral-200 dark:bg-neutral-950 dark:border-neutral-800 group">
-                    <div className="px-3 text-sm truncate flex-1 text-neutral-600 dark:text-neutral-400">
+                    <div className="px-3 text-sm truncate flex-1 text-black dark:text-neutral-400">
                         {profileLink}
                     </div>
                     <button

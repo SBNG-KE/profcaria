@@ -47,7 +47,7 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                             e.stopPropagation();
                             setIsExpanded(!isExpanded);
                         }}
-                        className={`mt-1 text-sm font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                        className={`mt-1 text-sm font-semibold underline decoration-2 underline-offset-2 ${isDark ? 'text-neutral-300 hover:text-white' : 'text-neutral-600 hover:text-black'}`}
                     >
                         {isExpanded ? 'Show less' : 'Show more'}
                     </button>

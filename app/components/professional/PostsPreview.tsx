@@ -47,7 +47,7 @@ const PostsPreview = ({ isDark, latestPost: initialPost, onViewAll, userId, user
                 {onViewAll && (
                     <button
                         onClick={onViewAll}
-                        className={`flex items-center gap-2 text-sm font-bold hover:underline ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${isDark ? 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-black'}`}
                     >
                         View All <ArrowRight size={16} />
                     </button>

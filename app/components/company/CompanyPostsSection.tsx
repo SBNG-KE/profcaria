@@ -130,7 +130,7 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as 'POSTS' | 'REPOSTS')}
-                            className={`pb-3 text-xs font-bold tracking-widest transition-colors relative ${activeTab === tab ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-400 hover:text-neutral-600')}`}
+                            className={`pb-3 text-xs font-bold tracking-widest transition-colors relative ${activeTab === tab ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-500 hover:text-neutral-300' : 'text-neutral-600 hover:text-black')}`}
                         >
                             {tab}
                             {activeTab === tab && (
