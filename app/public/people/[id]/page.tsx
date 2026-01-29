@@ -185,16 +185,16 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6 pb-20">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
+            <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* 1. Identity Card (Exact Copy of Private Profile Design) */}
-                <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white border-neutral-200 shadow-sm">
+                <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
 
                         {/* Left: Profile Image */}
                         <div className="flex-shrink-0 relative group">
-                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white border-white shadow-lg">
+                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white dark:bg-neutral-900 border-white dark:border-neutral-800 shadow-lg">
                                 {profileImageUrl ? (
                                     <img
                                         src={profileImageUrl}
@@ -204,7 +204,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         draggable={false}
                                     />
                                 ) : (
-                                    <div className="font-black text-6xl text-neutral-300">
+                                    <div className="font-black text-6xl text-neutral-300 dark:text-neutral-700">
                                         {firstName?.[0]}{lastName?.[0]}
                                     </div>
                                 )}
@@ -217,13 +217,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             {/* Name & Role Section */}
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-black">
+                                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-black dark:text-white">
                                         {firstName} {lastName}
                                     </h1>
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                    <p className="text-xl font-medium text-neutral-600">
+                                    <p className="text-xl font-medium text-neutral-600 dark:text-neutral-400">
                                         {role}
                                     </p>
                                 </div>
@@ -237,28 +237,21 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                     <div className="space-y-4 flex-1 min-w-0 w-full max-w-full">
                                         <ContactInfoCard
                                             email={email}
+                                            emailLabel="Email"
                                             phone={phone}
                                             city={city}
                                             country={country}
                                             profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/public/people/${id}`}
-                                            isDark={false}
                                         />
                                     </div>
 
-                                    {/* Action Buttons (Follow/Message) can go here or top right. Private Profile has them top right or not at all (editing). 
-                                We should keep the Follow/Message logic. Let's place it nicely.
-                                In Private Profile, there are no action buttons. 
-                                In Public, we need them. Let's put them absolute top right or in a flex column on the far right.
-                                The private profile "Right: Details" (line 1513) takes full width. 
-                                I'll add a separate column or just put it below Details? 
-                                Let's put it top-right relative to the card.
-                            */}
+                                    {/* Action Buttons */}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons (Absolute Positioned for Desktop, or Flex for Mobile) */}
+                    {/* Action Buttons */}
                     <div className="mt-6 md:mt-0 md:absolute md:top-8 md:right-8 flex flex-wrap gap-2">
                         {/* Hide Follow/Subscribe if viewer is Company or Self */}
                         {(!isViewerEmployer && viewerId !== id) && (
@@ -277,45 +270,21 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     </div>
                 </div>
 
-                {/* Connections (Renamed from Followers) - Private Profile DOES NOT show this prominently as a card.
-                    Wait, private profile has "Follower Count" in settings? 
-                    The user previously asked to rename "Connections" to "Followers".
-                    The private profile screenshot didn't show a big followers card.
-                    BUT user "make it an exact copy... what will not be shown... is analytics".
-                    Does private profile show followers? I didn't see it in the snippet.
-                    I saw `const [followerCount, setFollowerCount] = useState(0);` in Private Profile.
-                    But I didn't see it rendered in the main view.
-                    If the user wants EXACT copy, and private doesn't have it, maybe remove it?
-                    However, Public Profiles usually show social proof.
-                    I will KEEP it but style it to match or integrate it. 
-                    Actually, let's look at the Private Profile code again. 
-                    Ah, I don't see it rendered in the "Identity Card" or "About Card".
-                    MAYBE it is in "Profile Info Section"? No.
-                    I will HIDE the Big Followers Card to stick to "Exact Copy" request unless I see it in screenshots.
-                    Screenshots: The 1st screenshot provided by user SHOWS "0 CONNECTIONS" big card. 
-                    Wait, that's the PUBLIC profile screenshot the user provided ("uploaded_media_0...").
-                    Wait, User said: "make it an exact copy of the profile page of that person let me give you images to see how the profile page of someone looks like".
-                    User uploaded 5 images. Those images likely show the PRIVATE profile (with "Updates", "Suggestions" sidebar etc.).
-                    Therefore, if the Private Profile (images) DOES NOT have a big "0 Connections" card, I should REMOVE it.
-                    I will remove the Big Connections Card.
-                */}
-
                 {/* About Section */}
                 {about && (
-                    <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white border-neutral-200 shadow-sm">
+                    <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold flex items-center gap-2 text-black">
-                                <Briefcase size={20} className="text-neutral-600" /> About
+                            <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
+                                <Briefcase size={20} className="text-neutral-600 dark:text-neutral-400" /> About
                             </h3>
                         </div>
-                        <p className="text-lg leading-relaxed whitespace-pre-wrap text-neutral-600">
+                        <p className="text-lg leading-relaxed whitespace-pre-wrap text-neutral-600 dark:text-neutral-300">
                             {about}
                         </p>
                     </div>
                 )}
 
                 {/* Profile Sections (Read Only) */}
-                {/* Note: ProfileInfoSection handles Experience, Education, etc. */}
                 <ProfileInfoSection
                     readOnly={true}
                     employmentHistory={employment}
@@ -328,10 +297,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
                 {/* Posts */}
                 <div className="pt-4">
-                    {/* Match Private Profile Posts Header */}
                     <div className="flex items-center justify-between mb-4 px-2">
-                        <h3 className="text-xl font-bold flex items-center gap-2 text-black">
-                            <Briefcase size={20} className="text-neutral-600" /> Posts
+                        <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
+                            <Briefcase size={20} className="text-neutral-600 dark:text-neutral-400" /> Posts
                         </h3>
                     </div>
 

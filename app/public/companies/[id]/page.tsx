@@ -129,16 +129,16 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
 
     return (
-        <div className="min-h-screen bg-gray-50 transition-colors p-6 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
             <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header Card with Logo (Matches Employer Dashboard Static View) */}
-                <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm transition-colors">
-                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300" />
+                <div className="rounded-2xl border overflow-hidden bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
+                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-700" />
                     <div className="px-6 pb-6">
                         <div className="flex items-end gap-4 -mt-12">
                             <div className="relative">
-                                <div className="w-24 h-24 rounded-2xl border-4 overflow-hidden flex items-center justify-center bg-white border-white shadow-lg">
+                                <div className="w-24 h-24 rounded-2xl border-4 overflow-hidden flex items-center justify-center bg-white dark:bg-neutral-900 border-white dark:border-neutral-900 shadow-lg">
                                     {logoUrl ? (
                                         <img
                                             src={logoUrl || ''}
@@ -147,7 +147,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                             style={{ objectPosition: imagePosition }}
                                         />
                                     ) : (
-                                        <Building2 size={40} className="text-neutral-300" />
+                                        <Building2 size={40} className="text-neutral-300 dark:text-neutral-600" />
                                     )}
                                 </div>
                             </div>
@@ -158,7 +158,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
                                     <a
                                         href={`/professional/notifications?companyId=${id}`}
-                                        className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white border border-neutral-200 text-black hover:bg-neutral-50 flex items-center gap-2 transition-all shadow-sm"
+                                        className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
                                     >
                                         <MessageSquare size={14} />
                                         <span>Message</span>
@@ -173,11 +173,11 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                 </div>
 
                 {/* 1. Identity Card */}
-                <div className="p-8 rounded-[40px] bg-white border border-neutral-200 shadow-sm transition-colors">
+                <div className="p-8 rounded-[40px] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
                     <div className="flex flex-col md:flex-row gap-8 items-start">
                         {/* Left: Company Logo (Read Only) */}
                         <div className="flex-shrink-0 relative">
-                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white border-white shadow-lg">
+                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white dark:bg-neutral-900 border-white dark:border-neutral-800 shadow-lg">
                                 {logoUrl ? (
                                     <img
                                         src={logoUrl || ''}
@@ -186,7 +186,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                         style={{ objectPosition: imagePosition }}
                                     />
                                 ) : (
-                                    <Building2 size={48} className="text-neutral-300" />
+                                    <Building2 size={48} className="text-neutral-300 dark:text-neutral-600" />
                                 )}
                             </div>
                         </div>
@@ -195,11 +195,11 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                         <div className="flex-1 w-full space-y-6">
                             {/* Name & Founded */}
                             <div className="space-y-2">
-                                <h1 className="text-4xl md:text-5xl font-black text-black">
+                                <h1 className="text-4xl md:text-5xl font-black text-black dark:text-white">
                                     {companyName}
                                 </h1>
                                 {foundedYear && (
-                                    <p className="text-xl font-medium text-neutral-500">
+                                    <p className="text-xl font-medium text-neutral-500 dark:text-neutral-400">
                                         Founded {foundedYear}
                                     </p>
                                 )}
@@ -207,13 +207,13 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
                             {/* Industry if available */}
                             {industry && (
-                                <div className="flex items-center gap-2 text-lg font-medium text-neutral-500">
+                                <div className="flex items-center gap-2 text-lg font-medium text-neutral-500 dark:text-neutral-400">
                                     <Building2 size={20} className="text-blue-500" />
                                     {industry}
                                 </div>
                             )}
 
-                            <div className="h-px w-full bg-neutral-100"></div>
+                            <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800"></div>
 
                             {/* Contact Info (Interactivity handled by Client Component) */}
                             <ContactInfoCard
@@ -222,7 +222,6 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 city={city || undefined}
                                 country={country || undefined}
                                 profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.profcaria.com'}/public/companies/${id}`}
-                                isDark={false}
                             />
 
                         </div>
@@ -239,29 +238,29 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                 </div>
 
                 {/* 3. About Section */}
-                <div className="p-8 rounded-[40px] space-y-4 border bg-white border-neutral-200 shadow-sm">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-black">About</h3>
-                    <p className="leading-relaxed whitespace-pre-wrap text-neutral-800">
+                <div className="p-8 rounded-[40px] space-y-4 border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">About</h3>
+                    <p className="leading-relaxed whitespace-pre-wrap text-neutral-800 dark:text-neutral-300">
                         {about || "No company description provided."}
                     </p>
                 </div>
 
                 {/* 4. Other Profiles */}
-                <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm">
-                    <h3 className="text-xl font-bold flex items-center gap-2 text-black mb-6">
+                <div className="p-8 rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white mb-6">
                         <Link2 size={20} /> Other Profiles
                     </h3>
                     <div className="space-y-4">
                         {(!otherProfiles || otherProfiles.length === 0) && (
-                            <p className="text-sm text-neutral-500">No other profiles linked.</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">No other profiles linked.</p>
                         )}
                         {otherProfiles?.map((prof: any) => (
-                            <div key={prof.id} className="flex items-center justify-between p-4 rounded-2xl border bg-white border-neutral-200">
+                            <div key={prof.id} className="flex items-center justify-between p-4 rounded-2xl border bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
                                 <div className="flex items-center gap-4">
-                                    <Link2 size={20} className="text-neutral-500" />
+                                    <Link2 size={20} className="text-neutral-500 dark:text-neutral-400" />
                                     <div>
-                                        <h4 className="font-bold text-black">{prof.network}</h4>
-                                        <a href={prof.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline text-neutral-700 hover:text-black">{prof.url}</a>
+                                        <h4 className="font-bold text-black dark:text-white">{prof.network}</h4>
+                                        <a href={prof.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white">{prof.url}</a>
                                     </div>
                                 </div>
                             </div>
