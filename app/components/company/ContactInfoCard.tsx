@@ -1,17 +1,18 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Mail, Globe, Copy, Check, MapPin, Link2 } from 'lucide-react';
+import { Mail, Globe, Copy, Check, MapPin, Link2, Phone } from 'lucide-react';
 
 interface ContactInfoCardProps {
     email?: string | null;
+    phone?: string | null;
     website?: string | null;
     city?: string | null;
     country?: string | null;
     profileLink: string;
 }
 
-export default function ContactInfoCard({ email, website, city, country, profileLink, isDark = false }: ContactInfoCardProps & { isDark?: boolean }) {
+export default function ContactInfoCard({ email, phone, website, city, country, profileLink, isDark = false }: ContactInfoCardProps & { isDark?: boolean }) {
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const handleCopy = (text: string, field: string) => {
@@ -42,6 +43,25 @@ export default function ContactInfoCard({ email, website, city, country, profile
                                 title="Copy Email"
                             >
                                 {copiedField === 'email' ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Phone */}
+                {phone && (
+                    <div className="space-y-1 group">
+                        <label className={labelClass}>Phone</label>
+                        <div className={cardClass}>
+                            <div className={valueClass}>
+                                <Phone size={16} /> <span className="truncate">{phone}</span>
+                            </div>
+                            <button
+                                onClick={() => handleCopy(phone, 'phone')}
+                                className={iconButtonClass}
+                                title="Copy Phone"
+                            >
+                                {copiedField === 'phone' ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                             </button>
                         </div>
                     </div>
@@ -80,13 +100,13 @@ export default function ContactInfoCard({ email, website, city, country, profile
             {/* Profile Link */}
             <div className="space-y-2">
                 <label className={labelClass}>Profile Link</label>
-                <div className={`flex items-center p-1.5 rounded-xl border group ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                    <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                <div className={`grid grid-cols-[1fr_auto] items-center p-1.5 rounded-xl border group ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                    <div className={`px-3 text-sm truncate min-w-0 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                         {profileLink}
                     </div>
                     <button
                         onClick={() => handleCopy(profileLink, 'link')}
-                        className={`p-2 rounded-lg transition-colors ${copiedField === 'link' ? 'bg-green-500/10 text-green-500' : isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-400'}`}
+                        className={`p-2 rounded-lg transition-colors shrink-0 ${copiedField === 'link' ? 'bg-green-500/10 text-green-500' : isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-400'}`}
                         title="Copy Profile Link"
                     >
                         {copiedField === 'link' ? <Check size={16} /> : <Copy size={16} />}

@@ -7,6 +7,7 @@ import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
+import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
 import { cookies } from 'next/headers';
 import React from 'react';
@@ -234,52 +235,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
                                     {/* Contact Info Column */}
                                     <div className="space-y-4 flex-1 min-w-0 w-full max-w-full">
-
-                                        {/* Email */}
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600">Email</label>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center gap-2 font-medium truncate text-black">
-                                                    <Mail size={16} className="shrink-0" />
-                                                    {email ? (
-                                                        <a href={`mailto:${email}`} className="truncate hover:text-blue-600 transition-colors">{email}</a>
-                                                    ) : (
-                                                        <span className="truncate text-neutral-400">No email provided</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Phone */}
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600">Phone</label>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center gap-2 font-medium truncate text-black">
-                                                    <Phone size={16} className="shrink-0" />
-                                                    <span className="truncate">{phone || 'No phone provided'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Profile Link */}
-                                        <div className="space-y-2 min-w-0">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600">Profile Link</label>
-                                            <div className="flex items-center p-1.5 rounded-xl border min-w-0 bg-neutral-50 border-neutral-200">
-                                                <a
-                                                    href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/public/people/${id}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="px-3 text-sm truncate flex-1 min-w-0 text-black hover:text-blue-600 hover:underline"
-                                                >
-                                                    {process.env.NEXT_PUBLIC_APP_URL || 'profcaria.com'}/public/people/{id}
-                                                </a>
-                                                <div className="p-2 rounded-lg bg-white text-black shadow-sm">
-                                                    <Link2 size={16} />
-                                                </div>
-                                            </div>
-                                            <p className="text-[10px] text-neutral-600">Share this link for others to view your professional profile.</p>
-                                        </div>
-
+                                        <ContactInfoCard
+                                            email={email}
+                                            phone={phone}
+                                            city={city}
+                                            country={country}
+                                            profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/public/people/${id}`}
+                                            isDark={false}
+                                        />
                                     </div>
 
                                     {/* Action Buttons (Follow/Message) can go here or top right. Private Profile has them top right or not at all (editing). 
