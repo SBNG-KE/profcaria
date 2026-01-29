@@ -17,8 +17,17 @@ export const dynamic = 'force-dynamic';
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id: rawId } = await params;
     // Fix: Handle cases where ID in URL might have spaces or be malformed
-    // Regex matches the first UUID-like structure found, or cleans strictly
-    const id = rawId.trim().replace(/%20/g, '-').replace(/ /g, '-').replace(/[^a-f0-9-]/gi, '') || rawId;
+    // Robust cleanup: Remove non-hex, check length, reconstruct UUID if possible.
+    let id = rawId;
+    const cleanHex = rawId.replace(/[^a-fA-F0-9]/g, '');
+    if (cleanHex.length === 32) {
+        // Reconstruct UUID: 8-4-4-4-12
+        id = `${cleanHex.slice(0, 8)}-${cleanHex.slice(8, 12)}-${cleanHex.slice(12, 16)}-${cleanHex.slice(16, 20)}-${cleanHex.slice(20)}`;
+    } else {
+        // Fallback or use standard sanitization if not exactly 32 hex chars (e.g. short IDs?) 
+        // Although Supabase/Postgres IDs are usually UUIDs.
+        id = rawId.trim().replace(/%20/g, '-').replace(/ /g, '-').replace(/[^a-f0-9-]/gi, '');
+    }
 
     // Check Viewer Type
     const cookieStore = await cookies();
@@ -46,7 +55,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         .schema('professional')
         .from('profiles')
         .select('*')
-        .eq('id', id)
+        .eq('user_id', id)
         .single();
 
     if (error || !profile) {
