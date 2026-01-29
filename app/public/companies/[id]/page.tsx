@@ -37,7 +37,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
         return notFound();
     }
 
-    const { data: otherProfiles } = await supabaseAdmin
+    const { data: otherProfilesRaw } = await supabaseAdmin
         .schema('employer')
         .from('other_profiles')
         .select('*')
@@ -61,6 +61,14 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
     const followerCount = profile.follower_count || 0;
 
+    // Decrypt Other Profiles
+    const otherProfiles = (otherProfilesRaw || []).map((p: any) => ({
+        id: p.id,
+        network: decryptData(p.enc_network),
+        url: decryptData(p.enc_url),
+        description: decryptData(p.enc_description),
+    }));
+
     // Fetch Latest Posts
     const { data: latestPosts } = await supabaseAdmin
         .schema('professional')
@@ -71,46 +79,53 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
             post_comments (count),
             author:author_id (
                 id,
-                first_name,
-                last_name, 
-                role, 
-                profile_image_url,
-                company_name, 
-                user_type
+                enc_first_name,
+                enc_last_name, 
+                enc_current_role, 
+                enc_profile_image_url,
+                enc_company_name, 
+                user_type,
+                enc_logo_url
             )
         `)
         .eq('author_id', id)
         .order('created_at', { ascending: false })
         .limit(5) as any;
 
-    const formattedPosts = latestPosts?.map((p: any) => ({
-        id: p.id,
-        content: decryptData(p.enc_content),
-        media: p.media_urls?.map((url: string) => ({ url, type: url.match(/\.(mp4|webm)$/) ? 'video' : 'image' })),
-        timestamp: formatDistanceToNow(new Date(p.created_at), { addSuffix: true }),
-        likesCount: p.post_likes?.[0]?.count || 0,
-        commentsCount: p.post_comments?.[0]?.count || 0,
-        author: {
-            id: p.author?.id,
-            name: p.author?.company_name || `${p.author?.first_name} ${p.author?.last_name}`,
-            role: p.author?.user_type === 'employer' ? 'Company' : p.author?.role,
-            image: p.author?.profile_image_url, // For posts, author image might be different logic? 
-            // Actually, for posts we used `profile_image_url` not enc. 
-            // But if the author is a company, `profile_image_url` on the user record (if joined via view) might be it.
-            // But here we are fetching `companies` table directly for the main page.
-            // For posts, `author_id` links to `users` or `companies`?
-            // If `user_type` is employer, `author_id` is the user ID. 
-            // Does the user record have the logo? 
-            // In `auth/me`: `enc_logo_url` is on `companies` table. 
-            // The `posts` table `author_id` refers to `users.id` (public/professional schema?). 
-            // Wait, if an employer posts, their `id` in `posts` table is their `company_id` or `user_id`?
-            // Usually `auth.uid()`.
-            // The `companies` table ID is `id` (uuid).
-            // Let's assume the post relation works for now since posts were showing in screenshot 1308.
-            // Just satisfy the type.
-            type: p.author?.user_type
+    const formattedPosts = latestPosts?.map((p: any) => {
+        const authorType = p.author?.user_type;
+        let name = 'Unknown';
+        let role = '';
+        let image = '';
+
+        if (authorType === 'employer') {
+            name = (p.author?.enc_company_name ? decryptData(p.author.enc_company_name) : 'Company') || 'Company';
+            role = 'Company'; // Or from industry?
+            image = (p.author?.enc_logo_url ? decryptData(p.author.enc_logo_url) : '') || '';
+        } else {
+            const fName = (p.author?.enc_first_name ? decryptData(p.author.enc_first_name) : '') || '';
+            const lName = (p.author?.enc_last_name ? decryptData(p.author.enc_last_name) : '') || '';
+            name = `${fName} ${lName}`.trim() || 'User';
+            role = (p.author?.enc_current_role ? decryptData(p.author.enc_current_role) : '') || '';
+            image = (p.author?.enc_profile_image_url ? decryptData(p.author.enc_profile_image_url) : '') || '';
         }
-    })) || [];
+
+        return {
+            id: p.id,
+            content: decryptData(p.enc_content) || '',
+            media: p.media_urls?.map((url: string) => ({ url, type: url.match(/\.(mp4|webm)$/) ? 'video' : 'image' })),
+            timestamp: formatDistanceToNow(new Date(p.created_at), { addSuffix: true }),
+            likesCount: p.post_likes?.[0]?.count || 0,
+            commentsCount: p.post_comments?.[0]?.count || 0,
+            author: {
+                id: p.author?.id,
+                name,
+                role,
+                image,
+                type: authorType
+            }
+        };
+    }) || [];
 
 
     return (
@@ -190,6 +205,14 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 )}
                             </div>
 
+                            {/* Industry if available */}
+                            {industry && (
+                                <div className="flex items-center gap-2 text-lg font-medium text-neutral-500">
+                                    <Building2 size={20} className="text-blue-500" />
+                                    {industry}
+                                </div>
+                            )}
+
                             <div className="h-px w-full bg-neutral-100"></div>
 
                             {/* Contact Info (Interactivity handled by Client Component) */}
@@ -201,27 +224,17 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.profcaria.com'}/public/companies/${id}`}
                             />
 
-
-
                         </div>
                     </div>
                 </div>
 
 
-                {/* Company Posts Section */}
+                {/* Company Posts Section (Moved Up to match Private Profile structure) */}
                 <div className="pt-4 max-w-2xl mx-auto">
                     <CompanyPostsSection
                         companyId={id}
                         latestPost={formattedPosts[0] || null}
                     />
-                </div>
-
-                {/* 2. Subscribers Card */}
-                <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm">
-                    <div className="flex flex-col items-center justify-center space-y-1">
-                        <div className="text-4xl font-black text-black">{followerCount}</div>
-                        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400">Subscribers</div>
-                    </div>
                 </div>
 
                 {/* 3. About Section */}
@@ -257,6 +270,5 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
             </div>
         </div>
-
     );
 }

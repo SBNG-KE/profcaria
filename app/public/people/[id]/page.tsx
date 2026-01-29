@@ -82,12 +82,69 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const imagePosition = profile.image_position || '50% 50%';
 
     // Fetch Sections
-    const { data: employment } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', id).order('start_date', { ascending: false });
-    const { data: education } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', id).order('start_date', { ascending: false });
-    const { data: skills } = await supabaseAdmin.schema('professional').from('skills').select('*').eq('user_id', id);
-    const { data: certifications } = await supabaseAdmin.schema('professional').from('certifications').select('*').eq('user_id', id);
-    const { data: awards } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', id);
-    const { data: otherProfiles } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', id);
+    // Fetch Sections
+    const { data: employmentRaw } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', id).order('start_date', { ascending: false });
+    const { data: educationRaw } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', id).order('start_date', { ascending: false });
+    const { data: skillsRaw } = await supabaseAdmin.schema('professional').from('skills').select('*').eq('user_id', id);
+    const { data: certificationsRaw } = await supabaseAdmin.schema('professional').from('certifications').select('*').eq('user_id', id);
+    const { data: awardsRaw } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', id);
+    const { data: otherProfilesRaw } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', id);
+
+    // Decrypt Sections
+    const employment = (employmentRaw || []).map((e: any) => ({
+        id: e.id,
+        title: decryptData(e.enc_title),
+        company: decryptData(e.enc_company),
+        location: decryptData(e.enc_location),
+        type: decryptData(e.enc_type),
+        description: decryptData(e.enc_description),
+        startDate: decryptData(e.enc_start_date),
+        endDate: decryptData(e.enc_end_date),
+        isCurrent: e.is_current,
+    }));
+
+    const education = (educationRaw || []).map((e: any) => ({
+        id: e.id,
+        school: decryptData(e.enc_school),
+        degree: decryptData(e.enc_degree),
+        fieldOfStudy: decryptData(e.enc_field_of_study),
+        description: decryptData(e.enc_description),
+        startDate: decryptData(e.enc_start_date),
+        endDate: decryptData(e.enc_end_date),
+        grade: decryptData(e.enc_grade),
+        isCurrent: e.is_current,
+    }));
+
+    const skills = (skillsRaw || []).map((s: any) => ({
+        id: s.id,
+        name: decryptData(s.enc_name),
+        endorsementCount: s.endorsement_count
+    }));
+
+    const certifications = (certificationsRaw || []).map((c: any) => ({
+        id: c.id,
+        name: decryptData(c.enc_name),
+        issuer: decryptData(c.enc_issuer),
+        issueDate: decryptData(c.enc_issue_date),
+        expirationDate: decryptData(c.enc_expiration_date),
+        credentialId: decryptData(c.enc_credential_id),
+        credentialUrl: decryptData(c.enc_credential_url),
+    }));
+
+    const awards = (awardsRaw || []).map((a: any) => ({
+        id: a.id,
+        title: decryptData(a.enc_title),
+        issuer: decryptData(a.enc_issuer),
+        date: decryptData(a.enc_date),
+        description: decryptData(a.enc_description),
+    }));
+
+    const otherProfiles = (otherProfilesRaw || []).map((p: any) => ({
+        id: p.id,
+        network: decryptData(p.enc_network),
+        url: decryptData(p.enc_url),
+        description: decryptData(p.enc_description),
+    }));
 
     // Fetch Latest Post
     // This requires a similar query to `api/professional/profile/posts` but for a specific user.
@@ -298,27 +355,12 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 {/* Note: ProfileInfoSection handles Experience, Education, etc. */}
                 <ProfileInfoSection
                     readOnly={true}
-                    employmentHistory={employment?.map((e: any) => ({
-                        ...e,
-                        startDate: e.start_date,
-                        endDate: e.end_date,
-                        isCurrent: e.is_current,
-                        source: e.source
-                    })) || []}
-                    education={education?.map((e: any) => ({
-                        ...e,
-                        startDate: e.start_date,
-                        endDate: e.end_date,
-                        isCurrent: e.is_current,
-                        fieldOfStudy: e.field_of_study
-                    })) || []}
-                    skills={skills || []}
-                    certifications={certifications?.map((c: any) => ({
-                        ...c,
-                        issueDate: c.issue_date
-                    })) || []}
-                    awards={awards || []}
-                    otherProfiles={otherProfiles || []}
+                    employmentHistory={employment}
+                    education={education}
+                    skills={skills}
+                    certifications={certifications}
+                    awards={awards}
+                    otherProfiles={otherProfiles}
                 />
 
                 {/* Posts */}
