@@ -17,7 +17,8 @@ export const dynamic = 'force-dynamic';
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id: rawId } = await params;
     // Fix: Handle cases where ID in URL might have spaces or be malformed
-    const id = rawId.trim().replace(/%20/g, '-').replace(/ /g, '-');
+    // Regex matches the first UUID-like structure found, or cleans strictly
+    const id = rawId.trim().replace(/%20/g, '-').replace(/ /g, '-').replace(/[^a-f0-9-]/gi, '') || rawId;
 
     // Check Viewer Type
     const cookieStore = await cookies();
