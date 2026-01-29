@@ -50,12 +50,12 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         } catch (e) { }
     }
 
-    // Fetch User Profile
+    // Fetch User Profile from 'users' table (Encrypted)
     const { data: profile, error } = await supabaseAdmin
         .schema('professional')
-        .from('profiles')
+        .from('users')
         .select('*')
-        .eq('user_id', id)
+        .eq('id', id)
         .single();
 
     if (error || !profile) {
@@ -63,22 +63,23 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     }
 
     // Decrypt Data
-    const firstName = profile.first_name;
-    const lastName = profile.last_name;
-    const role = profile.role;
-    const about = profile.about;
-    const country = profile.country;
-    const city = profile.city;
-    const profileImageUrl = profile.profile_image_url;
+    const firstName = profile.enc_first_name ? decryptData(profile.enc_first_name) : 'User';
+    const lastName = profile.enc_last_name ? decryptData(profile.enc_last_name) : '';
+    const role = profile.enc_current_role ? decryptData(profile.enc_current_role) : 'Professional';
+    const about = profile.enc_about ? decryptData(profile.enc_about) : '';
+    // Location handling
+    const city = profile.enc_city ? decryptData(profile.enc_city) : '';
+    const country = profile.enc_location ? decryptData(profile.enc_location) : '';
+    const profileImageUrl = profile.enc_profile_image_url ? decryptData(profile.enc_profile_image_url) : '';
     const imagePosition = profile.image_position || '50% 50%';
 
     // Fetch Sections
-    const { data: employment } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', profile.user_id).order('start_date', { ascending: false });
-    const { data: education } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', profile.user_id).order('start_date', { ascending: false });
-    const { data: skills } = await supabaseAdmin.schema('professional').from('skills').select('*').eq('user_id', profile.user_id);
-    const { data: certifications } = await supabaseAdmin.schema('professional').from('certifications').select('*').eq('user_id', profile.user_id);
-    const { data: awards } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', profile.user_id);
-    const { data: otherProfiles } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', profile.user_id);
+    const { data: employment } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', id).order('start_date', { ascending: false });
+    const { data: education } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', id).order('start_date', { ascending: false });
+    const { data: skills } = await supabaseAdmin.schema('professional').from('skills').select('*').eq('user_id', id);
+    const { data: certifications } = await supabaseAdmin.schema('professional').from('certifications').select('*').eq('user_id', id);
+    const { data: awards } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', id);
+    const { data: otherProfiles } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', id);
 
     // Fetch Latest Post
     // This requires a similar query to `api/professional/profile/posts` but for a specific user.
@@ -97,7 +98,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 profile_image_url
             )
         `)
-        .eq('author_id', profile.user_id)
+        .eq('author_id', id)
         .order('created_at', { ascending: false })
         .limit(3) as any;
 
@@ -148,10 +149,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
-                                    <FollowButton targetId={profile.user_id || profile.id} type="user" />
+                                    <FollowButton targetId={id} type="user" />
                                     {isViewerProfessional && (
                                         <Link
-                                            href={`/professional/notifications?chat=${profile.user_id}`}
+                                            href={`/professional/notifications?chat=${id}`}
                                             className="ml-3 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors"
                                         >
                                             Message
@@ -210,7 +211,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 {/* Posts */}
                 <div className="pt-4">
                     <ProfessionalPostsSection
-                        userId={profile.user_id || profile.id}
+                        userId={id}
                         latestPost={formattedPosts[0] || null}
                     />
                 </div>
