@@ -15,7 +15,9 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
+    const { id: rawId } = await params;
+    // Fix: Handle cases where ID in URL might have spaces or be malformed
+    const id = rawId.trim().replace(/%20/g, '-').replace(/ /g, '-');
 
     // Check Viewer Type
     const cookieStore = await cookies();
