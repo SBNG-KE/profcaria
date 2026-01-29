@@ -1648,15 +1648,15 @@ export default function ProfessionalHome() {
                           </div>
 
                           {/* Profile Link */}
-                          <div className="space-y-2 min-w-0">
+                          <div className="space-y-2 w-full max-w-full overflow-hidden">
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Profile Link</label>
-                            <div className={`flex items-center p-1.5 rounded-xl border min-w-0 ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
-                              <div className={`px-3 text-sm truncate flex-1 min-w-0 ${isDark ? 'text-neutral-400' : 'text-black'}`}>
+                            <div className={`flex items-center p-1.5 rounded-xl border w-full max-w-full overflow-hidden ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                              <div className={`px-3 text-sm truncate flex-1 w-full min-w-0 ${isDark ? 'text-neutral-400' : 'text-black'}`}>
                                 {typeof window !== 'undefined' ? `${window.location.origin}/public/people/${userId}` : '...'}
                               </div>
                               <button
                                 onClick={handleCopyLink}
-                                className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
+                                className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
                               >
                                 {profileMessage?.text === 'Profile link copied!' ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
                               </button>

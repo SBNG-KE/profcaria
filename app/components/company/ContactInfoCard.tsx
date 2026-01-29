@@ -11,7 +11,7 @@ interface ContactInfoCardProps {
     profileLink: string;
 }
 
-export default function ContactInfoCard({ email, website, city, country, profileLink }: ContactInfoCardProps) {
+export default function ContactInfoCard({ email, website, city, country, profileLink, isDark = false }: ContactInfoCardProps & { isDark?: boolean }) {
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const handleCopy = (text: string, field: string) => {
@@ -20,20 +20,25 @@ export default function ContactInfoCard({ email, website, city, country, profile
         setTimeout(() => setCopiedField(null), 2000);
     };
 
+    const labelClass = `text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`;
+    const valueClass = `flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-black'}`;
+    const cardClass = `flex items-center justify-between p-2 rounded-xl border border-transparent overflow-hidden bg-transparent transition-colors ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-neutral-50'}`;
+    const iconButtonClass = `p-1.5 rounded-lg transition-all ${isDark ? 'text-neutral-400 hover:text-white hover:bg-white/10' : 'text-neutral-400 hover:text-black hover:bg-black/5'} opacity-0 group-hover:opacity-100`;
+
     return (
         <div className="flex-1 w-full space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Email */}
                 {email && (
                     <div className="space-y-1 group">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">Work Email</label>
-                        <div className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800 overflow-hidden bg-transparent transition-colors">
-                            <div className="flex items-center gap-2 font-medium text-black dark:text-neutral-300 truncate">
+                        <label className={labelClass}>Work Email</label>
+                        <div className={cardClass}>
+                            <div className={valueClass}>
                                 <Mail size={16} /> <span className="truncate">{email}</span>
                             </div>
                             <button
                                 onClick={() => handleCopy(email, 'email')}
-                                className="p-1.5 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white bg-transparent hover:bg-black/5 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all"
+                                className={iconButtonClass}
                                 title="Copy Email"
                             >
                                 {copiedField === 'email' ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
@@ -45,14 +50,14 @@ export default function ContactInfoCard({ email, website, city, country, profile
                 {/* Website */}
                 {website && (
                     <div className="space-y-1 group">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">Website</label>
-                        <div className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800 overflow-hidden bg-transparent transition-colors">
-                            <a href={website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 font-medium hover:underline text-black dark:text-neutral-300 truncate">
+                        <label className={labelClass}>Website</label>
+                        <div className={cardClass}>
+                            <a href={website} target="_blank" rel="noopener noreferrer" className={`${valueClass} hover:underline`}>
                                 <Globe size={16} /> <span className="truncate">{website}</span>
                             </a>
                             <button
                                 onClick={() => handleCopy(website, 'website')}
-                                className="p-1.5 rounded-lg text-neutral-400 hover:text-black dark:hover:text-white bg-transparent hover:bg-black/5 dark:hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all"
+                                className={iconButtonClass}
                                 title="Copy Website Link"
                             >
                                 {copiedField === 'website' ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
@@ -65,8 +70,8 @@ export default function ContactInfoCard({ email, website, city, country, profile
             {/* Location */}
             {(city || country) && (
                 <div className="space-y-1 pt-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">Location</label>
-                    <div className="flex items-center gap-2 font-medium text-black dark:text-neutral-300 px-2">
+                    <label className={labelClass}>Location</label>
+                    <div className={`${valueClass} px-2`}>
                         <MapPin size={16} /> {city || ''}{city && country ? ', ' : ''}{country || ''}
                     </div>
                 </div>
@@ -74,14 +79,14 @@ export default function ContactInfoCard({ email, website, city, country, profile
 
             {/* Profile Link */}
             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400">Profile Link</label>
-                <div className="flex items-center p-1.5 rounded-xl border bg-white border-neutral-200 dark:bg-neutral-950 dark:border-neutral-800 group">
-                    <div className="px-3 text-sm truncate flex-1 text-black dark:text-neutral-400">
+                <label className={labelClass}>Profile Link</label>
+                <div className={`flex items-center p-1.5 rounded-xl border group ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                    <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                         {profileLink}
                     </div>
                     <button
                         onClick={() => handleCopy(profileLink, 'link')}
-                        className={`p-2 rounded-lg transition-colors ${copiedField === 'link' ? 'bg-green-500/10 text-green-500' : 'hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400'}`}
+                        className={`p-2 rounded-lg transition-colors ${copiedField === 'link' ? 'bg-green-500/10 text-green-500' : isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-400'}`}
                         title="Copy Profile Link"
                     >
                         {copiedField === 'link' ? <Check size={16} /> : <Copy size={16} />}

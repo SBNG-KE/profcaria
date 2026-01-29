@@ -222,6 +222,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 city={city || undefined}
                                 country={country || undefined}
                                 profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.profcaria.com'}/public/companies/${id}`}
+                                isDark={false}
                             />
 
                         </div>
@@ -240,7 +241,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                 {/* 3. About Section */}
                 <div className="p-8 rounded-[40px] space-y-4 border bg-white border-neutral-200 shadow-sm">
                     <h3 className="text-xl font-bold flex items-center gap-2 text-black">About</h3>
-                    <p className="leading-relaxed whitespace-pre-wrap text-neutral-600">
+                    <p className="leading-relaxed whitespace-pre-wrap text-neutral-800">
                         {about || "No company description provided."}
                     </p>
                 </div>
@@ -260,7 +261,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                     <Link2 size={20} className="text-neutral-500" />
                                     <div>
                                         <h4 className="font-bold text-black">{prof.network}</h4>
-                                        <a href={prof.url} target="_blank" rel="noopener noreferrer" className="text-sm hover:underline text-neutral-600">{prof.url}</a>
+                                        <a href={prof.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium hover:underline text-neutral-700 hover:text-black">{prof.url}</a>
                                     </div>
                                 </div>
                             </div>
