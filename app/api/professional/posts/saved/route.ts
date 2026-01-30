@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
         if (error) throw error;
         if (!savedItems || savedItems.length === 0) return NextResponse.json({ posts: [] });
 
-        const profIds = savedItems.map(s => s.professional_post_id).filter(Boolean);
-        const empIds = savedItems.map(s => s.employer_post_id).filter(Boolean);
+        const profIds = savedItems.map((s: any) => s.professional_post_id).filter(Boolean);
+        const empIds = savedItems.map((s: any) => s.employer_post_id).filter(Boolean);
 
         // Fetch actual posts
         const profPostsPromise = profIds.length > 0 ? supabaseAdmin.schema('professional').from('posts').select('*').in('id', profIds) : Promise.resolve({ data: [] });
@@ -56,14 +56,18 @@ export async function GET(request: NextRequest) {
             if (post.authorType === 'employer') {
                 const { data: comp } = await supabaseAdmin.schema('employer').from('companies').select('enc_company_name, enc_logo_url').eq('id', authorId).single();
                 if (comp) {
-                    author.name = decryptData(comp.enc_company_name);
-                    author.profileImage = comp.enc_logo_url ? decryptData(comp.enc_logo_url) : '/default-logo.png';
+                    if (comp) {
+                        author.name = decryptData(comp.enc_company_name) || 'Company';
+                        author.profileImage = decryptData(comp.enc_logo_url) || '/default-logo.png';
+                    }
                 }
             } else {
                 const { data: u } = await supabaseAdmin.schema('professional').from('users').select('enc_first_name, enc_last_name, enc_profile_image_url').eq('id', authorId).single();
                 if (u) {
-                    author.name = `${decryptData(u.enc_first_name)} ${decryptData(u.enc_last_name)}`;
-                    author.profileImage = u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : '/default-avatar.png';
+                    const fname = decryptData(u.enc_first_name) || '';
+                    const lname = decryptData(u.enc_last_name) || '';
+                    author.name = `${fname} ${lname}`.trim() || 'User';
+                    author.profileImage = decryptData(u.enc_profile_image_url) || '/default-avatar.png';
                 }
             }
 
@@ -77,7 +81,7 @@ export async function GET(request: NextRequest) {
 
         // Sort by saved date to maintain order
         // We need to map back to the 'savedItems' order
-        const ordered = savedItems.map(item => {
+        const ordered = savedItems.map((item: any) => {
             const targetId = item.professional_post_id || item.employer_post_id;
             const post = processed.find(p => p.id === targetId);
             return post ? { ...post, savedAt: item.created_at } : null;

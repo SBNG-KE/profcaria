@@ -5,7 +5,7 @@ import { getAuthenticatedUser } from '@/lib/auth-helper';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await getAuthenticatedUser();
         if (!user) {
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     // Check if a specific post is saved by current user
     try {
         const user = await getAuthenticatedUser();
