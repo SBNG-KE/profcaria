@@ -270,17 +270,34 @@ export async function GET(request: NextRequest) {
 
         if (rpcError) {
             console.error('Feed RPC Error:', rpcError);
-            // Fallback to simple query
+            // Fallback to simple query (Combine Prof + Emp)
             let profQuery = supabaseAdmin
                 .schema('professional')
                 .from('posts')
                 .select('*')
                 .order('created_at', { ascending: false })
-                .range(offset, offset + limit - 1);
+                .limit(limit);
 
-            const { data: fallback } = await profQuery;
+            let empQuery = supabaseAdmin
+                .schema('employer')
+                .from('posts')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(limit)
+                .then((res: any) => ({ ...res, isEmployer: true }))
+                .catch(() => ({ data: [], error: null }));
 
-            const processed = await processPosts(fallback || [], user);
+            const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
+
+            let allFallback: any[] = [];
+            if (profRes.data) allFallback = [...allFallback, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
+            if ((empRes as any).data) allFallback = [...allFallback, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
+
+            // Sort combined
+            allFallback.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            allFallback = allFallback.slice(0, limit);
+
+            const processed = await processPosts(allFallback, user);
             return NextResponse.json({ posts: processed });
         }
 
@@ -405,6 +422,7 @@ async function processPosts(posts: any[], user: any) {
             isReposted: isReposted,
             repostContext: repostContext,
             isOwnPost: authorData.id === user.id,
+            currentUserType: user.schema, // Pass current user type to frontend
             author: authorData
         };
     }));
