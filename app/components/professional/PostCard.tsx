@@ -221,10 +221,12 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     return (
         <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
             {/* Repost Header Context (if in profile list) */}
-            <div className={`px-4 py-2 flex items-center gap-2 text-xs font-bold border-b ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-500'}`}>
-                <Repeat2 size={12} />
-                <span>{post.repostContext.reposterName ? `${post.repostContext.reposterName} reposted` : 'You reposted'}</span>
-            </div>
+            {post.repostContext && (
+                <div className={`px-4 py-2 flex items-center gap-2 text-xs font-bold border-b ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-500'}`}>
+                    <Repeat2 size={12} />
+                    <span>{post.repostContext.reposterName ? `${post.repostContext.reposterName} reposted` : 'You reposted'}</span>
+                </div>
+            )}
 
             <div className={`flex flex-col ${forceVertical ? '' : 'sm:flex-row'}`}>
                 {/* Mobile Header (Visible only on mobile) */}
