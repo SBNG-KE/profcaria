@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, MessageSquare, ChevronRight, ChevronLeft, Zap, Send, Shield, Clock, X, Building2, UserCircle, Search, CheckCheck, Plus } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import LinkPreview from '@/app/components/LinkPreview';
 import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkPreview';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -354,7 +355,13 @@ function MessagesContent() {
                                         {app.companyLogoUrl ? <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : <Building2 size={20} />}
                                         {unreadCount > 0 && <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-neutral-900 flex items-center justify-center animate-pulse"><span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span></div>}
                                     </div>
-                                    <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-neutral-800/50' : 'border-neutral-200'}`}><h4 className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{app.companyName}</h4><p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.jobTitle}</p></div>
+                                    <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
+                                        <h4 className={`text-sm font-bold truncate flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                                            {app.companyName}
+                                            <VerificationBadge tier={app.badgeType} size={12} />
+                                        </h4>
+                                        <p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.jobTitle}</p>
+                                    </div>
                                 </button>
                             )
                         })}
@@ -375,7 +382,13 @@ function MessagesContent() {
                             <div className="flex items-center gap-4">
                                 <button onClick={() => setActiveConversation(null)} className={`md:hidden p-2 -ml-2 ${isDark ? 'text-slate-400' : 'text-neutral-400'}`}><ChevronLeft size={24} /></button>
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-500'}`}>{activeConversation.companyLogoUrl ? <img src={activeConversation.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : <Building2 size={20} />}</div>
-                                <div><h2 className={`text-base font-bold ${isDark ? 'text-white' : 'text-black'}`}>{activeConversation.companyName}</h2><p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{activeConversation.jobTitle}</p></div>
+                                <div>
+                                    <h2 className={`text-base font-bold flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                                        {activeConversation.companyName}
+                                        <VerificationBadge tier={activeConversation.badgeType} size={16} />
+                                    </h2>
+                                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{activeConversation.jobTitle}</p>
+                                </div>
                             </div>
                             <button onClick={() => setActiveConversation(null)} className={`hidden md:flex p-2 hover:bg-red-500/20 hover:text-red-400 rounded-xl transition-all ${isDark ? 'text-slate-400' : 'text-neutral-400'}`}><X size={20} /></button>
                         </header>

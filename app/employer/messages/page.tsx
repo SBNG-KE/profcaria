@@ -6,6 +6,7 @@ import {
     CheckCheck, Plus, MoreVertical, Zap
 } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import LinkPreview from '@/app/components/LinkPreview';
 import InlineLinkPreview, { extractFirstUrl } from '@/app/components/InlineLinkPreview';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -325,7 +326,10 @@ function MessagesContent() {
                                     </div>
                                     <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-white/5' : 'border-neutral-200/50'}`}>
                                         <div className="flex justify-between items-center mb-0.5">
-                                            <h4 className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{name}</h4>
+                                            <h4 className={`text-sm font-bold truncate flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                                                {name}
+                                                <VerificationBadge tier={app.user?.badgeType} size={12} />
+                                            </h4>
                                             {/* Could add time here if available in app object, but usually it's last message time which we don't have easily without eager fetching */}
                                         </div>
                                         <p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.jobs?.title || 'Applicant'}</p>
@@ -358,8 +362,9 @@ function MessagesContent() {
                                     {activeConversation.professional?.avatar_url ? <img src={activeConversation.professional.avatar_url} alt="" className="w-full h-full object-cover" /> : <UserCircle size={24} />}
                                 </div>
                                 <div>
-                                    <h2 className={`text-base font-bold ${isDark ? 'text-white' : 'text-black'}`}>
+                                    <h2 className={`text-base font-bold flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
                                         {(activeConversation.professional?.first_name) ? `${activeConversation.professional.first_name} ${activeConversation.professional.last_name || ''}` : 'Candidate'}
+                                        <VerificationBadge tier={activeConversation.user?.badgeType} size={16} />
                                     </h2>
                                     <div className="flex items-center gap-2">
                                         <span className={`text-xs ${isDark ? 'text-emerald-400' : 'text-emerald-600'} font-medium`}>{activeConversation.jobs?.title}</span>

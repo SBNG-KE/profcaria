@@ -74,7 +74,7 @@ export async function GET(req: Request) {
         const { data: employers, error: empError } = await supabaseAdmin
             .schema('employer')
             .from('companies')
-            .select('id, enc_company_name, enc_logo_url')
+            .select('id, enc_company_name, enc_logo_url, badge_type')
             .in('id', allCompanyIds);
 
         if (empError) throw empError;
@@ -92,6 +92,7 @@ export async function GET(req: Request) {
                 companyName: decryptData(employer?.enc_company_name) || 'Secure Employer',
                 companyLogoUrl: employer?.enc_logo_url ? decryptData(employer.enc_logo_url) : null,
                 companyId: employer?.id || job?.company_id,
+                badgeType: employer?.badge_type || 'none',
                 isDm: false
             };
         });
@@ -113,6 +114,7 @@ export async function GET(req: Request) {
                 companyName: decryptData(employer?.enc_company_name) || 'Unknown Company',
                 companyLogoUrl: employer?.enc_logo_url ? decryptData(employer.enc_logo_url) : null,
                 companyId: companyId,
+                badgeType: employer?.badge_type || 'none',
                 isDm: true,
                 otherPartyId: companyId
             };

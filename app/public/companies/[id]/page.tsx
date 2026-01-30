@@ -5,6 +5,7 @@ import { decryptData } from '@/lib/security';
 import { Building2, Globe, MapPin, Mail, Link2, Copy, MessageSquare } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
 import { cookies } from 'next/headers';
@@ -195,8 +196,9 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                         <div className="flex-1 w-full space-y-6">
                             {/* Name & Founded */}
                             <div className="space-y-2">
-                                <h1 className="text-4xl md:text-5xl font-black text-black dark:text-white">
+                                <h1 className="text-4xl md:text-5xl font-black text-black dark:text-white flex items-center gap-3">
                                     {companyName}
+                                    <VerificationBadge tier={profile.badge_type} size={32} />
                                 </h1>
                                 {foundedYear && (
                                     <p className="text-xl font-medium text-neutral-500 dark:text-neutral-400">

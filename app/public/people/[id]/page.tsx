@@ -5,6 +5,7 @@ import { decryptData } from '@/lib/security';
 import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
@@ -217,8 +218,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             {/* Name & Role Section */}
                             <div className="space-y-2">
                                 <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-black dark:text-white">
+                                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-black dark:text-white flex items-center gap-3">
                                         {firstName} {lastName}
+                                        <VerificationBadge tier={profile.badge_type} size={32} />
                                     </h1>
                                 </div>
 

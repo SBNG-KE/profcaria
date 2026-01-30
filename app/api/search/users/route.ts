@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
         const { data: professionals } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('id, enc_first_name, enc_last_name, enc_profile_image_url, follower_count');
+            .select('id, enc_first_name, enc_last_name, enc_profile_image_url, follower_count, badge_type');
 
         // Employers
         const { data: employers } = await supabaseAdmin
             .schema('employer')
             .from('companies')
-            .select('id, enc_company_name, enc_logo_url, follower_count');
+            .select('id, enc_company_name, enc_logo_url, follower_count, badge_type');
 
         const results: any[] = [];
         // URL Detection & Handling
@@ -113,7 +113,8 @@ export async function GET(request: NextRequest) {
                         name: fullName,
                         image: decryptData(p.enc_profile_image_url) || '/default-avatar.png',
                         type: 'professional',
-                        followers: p.follower_count || 0
+                        followers: p.follower_count || 0,
+                        badgeType: p.badge_type || 'none'
                     });
                 }
             }
@@ -131,7 +132,8 @@ export async function GET(request: NextRequest) {
                         name: name,
                         image: decryptData(e.enc_logo_url) || '/default-logo.png',
                         type: 'employer',
-                        followers: e.follower_count || 0
+                        followers: e.follower_count || 0,
+                        badgeType: e.badge_type || 'none'
                     });
                 }
             }

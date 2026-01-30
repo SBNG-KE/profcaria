@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Building2, UserCircle } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
+import VerificationBadge from '../VerificationBadge';
 
 export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean }) {
     const router = useRouter();
@@ -135,7 +136,10 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <span className={`font-semibold ${isDark ? 'text-white' : 'text-black'}`}>{result.name}</span>
+                                            <span className={`font-semibold flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                                                {result.name}
+                                                <VerificationBadge tier={result.badgeType} size={14} />
+                                            </span>
                                             {result.type === 'employer' && (
                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">CORP</span>
                                             )}
