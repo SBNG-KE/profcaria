@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import {
     FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, Send, UserCircle, Building2, ChevronLeft
 } from 'lucide-react';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import ScrollableContainer from '@/app/components/ScrollableContainer';
 import { sanitizeHtml } from '@/lib/sanitize';
 import EmployerProfileViewModal from '../components/EmployerProfileViewModal';
@@ -25,6 +26,7 @@ interface Application {
         id: string;
         name: string;
         profileImageUrl?: string;
+        badgeType?: string;
     };
     artifacts?: { type: string, content: string }[];
 }
@@ -261,8 +263,9 @@ function ApplicationsPageContent() {
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <h4 className={`text-sm font-bold truncate ${selectedApp?.id === app.id ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-300 group-hover:text-white' : 'text-neutral-700 group-hover:text-black')}`}>
+                                            <h4 className={`text-sm font-bold truncate flex items-center gap-1 ${selectedApp?.id === app.id ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-300 group-hover:text-white' : 'text-neutral-700 group-hover:text-black')}`}>
                                                 {app.user.name}
+                                                <VerificationBadge tier={app.user.badgeType} size={12} />
                                             </h4>
                                             <p className={`text-[10px] flex items-center gap-1 truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                                 <Briefcase size={10} /> {app.job.title}
@@ -301,7 +304,10 @@ function ApplicationsPageContent() {
                                         ) : <UserCircle size={40} />}
                                     </div>
                                     <div>
-                                        <h2 className={`text-3xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{selectedApp.user.name}</h2>
+                                        <h2 className={`text-3xl font-black uppercase tracking-tighter flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                                            {selectedApp.user.name}
+                                            <VerificationBadge tier={selectedApp.user.badgeType} size={24} />
+                                        </h2>
                                         <div className="flex items-center gap-4 mt-2">
                                             <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-white text-neutral-600 border border-neutral-200'}`}>
                                                 <Briefcase size={12} /> {selectedApp.job.title}

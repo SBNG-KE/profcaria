@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
                     const { data: u } = await supabaseAdmin
                         .schema('professional')
                         .from('users')
-                        .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role')
+                        .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role, badge_type')
                         .eq('id', f.user_id)
                         .single();
 
@@ -161,7 +161,8 @@ export async function GET(request: NextRequest) {
                         profileImage: u?.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
                         role: u?.primary_role,
                         type: 'user',
-                        isFollowing: false // Valid assumption: Companies don't "follow" users back in the same way, or we'd need a separate check.
+                        isFollowing: false,
+                        badgeType: u?.badge_type || 'none'
                     };
                 }));
                 return NextResponse.json({ followers: formattedFollowers });
@@ -180,7 +181,7 @@ export async function GET(request: NextRequest) {
                     const { data: u } = await supabaseAdmin
                         .schema('professional') /* Fetching follower (user) info */
                         .from('users')
-                        .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role')
+                        .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role, badge_type')
                         .eq('id', f.follower_id)
                         .single();
 
@@ -202,7 +203,8 @@ export async function GET(request: NextRequest) {
                         profileImage: u?.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
                         role: u?.primary_role,
                         type: 'user',
-                        isFollowing: !!amIFollowing
+                        isFollowing: !!amIFollowing,
+                        badgeType: u?.badge_type || 'none'
                     };
                 }));
 
@@ -228,7 +230,7 @@ export async function GET(request: NextRequest) {
             const { data: companies, error: companiesError } = await supabaseAdmin
                 .schema('employer')
                 .from('companies')
-                .select('id, enc_company_name, enc_logo_url')
+                .select('id, enc_company_name, enc_logo_url, badge_type')
                 .in('id', companyIds);
 
             if (companiesError) throw companiesError;
@@ -242,7 +244,8 @@ export async function GET(request: NextRequest) {
                     name: decryptedName || 'Unnamed Company',
                     profileImage: decryptedLogo,
                     role: 'Company',
-                    type: 'company'
+                    type: 'company',
+                    badgeType: c.badge_type || 'none'
                 };
             });
 
@@ -294,7 +297,7 @@ export async function GET(request: NextRequest) {
                 const { data: u } = await supabaseAdmin
                     .schema('professional')
                     .from('users')
-                    .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role')
+                    .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role, badge_type')
                     .eq('id', f.following_id)
                     .single();
 
@@ -306,7 +309,8 @@ export async function GET(request: NextRequest) {
                     name: `${fName} ${lName}`.trim(),
                     profileImage: u?.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
                     role: u?.primary_role,
-                    type: 'user'
+                    type: 'user',
+                    badgeType: u?.badge_type || 'none'
                 };
             }));
 

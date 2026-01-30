@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
+import VerificationBadge from '../VerificationBadge';
 
 // Truncated Text Component for Mobile
 const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
@@ -170,8 +171,9 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 </Link>
                 <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className={`font-bold text-base truncate hover:underline ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className={`font-bold text-base truncate hover:underline flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
                             {post.author.name}
+                            <VerificationBadge tier={post.author.badgeType} size={14} />
                         </Link>
                         {!isOwnPost && !post.author.isFollowing && post.currentUserType !== 'employer' && (
                             <><span className={`${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>•</span><button onClick={onFollow} className={`text-xs font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>{post.author.type === 'employer' ? 'Subscribe' : 'Follow'}</button></>

@@ -77,7 +77,7 @@ export async function GET(req: Request) {
         const { data: professionals, error: profError } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('id, enc_first_name, enc_last_name, enc_profile_image_url')
+            .select('id, enc_first_name, enc_last_name, enc_profile_image_url, badge_type')
             .in('id', allProfessionalIds);
 
         if (profError) {
@@ -101,7 +101,8 @@ export async function GET(req: Request) {
                 user: {
                     id: app.user_id,
                     name: prof ? `${fName} ${lName}` : 'Candidate',
-                    profileImageUrl: (prof && prof.enc_profile_image_url) ? decryptData(prof.enc_profile_image_url) : null
+                    profileImageUrl: (prof && prof.enc_profile_image_url) ? decryptData(prof.enc_profile_image_url) : null,
+                    badgeType: prof?.badge_type || 'none'
                 },
                 isDm: false
             };
@@ -124,7 +125,8 @@ export async function GET(req: Request) {
                 user: {
                     id: userId,
                     name: prof ? `${fName} ${lName}` : 'Candidate',
-                    profileImageUrl: (prof && prof.enc_profile_image_url) ? decryptData(prof.enc_profile_image_url) : null
+                    profileImageUrl: (prof && prof.enc_profile_image_url) ? decryptData(prof.enc_profile_image_url) : null,
+                    badgeType: prof?.badge_type || 'none'
                 },
                 isDm: true,
                 otherPartyId: userId

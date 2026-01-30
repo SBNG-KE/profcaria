@@ -5,6 +5,7 @@ import {
     Users, Search, User, X, ExternalLink, Shield, Briefcase, Clock,
     CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2, ChevronLeft, ChevronRight, Mail, Calendar, UserCircle, MoreHorizontal, MessageSquare
 } from 'lucide-react';
+import VerificationBadge from '@/app/components/VerificationBadge';
 
 import EmployerProfileViewModal from '../components/EmployerProfileViewModal';
 
@@ -30,6 +31,7 @@ interface Connection {
         profileImageUrl: string | null;
         email?: string | null;
         phone?: string | null;
+        badgeType?: string;
     };
     accessList: string[];
 }
@@ -104,8 +106,9 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 </div>
 
                 <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold text-black dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight">
+                    <h3 className="text-lg font-bold text-black dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight flex items-center gap-2">
                         {connection.professional.name}
+                        <VerificationBadge tier={connection.professional.badgeType} size={16} />
                     </h3>
                     <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest mb-2">
                         {connection.professional.role || 'Professional'}

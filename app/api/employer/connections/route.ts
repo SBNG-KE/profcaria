@@ -56,7 +56,7 @@ export async function GET(req: Request) {
             const { data: prof, error: profError } = await supabaseAdmin
                 .schema('professional')
                 .from('users')
-                .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+                .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
                 .eq('id', app.user_id)
                 .single();
 
@@ -87,6 +87,7 @@ export async function GET(req: Request) {
                     profileImageUrl,
                     email: authUser?.email || null,
                     phone: authUser?.phone || null,
+                    badgeType: prof?.badge_type || 'none'
                 },
                 accessList: []
             };

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         const { data: profUser, error } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_location, enc_city')
+            .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_location, enc_city, badge_type')
             .eq('id', user.id)
             .maybeSingle();
 
@@ -107,7 +107,8 @@ export async function GET(request: NextRequest) {
             name: `${firstName} ${lastName}`.trim(),
             role,
             profileImage,
-            location
+            location,
+            badgeType: profUser.badge_type || 'none'
         };
 
         return NextResponse.json({ profile });

@@ -60,7 +60,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const { data: user, error: userError } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('id, enc_first_name, enc_last_name, enc_profile_image_url')
+            .select('id, enc_first_name, enc_last_name, enc_profile_image_url, badge_type')
             .eq('id', application.user_id)
             .single();
 
@@ -148,7 +148,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 user: {
                     id: application.user_id,
                     name: user ? `${decryptData(user.enc_first_name)} ${decryptData(user.enc_last_name)}` : 'Unknown User',
-                    profileImageUrl: user?.enc_profile_image_url ? decryptData(user.enc_profile_image_url) : null
+                    profileImageUrl: user?.enc_profile_image_url ? decryptData(user.enc_profile_image_url) : null,
+                    badgeType: user?.badge_type || 'none'
                 },
                 artifacts
             }

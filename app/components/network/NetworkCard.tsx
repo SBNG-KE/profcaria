@@ -5,6 +5,7 @@ import React from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
 import FollowButton from './FollowButton';
 import { MapPin, Briefcase } from 'lucide-react';
+import VerificationBadge from '../VerificationBadge';
 
 interface NetworkCardProps {
     id: string;
@@ -13,6 +14,7 @@ interface NetworkCardProps {
     role?: string; // or Industry for companies
     type: 'user' | 'company';
     isFollowing: boolean;
+    badgeType?: string;
     onToggle?: () => void; // Parent callback to remove from list if needed
 }
 
@@ -23,6 +25,7 @@ export default function NetworkCard({
     role,
     type,
     isFollowing,
+    badgeType,
     onToggle
 }: NetworkCardProps) {
     const { theme } = useTheme();
@@ -54,8 +57,9 @@ export default function NetworkCard({
             {/* Info */}
             <div className="text-center w-full mb-4 flex-1">
                 <Link href={type === 'company' ? `/professional/companies/${id}` : `/professional/people/${id}`} className="block hover:underline">
-                    <h3 className={`font-bold text-lg mb-1 truncate w-full ${isDark ? 'text-white' : 'text-black'}`}>
+                    <h3 className={`font-bold text-lg mb-1 truncate w-full flex items-center justify-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
                         {name}
+                        <VerificationBadge tier={badgeType} size={16} />
                     </h3>
                 </Link>
                 <p className={`text-xs flex items-center justify-center gap-1.5 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>

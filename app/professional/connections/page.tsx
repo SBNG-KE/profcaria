@@ -139,6 +139,7 @@ export default function ConnectionsPage() {
                             role={item.role}
                             type={item.type || (activeTab === 'companies' ? 'company' : 'user')}
                             isFollowing={activeTab === 'companies' ? true : !!item.isFollowing}
+                            badgeType={item.badgeType}
                             onToggle={() => handleUnfollow(item.id)}
                         />
                     ))}

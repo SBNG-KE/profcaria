@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DefaultLogo from './DefaultLogo';
-import { CheckCircle } from 'lucide-react';
+import VerificationBadge from './VerificationBadge';
 
 interface ProfileImageProps {
     src?: string | null;
@@ -25,18 +25,7 @@ export default function ProfileImage({ src, type = 'user', name, size = 24, clas
     // Check if src is valid (not empty string, not /default-logo.png if we want to avoid it)
     const isValidSrc = src && src !== '' && src !== '/default-logo.png';
 
-    const getBadgeColor = (b: string) => {
-        switch (b?.toLowerCase()) {
-            case 'item': // For test
-            case 'basic': return 'text-neutral-400';
-            case 'pro': return 'text-blue-400';
-            case 'enterprise':
-            case 'premium': return 'text-yellow-400';
-            default: return null;
-        }
-    };
 
-    const badgeColor = badge ? getBadgeColor(badge) : null;
 
     return (
         <div className="relative inline-block">
@@ -51,14 +40,9 @@ export default function ProfileImage({ src, type = 'user', name, size = 24, clas
                 />
             )}
 
-            {badgeColor && (
+            {badge && (
                 <div className="absolute -bottom-1 -right-1 bg-white dark:bg-black rounded-full p-[1px]">
-                    <CheckCircle
-                        size={size > 30 ? 16 : 12}
-                        className={badgeColor}
-                        fill="currentColor"
-                        fillOpacity={0.2}
-                    />
+                    <VerificationBadge tier={badge} size={size > 30 ? 16 : 12} showTooltip={false} />
                 </div>
             )}
         </div>

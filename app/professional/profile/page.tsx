@@ -12,6 +12,7 @@ import {
   Building2, Globe, MapPin, Mail, Camera, Save, Loader2, ArrowRight,
   Eye, ThumbsUp, MessageSquare, MoreHorizontal, User, Activity, Phone, Users, Repeat2
 } from 'lucide-react';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
 import LinkPreview from '@/app/components/LinkPreview';
 import ProfileAnalytics from '@/app/components/professional/ProfileAnalytics';
@@ -251,6 +252,7 @@ export default function ProfessionalHome() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
+  const [badgeType, setBadgeType] = useState<string | null>(null);
 
   // Inline Editing State
   const [isEditingName, setIsEditingName] = useState(false);
@@ -440,6 +442,7 @@ export default function ProfessionalHome() {
           setCity(userData.profile.city || 'Auto-detected');
           setProfileImageUrl(userData.profile.profileImageUrl || '');
           setImagePosition(userData.profile.imagePosition || 'center');
+          setBadgeType(userData.profile.badgeType || 'none');
         }
       }
     } catch (error) {
@@ -1558,7 +1561,12 @@ export default function ProfessionalHome() {
                           ) : (
                             <>
                               <h1 className={`text-3xl md:text-5xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>
-                                {firstName || lastName ? `${firstName} ${lastName}` : <span className="text-neutral-500 text-3xl">Your Name</span>}
+                                {firstName || lastName ? (
+                                  <span className="flex items-center gap-2">
+                                    {firstName} {lastName}
+                                    <VerificationBadge tier={badgeType} size={32} />
+                                  </span>
+                                ) : <span className="text-neutral-500 text-3xl">Your Name</span>}
                               </h1>
                               <button onClick={() => setIsEditingName(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
                                 <PenLine size={24} />
