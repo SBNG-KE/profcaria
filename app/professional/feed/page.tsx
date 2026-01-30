@@ -474,6 +474,7 @@ function FeedContent() {
     };
 
     const handleSave = async (postId: string, authorType: string) => {
+        console.log('Client handleSave:', { postId, authorType });
         const targetPost = viewMode === 'single' ? singlePost : posts.find(p => p.id === postId);
         if (!targetPost) return;
 
