@@ -224,6 +224,9 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
             {post.repostContext && (
                 <div className={`px-4 py-2 flex items-center gap-2 text-xs font-bold border-b ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-500'}`}>
                     <Repeat2 size={12} />
+                    {post.repostContext.reposterImage && (
+                        <img src={post.repostContext.reposterImage} alt="" className="w-4 h-4 rounded-full object-cover" />
+                    )}
                     <span>{post.repostContext.reposterName ? `${post.repostContext.reposterName} reposted` : 'You reposted'}</span>
                 </div>
             )}

@@ -408,6 +408,7 @@ async function processPosts(posts: any[], user: any) {
             repostContext = {
                 repostedBy: post.reposted_by,
                 reposterName: reposterProfile.name,
+                reposterImage: reposterProfile.profileImage,
                 createdAt: post.created_at // Repost time
             };
         }
