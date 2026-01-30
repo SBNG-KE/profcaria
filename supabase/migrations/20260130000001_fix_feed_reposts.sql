@@ -71,7 +71,7 @@ BEGIN
         FROM professional.posts p
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM professional.post_likes GROUP BY post_id) l ON l.post_id = p.id
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM professional.post_comments GROUP BY post_id) c ON c.post_id = p.id
-        WHERE p.created_at > NOW() - INTERVAL '30 days'
+        -- WHERE p.created_at > NOW() - INTERVAL '30 days'
         
         UNION ALL
         
@@ -92,7 +92,7 @@ BEGIN
         FROM employer.posts p
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM employer.post_likes GROUP BY post_id) l ON l.post_id = p.id
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM employer.post_comments GROUP BY post_id) c ON c.post_id = p.id
-        WHERE p.created_at > NOW() - INTERVAL '30 days'
+        -- WHERE p.created_at > NOW() - INTERVAL '30 days'
 
         UNION ALL
 
@@ -114,7 +114,7 @@ BEGIN
         JOIN professional.posts orig ON rp.post_id = orig.id
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM professional.post_likes GROUP BY post_id) l ON l.post_id = orig.id
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM professional.post_comments GROUP BY post_id) c ON c.post_id = orig.id
-        WHERE rp.created_at > NOW() - INTERVAL '30 days'
+        -- WHERE rp.created_at > NOW() - INTERVAL '30 days'
 
         UNION ALL
 
@@ -150,7 +150,7 @@ BEGIN
         JOIN employer.posts orig ON rp.original_post_id = orig.id
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM employer.post_likes GROUP BY post_id) l ON l.post_id = orig.id
         LEFT JOIN (SELECT post_id, COUNT(*) as count FROM employer.post_comments GROUP BY post_id) c ON c.post_id = orig.id
-        WHERE rp.created_at > NOW() - INTERVAL '30 days'
+        -- WHERE rp.created_at > NOW() - INTERVAL '30 days'
     )
     SELECT 
         ap.id,
