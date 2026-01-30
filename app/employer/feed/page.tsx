@@ -294,29 +294,54 @@ function EmployerFeedContent() {
     const handleShare = async (postId: string) => {
         const url = `${window.location.origin}/employer/feed?post=${postId}`;
 
-        if (navigator.share) {
+        if (typeof navigator !== 'undefined' && navigator.share) {
             try {
                 await navigator.share({ title: 'Check out this post', url });
+                return;
             } catch (err: any) {
-                if (err.name !== 'AbortError') console.error('Share failed:', err);
+                if (err.name === 'AbortError') return;
+                console.error('Share failed, trying fallback:', err);
             }
-            return;
         }
 
         try {
-            const res = await fetch(`/api/shared/posts/${postId}/share`);
-            if (res.ok) {
-                const { link } = await res.json();
-                await navigator.clipboard.writeText(link);
-                alert('Short link copied to clipboard!');
-            } else {
-                await navigator.clipboard.writeText(url);
-                alert('Link copied to clipboard!');
-            }
-        } catch (err) {
-            console.error(err);
+            // Simplified fallback
             await navigator.clipboard.writeText(url);
             alert('Link copied to clipboard!');
+        } catch (err) {
+            console.error(err);
+            prompt('Copy this link:', url);
+        }
+    };
+
+    const handleSave = async (postId: string, authorType: string) => {
+        const targetPost = viewMode === 'single' ? singlePost : posts.find(p => p.id === postId);
+        if (!targetPost) return;
+
+        const newStatus = !targetPost.isSaved;
+
+        // Optimistic Update
+        if (viewMode === 'single' && singlePost) {
+            setSinglePost({ ...singlePost, isSaved: newStatus });
+        } else {
+            setPosts(prev => prev.map(p => p.id === postId ? { ...p, isSaved: newStatus } : p));
+        }
+
+        try {
+            const res = await fetch(`/api/professional/posts/${postId}/save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: authorType })
+            });
+            if (!res.ok) throw new Error();
+        } catch (err) {
+            console.error(err);
+            // Revert
+            if (viewMode === 'single' && singlePost) {
+                setSinglePost({ ...singlePost, isSaved: !newStatus });
+            } else {
+                setPosts(prev => prev.map(p => p.id === postId ? { ...p, isSaved: !newStatus } : p));
+            }
         }
     };
 
@@ -418,6 +443,7 @@ function EmployerFeedContent() {
                             onEdit={handleStartEdit}
                             onCommentAdded={() => fetchSinglePost(singlePost.id)}
                             onFollow={() => handleFollow(singlePost.author.id)}
+                            onSave={() => handleSave(singlePost.id, singlePost.author.type)}
                         />
                     ) : (
                         <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
@@ -441,6 +467,7 @@ function EmployerFeedContent() {
                         onEdit={handleStartEdit}
                         onCommentAdded={fetchPosts}
                         onFollow={() => handleFollow(post.author.id)}
+                        onSave={() => handleSave(post.id, post.author.type)}
                     />
                 ))}
             </div>

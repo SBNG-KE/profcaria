@@ -384,7 +384,7 @@ export default function ProfessionalHome() {
 
   // Posts State
   const [isPostsPanelOpen, setIsPostsPanelOpen] = useState(false);
-  const [activePostsTab, setActivePostsTab] = useState<'posts' | 'reposts'>('posts');
+  const [activePostsTab, setActivePostsTab] = useState<'posts' | 'reposts' | 'saved'>('posts');
   const [profilePosts, setProfilePosts] = useState<any[]>([]);
   const [isProfilePostsLoading, setIsProfilePostsLoading] = useState(false);
 
@@ -616,11 +616,33 @@ export default function ProfessionalHome() {
     } catch (e) { console.error(e); }
   };
 
+  const handleSave = async (postId: string, authorType: string) => {
+    // Optimistic Update
+    setProfilePosts(prev => prev.map(p => p.id === postId ? { ...p, isSaved: !p.isSaved } : p));
+
+    try {
+      const res = await fetch(`/api/professional/posts/${postId}/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: authorType })
+      });
+      if (!res.ok) throw new Error();
+    } catch (err) {
+      console.error(err);
+      // Revert
+      setProfilePosts(prev => prev.map(p => p.id === postId ? { ...p, isSaved: !p.isSaved } : p));
+    }
+  };
+
 
   const fetchProfilePosts = async () => {
     setIsProfilePostsLoading(true);
     try {
-      const res = await fetch(`/api/professional/profile/posts?tab=${activePostsTab}`);
+      let url = `/api/professional/profile/posts?tab=${activePostsTab}`;
+      if (activePostsTab === 'saved') {
+        url = `/api/professional/posts/saved`;
+      }
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setProfilePosts(data.posts || []);
@@ -2356,6 +2378,12 @@ export default function ProfessionalHome() {
             >
               Reposts
             </button>
+            <button
+              onClick={() => setActivePostsTab('saved')}
+              className={`pb-2 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${activePostsTab === 'saved' ? (isDark ? 'text-white border-white' : 'text-black border-black') : (isDark ? 'text-neutral-500 border-transparent hover:text-neutral-300' : 'text-neutral-400 border-transparent hover:text-neutral-600')}`}
+            >
+              Saved
+            </button>
           </div>
 
           {isProfilePostsLoading ? (
@@ -2377,7 +2405,9 @@ export default function ProfessionalHome() {
                   onReport={handleReport}
                   onDelete={handleDeletePost}
                   onEdit={() => { }} // or handleStartEdit if implemented
+                  onEdit={() => { }} // or handleStartEdit if implemented
                   onCommentAdded={fetchProfilePosts}
+                  onSave={() => handleSave(post.id, post.author.type)}
                 />
               ))}
             </div>

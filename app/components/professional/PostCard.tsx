@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp
+    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark
 } from 'lucide-react';
 import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
@@ -95,6 +95,7 @@ interface PostCardProps {
     onLike?: () => void;
     onRepost?: () => void;
     onShare?: () => void;
+    onSave?: () => void;
     onFollow?: () => void;
     onReport?: (postId: string) => void;
     onDelete?: (postId: string) => void; // For original posts
@@ -107,7 +108,7 @@ interface PostCardProps {
 }
 
 
-const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFollow, onReport, onDelete, onDeleteRepost, onEdit, onCommentAdded, onHashtagClick, forceVertical = false }: PostCardProps) => {
+const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSave, onFollow, onReport, onDelete, onDeleteRepost, onEdit, onCommentAdded, onHashtagClick, forceVertical = false }: PostCardProps) => {
     const isProfessional = post.author.type === 'professional';
     const hasMedia = post.media && post.media.length > 0;
     const isOwnPost = post.author.id === currentUserId;
@@ -332,6 +333,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onFo
                         <button onClick={() => onLike?.()} disabled={!onLike} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isLiked ? 'text-red-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onLike ? 'opacity-50 cursor-default' : ''}`}><Heart size={16} fill={post.isLiked ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Like</span></button>
                         <button onClick={toggleComments} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${showComments ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onLike ? 'opacity-50 cursor-default' : ''}`}><MessageCircle size={16} fill={showComments ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Comment</span></button>
                         {!isOwnPost && <button onClick={() => onRepost?.()} disabled={!onRepost} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isReposted ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onRepost ? 'opacity-50 cursor-default' : ''}`}><Repeat2 size={16} /><span className="font-medium hidden xs:inline">{post.isReposted ? 'Reposted' : 'Repost'}</span></button>}
+                        <button onClick={() => onSave?.()} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isSaved ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Bookmark size={16} fill={post.isSaved ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">{post.isSaved ? 'Saved' : 'Save'}</span></button>
                         <button onClick={() => onShare?.()} disabled={!onShare} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onShare ? 'opacity-50 cursor-default' : ''}`}><Share2 size={16} /><span className="font-medium hidden xs:inline">Share</span></button>
                     </div>
                 </div>

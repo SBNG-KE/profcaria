@@ -363,6 +363,15 @@ async function processPosts(posts: any[], user: any) {
             }
         }
 
+        // Is Saved?
+        const { data: savedPost } = await supabaseAdmin
+            .from('saved_posts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq(postSchema === 'professional' ? 'professional_post_id' : 'employer_post_id', post.id)
+            .single();
+
+
         // Enrich Author Data with dynamic 'isFollowing'
         authorData = { ...authorData, isFollowing };
 
@@ -379,6 +388,7 @@ async function processPosts(posts: any[], user: any) {
             commentsCount: counts.commentsCount,
             repostsCount: counts.repostsCount,
             isLiked: !!userLike,
+            isSaved: !!savedPost,
             isReposted: isReposted,
             repostContext: post.repostContext || null,
             author: authorData
