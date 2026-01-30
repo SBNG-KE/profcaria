@@ -204,7 +204,7 @@ export default function HangingAuthCard({
     const handleRedirect = (redirect: string | undefined | null) => {
         if (!redirect) {
             // Default redirect
-            router.push(activeTab === 'professional' ? '/professional/feed' : '/employer/home');
+            router.push(activeTab === 'professional' ? '/professional/feed' : '/employer/feed');
             onClose();
             return;
         }

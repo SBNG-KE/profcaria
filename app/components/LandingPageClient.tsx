@@ -99,7 +99,7 @@ export default function LandingPageClient() {
                     if (data.schema === 'professional') {
                         router.push('/professional/feed');
                     } else if (data.schema === 'employer') {
-                        router.push('/employer/home');
+                        router.push('/employer/feed');
                     }
                 }
             } catch (e) {
