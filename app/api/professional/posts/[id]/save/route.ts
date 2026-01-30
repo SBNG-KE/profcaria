@@ -12,15 +12,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // --- STALE SESSION CHECK ---
-        // Verify if user still exists in Auth (handles "Ghost Session" issue)
-        const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(user.id);
-        if (authError || !authUser.user) {
-            console.error('User not found in Auth, forcing logout:', user.id);
-            const response = NextResponse.json({ error: 'Session invalid. Please login again.' }, { status: 401 });
-            response.cookies.delete('profcaria_session');
-            return response;
-        }
         // ---------------------------
 
         const { id: postId } = await params;
