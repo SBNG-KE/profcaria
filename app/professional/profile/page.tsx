@@ -2405,7 +2405,7 @@ export default function ProfessionalHome() {
                   onReport={handleReport}
                   onDelete={handleDeletePost}
                   onEdit={() => { }} // or handleStartEdit if implemented
-                  onEdit={() => { }} // or handleStartEdit if implemented
+
                   onCommentAdded={fetchProfilePosts}
                   onSave={() => handleSave(post.id, post.author.type)}
                 />
