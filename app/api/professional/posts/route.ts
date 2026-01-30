@@ -365,6 +365,7 @@ async function processPosts(posts: any[], user: any) {
 
         // Is Saved?
         const { data: savedPost } = await supabaseAdmin
+            .schema('public')
             .from('saved_posts')
             .select('id')
             .eq('user_id', user.id)
@@ -375,6 +376,18 @@ async function processPosts(posts: any[], user: any) {
         // Enrich Author Data with dynamic 'isFollowing'
         authorData = { ...authorData, isFollowing };
 
+        // Construct Repost Context if applicable
+        let repostContext = post.repostContext || null;
+        if (post.is_repost && post.reposted_by) {
+            // We need to fetch the reposter's name?
+            // Only if we want to show "Reposted by Steve".
+            // For now, minimal context.
+            repostContext = {
+                repostedBy: post.reposted_by,
+                createdAt: post.created_at // Repost time
+            };
+        }
+
         return {
             id: post.id,
             content: post.content,
@@ -383,14 +396,14 @@ async function processPosts(posts: any[], user: any) {
                 url
             })),
             linkPreview: post.link_preview,
-            timestamp: formatTimestamp(post.repostCreatedAt || post.created_at),
+            timestamp: formatTimestamp(post.created_at), // This is already the repost time because of the SQL Union
             likesCount: counts.likesCount,
             commentsCount: counts.commentsCount,
             repostsCount: counts.repostsCount,
             isLiked: !!userLike,
             isSaved: !!savedPost,
             isReposted: isReposted,
-            repostContext: post.repostContext || null,
+            repostContext: repostContext,
             author: authorData
         };
     }));
