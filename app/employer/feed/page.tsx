@@ -455,7 +455,7 @@ function EmployerFeedContent() {
                     <div className={`p-8 text-center rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}><p className={isDark ? 'text-neutral-400' : 'text-neutral-500'}>No posts yet</p></div>
                 ) : posts.map((post) => (
                     <PostCard
-                        key={post.id}
+                        key={post.repostId || post.id}
                         post={post}
                         isDark={isDark}
                         currentUserId={currentUserId}

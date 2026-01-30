@@ -670,7 +670,7 @@ function FeedContent() {
                 ) : (
                     posts.map((post) => (
                         <PostCard
-                            key={post.id}
+                            key={post.repostId || post.id}
                             post={post}
                             isDark={isDark}
                             currentUserId={currentUserId}

@@ -394,19 +394,27 @@ async function processPosts(posts: any[], user: any) {
         authorData = { ...authorData, isFollowing };
 
         // Construct Repost Context if applicable
+        // Construct Repost Context if applicable
         let repostContext = post.repostContext || null;
         if (post.is_repost && post.reposted_by) {
-            // We need to fetch the reposter's name?
-            // Only if we want to show "Reposted by Steve".
-            // For now, minimal context.
+            let reposterProfile = await getCachedAuthorProfile(post.reposted_by, 'professional');
+            if (reposterProfile.name === 'User') {
+                const empProfile = await getCachedAuthorProfile(post.reposted_by, 'employer');
+                if (empProfile.name !== 'Company') {
+                    reposterProfile = empProfile;
+                }
+            }
+
             repostContext = {
                 repostedBy: post.reposted_by,
+                reposterName: reposterProfile.name,
                 createdAt: post.created_at // Repost time
             };
         }
 
         return {
             id: post.id,
+            repostId: post.repost_id || post.repostId,
             content: post.content,
             media: (post.media_urls || []).map((url: string) => ({
                 type: url.match(/\.(mp4|webm|mov)$/i) ? 'video' : 'image',
