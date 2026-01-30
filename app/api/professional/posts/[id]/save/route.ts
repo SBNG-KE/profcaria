@@ -35,26 +35,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             return NextResponse.json({ error: 'Post not found or unavailable' }, { status: 404 });
         }
 
-        // Check if already saved
+        // Check if already saved (Handle duplicates safely)
         const { data: existing } = await supabaseAdmin
             .schema('public')
             .from('saved_posts')
             .select('id')
             .eq('user_id', user.id)
             .eq(postColumn, postId)
-            .eq('user_id', user.id)
-            .eq(postColumn, postId)
-            .limit(1);
+            .maybeSingle();
 
-        const existingRecord = existing && existing.length > 0 ? existing[0] : null;
-
-        if (existingRecord) {
+        if (existing) {
             // Unsave
             await supabaseAdmin
                 .schema('public')
                 .from('saved_posts')
                 .delete()
-                .eq('id', existingRecord.id);
+                .eq('id', existing.id);
 
             return NextResponse.json({ saved: false });
         } else {
@@ -82,7 +78,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     try {
         const user = await getAuthenticatedUser();
         if (!user) {
-            return NextResponse.json({ saved: false }); // Or 401, but UI might prefer just false
+            return NextResponse.json({ saved: false });
         }
 
         const { id: postId } = await params;
@@ -96,11 +92,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         const postColumn = type === 'professional' ? 'professional_post_id' : 'employer_post_id';
 
         const { data } = await supabaseAdmin
-            .from('saved_posts')
+            .from('saved_posts') // Implicitly public
             .select('id')
             .eq('user_id', user.id)
             .eq(postColumn, postId)
-            .single();
+            .maybeSingle();
 
         return NextResponse.json({ saved: !!data });
 

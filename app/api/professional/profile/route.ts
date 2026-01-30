@@ -2,10 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
-import { decryptData } from '@/lib/security';
+import { decryptData, encryptData } from '@/lib/security';
 
 // Force Node.js runtime
-// Force Node.js runtime and disable caching
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -22,17 +21,54 @@ export async function GET(request: NextRequest) {
             .from('users')
             .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_location, enc_city')
             .eq('id', user.id)
-            .single();
+            .maybeSingle();
 
-        if (error) {
-            console.error('Error fetching professional profile:', error);
-            return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+        // --- SELF-HEALING: Create Profile if Missing ---
+        if (!profUser) {
+            console.warn(`Profile missing for user ${user.id}. Creating default profile.`);
+
+            // Should get name from Auth Metadata ideally, but auth-helper might not have it.
+            // Using placeholder or email parts if available.
+            const name = user.email ? user.email.split('@')[0] : 'User';
+
+            const newProfile = {
+                id: user.id,
+                email: user.email,
+                enc_first_name: encryptData(name),
+                enc_last_name: encryptData(''),
+                enc_current_role: encryptData('Member'),
+                onboarding_completed: false
+            };
+
+            const { error: insertError } = await supabaseAdmin
+                .schema('professional')
+                .from('users')
+                .insert(newProfile);
+
+            if (insertError) {
+                console.error('Failed to auto-create profile:', insertError);
+                return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+            }
+
+            // Return the Default Profile
+            return NextResponse.json({
+                profile: {
+                    id: user.id,
+                    firstName: name,
+                    lastName: '',
+                    name: name,
+                    role: 'Member',
+                    profileImage: '/default-avatar.png',
+                    location: ''
+                }
+            });
         }
 
         const firstName = decryptData(profUser.enc_first_name) || '';
         const lastName = decryptData(profUser.enc_last_name) || '';
         const role = decryptData(profUser.enc_current_role) || '';
         const profileImage = decryptData(profUser.enc_profile_image_url) || '/default-avatar.png';
+
         // Fetch latest location from Activity Logs (Dynamic Location)
         const { data: latestLog } = await supabaseAdmin
             .schema('professional')
@@ -41,7 +77,7 @@ export async function GET(request: NextRequest) {
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
         let activityLocation = '';
         if (latestLog && latestLog.enc_location_details) {
