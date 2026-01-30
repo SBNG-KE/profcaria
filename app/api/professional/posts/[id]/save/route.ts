@@ -42,15 +42,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
             .select('id')
             .eq('user_id', user.id)
             .eq(postColumn, postId)
-            .single();
+            .eq('user_id', user.id)
+            .eq(postColumn, postId)
+            .limit(1);
 
-        if (existing) {
+        const existingRecord = existing && existing.length > 0 ? existing[0] : null;
+
+        if (existingRecord) {
             // Unsave
             await supabaseAdmin
                 .schema('public')
                 .from('saved_posts')
                 .delete()
-                .eq('id', existing.id);
+                .eq('id', existingRecord.id);
 
             return NextResponse.json({ saved: false });
         } else {
