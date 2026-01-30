@@ -28,11 +28,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         const { type } = body; // 'professional' or 'employer'
 
         if (!type || !['professional', 'employer'].includes(type) || !postId) {
-            console.error('Save Post Error: Invalid Params', { type, postId });
             return NextResponse.json({ error: 'Invalid request parameters' }, { status: 400 });
         }
-
-        console.log('Toggling save for:', { userId: user.id, postId, type });
 
         const postColumn = type === 'professional' ? 'professional_post_id' : 'employer_post_id';
         const targetSchema = type === 'professional' ? 'professional' : 'employer';
