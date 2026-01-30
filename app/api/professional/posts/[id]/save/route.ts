@@ -21,9 +21,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         }
 
         const postColumn = type === 'professional' ? 'professional_post_id' : 'employer_post_id';
+        const targetSchema = type === 'professional' ? 'professional' : 'employer';
+
+        // 1. Verify Post Exists (Prevent FK Violation 500s)
+        const { data: targetPost } = await supabaseAdmin
+            .schema(targetSchema)
+            .from('posts')
+            .select('id')
+            .eq('id', postId)
+            .single();
+
+        if (!targetPost) {
+            return NextResponse.json({ error: 'Post not found or unavailable' }, { status: 404 });
+        }
 
         // Check if already saved
         const { data: existing } = await supabaseAdmin
+            .schema('public')
             .from('saved_posts')
             .select('id')
             .eq('user_id', user.id)
@@ -33,6 +47,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         if (existing) {
             // Unsave
             await supabaseAdmin
+                .schema('public')
                 .from('saved_posts')
                 .delete()
                 .eq('id', existing.id);
@@ -41,6 +56,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         } else {
             // Save
             const { error } = await supabaseAdmin
+                .schema('public')
                 .from('saved_posts')
                 .insert({
                     user_id: user.id,
