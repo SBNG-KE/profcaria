@@ -111,7 +111,7 @@ interface PostCardProps {
 const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSave, onFollow, onReport, onDelete, onDeleteRepost, onEdit, onCommentAdded, onHashtagClick, forceVertical = false }: PostCardProps) => {
     const isProfessional = post.author.type === 'professional';
     const hasMedia = post.media && post.media.length > 0;
-    const isOwnPost = post.author.id === currentUserId;
+    const isOwnPost = post.isOwnPost !== undefined ? post.isOwnPost : post.author.id === currentUserId;
     const isRepostContext = !!post.repostContext; // Check if this is being viewed as a repost in Profile list
 
     const [showMenu, setShowMenu] = useState(false);

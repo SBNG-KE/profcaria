@@ -144,7 +144,7 @@ BEGIN
             COALESCE(l.count, 0) as likes,
             COALESCE(c.count, 0) as comments,
             TRUE as is_repost,
-            rp.company_id as reposted_by,
+            rp.user_id as reposted_by,
             rp.id as repost_id
         FROM employer.post_reposts rp
         JOIN employer.posts orig ON rp.original_post_id = orig.id

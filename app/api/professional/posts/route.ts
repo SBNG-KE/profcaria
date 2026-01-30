@@ -404,6 +404,7 @@ async function processPosts(posts: any[], user: any) {
             isSaved: !!savedPost,
             isReposted: isReposted,
             repostContext: repostContext,
+            isOwnPost: authorData.id === user.id,
             author: authorData
         };
     }));
