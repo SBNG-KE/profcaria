@@ -5,14 +5,14 @@ import { getAuthenticatedUser } from '@/lib/auth-helper';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const user = await getAuthenticatedUser();
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const postId = params.id;
+        const { id: postId } = await params;
         const body = await request.json();
         const { type } = body; // 'professional' or 'employer'
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     // Check if a specific post is saved by current user
     try {
         const user = await getAuthenticatedUser();
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             return NextResponse.json({ saved: false }); // Or 401, but UI might prefer just false
         }
 
-        const postId = params.id;
+        const { id: postId } = await params;
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type');
 
