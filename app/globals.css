@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================================
    PROFCARIA THEME SYSTEM
    True Black Dark Mode & Clean Light Mode
