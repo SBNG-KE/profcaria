@@ -92,8 +92,8 @@ export default function EmployerJobsPage() {
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 pb-32">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-neutral-800">
                 <div>
-                    <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Job Management</h1>
-                    <p className="text-neutral-400 mt-1 text-sm">Manage your active postings and review candidates.</p>
+                    <h1 className="text-3xl font-black text-black dark:text-white uppercase tracking-tighter">Job Management</h1>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-1 text-sm">Manage your active postings and review candidates.</p>
                 </div>
                 <div className="group relative">
                     <button
@@ -132,28 +132,28 @@ export default function EmployerJobsPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {paginatedJobs.map((job) => (
-                            <div key={job.id} className={`group relative bg-black border rounded-2xl overflow-hidden transition-all duration-300 ${job.isActive ? 'border-neutral-800 hover:border-neutral-600' : 'border-neutral-800 opacity-60 hover:opacity-100'}`}>
+                            <div key={job.id} className={`group relative bg-white dark:bg-black border rounded-2xl overflow-hidden transition-all duration-300 ${job.isActive ? 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600' : 'border-neutral-200 dark:border-neutral-800 opacity-60 hover:opacity-100'}`}>
                                 <div className="p-4 space-y-3">
                                     <div className="flex items-start justify-between gap-2">
-                                        <h2 className="text-lg font-black text-white uppercase tracking-tight leading-tight line-clamp-2 flex-1">{job.title}</h2>
-                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border shrink-0 ${job.isActive ? 'bg-neutral-900 text-white border-neutral-700' : 'bg-neutral-800 text-neutral-500 border-neutral-700'}`}>{job.isActive ? 'Active' : 'Closed'}</span>
+                                        <h2 className="text-lg font-black text-black dark:text-white uppercase tracking-tight leading-tight line-clamp-2 flex-1">{job.title}</h2>
+                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border shrink-0 ${job.isActive ? 'bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white border-neutral-200 dark:border-neutral-700' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border-neutral-200 dark:border-neutral-700'}`}>{job.isActive ? 'Active' : 'Closed'}</span>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold text-neutral-500 uppercase tracking-widest">
                                         <span className="flex items-center gap-1"><Clock size={10} /> {new Date(job.createdAt).toLocaleDateString()}</span>
                                         <span className="flex items-center gap-1 text-neutral-400"><Users size={10} /> {job.applicantCount || 0}</span>
-                                        {job.isActive && <span className="flex items-center gap-1 text-white"><Zap size={10} /> Live</span>}
+                                        {job.isActive && <span className="flex items-center gap-1 text-black dark:text-white"><Zap size={10} /> Live</span>}
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-800">
+                                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-100 dark:border-neutral-800">
                                         {job.isActive && (
-                                            <button onClick={async () => { try { const res = await fetch(`/api/employer/jobs/${job.id}/share`); const data = await res.json(); if (data.link) { navigator.clipboard.writeText(data.link); setCopiedId(job.id); setTimeout(() => setCopiedId(null), 2500); } } catch (e) { console.error(e); } }} className={`p-2 rounded-lg transition-all ${copiedId === job.id ? 'bg-neutral-700 text-white' : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white'}`} title="Copy Share Link"><Share2 size={14} /></button>
+                                            <button onClick={async () => { try { const res = await fetch(`/api/employer/jobs/${job.id}/share`); const data = await res.json(); if (data.link) { navigator.clipboard.writeText(data.link); setCopiedId(job.id); setTimeout(() => setCopiedId(null), 2500); } } catch (e) { console.error(e); } }} className={`p-2 rounded-lg transition-all ${copiedId === job.id ? 'bg-neutral-200 dark:bg-neutral-700 text-black dark:text-white' : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'}`} title="Copy Share Link"><Share2 size={14} /></button>
                                         )}
-                                        <button onClick={() => router.push(`/employer/jobs/create?id=${job.id}`)} className="p-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white rounded-lg transition-all" title="Edit"><Edit3 size={14} /></button>
-                                        <button onClick={() => router.push(`/employer/applications?jobId=${job.id}`)} className="flex-1 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"><Users size={12} /> Applicants</button>
+                                        <button onClick={() => router.push(`/employer/jobs/create?id=${job.id}`)} className="p-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white rounded-lg transition-all" title="Edit"><Edit3 size={14} /></button>
+                                        <button onClick={() => router.push(`/employer/applications?jobId=${job.id}`)} className="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black dark:text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"><Users size={12} /> Applicants</button>
                                         {limits && limits.limits.topMatches > 0 && (limits.limits.topMatches >= 9999 || (limits.usage?.topMatches || 0) < limits.limits.topMatches) && (
-                                            <button onClick={() => router.push(`/employer/jobs/${job.id}/matches`)} className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5"><Zap size={12} className="text-white" /> Matches</button>
+                                            <button onClick={() => router.push(`/employer/jobs/${job.id}/matches`)} className="px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-black dark:text-white text-[10px] font-black uppercase tracking-widest rounded-lg transition-all flex items-center gap-1.5"><Zap size={12} className="text-black dark:text-white" /> Matches</button>
                                         )}
-                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500' : 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:bg-neutral-700 hover:text-white'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
-                                        <button onClick={() => deleteJob(job.id)} title="Delete" className="p-2 bg-neutral-800 border border-neutral-700 text-neutral-400 rounded-lg hover:bg-neutral-700 hover:text-white transition-all"><Trash2 size={14} /></button>
+                                        <button onClick={() => toggleStatus(job.id, job.isActive)} className={`p-2 rounded-lg border transition-all ${job.isActive ? 'bg-emerald-600 border-emerald-500 text-white hover:bg-emerald-500' : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white'}`} title={job.isActive ? 'Close' : 'Publish'}><Power size={14} /></button>
+                                        <button onClick={() => deleteJob(job.id)} title="Delete" className="p-2 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 hover:text-black dark:hover:text-white transition-all"><Trash2 size={14} /></button>
                                     </div>
                                 </div>
                             </div>

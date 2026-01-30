@@ -289,7 +289,7 @@ function SettingsContent() {
                                     type="password"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all font-bold"
+                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -298,7 +298,7 @@ function SettingsContent() {
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all font-bold"
+                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
                                 />
                             </div>
                             <div className="space-y-2">
@@ -307,7 +307,7 @@ function SettingsContent() {
                                     type="password"
                                     value={confirmNewPassword}
                                     onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                    className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all font-bold"
+                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
                                 />
                             </div>
                         </div>
@@ -342,8 +342,8 @@ function SettingsContent() {
                                     </thead>
                                     <tbody className={`divide-y ${isDark ? 'divide-neutral-800' : 'divide-neutral-200'}`}>
                                         {activityLogs.map((log, i) => (
-                                            <tr key={i} className="hover:bg-neutral-800/30 transition-colors">
-                                                <td className="p-4 font-bold text-white">{log.action}</td>
+                                            <tr key={i} className={`transition-colors ${isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-50'}`}>
+                                                <td className={`p-4 font-bold ${isDark ? 'text-white' : 'text-black'}`}>{log.action}</td>
                                                 <td className="p-4">{log.location_details}</td>
                                                 <td className="p-4 font-mono text-xs">{log.ip_address}</td>
                                                 <td className="p-4">{new Date(log.created_at).toLocaleString()}</td>
@@ -361,9 +361,9 @@ function SettingsContent() {
                             {/* Mobile Cards */}
                             <div className="md:hidden divide-y divide-neutral-800">
                                 {activityLogs.map((log, i) => (
-                                    <div key={i} className="p-4 flex flex-col gap-2 bg-neutral-900/20">
+                                    <div key={i} className={`p-4 flex flex-col gap-2 ${isDark ? 'bg-neutral-900/20' : 'bg-white border-b border-neutral-100 last:border-0'}`}>
                                         <div className="flex justify-between items-start">
-                                            <span className="font-bold text-white">{log.action}</span>
+                                            <span className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>{log.action}</span>
                                             <span className="text-[10px] text-neutral-500">{new Date(log.created_at).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-xs text-neutral-400 flex items-center gap-2">

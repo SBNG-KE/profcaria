@@ -40,7 +40,7 @@ export async function GET(req: Request) {
         if (isProfessional) {
             selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number, enc_about, follower_count`;
         } else {
-            selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email, enc_about, enc_founded_year, follower_count`; // Add employer fields
+            selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email, enc_about, enc_founded_year, follower_count, industry`; // Add employer fields
         }
 
         const { data: user, error } = await supabaseAdmin
@@ -125,7 +125,8 @@ export async function GET(req: Request) {
                 email: decryptData(user.enc_work_email) || payload.email || '',
                 about: decryptData(user.enc_about) || '',
                 foundedYear: decryptData(user.enc_founded_year) || '',
-                followerCount: user.follower_count || 0
+                followerCount: user.follower_count || 0,
+                industry: user.industry || ''
             };
 
             // Fetch Latest Location from Employer Activity Logs

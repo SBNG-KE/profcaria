@@ -223,8 +223,8 @@ function CreateJobPageContent() {
         <div className="p-8 max-w-6xl mx-auto space-y-8 pb-32 font-sans">
             <header className="flex items-center justify-between border-b border-neutral-800 pb-8">
                 <div className="text-left">
-                    <h1 className="text-4xl font-black text-white uppercase tracking-tighter">{jobId ? 'Edit Job Post' : 'Create New Job'}</h1>
-                    <p className="text-neutral-400 mt-2">{jobId ? 'Update your job details and application form.' : 'Design your custom application form and set job details.'}</p>
+                    <h1 className="text-4xl font-black text-black dark:text-white uppercase tracking-tighter">{jobId ? 'Edit Job Post' : 'Create New Job'}</h1>
+                    <p className="text-neutral-500 dark:text-neutral-400 mt-2">{jobId ? 'Update your job details and application form.' : 'Design your custom application form and set job details.'}</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -237,7 +237,7 @@ function CreateJobPageContent() {
             </header>
 
             {/* MAIN DETAILS CARD */}
-            <div className="bg-black border border-neutral-800 p-8 rounded-[32px] space-y-6">
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 p-8 rounded-[32px] space-y-6">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                         <Briefcase size={14} /> Job Title
@@ -247,7 +247,7 @@ function CreateJobPageContent() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g. Senior Frontend Engineer"
-                        className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all font-bold text-lg"
+                        className="w-full bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl px-4 py-3 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:focus:ring-neutral-500/50 transition-all font-bold text-lg"
                     />
                 </div>
                 <div className="space-y-2">
@@ -257,9 +257,9 @@ function CreateJobPageContent() {
                     <div className="relative" ref={dropdownRef}>
                         <div
                             onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            className={`w-full bg-neutral-900/50 border ${isCategoryDropdownOpen ? 'border-neutral-500' : 'border-neutral-700/50'} rounded-xl px-4 py-3 text-white cursor-pointer transition-all flex items-center justify-between group hover:border-neutral-600`}
+                            className={`w-full bg-neutral-50 dark:bg-neutral-900/50 border ${isCategoryDropdownOpen ? 'border-neutral-400 dark:border-neutral-500' : 'border-neutral-200 dark:border-neutral-700/50'} rounded-xl px-4 py-3 text-black dark:text-white cursor-pointer transition-all flex items-center justify-between group hover:border-neutral-400 dark:hover:border-neutral-600`}
                         >
-                            <span className="font-bold text-sm text-neutral-400 select-none">
+                            <span className="font-bold text-sm text-neutral-500 dark:text-neutral-400 select-none">
                                 {roleCategories.length > 0 ? '+ Add another category...' : 'Select a category...'}
                             </span>
                             <ChevronDown size={16} className={`text-neutral-500 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
@@ -399,13 +399,13 @@ function CreateJobPageContent() {
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Describe the role, responsibilities, and requirements..."
-                        className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all min-h-[150px] text-sm leading-relaxed"
+                        className="w-full bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl px-4 py-3 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:focus:ring-neutral-500/50 transition-all min-h-[150px] text-sm leading-relaxed"
                     />
                 </div>
             </div>
 
             {/* MAX APPLICATIONS (NEW) */}
-            <div className="bg-black border border-neutral-800 p-8 rounded-[32px] space-y-6">
+            <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 p-8 rounded-[32px] space-y-6">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                         <Hash size={14} /> Max Applications (Optional)
@@ -417,7 +417,7 @@ function CreateJobPageContent() {
                         value={maxApplications}
                         onChange={(e) => setMaxApplications(e.target.value ? parseInt(e.target.value) : '')}
                         placeholder="e.g. 100"
-                        className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all font-bold text-lg"
+                        className="w-full bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl px-4 py-3 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:focus:ring-neutral-500/50 transition-all font-bold text-lg"
                     />
                 </div>
             </div>
@@ -425,7 +425,7 @@ function CreateJobPageContent() {
             {/* LOCATION & EMPLOYMENT GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Location Card */}
-                <div className="bg-black border border-neutral-800 p-8 rounded-[32px] space-y-6 flex flex-col h-full">
+                <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 p-8 rounded-[32px] space-y-6 flex flex-col h-full">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                             <MapPin size={14} /> Location Type
@@ -437,7 +437,7 @@ function CreateJobPageContent() {
                                     onClick={() => setLocationType(type)}
                                     className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all ${locationType === type
                                         ? 'bg-neutral-800 border-neutral-700 text-white'
-                                        : 'bg-neutral-900/50 border-neutral-700/50 text-neutral-400 hover:border-neutral-600'
+                                        : 'bg-neutral-100 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-700/50 text-neutral-500 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-600'
                                         }`}
                                 >
                                     <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${locationType === type ? 'border-white' : 'border-neutral-600'
@@ -459,7 +459,7 @@ function CreateJobPageContent() {
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             placeholder={locationType === 'remote' ? "e.g. Worldwide or New York (HQ)" : "e.g. London, UK"}
-                            className="w-full bg-neutral-900/50 border border-neutral-700/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all font-bold"
+                            className="w-full bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl px-4 py-3 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:focus:ring-neutral-500/50 transition-all font-bold"
                         />
                     </div>
 
@@ -527,7 +527,7 @@ function CreateJobPageContent() {
                 </div>
 
                 {/* Employment Type Card */}
-                <div className="bg-black border border-neutral-800 p-8 rounded-[32px] space-y-6 h-full">
+                <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 p-8 rounded-[32px] space-y-6 h-full">
                     <div className="space-y-2 h-full flex flex-col">
                         <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                             <Clock size={14} /> Employment Type
@@ -562,7 +562,7 @@ function CreateJobPageContent() {
                 {/* LEFT: FORM PREVIEW */}
                 <div className="lg:col-span-3 space-y-4">
                     <div className="flex items-center justify-between px-4">
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight flex items-center gap-3">
+                        <h2 className="text-xl font-black text-black dark:text-white uppercase tracking-tight flex items-center gap-3">
                             <Layout size={24} className="text-neutral-400" />
                             Application Form
                         </h2>
@@ -579,7 +579,7 @@ function CreateJobPageContent() {
                     ) : (
                         <div className="space-y-6">
                             {fields.map((field, index) => (
-                                <div key={field.id} className="group relative bg-black border border-neutral-800 p-6 rounded-[32px] transition-all hover:border-neutral-600 animate-in slide-in-from-right-4 duration-300">
+                                <div key={field.id} className="group relative bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 p-6 rounded-[32px] transition-all hover:border-neutral-400 dark:hover:border-neutral-600 animate-in slide-in-from-right-4 duration-300">
                                     <div className="flex items-start justify-between gap-6">
                                         <div className="p-2 text-neutral-700 cursor-grab active:cursor-grabbing"><GripVertical size={20} /></div>
 
@@ -590,9 +590,9 @@ function CreateJobPageContent() {
                                                     value={field.label}
                                                     onChange={(e) => updateField(field.id, { label: e.target.value })}
                                                     placeholder="Enter your question here..."
-                                                    className="flex-1 bg-transparent border-b border-neutral-800 text-lg font-bold text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-500 transition-colors"
+                                                    className="flex-1 bg-transparent border-b border-neutral-200 dark:border-neutral-800 text-lg font-bold text-black dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-700 focus:outline-none focus:border-neutral-500 transition-colors"
                                                 />
-                                                <span className="px-3 py-1 bg-neutral-900 text-[10px] font-black text-neutral-500 uppercase tracking-widest rounded-lg border border-neutral-800">{field.type}</span>
+                                                <span className="px-3 py-1 bg-neutral-100 dark:bg-neutral-900 text-[10px] font-black text-neutral-500 uppercase tracking-widest rounded-lg border border-neutral-200 dark:border-neutral-800">{field.type}</span>
                                             </div>
 
                                             {(field.type === 'radio' || field.type === 'checkbox') && field.options && (
@@ -645,23 +645,23 @@ function CreateJobPageContent() {
 
                 {/* RIGHT: TOOL PICKER (STICKY) */}
                 <div className="lg:col-span-1">
-                    <div className="sticky top-8 bg-neutral-800 border border-neutral-700 p-6 rounded-[32px] space-y-4">
-                        <h3 className="text-sm font-black text-white uppercase tracking-widest">Add Field</h3>
+                    <div className="sticky top-8 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-6 rounded-[32px] space-y-4">
+                        <h3 className="text-sm font-black text-black dark:text-white uppercase tracking-widest">Add Field</h3>
                         <div className="grid grid-cols-1 gap-3">
-                            <button onClick={() => addField('text')} className="flex items-center gap-3 p-4 bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-700/50 rounded-2xl text-neutral-300 text-xs font-bold transition-all group">
-                                <span className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-all"><Type size={16} /></span>
+                            <button onClick={() => addField('text')} className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700/50 rounded-2xl text-black dark:text-neutral-300 text-xs font-bold transition-all group">
+                                <span className="p-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg group-hover:bg-neutral-300 dark:group-hover:bg-neutral-700 transition-all"><Type size={16} /></span>
                                 Short Text
                             </button>
-                            <button onClick={() => addField('number')} className="flex items-center gap-3 p-4 bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-700/50 rounded-2xl text-neutral-300 text-xs font-bold transition-all group">
-                                <span className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-all"><Hash size={16} /></span>
+                            <button onClick={() => addField('number')} className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700/50 rounded-2xl text-black dark:text-neutral-300 text-xs font-bold transition-all group">
+                                <span className="p-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg group-hover:bg-neutral-300 dark:group-hover:bg-neutral-700 transition-all"><Hash size={16} /></span>
                                 Number
                             </button>
-                            <button onClick={() => addField('radio')} className="flex items-center gap-3 p-4 bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-700/50 rounded-2xl text-neutral-300 text-xs font-bold transition-all group">
-                                <span className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-all"><List size={16} /></span>
+                            <button onClick={() => addField('radio')} className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700/50 rounded-2xl text-black dark:text-neutral-300 text-xs font-bold transition-all group">
+                                <span className="p-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg group-hover:bg-neutral-300 dark:group-hover:bg-neutral-700 transition-all"><List size={16} /></span>
                                 Choices
                             </button>
-                            <button onClick={() => addField('checkbox')} className="flex items-center gap-3 p-4 bg-neutral-900/50 hover:bg-neutral-800 border border-neutral-700/50 rounded-2xl text-neutral-300 text-xs font-bold transition-all group">
-                                <span className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700 transition-all"><CheckSquare size={16} /></span>
+                            <button onClick={() => addField('checkbox')} className="flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-900/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700/50 rounded-2xl text-black dark:text-neutral-300 text-xs font-bold transition-all group">
+                                <span className="p-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg group-hover:bg-neutral-300 dark:group-hover:bg-neutral-700 transition-all"><CheckSquare size={16} /></span>
                                 Checkbox
                             </button>
                         </div>

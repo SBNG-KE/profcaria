@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Users, Search, User, X, ExternalLink, Shield, Briefcase, Clock,
-    CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2, ChevronLeft, ChevronRight
+    CheckCircle2, XCircle, AlertTriangle, Building2, Cable, FileText, Share2, ChevronLeft, ChevronRight, Mail, Calendar, UserCircle, MoreHorizontal, MessageSquare
 } from 'lucide-react';
 
 import EmployerProfileViewModal from '../components/EmployerProfileViewModal';
@@ -93,9 +93,9 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
     };
 
     return (
-        <div className="bg-neutral-900/50 border border-white/5 rounded-[32px] p-6 hover:border-neutral-600 transition-all group">
+        <div className="bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-white/5 rounded-[32px] p-6 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all group">
             <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-white/5 flex items-center justify-center text-neutral-500 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-100 dark:border-white/10 flex items-center justify-center text-neutral-400 dark:text-neutral-600 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                     {connection.professional.profileImageUrl ? (
                         <img src={connection.professional.profileImageUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -104,10 +104,10 @@ const ConnectionCard = ({ connection, onViewProfile, onTerminate, onDisapprove, 
                 </div>
 
                 <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold text-white group-hover:text-neutral-200 transition-colors uppercase tracking-tight">
+                    <h3 className="text-lg font-bold text-black dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase tracking-tight">
                         {connection.professional.name}
                     </h3>
-                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest mb-2">
+                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400 font-bold uppercase tracking-widest mb-2">
                         {connection.professional.role || 'Professional'}
                     </p>
                     <div className="flex items-center gap-2 text-neutral-400 text-xs font-bold">
@@ -394,8 +394,8 @@ export default function ConnectionsPage() {
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
                         <div className="flex items-center gap-2 text-neutral-400 mb-2"><Cable size={16} /><span className="text-[10px] font-black uppercase tracking-[0.2em]">Employee Network</span></div>
-                        <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Connections</h1>
-                        <p className="text-neutral-500 mt-2 text-sm font-medium">Manage your connected employees and contracts.</p>
+                        <h1 className="text-3xl font-black text-black dark:text-white uppercase tracking-tighter">My Connections</h1>
+                        <p className="text-neutral-500 dark:text-neutral-400 mt-1 text-sm">Manage your professional network and candidates.</p>
                     </div>
                 </header>
 
@@ -451,9 +451,9 @@ export default function ConnectionsPage() {
                 {/* Connections Grid with Contract Button */}
                 {/* ... Search ... */}
                 <div className="flex flex-wrap gap-4 items-center">
-                    <div className="relative flex-1 min-w-[300px]">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
-                        <input type="text" placeholder="Search connections..." className="w-full bg-neutral-900/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-neutral-200 focus:outline-none focus:ring-2 focus:ring-neutral-500/50 transition-all" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <div className="relative group flex-1 min-w-[300px]">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 transition-colors group-focus-within:text-black dark:group-focus-within:text-white" size={18} />
+                        <input type="text" placeholder="Search connections..." className="w-full bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 rounded-xl py-3 pl-12 pr-4 text-black dark:text-white placeholder:text-neutral-500 dark:placeholder:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:focus:ring-neutral-800 transition-all font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
                 </div>
 
@@ -502,6 +502,25 @@ export default function ConnectionsPage() {
                         <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
                             You are terminating <b>{selectedConnection.professional.name}</b>. This action is irreversible.
                         </p>
+
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-black/40 border border-neutral-100 dark:border-white/5 space-y-1">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                                    <Mail size={12} /> Email
+                                </div>
+                                <p className="text-xs font-bold text-black dark:text-neutral-200 truncate" title={selectedConnection.professional.email || 'Not available'}>
+                                    {selectedConnection.professional.email || 'Not available'}
+                                </p>
+                            </div>
+                            <div className="p-3 rounded-xl bg-neutral-50 dark:bg-black/40 border border-neutral-100 dark:border-white/5 space-y-1">
+                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                                    <Calendar size={12} /> Connected
+                                </div>
+                                <p className="text-xs font-bold text-black dark:text-neutral-200">
+                                    {new Date(selectedConnection.connectedAt).toLocaleDateString()}
+                                </p>
+                            </div>
+                        </div>
 
                         <div className="space-y-4">
                             <div>

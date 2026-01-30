@@ -154,7 +154,7 @@ export default function EmployerProfileViewModal({
                         </div>
                         <div>
                             {/* FIXED: Name on one line (or auto-wrap), no <br> */}
-                            <h1 className="text-2xl font-black uppercase tracking-tighter leading-tight break-words">{data.profile.firstName} {data.profile.lastName}</h1>
+                            <h1 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter leading-tight break-words">{data.profile.firstName} {data.profile.lastName}</h1>
                             <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mt-2">{data.profile.role}</p>
                         </div>
                     </div>
@@ -450,9 +450,9 @@ export default function EmployerProfileViewModal({
                                         <button
                                             key={doc.type}
                                             onClick={() => setActiveDocumentType(doc.type)}
-                                            className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
+                                            className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
                                         >
-                                            <FileText size={40} className={`transition-colors ${activeDocumentType === doc.type ? 'text-black' : 'text-neutral-500 group-hover:text-white'}`} />
+                                            <FileText size={40} className={`transition-colors ${activeDocumentType === doc.type ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
                                             <div>
                                                 <h3 className={`text-xl font-black uppercase tracking-tighter ${activeDocumentType === doc.type ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.type}</h3>
                                                 <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60 ${activeDocumentType === doc.type ? 'text-black' : ''}`}>Last Updated {new Date(doc.lastUpdated).toLocaleDateString()}</p>
