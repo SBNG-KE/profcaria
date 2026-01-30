@@ -31,23 +31,23 @@ DECLARE
     v_following_companies UUID[];
 BEGIN
     -- 1. Get User's Following Graph
-    SELECT ARRAY_AGG(following_id) INTO v_following_users 
-    FROM professional.user_follows WHERE follower_id = p_user_id;
+    SELECT ARRAY_AGG(uf.following_id) INTO v_following_users 
+    FROM professional.user_follows uf WHERE uf.follower_id = p_user_id;
     
-    SELECT ARRAY_AGG(company_id) INTO v_following_companies 
-    FROM professional.company_follows WHERE user_id = p_user_id;
+    SELECT ARRAY_AGG(cf.company_id) INTO v_following_companies 
+    FROM professional.company_follows cf WHERE cf.user_id = p_user_id;
 
     -- 2. Training Data (Search + Prefs)
-    SELECT array_to_string(array_agg(query), ' | ') INTO v_search_keywords
+    SELECT array_to_string(array_agg(sub.query), ' | ') INTO v_search_keywords
     FROM (
-        SELECT query FROM professional.search_logs 
-        WHERE user_id = p_user_id 
-        ORDER BY created_at DESC 
+        SELECT sl.query FROM professional.search_logs sl
+        WHERE sl.user_id = p_user_id 
+        ORDER BY sl.created_at DESC 
         LIMIT 10
     ) sub;
 
-    SELECT array_to_string(ARRAY(SELECT jsonb_array_elements_text(target_roles)), ' | ') INTO v_pref_keywords
-    FROM professional.preferences WHERE user_id = p_user_id LIMIT 1;
+    SELECT array_to_string(pref.target_roles, ' | ') INTO v_pref_keywords
+    FROM professional.preferences pref WHERE pref.user_id = p_user_id LIMIT 1;
 
     v_combined_keywords := COALESCE(v_search_keywords, '') || ' | ' || COALESCE(v_pref_keywords, '');
     v_combined_keywords := trim(both ' | ' from v_combined_keywords);
