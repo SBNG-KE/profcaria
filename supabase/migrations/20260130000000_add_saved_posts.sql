@@ -1,5 +1,7 @@
--- Create saved_posts table
-CREATE TABLE IF NOT EXISTS public.saved_posts (
+-- Re-create saved_posts table to ensure correct FKs
+DROP TABLE IF EXISTS public.saved_posts;
+
+CREATE TABLE public.saved_posts (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
     professional_post_id UUID REFERENCES professional.posts(id) ON DELETE CASCADE,

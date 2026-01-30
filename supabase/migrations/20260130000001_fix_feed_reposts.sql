@@ -190,7 +190,7 @@ BEGIN
             -- 4. Content Relevance
             (CASE 
                 WHEN length(v_combined_keywords) > 0 AND 
-                     to_tsvector('english', ap.content) @@ to_tsquery('english', replace(replace(trim(v_combined_keywords), ' ', '|'), '||', '|')) 
+                     to_tsvector('english', ap.content) @@ to_tsquery('english', regexp_replace(trim(v_combined_keywords), '[|[:space:]]+', '|', 'g')) 
                 THEN 45.0 
                 ELSE 0.0 
             END) +

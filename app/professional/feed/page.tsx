@@ -494,7 +494,12 @@ function FeedContent() {
                 body: JSON.stringify({ type: authorType })
             });
 
-            if (!res.ok) throw new Error();
+            if (!res.ok) {
+                const data = await res.json();
+                console.error('Save failed:', data);
+                alert(`Save failed: ${data.error || 'Unknown error'}`);
+                throw new Error(data.error || 'Request failed');
+            }
         } catch (err) {
             console.error(err);
             // Revert
