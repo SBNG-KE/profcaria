@@ -81,7 +81,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const { data: prof, error: profError } = await supabaseAdmin
             .schema('professional')
             .from('users')
-            .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+            .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, default_doc_mode')
             .eq('id', professionalId)
             .single();
 
@@ -93,6 +93,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return NextResponse.json({ error: 'Professional profile not found' }, { status: 404 });
         }
 
+        const docMode = prof.default_doc_mode || 'writing';
+
         const profile = {
             id: professionalId,
             firstName: decryptData(prof.enc_first_name),
@@ -100,7 +102,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             role: decryptData(prof.enc_current_role),
             profileImageUrl: decryptData(prof.enc_profile_image_url),
             phone: authUser?.phone || null,
-            email: authUser?.email || null
+            email: authUser?.email || null,
+            docMode
         };
 
         const { data: documents, error: docError } = await supabaseAdmin

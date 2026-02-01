@@ -66,7 +66,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 enc_about,
                 enc_phone_number,
                 enc_email,
-                email_index
+                email_index,
+                default_doc_mode
             `)
             .eq('id', professionalId)
             .single();
@@ -76,6 +77,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return NextResponse.json({ error: 'Professional profile not found' }, { status: 404 });
         }
 
+        const docMode = prof.default_doc_mode || 'writing';
+
         const profile = {
             id: professionalId,
             firstName: decryptData(prof.enc_first_name),
@@ -84,7 +87,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             profileImageUrl: decryptData(prof.enc_profile_image_url),
             about: decryptData(prof.enc_about),
             phone: decryptData(prof.enc_phone_number),
-            email: decryptData(prof.enc_email)
+            email: decryptData(prof.enc_email),
+            docMode
         };
 
         // 3. Fetch Shared Documents (Written)

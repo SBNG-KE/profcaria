@@ -124,7 +124,8 @@ export async function POST(req: NextRequest) {
                 name,
                 blobUrl: blob.url,
                 fileType: file.type,
-                fileSize: file.size
+                fileSize: file.size,
+                createdAt: new Date().toISOString()
             }
         });
 

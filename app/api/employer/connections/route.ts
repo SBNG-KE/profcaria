@@ -218,7 +218,7 @@ async function createSnapshot(applicationId: string) {
     const { data: prof, error: profError } = await supabaseAdmin
         .schema('professional')
         .from('users')
-        .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+        .select('enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, default_doc_mode')
         .eq('id', professionalId)
         .single();
 
@@ -227,6 +227,8 @@ async function createSnapshot(applicationId: string) {
 
     if (profError || !prof) throw new Error('Snapshot: Profile not found');
 
+    const docMode = prof.default_doc_mode || 'writing';
+
     const profile = {
         id: professionalId,
         firstName: decryptData(prof.enc_first_name),
@@ -234,7 +236,8 @@ async function createSnapshot(applicationId: string) {
         role: decryptData(prof.enc_current_role),
         profileImageUrl: decryptData(prof.enc_profile_image_url),
         phone: authUser?.phone || null,
-        email: authUser?.email || null
+        email: authUser?.email || null,
+        docMode
     };
 
     // 3. Fetch Shared Documents Content

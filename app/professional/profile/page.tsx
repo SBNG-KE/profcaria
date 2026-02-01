@@ -393,6 +393,7 @@ export default function ProfessionalHome() {
 
   // Document Upload Mode State
   const [documentMode, setDocumentMode] = useState<'writing' | 'upload'>('writing');
+  const [shareDocMode, setShareDocMode] = useState<'writing' | 'upload'>('writing'); // Which mode to share with employers
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
   const [isUploadLoading, setIsUploadLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -462,10 +463,11 @@ export default function ProfessionalHome() {
 
   const fetchDocuments = async () => {
     try {
-      const [cardRes, accessRes, uploadRes] = await Promise.all([
+      const [cardRes, accessRes, uploadRes, modeRes] = await Promise.all([
         fetch('/api/professional/cards'),
         fetch('/api/documents?type=access_control'),
         fetch('/api/professional/documents/upload'),
+        fetch('/api/professional/documents/mode'),
       ]);
 
       if (cardRes.ok) {
@@ -485,6 +487,10 @@ export default function ProfessionalHome() {
       if (uploadRes.ok) {
         const data = await uploadRes.json();
         if (data.documents) setUploadedDocuments(data.documents);
+      }
+      if (modeRes.ok) {
+        const data = await modeRes.json();
+        if (data.mode) setShareDocMode(data.mode);
       }
     } catch (error) {
       console.error("Error fetching documents", error);
@@ -616,6 +622,23 @@ export default function ProfessionalHome() {
     return '📎';
   };
 
+  const handleShareModeChange = async (mode: 'writing' | 'upload') => {
+    try {
+      const res = await fetch('/api/professional/documents/mode', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode })
+      });
+      if (res.ok) {
+        setShareDocMode(mode);
+      } else {
+        alert('Failed to update preference');
+      }
+    } catch (error) {
+      console.error('Error updating share mode:', error);
+      alert('Failed to update preference');
+    }
+  };
 
   const fetchPreferences = async () => {
     try {
@@ -1529,6 +1552,33 @@ export default function ProfessionalHome() {
                   </button>
                 </div>
 
+                {/* Share Mode Preference */}
+                <div className={`flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-violet-500/20' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${isDark ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-700'}`}>
+                      <Share2 size={18} />
+                    </div>
+                    <div className="text-left">
+                      <h4 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Share Preference</h4>
+                      <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Choose which documents employers see when you apply</p>
+                    </div>
+                  </div>
+                  <div className={`flex items-center gap-2 p-1 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
+                    <button
+                      onClick={() => handleShareModeChange('writing')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${shareDocMode === 'writing' ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white') : isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                    >
+                      Written
+                    </button>
+                    <button
+                      onClick={() => handleShareModeChange('upload')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${shareDocMode === 'upload' ? (isDark ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white') : isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
+                    >
+                      Uploaded
+                    </button>
+                  </div>
+                </div>
+
                 {/* Writing Mode Content */}
                 {documentMode === 'writing' && (
                   <>
@@ -1680,7 +1730,7 @@ export default function ProfessionalHome() {
                                   </p>
                                 )}
                                 <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                  {formatFileSize(doc.fileSize)} • {new Date(doc.createdAt).toLocaleDateString()}
+                                  {formatFileSize(doc.fileSize)} • {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : 'Just now'}
                                 </p>
                               </div>
 

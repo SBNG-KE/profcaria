@@ -5,7 +5,7 @@
 -- 1. Create uploaded_documents table in professional schema
 CREATE TABLE IF NOT EXISTS professional.uploaded_documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES professional.users(id) ON DELETE CASCADE,
     enc_name TEXT NOT NULL,
     enc_blob_url TEXT NOT NULL,
     file_type TEXT NOT NULL,
