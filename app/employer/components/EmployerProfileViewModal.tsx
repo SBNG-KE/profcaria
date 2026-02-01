@@ -22,11 +22,20 @@ interface ProfileData {
         about?: string;
         country?: string;
         city?: string;
+        docMode?: 'writing' | 'upload';
     };
     sharedDocuments: {
         type: string;
         content: string;
         lastUpdated: string;
+    }[];
+    uploadedDocuments?: {
+        id: string;
+        name: string;
+        blobUrl: string;
+        fileType: string;
+        fileSize: number;
+        createdAt: string;
     }[];
     sections?: {
         employmentHistory: any[];
@@ -52,6 +61,7 @@ export default function EmployerProfileViewModal({
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'profile' | 'documents'>('profile');
     const [activeDocumentType, setActiveDocumentType] = useState<string | null>(null);
+    const [activeUploadedDocId, setActiveUploadedDocId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -76,7 +86,11 @@ export default function EmployerProfileViewModal({
                 if (res.ok) {
                     const profileData = await res.json();
                     setData(profileData);
-                    if (profileData.sharedDocuments.length > 0) {
+                    // Set initial active document based on docMode
+                    const docMode = profileData.profile?.docMode || 'writing';
+                    if (docMode === 'upload' && profileData.uploadedDocuments?.length > 0) {
+                        setActiveUploadedDocId(profileData.uploadedDocuments[0].id);
+                    } else if (profileData.sharedDocuments?.length > 0) {
                         setActiveDocumentType(profileData.sharedDocuments[0].type);
                     }
                 } else {
@@ -431,64 +445,140 @@ export default function EmployerProfileViewModal({
                         )}
 
                         {/* VIEW: DOCUMENTS */}
-                        {activeTab === 'documents' && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                        {activeTab === 'documents' && (() => {
+                            const docMode = data.profile?.docMode || 'writing';
+                            const showUploaded = docMode === 'upload';
+                            const uploadedDocs = data.uploadedDocuments || [];
+                            const activeUploadedDoc = uploadedDocs.find(d => d.id === activeUploadedDocId);
 
-                                <div className={`p-8 rounded-[32px] border mb-8 flex items-center justify-between ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                    <div>
-                                        <h3 className={`text-lg font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Access</h3>
-                                        <p className={`text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>These are the documents the candidate has shared specifically with you.</p>
-                                    </div>
-                                    <div className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                                        Verified Access
-                                    </div>
-                                </div>
+                            return (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
-                                {/* Accessible Documents Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {data.sharedDocuments.map((doc) => (
-                                        <button
-                                            key={doc.type}
-                                            onClick={() => setActiveDocumentType(doc.type)}
-                                            className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
-                                        >
-                                            <FileText size={40} className={`transition-colors ${activeDocumentType === doc.type ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
-                                            <div>
-                                                <h3 className={`text-xl font-black uppercase tracking-tighter ${activeDocumentType === doc.type ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.type}</h3>
-                                                <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60 ${activeDocumentType === doc.type ? 'text-black' : ''}`}>Last Updated {new Date(doc.lastUpdated).toLocaleDateString()}</p>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {data.sharedDocuments.length === 0 && (
-                                    <div className={`p-20 rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                        <div className="mx-auto w-20 h-20 rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-6">
-                                            <FileText size={40} className="text-neutral-600" />
+                                    <div className={`p-8 rounded-[32px] border mb-8 flex items-center justify-between ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                        <div>
+                                            <h3 className={`text-lg font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Access</h3>
+                                            <p className={`text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                {showUploaded ? 'Uploaded files shared by the candidate.' : 'These are the documents the candidate has shared specifically with you.'}
+                                            </p>
                                         </div>
-                                        <h3 className="text-xl font-bold uppercase tracking-tight text-white mb-2">No documents shared</h3>
-                                        <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not permitted access to any documents.</p>
-                                    </div>
-                                )}
-
-                                {/* Document Preview Area */}
-                                {activeDocContent && (
-                                    <div className={`mt-8 p-12 rounded-[40px] border min-h-[500px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
-                                        <div className="flex items-center justify-between border-b border-neutral-800 pb-8 mb-8">
-                                            <div>
-                                                <h2 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeDocContent.type}</h2>
-                                            </div>
+                                        <div className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${showUploaded ? (isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : (isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600')}`}>
+                                            {showUploaded ? 'Uploaded Files' : 'Verified Access'}
                                         </div>
-                                        <div
-                                            className={`prose prose-lg max-w-none 
-                                            ${isDark ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white' : 'prose-headings:text-black prose-p:text-neutral-600'}
-                                            `}
-                                            dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeDocContent.content) }}
-                                        />
                                     </div>
-                                )}
-                            </div>
-                        )}
+
+                                    {/* UPLOAD MODE: Show uploaded files */}
+                                    {showUploaded && (
+                                        <>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                {uploadedDocs.map((doc) => (
+                                                    <button
+                                                        key={doc.id}
+                                                        onClick={() => setActiveUploadedDocId(doc.id)}
+                                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeUploadedDocId === doc.id ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
+                                                    >
+                                                        <FileText size={40} className={`transition-colors ${activeUploadedDocId === doc.id ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
+                                                        <div>
+                                                            <h3 className={`text-xl font-black uppercase tracking-tighter truncate ${activeUploadedDocId === doc.id ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.name}</h3>
+                                                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60 ${activeUploadedDocId === doc.id ? 'text-black' : ''}`}>
+                                                                {new Date(doc.createdAt).toLocaleDateString()} • {(doc.fileSize / 1024).toFixed(1)} KB
+                                                            </p>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {uploadedDocs.length === 0 && (
+                                                <div className={`p-20 rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                                    <div className="mx-auto w-20 h-20 rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-6">
+                                                        <FileText size={40} className="text-neutral-600" />
+                                                    </div>
+                                                    <h3 className={`text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No files uploaded</h3>
+                                                    <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not uploaded any files.</p>
+                                                </div>
+                                            )}
+
+                                            {/* Uploaded File Preview */}
+                                            {activeUploadedDoc && (
+                                                <div className={`mt-8 p-12 rounded-[40px] border min-h-[300px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
+                                                    <div className="flex items-center justify-between border-b border-neutral-800 pb-8 mb-8">
+                                                        <div>
+                                                            <h2 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeUploadedDoc.name}</h2>
+                                                            <p className={`text-sm mt-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{activeUploadedDoc.fileType} • {(activeUploadedDoc.fileSize / 1024).toFixed(1)} KB</p>
+                                                        </div>
+                                                        <a
+                                                            href={activeUploadedDoc.blobUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                        >
+                                                            <Download size={16} /> View / Download
+                                                        </a>
+                                                    </div>
+                                                    {/* Preview for images */}
+                                                    {activeUploadedDoc.fileType.includes('image') && (
+                                                        <div className="flex justify-center">
+                                                            <img src={activeUploadedDoc.blobUrl} alt={activeUploadedDoc.name} className="max-w-full max-h-[400px] rounded-xl object-contain" />
+                                                        </div>
+                                                    )}
+                                                    {/* Preview for PDFs */}
+                                                    {activeUploadedDoc.fileType.includes('pdf') && (
+                                                        <iframe src={activeUploadedDoc.blobUrl} className="w-full h-[500px] rounded-xl border-0" title={activeUploadedDoc.name} />
+                                                    )}
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* WRITING MODE: Show written documents */}
+                                    {!showUploaded && (
+                                        <>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                {data.sharedDocuments.map((doc) => (
+                                                    <button
+                                                        key={doc.type}
+                                                        onClick={() => setActiveDocumentType(doc.type)}
+                                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
+                                                    >
+                                                        <FileText size={40} className={`transition-colors ${activeDocumentType === doc.type ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
+                                                        <div>
+                                                            <h3 className={`text-xl font-black uppercase tracking-tighter ${activeDocumentType === doc.type ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.type}</h3>
+                                                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60 ${activeDocumentType === doc.type ? 'text-black' : ''}`}>Last Updated {new Date(doc.lastUpdated).toLocaleDateString()}</p>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {data.sharedDocuments.length === 0 && (
+                                                <div className={`p-20 rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                                    <div className="mx-auto w-20 h-20 rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-6">
+                                                        <FileText size={40} className="text-neutral-600" />
+                                                    </div>
+                                                    <h3 className={`text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No documents shared</h3>
+                                                    <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not permitted access to any documents.</p>
+                                                </div>
+                                            )}
+
+                                            {/* Document Preview Area */}
+                                            {activeDocContent && (
+                                                <div className={`mt-8 p-12 rounded-[40px] border min-h-[500px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
+                                                    <div className="flex items-center justify-between border-b border-neutral-800 pb-8 mb-8">
+                                                        <div>
+                                                            <h2 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeDocContent.type}</h2>
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        className={`prose prose-lg max-w-none 
+                                                    ${isDark ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white' : 'prose-headings:text-black prose-p:text-neutral-600'}
+                                                    `}
+                                                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeDocContent.content) }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })()}
 
                     </div>
                 </main>
