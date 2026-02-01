@@ -128,6 +128,14 @@ export async function POST(req: Request) {
                         usage_connections: 0,
                         usage_top_matches: 0
                     });
+
+                    // 4. Sync Badge Type
+                    let badge = 'gray';
+                    if (plan === 'pro') badge = 'blue';
+                    if (plan === 'enterprise') badge = 'gold';
+                    if (plan === 'verified') badge = 'blue';
+
+                    await supabaseAdmin.schema('employer').from('companies').update({ badge_type: badge }).eq('id', companyId);
                 }
                 break;
             }
