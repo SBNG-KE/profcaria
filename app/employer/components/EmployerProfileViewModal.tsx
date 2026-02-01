@@ -139,10 +139,34 @@ export default function EmployerProfileViewModal({
         <div className="fixed inset-0 z-[150] flex h-screen w-screen bg-black/80 backdrop-blur-sm overflow-hidden animate-in fade-in duration-300">
 
             {/* Modal Container - Full Screen Overlay Matches Professional Layout */}
-            <div className={`relative w-full h-full flex ${isDark ? 'bg-black text-white' : 'bg-[#f8fafe] text-black'}`}>
+            <div className={`relative w-full h-full flex flex-col md:flex-row ${isDark ? 'bg-black text-white' : 'bg-[#f8fafe] text-black'}`}>
 
-                {/* --- SIDEBAR (Fixed Left) --- */}
-                <aside className={`w-80 flex-shrink-0 h-full overflow-y-auto border-r p-6 flex flex-col ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200 shadow-xl z-20'}`}>
+                {/* --- MOBILE HEADER (Visible on small screens only) --- */}
+                <div className={`md:hidden flex items-center gap-4 p-4 border-b ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                    <button
+                        onClick={onClose}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-neutral-100 border border-neutral-200'}`}
+                    >
+                        <X size={18} />
+                    </button>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
+                            {data.profile.profileImageUrl ? (
+                                <img src={data.profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}><UserCircle size={24} /></div>
+                            )}
+                        </div>
+                        <div className="min-w-0">
+                            <h1 className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{data.profile.firstName} {data.profile.lastName}</h1>
+                            <p className="text-[10px] text-neutral-500 truncate">{data.profile.role}</p>
+                        </div>
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-[8px] font-bold uppercase ${isDark ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>Live</div>
+                </div>
+
+                {/* --- SIDEBAR (Hidden on mobile, visible on md+) --- */}
+                <aside className={`hidden md:flex w-80 flex-shrink-0 h-full overflow-y-auto border-r p-6 flex-col ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200 shadow-xl z-20'}`}>
 
                     {/* Back Button (Close) */}
                     <div className="mb-8 pl-2">
@@ -197,48 +221,48 @@ export default function EmployerProfileViewModal({
                 </aside>
 
                 {/* --- MAIN CONTENT (Scrollable Right) --- */}
-                <main className="flex-1 h-full overflow-y-auto p-8 md:p-12">
+                <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 md:p-12">
                     <div className="max-w-5xl mx-auto space-y-8 pb-32">
 
                         {/* Content Tabs - Visible at top of content area */}
-                        <div className="flex items-center gap-4 mb-8">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
                             <button
                                 onClick={() => setActiveTab('profile')}
-                                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
+                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
                             >
-                                <User size={14} className="inline mr-2 -mt-0.5" /> Profile Info
+                                <User size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> Profile Info
                             </button>
                             <button
                                 onClick={() => setActiveTab('documents')}
-                                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'documents' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
+                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'documents' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
                             >
-                                <FileText size={14} className="inline mr-2 -mt-0.5" /> Documents
+                                <FileText size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> Documents
                             </button>
                             {/* Job Preferences Tab is REMOVED completely */}
                         </div>
 
                         {/* VIEW: PROFILE INFO */}
                         {activeTab === 'profile' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                            <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                                 {/* Top Hero Card (Photo + Details) */}
-                                <div className={`p-10 rounded-[40px] flex flex-col md:flex-row items-start gap-10 ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
-                                    <div className="w-40 h-40 shrink-0 rounded-[32px] overflow-hidden bg-white">
+                                <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-10 ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
+                                    <div className="w-24 h-24 sm:w-40 sm:h-40 shrink-0 rounded-[20px] sm:rounded-[32px] overflow-hidden bg-white">
                                         {data.profile.profileImageUrl ? (
                                             <img src={data.profile.profileImageUrl} alt="" className="w-full h-full object-cover" />
-                                        ) : <UserCircle className="w-full h-full text-slate-200 p-8" />}
+                                        ) : <UserCircle className="w-full h-full text-slate-200 p-4 sm:p-8" />}
                                     </div>
-                                    <div className="flex-1 space-y-8 w-full">
+                                    <div className="flex-1 space-y-6 sm:space-y-8 w-full text-center md:text-left">
                                         <div>
-                                            <h2 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{data.profile.firstName} {data.profile.lastName}</h2>
-                                            <p className={`text-sm font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{data.profile.role}</p>
+                                            <h2 className={`text-2xl sm:text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{data.profile.firstName} {data.profile.lastName}</h2>
+                                            <p className={`text-xs sm:text-sm font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{data.profile.role}</p>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full border-t border-b border-neutral-800 py-8">
+                                        <div className="grid grid-cols-1 gap-4 sm:gap-8 w-full border-t border-b border-neutral-800 py-4 sm:py-8">
                                             <div>
                                                 <label className={`text-[10px] font-black uppercase tracking-widest mb-2 block ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Email</label>
-                                                <div className="flex items-center gap-2">
-                                                    <a href={`mailto:${data.profile.email}`} className={`flex items-center gap-2 font-bold ${isDark ? 'text-white hover:text-neutral-300' : 'text-black hover:text-neutral-700'} break-all transition-colors`}>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <a href={`mailto:${data.profile.email}`} className={`flex items-center gap-2 font-bold text-sm ${isDark ? 'text-white hover:text-neutral-300' : 'text-black hover:text-neutral-700'} break-all transition-colors`}>
                                                         <Mail size={16} className="text-neutral-500 shrink-0" /> {data.profile.email}
                                                     </a>
                                                     <button
@@ -252,8 +276,8 @@ export default function EmployerProfileViewModal({
                                             </div>
                                             <div>
                                                 <label className={`text-[10px] font-black uppercase tracking-widest mb-2 block ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Phone</label>
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`flex items-center gap-2 font-bold ${isDark ? 'text-white' : 'text-black'}`}>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <div className={`flex items-center gap-2 font-bold text-sm ${isDark ? 'text-white' : 'text-black'}`}>
                                                         <Phone size={16} className="text-neutral-500 shrink-0" /> {data.profile.phone || 'No phone provided'}
                                                     </div>
                                                     {data.profile.phone && (
@@ -272,16 +296,16 @@ export default function EmployerProfileViewModal({
                                 </div>
 
                                 {/* About Section */}
-                                <div className={`p-10 rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
-                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-6 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>About</h3>
-                                    <p className={`text-base leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
+                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>About</h3>
+                                    <p className={`text-sm sm:text-base leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                         {data.profile.about || 'No about section provided.'}
                                     </p>
                                 </div>
 
                                 {/* Employment */}
-                                <div className={`p-10 rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
-                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-8 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
+                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-6 sm:mb-8 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                         <Briefcase size={14} /> Employment History
                                     </h3>
                                     {sections.employmentHistory?.length > 0 ? (
@@ -329,18 +353,18 @@ export default function EmployerProfileViewModal({
                                 </div>
 
                                 {/* Education + Skills Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className={`p-10 rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
-                                        <h3 className={`text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+                                    <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
+                                        <h3 className={`text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                             <GraduationCap size={14} /> Education
                                         </h3>
                                         {sections.education?.length > 0 ? (
-                                            <div className="space-y-8">
+                                            <div className="space-y-6 sm:space-y-8">
                                                 {sections.education.map((edu: any, i: number) => (
                                                     <div key={i} className="flex gap-4">
                                                         <div>
-                                                            <h4 className={`text-base font-bold ${isDark ? 'text-white' : 'text-black'}`}>{edu.school}</h4>
-                                                            <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{edu.degree}, {edu.fieldOfStudy}</p>
+                                                            <h4 className={`text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-black'}`}>{edu.school}</h4>
+                                                            <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{edu.degree}, {edu.fieldOfStudy}</p>
                                                             <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                                                                 {edu.startDate} - {edu.isCurrent ? 'Present' : edu.endDate}
                                                             </p>
@@ -353,7 +377,7 @@ export default function EmployerProfileViewModal({
                                         )}
                                     </div>
 
-                                    <div className={`p-10 rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
+                                    <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
                                         <h3 className={`text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                             <BadgeCheck size={14} /> Skills
                                         </h3>
@@ -372,12 +396,12 @@ export default function EmployerProfileViewModal({
                                 </div>
 
                                 {/* Certifications, Awards, Other Profiles */}
-                                <div className={`p-10 rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
-                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-8 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
+                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-6 sm:mb-8 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                         <Award size={14} /> Additional Information
                                     </h3>
 
-                                    <div className="space-y-8">
+                                    <div className="space-y-6 sm:space-y-8">
                                         {/* Certifications */}
                                         <div>
                                             <h4 className={`text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>Licenses & Certifications</h4>
@@ -452,16 +476,16 @@ export default function EmployerProfileViewModal({
                             const activeUploadedDoc = uploadedDocs.find(d => d.id === activeUploadedDocId);
 
                             return (
-                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                                <div className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
-                                    <div className={`p-8 rounded-[32px] border mb-8 flex items-center justify-between ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                    <div className={`p-4 sm:p-8 rounded-[20px] sm:rounded-[32px] border mb-4 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                                         <div>
-                                            <h3 className={`text-lg font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Access</h3>
-                                            <p className={`text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                            <h3 className={`text-base sm:text-lg font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Access</h3>
+                                            <p className={`text-[10px] sm:text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                                 {showUploaded ? 'Uploaded files shared by the candidate.' : 'These are the documents the candidate has shared specifically with you.'}
                                             </p>
                                         </div>
-                                        <div className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest ${showUploaded ? (isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : (isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600')}`}>
+                                        <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${showUploaded ? (isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600') : (isDark ? 'bg-emerald-500/10 text-emerald-500' : 'bg-emerald-50 text-emerald-600')}`}>
                                             {showUploaded ? 'Uploaded Files' : 'Verified Access'}
                                         </div>
                                     </div>
@@ -469,17 +493,17 @@ export default function EmployerProfileViewModal({
                                     {/* UPLOAD MODE: Show uploaded files */}
                                     {showUploaded && (
                                         <>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                                 {uploadedDocs.map((doc) => (
                                                     <button
                                                         key={doc.id}
                                                         onClick={() => setActiveUploadedDocId(doc.id)}
-                                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeUploadedDocId === doc.id ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
+                                                        className={`group relative aspect-[4/3] rounded-[20px] sm:rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-4 sm:p-8 flex flex-col justify-between ${activeUploadedDocId === doc.id ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
                                                     >
-                                                        <FileText size={40} className={`transition-colors ${activeUploadedDocId === doc.id ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
+                                                        <FileText size={32} className={`sm:w-10 sm:h-10 transition-colors ${activeUploadedDocId === doc.id ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
                                                         <div>
-                                                            <h3 className={`text-xl font-black uppercase tracking-tighter truncate ${activeUploadedDocId === doc.id ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.name}</h3>
-                                                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60 ${activeUploadedDocId === doc.id ? 'text-black' : ''}`}>
+                                                            <h3 className={`text-base sm:text-xl font-black uppercase tracking-tighter truncate ${activeUploadedDocId === doc.id ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.name}</h3>
+                                                            <p className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-widest mt-1 sm:mt-2 opacity-60 ${activeUploadedDocId === doc.id ? 'text-black' : ''}`}>
                                                                 {new Date(doc.createdAt).toLocaleDateString()} • {(doc.fileSize / 1024).toFixed(1)} KB
                                                             </p>
                                                         </div>
@@ -488,28 +512,28 @@ export default function EmployerProfileViewModal({
                                             </div>
 
                                             {uploadedDocs.length === 0 && (
-                                                <div className={`p-20 rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                                    <div className="mx-auto w-20 h-20 rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-6">
-                                                        <FileText size={40} className="text-neutral-600" />
+                                                <div className={`p-10 sm:p-20 rounded-[24px] sm:rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                                    <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-[1.5rem] sm:rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-4 sm:mb-6">
+                                                        <FileText size={32} className="sm:w-10 sm:h-10 text-neutral-600" />
                                                     </div>
-                                                    <h3 className={`text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No files uploaded</h3>
-                                                    <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not uploaded any files.</p>
+                                                    <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No files uploaded</h3>
+                                                    <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not uploaded any files.</p>
                                                 </div>
                                             )}
 
                                             {/* Uploaded File Preview */}
                                             {activeUploadedDoc && (
-                                                <div className={`mt-8 p-12 rounded-[40px] border min-h-[300px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
-                                                    <div className="flex items-center justify-between border-b border-neutral-800 pb-8 mb-8">
+                                                <div className={`mt-4 sm:mt-8 p-6 sm:p-12 rounded-[24px] sm:rounded-[40px] border min-h-[200px] sm:min-h-[300px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
+                                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-neutral-800 pb-4 sm:pb-8 mb-4 sm:mb-8">
                                                         <div>
-                                                            <h2 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeUploadedDoc.name}</h2>
-                                                            <p className={`text-sm mt-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{activeUploadedDoc.fileType} • {(activeUploadedDoc.fileSize / 1024).toFixed(1)} KB</p>
+                                                            <h2 className={`text-xl sm:text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeUploadedDoc.name}</h2>
+                                                            <p className={`text-xs sm:text-sm mt-1 sm:mt-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{activeUploadedDoc.fileType} • {(activeUploadedDoc.fileSize / 1024).toFixed(1)} KB</p>
                                                         </div>
                                                         <a
                                                             href={activeUploadedDoc.blobUrl}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                            className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
                                                         >
                                                             <Download size={16} /> View / Download
                                                         </a>
@@ -517,12 +541,12 @@ export default function EmployerProfileViewModal({
                                                     {/* Preview for images */}
                                                     {activeUploadedDoc.fileType.includes('image') && (
                                                         <div className="flex justify-center">
-                                                            <img src={activeUploadedDoc.blobUrl} alt={activeUploadedDoc.name} className="max-w-full max-h-[400px] rounded-xl object-contain" />
+                                                            <img src={activeUploadedDoc.blobUrl} alt={activeUploadedDoc.name} className="max-w-full max-h-[300px] sm:max-h-[400px] rounded-xl object-contain" />
                                                         </div>
                                                     )}
                                                     {/* Preview for PDFs */}
                                                     {activeUploadedDoc.fileType.includes('pdf') && (
-                                                        <iframe src={activeUploadedDoc.blobUrl} className="w-full h-[500px] rounded-xl border-0" title={activeUploadedDoc.name} />
+                                                        <iframe src={activeUploadedDoc.blobUrl} className="w-full h-[300px] sm:h-[500px] rounded-xl border-0" title={activeUploadedDoc.name} />
                                                     )}
                                                 </div>
                                             )}
@@ -532,42 +556,42 @@ export default function EmployerProfileViewModal({
                                     {/* WRITING MODE: Show written documents */}
                                     {!showUploaded && (
                                         <>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                                 {data.sharedDocuments.map((doc) => (
                                                     <button
                                                         key={doc.type}
                                                         onClick={() => setActiveDocumentType(doc.type)}
-                                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
+                                                        className={`group relative aspect-[4/3] rounded-[20px] sm:rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-4 sm:p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-white text-black border-white' : 'bg-neutral-100 text-black border-neutral-300 shadow-xl') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-black shadow-lg shadow-slate-200/50')}`}
                                                     >
-                                                        <FileText size={40} className={`transition-colors ${activeDocumentType === doc.type ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
+                                                        <FileText size={32} className={`sm:w-10 sm:h-10 transition-colors ${activeDocumentType === doc.type ? 'text-black' : 'text-neutral-500 group-hover:text-black dark:group-hover:text-white'}`} />
                                                         <div>
-                                                            <h3 className={`text-xl font-black uppercase tracking-tighter ${activeDocumentType === doc.type ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.type}</h3>
-                                                            <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60 ${activeDocumentType === doc.type ? 'text-black' : ''}`}>Last Updated {new Date(doc.lastUpdated).toLocaleDateString()}</p>
+                                                            <h3 className={`text-base sm:text-xl font-black uppercase tracking-tighter ${activeDocumentType === doc.type ? 'text-black' : (isDark ? 'text-white' : 'text-black')}`}>{doc.type}</h3>
+                                                            <p className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-widest mt-1 sm:mt-2 opacity-60 ${activeDocumentType === doc.type ? 'text-black' : ''}`}>Last Updated {new Date(doc.lastUpdated).toLocaleDateString()}</p>
                                                         </div>
                                                     </button>
                                                 ))}
                                             </div>
 
                                             {data.sharedDocuments.length === 0 && (
-                                                <div className={`p-20 rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                                    <div className="mx-auto w-20 h-20 rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-6">
-                                                        <FileText size={40} className="text-neutral-600" />
+                                                <div className={`p-10 sm:p-20 rounded-[24px] sm:rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                                    <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-[1.5rem] sm:rounded-[2rem] bg-neutral-800 flex items-center justify-center mb-4 sm:mb-6">
+                                                        <FileText size={32} className="sm:w-10 sm:h-10 text-neutral-600" />
                                                     </div>
-                                                    <h3 className={`text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No documents shared</h3>
-                                                    <p className={`text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not permitted access to any documents.</p>
+                                                    <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No documents shared</h3>
+                                                    <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>The candidate has not permitted access to any documents.</p>
                                                 </div>
                                             )}
 
                                             {/* Document Preview Area */}
                                             {activeDocContent && (
-                                                <div className={`mt-8 p-12 rounded-[40px] border min-h-[500px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
-                                                    <div className="flex items-center justify-between border-b border-neutral-800 pb-8 mb-8">
+                                                <div className={`mt-4 sm:mt-8 p-6 sm:p-12 rounded-[24px] sm:rounded-[40px] border min-h-[300px] sm:min-h-[500px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-2xl'}`}>
+                                                    <div className="flex items-center justify-between border-b border-neutral-800 pb-4 sm:pb-8 mb-4 sm:mb-8">
                                                         <div>
-                                                            <h2 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeDocContent.type}</h2>
+                                                            <h2 className={`text-xl sm:text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>{activeDocContent.type}</h2>
                                                         </div>
                                                     </div>
                                                     <div
-                                                        className={`prose prose-lg max-w-none 
+                                                        className={`prose prose-sm sm:prose-lg max-w-none 
                                                     ${isDark ? 'prose-invert prose-p:text-neutral-300 prose-headings:text-white prose-strong:text-white' : 'prose-headings:text-black prose-p:text-neutral-600'}
                                                     `}
                                                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(activeDocContent.content) }}
