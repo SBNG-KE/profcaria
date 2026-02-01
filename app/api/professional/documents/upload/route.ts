@@ -27,7 +27,7 @@ export async function GET() {
 
         if (error) {
             console.error('Fetch Uploaded Docs Error:', error);
-            return NextResponse.json({ error: 'DB Error' }, { status: 500 });
+            return NextResponse.json({ error: `DB Error: ${error.message || error.code}` }, { status: 500 });
         }
 
         // Decrypt data for client
@@ -43,9 +43,9 @@ export async function GET() {
 
         return NextResponse.json({ documents });
 
-    } catch (err) {
+    } catch (err: any) {
         console.error('Uploaded Docs Load Error:', err);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return NextResponse.json({ error: `Server Error: ${err?.message || 'Unknown'}` }, { status: 500 });
     }
 }
 
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
 
         if (error) {
             console.error('Insert Upload Doc Error:', error);
-            return NextResponse.json({ error: 'DB Error' }, { status: 500 });
+            return NextResponse.json({ error: `DB Error: ${error.message || error.code}` }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -128,9 +128,9 @@ export async function POST(req: NextRequest) {
             }
         });
 
-    } catch (err) {
+    } catch (err: any) {
         console.error('Upload Doc Error:', err);
-        return NextResponse.json({ error: 'Server Error' }, { status: 500 });
+        return NextResponse.json({ error: `Server Error: ${err?.message || 'Unknown'}` }, { status: 500 });
     }
 }
 
