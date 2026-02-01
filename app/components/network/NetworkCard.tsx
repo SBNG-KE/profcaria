@@ -59,7 +59,7 @@ export default function NetworkCard({
                 <Link href={type === 'company' ? `/professional/companies/${id}` : `/professional/people/${id}`} className="block hover:underline">
                     <h3 className={`font-bold text-lg mb-1 truncate w-full flex items-center justify-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
                         {name}
-                        <VerificationBadge tier={badgeType} size={16} />
+                        <VerificationBadge tier={badgeType} size={18} />
                     </h3>
                 </Link>
                 <p className={`text-xs flex items-center justify-center gap-1.5 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
