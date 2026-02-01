@@ -27,24 +27,17 @@ export default function ProfileImage({ src, type = 'user', name, size = 24, clas
 
 
 
-    return (
-        <div className="relative inline-block">
-            {(!isValidSrc || error) ? (
-                <DefaultLogo type={type} name={name} size={size} className={className} />
-            ) : (
-                <img
-                    src={src || ''}
-                    alt={alt || name || 'Profile'}
-                    className={`${className} object-cover`}
-                    onError={() => setError(true)}
-                />
-            )}
+    // Badge removed from ProfileImage - only show next to name for single badge display
+    if (!isValidSrc || error) {
+        return <DefaultLogo type={type} name={name} size={size} className={className} />;
+    }
 
-            {badge && (
-                <div className="absolute -bottom-1 -right-1 bg-white dark:bg-black rounded-full p-[1px]">
-                    <VerificationBadge tier={badge} size={size > 30 ? 16 : 12} showTooltip={false} />
-                </div>
-            )}
-        </div>
+    return (
+        <img
+            src={src || ''}
+            alt={alt || name || 'Profile'}
+            className={`${className} object-cover`}
+            onError={() => setError(true)}
+        />
     );
 }
