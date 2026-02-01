@@ -10,7 +10,8 @@ import {
   Shield, Check, ChevronDown, Type, Share2, Pencil,
   GraduationCap, Award, BadgeCheck, Briefcase, Link2, Trash2, PenLine, Move, Copy,
   Building2, Globe, MapPin, Mail, Camera, Save, Loader2, ArrowRight,
-  Eye, ThumbsUp, MessageSquare, MoreHorizontal, User, Activity, Phone, Users, Repeat2
+  Eye, ThumbsUp, MessageSquare, MoreHorizontal, User, Activity, Phone, Users, Repeat2,
+  Upload, FileUp, Download, Replace, File
 } from 'lucide-react';
 import VerificationBadge from '@/app/components/VerificationBadge';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -390,12 +391,19 @@ export default function ProfessionalHome() {
   const [profilePosts, setProfilePosts] = useState<any[]>([]);
   const [isProfilePostsLoading, setIsProfilePostsLoading] = useState(false);
 
-
-
+  // Document Upload Mode State
+  const [documentMode, setDocumentMode] = useState<'writing' | 'upload'>('writing');
+  const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([]);
+  const [isUploadLoading, setIsUploadLoading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [renamingDocId, setRenamingDocId] = useState<string | null>(null);
+  const [renamingValue, setRenamingValue] = useState('');
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   // State for editable title
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
+
 
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null); // For Editor
@@ -454,9 +462,10 @@ export default function ProfessionalHome() {
 
   const fetchDocuments = async () => {
     try {
-      const [cardRes, accessRes] = await Promise.all([
+      const [cardRes, accessRes, uploadRes] = await Promise.all([
         fetch('/api/professional/cards'),
         fetch('/api/documents?type=access_control'),
+        fetch('/api/professional/documents/upload'),
       ]);
 
       if (cardRes.ok) {
@@ -473,10 +482,140 @@ export default function ProfessionalHome() {
           }
         }
       }
+      if (uploadRes.ok) {
+        const data = await uploadRes.json();
+        if (data.documents) setUploadedDocuments(data.documents);
+      }
     } catch (error) {
       console.error("Error fetching documents", error);
     }
   };
+
+  // Upload document functions
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploadLoading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('name', file.name.replace(/\.[^/.]+$/, '')); // Remove extension for display name
+
+        const res = await fetch('/api/professional/documents/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUploadedDocuments(prev => [data.document, ...prev]);
+        } else {
+          const err = await res.json();
+          alert(err.error || 'Failed to upload file');
+        }
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload file');
+    } finally {
+      setIsUploadLoading(false);
+    }
+  };
+
+  const handleDeleteUploadedDoc = async (docId: string) => {
+    if (!confirm('Are you sure you want to delete this file?')) return;
+
+    try {
+      const res = await fetch(`/api/professional/documents/upload?id=${docId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setUploadedDocuments(prev => prev.filter(d => d.id !== docId));
+      } else {
+        alert('Failed to delete file');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete file');
+    }
+  };
+
+  const handleRenameUploadedDoc = async (docId: string, newName: string) => {
+    if (!newName.trim()) {
+      setRenamingDocId(null);
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('id', docId);
+      formData.append('name', newName);
+
+      const res = await fetch('/api/professional/documents/upload', {
+        method: 'PUT',
+        body: formData
+      });
+
+      if (res.ok) {
+        setUploadedDocuments(prev => prev.map(d =>
+          d.id === docId ? { ...d, name: newName } : d
+        ));
+      } else {
+        alert('Failed to rename file');
+      }
+    } catch (error) {
+      console.error('Rename error:', error);
+      alert('Failed to rename file');
+    } finally {
+      setRenamingDocId(null);
+    }
+  };
+
+  const handleReplaceFile = async (docId: string, file: File) => {
+    setIsUploadLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('id', docId);
+      formData.append('file', file);
+
+      const res = await fetch('/api/professional/documents/upload', {
+        method: 'PUT',
+        body: formData
+      });
+
+      if (res.ok) {
+        // Refresh the list
+        const uploadRes = await fetch('/api/professional/documents/upload');
+        if (uploadRes.ok) {
+          const data = await uploadRes.json();
+          setUploadedDocuments(data.documents || []);
+        }
+      } else {
+        alert('Failed to replace file');
+      }
+    } catch (error) {
+      console.error('Replace error:', error);
+      alert('Failed to replace file');
+    } finally {
+      setIsUploadLoading(false);
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileType.includes('document')) return '📝';
+    if (fileType.includes('image')) return '🖼️';
+    return '📎';
+  };
+
 
   const fetchPreferences = async () => {
     try {
@@ -1374,64 +1513,226 @@ export default function ProfessionalHome() {
             {/* Documents Tab Content */}
             {activeProfileTab === 'documents' && (
               <>
-                {/* Access Management Header */}
-                <div className={`flex items-center justify-between p-5 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2.5 rounded-xl ${isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'}`}><Shield size={20} /></div>
-                    <div className="text-left">
-                      <h3 className={`text-sm font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Access</h3>
-                      <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Control which cards are visible to employers when you apply.</p>
-                    </div>
-                  </div>
+                {/* Mode Toggle Tabs */}
+                <div className={`flex items-center gap-3 p-2 rounded-xl border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>
                   <button
-                    onClick={() => setIsAccessModalOpen(true)}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                    onClick={() => setDocumentMode('writing')}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${documentMode === 'writing' ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
                   >
-                    Manage Permissions
+                    <Pencil size={16} /> Write Documents
+                  </button>
+                  <button
+                    onClick={() => setDocumentMode('upload')}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${documentMode === 'upload' ? (isDark ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
+                  >
+                    <Upload size={16} /> Upload Files
                   </button>
                 </div>
 
-                {/* Document Cards - Shown directly */}
-                <div className="flex flex-wrap items-start justify-start gap-6 pb-8 text-left">
-                  {documents.map((doc, index) => (
-                    <DocumentCard
-                      key={index}
-                      title={doc}
-                      onClick={() => setActiveDocument(doc)}
-                      onRemove={async () => {
-                        const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
-                        if (baseCards.includes(doc.toUpperCase())) {
-                          alert('Cannot delete base cards (Resume, CV, Certificates).');
-                          return;
-                        }
-                        if (confirm(`Are you sure you want to delete ${doc}? This action cannot be undone.`)) {
-                          try {
-                            const res = await fetch('/api/professional/cards', {
-                              method: 'DELETE',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ title: doc })
-                            });
-                            if (res.ok) {
-                              setDocuments(prev => prev.filter(d => d !== doc));
-                              // Also remove from selected cards if it was selected
-                              setSelectedCards(prev => prev.filter(c => c !== doc));
-                            } else {
-                              const errData = await res.json();
-                              alert(errData.error || 'Failed to delete card.');
+                {/* Writing Mode Content */}
+                {documentMode === 'writing' && (
+                  <>
+                    {/* Access Management Header */}
+                    <div className={`flex items-center justify-between p-5 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`p-2.5 rounded-xl ${isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'}`}><Shield size={20} /></div>
+                        <div className="text-left">
+                          <h3 className={`text-sm font-bold uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Access</h3>
+                          <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Control which cards are visible to employers when you apply.</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setIsAccessModalOpen(true)}
+                        className={`px-4 py-2 text-xs font-bold rounded-lg transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                      >
+                        Manage Permissions
+                      </button>
+                    </div>
+
+                    {/* Document Cards - Shown directly */}
+                    <div className="flex flex-wrap items-start justify-start gap-6 pb-8 text-left">
+                      {documents.map((doc, index) => (
+                        <DocumentCard
+                          key={index}
+                          title={doc}
+                          onClick={() => setActiveDocument(doc)}
+                          onRemove={async () => {
+                            const baseCards = ['RESUME', 'CV', 'CERTIFICATES'];
+                            if (baseCards.includes(doc.toUpperCase())) {
+                              alert('Cannot delete base cards (Resume, CV, Certificates).');
+                              return;
                             }
-                          } catch (error) {
-                            console.error('Error deleting card:', error);
-                            alert('Failed to delete card.');
-                          }
-                        }
+                            if (confirm(`Are you sure you want to delete ${doc}? This action cannot be undone.`)) {
+                              try {
+                                const res = await fetch('/api/professional/cards', {
+                                  method: 'DELETE',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({ title: doc })
+                                });
+                                if (res.ok) {
+                                  setDocuments(prev => prev.filter(d => d !== doc));
+                                  // Also remove from selected cards if it was selected
+                                  setSelectedCards(prev => prev.filter(c => c !== doc));
+                                } else {
+                                  const errData = await res.json();
+                                  alert(errData.error || 'Failed to delete card.');
+                                }
+                              } catch (error) {
+                                console.error('Error deleting card:', error);
+                                alert('Failed to delete card.');
+                              }
+                            }
+                          }}
+                          isDark={isDark}
+                        />
+                      ))}
+                      <AddNewCard onClick={() => setIsPopupOpen(true)} isDark={isDark} />
+                    </div>
+                  </>
+                )}
+
+                {/* Upload Mode Content */}
+                {documentMode === 'upload' && (
+                  <>
+                    {/* Info Banner */}
+                    <div className={`flex items-center gap-4 p-4 rounded-2xl border ${isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200'}`}>
+                      <div className={`p-2.5 rounded-xl ${isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}><Upload size={20} /></div>
+                      <div className="text-left flex-1">
+                        <h3 className={`text-sm font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-800'}`}>Upload Mode</h3>
+                        <p className={`text-xs ${isDark ? 'text-emerald-300/70' : 'text-emerald-700/70'}`}>All uploaded files are automatically shared with employers when you apply. Max 10MB per file.</p>
+                      </div>
+                    </div>
+
+                    {/* Upload Drop Zone */}
+                    <div
+                      className={`relative p-8 rounded-2xl border-2 border-dashed text-center transition-all cursor-pointer ${isDragOver ? (isDark ? 'border-emerald-500 bg-emerald-500/10' : 'border-emerald-500 bg-emerald-50') : isDark ? 'border-neutral-700 hover:border-neutral-600 bg-neutral-900/50' : 'border-neutral-300 hover:border-neutral-400 bg-neutral-50'}`}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                      onDragLeave={() => setIsDragOver(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsDragOver(false);
+                        handleFileUpload(e.dataTransfer.files);
                       }}
-                      isDark={isDark}
-                    />
-                  ))}
-                  <AddNewCard onClick={() => setIsPopupOpen(true)} isDark={isDark} />
-                </div>
+                      onClick={() => uploadInputRef.current?.click()}
+                    >
+                      {isUploadLoading ? (
+                        <div className="flex flex-col items-center gap-3">
+                          <Loader2 size={32} className="animate-spin text-emerald-500" />
+                          <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>Uploading...</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-3">
+                          <div className={`p-4 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
+                            <FileUp size={28} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
+                          </div>
+                          <div>
+                            <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Drop files here or click to upload</p>
+                            <p className={`text-xs mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Supports PDF, DOC, DOCX, JPG, PNG, WEBP</p>
+                          </div>
+                        </div>
+                      )}
+                      <input
+                        ref={uploadInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                        onChange={(e) => handleFileUpload(e.target.files)}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {/* Uploaded Files List */}
+                    {uploadedDocuments.length > 0 && (
+                      <div className={`rounded-2xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                        <div className={`px-5 py-3 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                          <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Uploaded Files ({uploadedDocuments.length})</h3>
+                        </div>
+                        <div className="divide-y divide-neutral-800">
+                          {uploadedDocuments.map((doc) => (
+                            <div key={doc.id} className={`flex items-center gap-4 p-4 hover:bg-neutral-800/30 transition-colors ${isDark ? '' : 'hover:bg-neutral-50'}`}>
+                              {/* File Icon */}
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                {getFileIcon(doc.fileType)}
+                              </div>
+
+                              {/* File Info */}
+                              <div className="flex-1 min-w-0">
+                                {renamingDocId === doc.id ? (
+                                  <input
+                                    type="text"
+                                    value={renamingValue}
+                                    onChange={(e) => setRenamingValue(e.target.value)}
+                                    onBlur={() => handleRenameUploadedDoc(doc.id, renamingValue)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handleRenameUploadedDoc(doc.id, renamingValue);
+                                      if (e.key === 'Escape') setRenamingDocId(null);
+                                    }}
+                                    className={`w-full px-2 py-1 rounded-lg text-sm font-medium outline-none border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-100 border-neutral-300 text-black'}`}
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <p
+                                    className={`text-sm font-medium truncate cursor-pointer hover:underline ${isDark ? 'text-white' : 'text-black'}`}
+                                    onClick={() => { setRenamingDocId(doc.id); setRenamingValue(doc.name); }}
+                                    title="Click to rename"
+                                  >
+                                    {doc.name}
+                                  </p>
+                                )}
+                                <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                  {formatFileSize(doc.fileSize)} • {new Date(doc.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={doc.blobUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'hover:bg-neutral-200 text-neutral-500 hover:text-black'}`}
+                                  title="View/Download"
+                                >
+                                  <Download size={16} />
+                                </a>
+                                <label className={`p-2 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'hover:bg-neutral-200 text-neutral-500 hover:text-black'}`} title="Replace file">
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                                    onChange={(e) => {
+                                      if (e.target.files?.[0]) handleReplaceFile(doc.id, e.target.files[0]);
+                                    }}
+                                    className="hidden"
+                                  />
+                                  <FileUp size={16} />
+                                </label>
+                                <button
+                                  onClick={() => handleDeleteUploadedDoc(doc.id)}
+                                  className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-red-500/20 text-neutral-400 hover:text-red-400' : 'hover:bg-red-50 text-neutral-500 hover:text-red-600'}`}
+                                  title="Delete"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Empty State */}
+                    {uploadedDocuments.length === 0 && !isUploadLoading && (
+                      <div className={`p-8 rounded-2xl border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                        <File size={32} className={`mx-auto mb-3 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
+                        <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>No files uploaded yet</p>
+                        <p className={`text-xs mt-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Upload your resume, certificates, or other documents</p>
+                      </div>
+                    )}
+                  </>
+                )}
               </>
             )}
+
 
             {/* Profile Info Tab Content */}
             {activeProfileTab === 'profile' && (

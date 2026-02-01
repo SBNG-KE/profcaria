@@ -87,13 +87,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             email: decryptData(prof.enc_email)
         };
 
-        // 3. Fetch Shared Documents
+        // 3. Fetch Shared Documents (Written)
         const { data: documents } = await supabaseAdmin
             .schema('professional')
             .from('documents')
             .select('doc_type, enc_content, last_updated')
             .eq('user_id', professionalId)
             .in('doc_type', accessList);
+
+        // 3b. Fetch Uploaded Documents (all uploaded files are automatically shared)
+        const { data: uploadedDocs } = await supabaseAdmin
+            .schema('professional')
+            .from('uploaded_documents')
+            .select('id, enc_name, enc_blob_url, file_type, file_size, created_at')
+            .eq('user_id', professionalId);
 
         // 4. Fetch Full Profile Sections
         // 4. Fetch Full Profile Sections
@@ -208,9 +215,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             lastUpdated: doc.last_updated
         }));
 
+        // Format uploaded documents for response
+        const uploadedDocuments = (uploadedDocs || []).map((doc: any) => ({
+            id: doc.id,
+            name: decryptData(doc.enc_name),
+            blobUrl: decryptData(doc.enc_blob_url),
+            fileType: doc.file_type,
+            fileSize: doc.file_size,
+            createdAt: doc.created_at
+        }));
+
         return NextResponse.json({
             profile,
             sharedDocuments,
+            uploadedDocuments,
             accessList,
             sections: {
                 employmentHistory,

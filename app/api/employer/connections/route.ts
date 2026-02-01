@@ -245,15 +245,32 @@ async function createSnapshot(applicationId: string) {
         .eq('user_id', professionalId)
         .in('doc_type', accessList);
 
+    // 3b. Fetch Uploaded Documents (all uploaded files are preserved in snapshot)
+    const { data: uploadedDocs } = await supabaseAdmin
+        .schema('professional')
+        .from('uploaded_documents')
+        .select('id, enc_name, enc_blob_url, file_type, file_size, created_at')
+        .eq('user_id', professionalId);
+
     const sharedDocuments = (documents || []).map((doc: any) => ({
         type: doc.doc_type,
         content: decryptData(doc.enc_content),
         lastUpdated: doc.last_updated
     }));
 
+    const uploadedDocuments = (uploadedDocs || []).map((doc: any) => ({
+        id: doc.id,
+        name: decryptData(doc.enc_name),
+        blobUrl: decryptData(doc.enc_blob_url),
+        fileType: doc.file_type,
+        fileSize: doc.file_size,
+        createdAt: doc.created_at
+    }));
+
     return {
         profile,
         sharedDocuments,
+        uploadedDocuments,
         accessList,
         snapshottedAt: new Date().toISOString()
     };
