@@ -305,7 +305,6 @@ export async function sendNewFollowerNotification(to: string, followerName: stri
         <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
             <div style="width: 64px; height: 64px; background-color: #262626; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                 <span style="font-size: 24px;">👤</span> 
-                <!-- Ideally render actual image if available in email, but keeping it simple for now -->
             </div>
             <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${followerName}</p>
         </div>
@@ -322,6 +321,103 @@ export async function sendNewFollowerNotification(to: string, followerName: stri
             from: 'Profcaria Notifications <notifications@profcaria.com>',
             to,
             subject: `New ${title}: ${followerName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}
+
+// NEW: Application Received Notification (for Employers)
+export async function sendApplicationReceivedEmail(to: string, applicantName: string, jobTitle: string, jobId: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Application Received to ${to}: ${applicantName} applied for ${jobTitle}`);
+        return { success: true };
+    }
+
+    const link = `https://www.profcaria.com/employer/jobs/${jobId}/applications`;
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Application 📩</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            Someone has applied to your open position!
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px;">Applicant</p>
+            <p style="margin: 0; font-size: 20px; font-weight: 700; color: #ffffff;">${applicantName}</p>
+        </div>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px;">Position</p>
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${link}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Review Application</a>
+        </div>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+            We recommend reviewing applications promptly to find the best candidates.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Talent <talent@profcaria.com>',
+            to,
+            subject: `New Application: ${applicantName} for ${jobTitle}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}
+
+// NEW: Job Recommendation Email (for Professionals)
+interface RecommendedJob {
+    id: string;
+    title: string;
+    companyName: string;
+    location?: string;
+}
+
+export async function sendJobRecommendationEmail(to: string, recipientName: string, jobs: RecommendedJob[]) {
+    if (!resend || jobs.length === 0) {
+        console.log(`[MOCK EMAIL] Job Recommendations to ${to}: ${jobs.length} jobs`);
+        return { success: true };
+    }
+
+    const jobCards = jobs.slice(0, 5).map(job => {
+        const link = `https://www.profcaria.com/professional/find?ref=email&job=${job.id}`;
+        return `
+            <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #ffffff;">${job.title}</p>
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #a3a3a3;">${job.companyName}${job.location ? ` • ${job.location}` : ''}</p>
+                <a href="${link}" style="display: inline-block; background-color: #262626; color: #ffffff; font-weight: 700; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">View & Apply</a>
+            </div>
+        `;
+    }).join('');
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Jobs For You ✨</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            Hi ${recipientName}, here are some opportunities tailored just for you:
+        </p>
+        ${jobCards}
+        <div style="text-align: center; margin-top: 32px; margin-bottom: 24px;">
+            <a href="https://www.profcaria.com/professional/find" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Browse All Jobs</a>
+        </div>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+            These recommendations are powered by our AI matching algorithm based on your profile and preferences.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Jobs <jobs@profcaria.com>',
+            to,
+            subject: `${jobs.length} New Job${jobs.length > 1 ? 's' : ''} Matched For You`,
             html: EmailWrapper(content)
         });
         return { success: true };

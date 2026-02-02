@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart, ChevronLeft } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart, ChevronLeft, Share2 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
 interface Job {
@@ -38,6 +38,7 @@ export default function FindJobsPage() {
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
     const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
     const [savingJobId, setSavingJobId] = useState<string | null>(null);
+    const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
 
     // Analytics tracking
@@ -368,9 +369,34 @@ export default function FindJobsPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {!job.applicationStatus && (
-                                                <button onClick={(e) => handleSaveJob(job.id, e)} disabled={savingJobId === job.id} className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id) ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-red-400 hover:border-red-500/20' : 'bg-neutral-100 border-neutral-200 text-neutral-400 hover:text-red-400 hover:border-red-500/20'}`} title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}>
-                                                    <Heart size={16} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} />
-                                                </button>
+                                                <>
+                                                    <button
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            e.preventDefault();
+                                                            try {
+                                                                const res = await fetch(`/api/employer/jobs/${job.id}/share`);
+                                                                const data = await res.json();
+                                                                if (data.link) {
+                                                                    navigator.clipboard.writeText(data.link);
+                                                                    setCopiedJobId(job.id);
+                                                                    setTimeout(() => setCopiedJobId(null), 2500);
+                                                                }
+                                                            } catch (e) { console.error(e); }
+                                                        }}
+                                                        className={`p-2 rounded-xl border transition-all z-20 ${copiedJobId === job.id
+                                                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                                                            : isDark
+                                                                ? 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-emerald-400 hover:border-emerald-500/20'
+                                                                : 'bg-neutral-100 border-neutral-200 text-neutral-400 hover:text-emerald-400 hover:border-emerald-500/20'}`}
+                                                        title={copiedJobId === job.id ? 'Link copied!' : 'Share job'}
+                                                    >
+                                                        <Share2 size={16} />
+                                                    </button>
+                                                    <button onClick={(e) => handleSaveJob(job.id, e)} disabled={savingJobId === job.id} className={`p-2 rounded-xl border transition-all z-20 ${savedJobIds.has(job.id) ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-500 hover:text-red-400 hover:border-red-500/20' : 'bg-neutral-100 border-neutral-200 text-neutral-400 hover:text-red-400 hover:border-red-500/20'}`} title={savedJobIds.has(job.id) ? 'Unsave job' : 'Save job for later'}>
+                                                        <Heart size={16} fill={savedJobIds.has(job.id) ? 'currentColor' : 'none'} />
+                                                    </button>
+                                                </>
                                             )}
                                             <div className="px-3 py-1 bg-emerald-500/10 text-[10px] font-black text-emerald-400 uppercase tracking-widest rounded-lg border border-emerald-500/20 flex items-center gap-2"><Zap size={10} /> Active</div>
                                         </div>

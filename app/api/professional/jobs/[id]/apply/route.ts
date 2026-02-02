@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
-import { encryptData } from '@/lib/security';
+import { encryptData, decryptData } from '@/lib/security';
+import { sendApplicationReceivedEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -59,16 +60,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             return NextResponse.json({ error: 'Failed to submit application' }, { status: 500 });
         }
 
-        // Create a notification for the employer (optional but good)
-        // First we need to find the company_id for the job
+        // Fetch job and company details for notification
         const { data: job } = await supabaseAdmin
             .schema('employer')
             .from('jobs')
-            .select('company_id')
+            .select('company_id, enc_title, status')
             .eq('id', jobId)
             .single();
 
         if (job) {
+            // Create in-app notification
             await supabaseAdmin
                 .schema('employer')
                 .from('notifications')
@@ -79,6 +80,43 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                         type: 'application'
                     }
                 ]);
+
+            // Send email notification if job is still open
+            if (job.status !== 'closed') {
+                try {
+                    // Get applicant name
+                    const { data: applicant } = await supabaseAdmin
+                        .schema('professional')
+                        .from('users')
+                        .select('enc_first_name, enc_last_name')
+                        .eq('id', uid)
+                        .single();
+
+                    // Get company admin email
+                    const { data: company } = await supabaseAdmin
+                        .schema('employer')
+                        .from('companies')
+                        .select('admin_email')
+                        .eq('id', job.company_id)
+                        .single();
+
+                    if (applicant && company?.admin_email && job.enc_title && applicant.enc_first_name && applicant.enc_last_name) {
+                        const firstName = decryptData(applicant.enc_first_name) || 'Applicant';
+                        const lastName = decryptData(applicant.enc_last_name) || '';
+                        const jobTitle = decryptData(job.enc_title) || 'Position';
+
+                        await sendApplicationReceivedEmail(
+                            company.admin_email,
+                            `${firstName} ${lastName}`.trim(),
+                            jobTitle,
+                            jobId
+                        );
+                    }
+                } catch (emailError) {
+                    console.error('Email notification failed:', emailError);
+                    // Don't fail the application if email fails
+                }
+            }
         }
 
         return NextResponse.json({ success: true, applicationId: data.id });
