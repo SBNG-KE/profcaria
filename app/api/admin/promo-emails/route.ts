@@ -6,13 +6,16 @@ import { decryptData } from '@/lib/security';
 export const runtime = 'nodejs';
 
 // One-time API to send welcome emails to existing promo users who haven't received it
-// Protected by secret key to prevent abuse
+// Protected by secret key OR admin email to prevent abuse
 export async function POST(req: NextRequest) {
     try {
-        const { secretKey } = await req.json();
+        const { secretKey, adminEmail } = await req.json();
 
-        // Security check - only allow with admin secret
-        if (secretKey !== process.env.ADMIN_SECRET_KEY) {
+        // Security check - allow with secret key OR verified admin email
+        const validSecretKey = secretKey === process.env.ADMIN_SECRET_KEY;
+        const validAdminEmail = adminEmail === process.env.ADMIN_EMAIL;
+
+        if (!validSecretKey && !validAdminEmail) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
