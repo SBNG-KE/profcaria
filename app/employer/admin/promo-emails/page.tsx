@@ -18,31 +18,31 @@ export default function AdminPromoEmailsPage() {
         const darkPref = localStorage.getItem('theme');
         setIsDark(darkPref !== 'light');
 
-        // Check session
+        // Check session and get profile
         checkAuthorization();
     }, []);
 
     const checkAuthorization = async () => {
         try {
-            const res = await fetch('/api/employer/session');
-            if (!res.ok) {
+            // Get employer profile which contains the email
+            const profileRes = await fetch('/api/employer/profile');
+            if (!profileRes.ok) {
                 router.push('/employer/login');
                 return;
             }
-            const session = await res.json();
+            const profileData = await profileRes.json();
+            const profile = profileData.profile;
 
-            // Get company details to check admin email
-            const companyRes = await fetch('/api/employer/company');
-            if (!companyRes.ok) {
+            if (!profile?.email) {
                 router.push('/employer/login');
                 return;
             }
-            const company = await companyRes.json();
 
             // Store the admin email for API call
-            setAdminEmail(company.adminEmail || '');
+            setAdminEmail(profile.email);
             setIsAuthorized(true);
         } catch (err) {
+            console.error('Auth check failed:', err);
             router.push('/employer/login');
         } finally {
             setIsLoading(false);
@@ -107,6 +107,10 @@ export default function AdminPromoEmailsPage() {
                         <li>• Marks each as sent (won't receive duplicate emails)</li>
                         <li>• Safe to run multiple times</li>
                     </ul>
+
+                    <div className={`mb-4 p-3 rounded-lg text-sm ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
+                        Logged in as: <span className="font-mono">{adminEmail}</span>
+                    </div>
 
                     <button
                         onClick={handleSendEmails}
