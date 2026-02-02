@@ -473,8 +473,6 @@ export async function sendPromoWelcomeEmail(
             <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; line-height: 1.6;">
                 <strong style="color: #ffffff;">What's Included:</strong><br/>
                 ✓ All premium features unlocked<br/>
-                ✓ Priority support<br/>
-                ✓ No credit card required<br/>
                 ✓ Cancel anytime
             </p>
         </div>
