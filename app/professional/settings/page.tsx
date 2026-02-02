@@ -158,7 +158,7 @@ export default function ProfessionalSettingsPage() {
                                 : `${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} shadow-lg hover:shadow-xl active:scale-95`
                                 }`}
                         >
-                            {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : 'Upgrade'}
+                            {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : subscription ? `Switch to ${name}` : `Get ${name}`}
                         </button>
                     )}
                 </div>

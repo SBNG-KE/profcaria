@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, Building2, UserCircle } from 'lucide-react';
+import { Search, X, Building2, UserCircle, Clock, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import VerificationBadge from '../VerificationBadge';
 
@@ -14,7 +14,31 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<any[]>([]);
+    const [recentSearches, setRecentSearches] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+    // Fetch search history when modal opens
+    useEffect(() => {
+        if (isOpen && recentSearches.length === 0) {
+            fetchSearchHistory();
+        }
+    }, [isOpen]);
+
+    const fetchSearchHistory = async () => {
+        setIsLoadingHistory(true);
+        try {
+            const res = await fetch('/api/search/history');
+            if (res.ok) {
+                const data = await res.json();
+                setRecentSearches(data.history || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch search history:', err);
+        } finally {
+            setIsLoadingHistory(false);
+        }
+    };
 
     // Debounced Search
     useEffect(() => {
@@ -27,49 +51,58 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
         setIsSearching(true);
         const timer = setTimeout(async () => {
             try {
-                // Determine which API to use or use a generic one. 
-                // For now, re-using /api/search/users which returns companies and professionals
                 const res = await fetch(`/api/search/users?q=${encodeURIComponent(query)}`);
                 if (res.ok) {
                     const data = await res.json();
-                    setResults(data.results || []);
+                    let searchResults = data.results || [];
+
+                    // Prioritize recently searched users (move them to top)
+                    const recentIds = new Set(recentSearches.map(r => r.id));
+                    searchResults = searchResults.sort((a: any, b: any) => {
+                        const aRecent = recentIds.has(a.id) ? 1 : 0;
+                        const bRecent = recentIds.has(b.id) ? 1 : 0;
+                        if (aRecent !== bRecent) return bRecent - aRecent;
+                        return b.followers - a.followers;
+                    });
+
+                    setResults(searchResults);
                 }
             } catch (err) {
                 console.error(err);
             } finally {
-                // Keep loading state until results set? 
-                // Actually setIsSearching(false) usually implies "done fetching" 
-                // but here it might flicker if we do it too early. 
-                // We'll leave it true if query exists? No, mostly for spinner.
+                setIsSearching(false);
             }
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [query]);
+    }, [query, recentSearches]);
 
-    // Handle Route Change (Close Search)
-    const handleResultClick = (result: any) => {
+    // Save search click and navigate
+    const handleResultClick = async (result: any) => {
+        // Save click to history (fire and forget)
+        fetch('/api/search/history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                targetId: result.id,
+                targetType: result.type,
+                query: query.trim() || null
+            })
+        }).catch(console.error);
+
         setIsOpen(false);
         setQuery('');
+
         if (result.type === 'employer') {
             router.push(`/public/companies/${result.id}`);
-            // Note: If curr user is employer, they might see it differently? 
-            // Employers viewing companies? Usually specific route. 
-            // But stick to professional route for now or check user role.
-            // If this component is reused, we might need to know 'currentRole'.
-            // For now, let's assume /professional/companies works for all (public view).
         } else {
-            // "candidate" view for employers, "people" view for professionals?
-            // This is tricky if reused exactly. 
-            // We'll use a prop or context if needed, but for now specific paths.
-            // Let's safe-guess:
-            // const isInEmployerPath = window.location.pathname.startsWith('/employer');
-            // if (isInEmployerPath) {
-            //    router.push(`/employer/candidate/${result.id}`);
-            // } else {
             router.push(`/public/people/${result.id}`);
-            // }
         }
+    };
+
+    // Handle clicking a recent search item
+    const handleRecentClick = (item: any) => {
+        handleResultClick(item);
     };
 
     if (!isOpen) {
@@ -115,41 +148,109 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
 
                 {/* Results */}
                 <div className="max-h-[60vh] overflow-y-auto">
-                    {query.trim() && results.length === 0 ? (
-                        <div className="p-8 text-center text-neutral-500">
-                            {isSearching ? 'Searching...' : 'No results found.'}
-                        </div>
-                    ) : (
+                    {/* Show Recent Searches if no query */}
+                    {!query.trim() && recentSearches.length > 0 && (
                         <div>
-                            {results.map((result) => (
+                            <div className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500 bg-neutral-900' : 'text-neutral-400 bg-neutral-50'}`}>
+                                <Clock size={12} />
+                                Recent Searches
+                            </div>
+                            {recentSearches.map((item) => (
                                 <button
-                                    key={result.id}
-                                    onClick={() => handleResultClick(result)}
+                                    key={item.id}
+                                    onClick={() => handleRecentClick(item)}
                                     className={`w-full px-4 py-3 flex items-center gap-4 text-left transition-colors border-b last:border-0 ${isDark ? 'border-neutral-800 hover:bg-neutral-800/50' : 'border-neutral-100 hover:bg-neutral-50'}`}
                                 >
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}`}>
-                                        {result.image ? (
-                                            <img src={result.image} alt="" className="w-full h-full object-cover" />
+                                        {item.image ? (
+                                            <img src={item.image} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            result.type === 'employer' ? <Building2 size={18} className="text-neutral-400" /> : <UserCircle size={18} className="text-neutral-400" />
+                                            item.type === 'employer' ? <Building2 size={18} className="text-neutral-400" /> : <UserCircle size={18} className="text-neutral-400" />
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                             <span className={`font-semibold flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
-                                                {result.name}
-                                                <VerificationBadge tier={result.badgeType} size={24} />
+                                                {item.name}
+                                                <VerificationBadge tier={item.badgeType} size={24} />
                                             </span>
-                                            {result.type === 'employer' && (
+                                            {item.type === 'employer' && (
                                                 <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">CORP</span>
                                             )}
                                         </div>
                                         <div className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                            {result.followers} {result.type === 'employer' ? 'subscribers' : 'followers'}
+                                            {item.followers} {item.type === 'employer' ? 'subscribers' : 'followers'}
                                         </div>
                                     </div>
+                                    <Clock size={14} className={isDark ? 'text-neutral-600' : 'text-neutral-300'} />
                                 </button>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Loading History */}
+                    {!query.trim() && isLoadingHistory && (
+                        <div className="p-8 text-center text-neutral-500">
+                            Loading recent searches...
+                        </div>
+                    )}
+
+                    {/* No Recent Searches */}
+                    {!query.trim() && !isLoadingHistory && recentSearches.length === 0 && (
+                        <div className={`p-8 text-center ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                            <Search size={32} className="mx-auto mb-3 opacity-30" />
+                            <p className="text-sm">Search for people or companies</p>
+                        </div>
+                    )}
+
+                    {/* Search Results */}
+                    {query.trim() && results.length === 0 ? (
+                        <div className="p-8 text-center text-neutral-500">
+                            {isSearching ? 'Searching...' : 'No results found.'}
+                        </div>
+                    ) : query.trim() && (
+                        <div>
+                            {results.some(r => recentSearches.find(rs => rs.id === r.id)) && (
+                                <div className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-neutral-500 bg-neutral-900' : 'text-neutral-400 bg-neutral-50'}`}>
+                                    <TrendingUp size={12} />
+                                    Results (Recently searched first)
+                                </div>
+                            )}
+                            {results.map((result) => {
+                                const isRecent = recentSearches.find(rs => rs.id === result.id);
+                                return (
+                                    <button
+                                        key={result.id}
+                                        onClick={() => handleResultClick(result)}
+                                        className={`w-full px-4 py-3 flex items-center gap-4 text-left transition-colors border-b last:border-0 ${isDark ? 'border-neutral-800 hover:bg-neutral-800/50' : 'border-neutral-100 hover:bg-neutral-50'}`}
+                                    >
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}`}>
+                                            {result.image ? (
+                                                <img src={result.image} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                result.type === 'employer' ? <Building2 size={18} className="text-neutral-400" /> : <UserCircle size={18} className="text-neutral-400" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`font-semibold flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                                                    {result.name}
+                                                    <VerificationBadge tier={result.badgeType} size={24} />
+                                                </span>
+                                                {result.type === 'employer' && (
+                                                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white">CORP</span>
+                                                )}
+                                            </div>
+                                            <div className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                {result.followers} {result.type === 'employer' ? 'subscribers' : 'followers'}
+                                            </div>
+                                        </div>
+                                        {isRecent && (
+                                            <Clock size={14} className={isDark ? 'text-neutral-600' : 'text-neutral-300'} />
+                                        )}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -157,3 +258,4 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
         </>
     );
 }
+

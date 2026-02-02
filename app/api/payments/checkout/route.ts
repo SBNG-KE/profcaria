@@ -90,10 +90,85 @@ export async function POST(req: Request) {
                 // e.g. PAYSTACK_PLAN_PROF_STANDARD_MONTHLY
                 planCodeEnvKey = `PAYSTACK_PLAN_PROF_${plan.toUpperCase()}_MONTHLY`;
             }
+
+            // --- PRORATED PLAN SWITCHING ---
+            // Check for existing active subscription
+            let proratedRefund = 0;
+            let switchingFrom = '';
+
+            if (user.schema === 'employer') {
+                const { data: existingSub } = await supabaseAdmin
+                    .schema('employer')
+                    .from('subscriptions')
+                    .select('*')
+                    .eq('company_id', user.uid)
+                    .eq('status', 'active')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (existingSub && existingSub.plan_type !== plan) {
+                    // SECURITY: Promo plans do NOT get refunds
+                    if (!existingSub.is_promo) {
+                        // Calculate remaining days
+                        const periodEnd = new Date(existingSub.current_period_end);
+                        const now = new Date();
+                        const remainingMs = periodEnd.getTime() - now.getTime();
+                        const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
+
+                        // Calculate prorated refund: (remaining_days / 30) * amount_paid
+                        if (remainingDays > 0 && existingSub.amount_paid > 0) {
+                            proratedRefund = (remainingDays / 30) * parseFloat(existingSub.amount_paid);
+                        }
+                    }
+                    switchingFrom = existingSub.plan_type;
+                }
+            } else {
+                const { data: existingSub } = await supabaseAdmin
+                    .schema('professional')
+                    .from('subscriptions')
+                    .select('*')
+                    .eq('user_id', user.uid)
+                    .eq('status', 'active')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (existingSub && existingSub.plan_type !== plan) {
+                    // SECURITY: Promo plans do NOT get refunds
+                    if (!existingSub.is_promo) {
+                        // Calculate remaining days
+                        const periodEnd = new Date(existingSub.current_period_end);
+                        const now = new Date();
+                        const remainingMs = periodEnd.getTime() - now.getTime();
+                        const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
+
+                        // Calculate prorated refund: (remaining_days / 30) * amount_paid
+                        if (remainingDays > 0 && existingSub.amount_paid > 0) {
+                            proratedRefund = (remainingDays / 30) * parseFloat(existingSub.amount_paid);
+                        }
+                    }
+                    switchingFrom = existingSub.plan_type;
+                }
+            }
+
+            // Apply prorated refund to new plan price
+            if (proratedRefund > 0) {
+                priceUSD = Math.max(0, priceUSD - proratedRefund);
+                metadata.proratedRefund = proratedRefund.toFixed(2);
+                metadata.switchingFrom = switchingFrom;
+            }
         }
 
         if (priceUSD <= 0 && !isAd && plan !== 'free') {
-            return NextResponse.json({ error: 'Invalid request configuration' }, { status: 400 });
+            // If proration makes price 0 or negative, treat as free switch
+            // This can happen if someone switches to a cheaper plan with proration credit
+            // We'll still process it but with $0 charge
+            if (priceUSD < 0) {
+                // User has excess credit - for now, just set to 0
+                // Future: Could store credit for next billing cycle
+                priceUSD = 0;
+            }
         }
 
         // --- 2. GET USER DETAILS ---

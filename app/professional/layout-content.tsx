@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'reac
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, Search, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, UserCircle, Cable, Plus, Power, Menu, X, HelpCircle, Rss, Users
+    Briefcase, UserCircle, Cable, Plus, Power, Menu, X, HelpCircle, Rss, Users, UsersRound
 } from 'lucide-react';
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
@@ -136,26 +136,35 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     const showBackButton = pathname !== '/professional/feed';
 
     // Compact NavItem
-    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount }: any) => (
+    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount, comingSoon }: { id: string; href: string; icon: React.ElementType; label: string; badgeCount?: number; comingSoon?: boolean }) => (
         <button
-            onClick={() => router.push(href)}
+            onClick={() => !comingSoon && router.push(href)}
             className={`
                 w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group relative
                 ${activeTab === id
                     ? (isDark ? 'bg-white/10 text-white' : 'bg-black/10 text-black')
                     : (isDark ? 'text-neutral-400 hover:bg-white/5 hover:text-white' : 'text-neutral-500 hover:bg-black/5 hover:text-black')}
                 ${!sidebarOpen ? 'justify-center' : ''}
+                ${comingSoon ? 'cursor-default opacity-70' : ''}
             `}
         >
             <div className="relative">
                 <Icon size={18} />
-                {(badgeCount > 0 || (id === 'notifications' && unreadCount > 0)) && (
+                {comingSoon && (
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-[6px] font-bold text-white">✨</span>
+                )}
+                {(badgeCount && badgeCount > 0) || (id === 'notifications' && unreadCount > 0) ? (
                     <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
                         {id === 'notifications' ? unreadCount : badgeCount}
                     </span>
-                )}
+                ) : null}
             </div>
-            {sidebarOpen && <span className="font-medium text-xs">{label}</span>}
+            {sidebarOpen && (
+                <span className="font-medium text-xs flex items-center gap-2">
+                    {label}
+                    {comingSoon && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 font-bold uppercase">Soon</span>}
+                </span>
+            )}
         </button>
     ));
 
@@ -230,6 +239,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <NavItem id="roles-jobs" href="/professional/roles-jobs" icon={Briefcase} label="My Jobs" />
                     <NavItem id="employment" href="/professional/employment" icon={Cable} label="Employment" />
                     <NavItem id="connections" href="/professional/connections" icon={Users} label="Connections" />
+                    <NavItem id="communities" href="#" icon={UsersRound} label="Communities" comingSoon={true} />
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Account</div>
                     <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" />

@@ -86,6 +86,10 @@ export async function POST(req: Request) {
                 console.log('Final Plan:', plan);
 
                 if (companyId) {
+                    // EMPLOYER SUBSCRIPTION HANDLING
+                    const proratedRefund = metadata?.proratedRefund ? parseFloat(metadata.proratedRefund) : 0;
+                    const switchingFrom = metadata?.switchingFrom || null;
+
                     // 1. Log Payment
                     await supabaseAdmin.schema('employer').from('payments').insert({
                         company_id: companyId,
@@ -95,19 +99,18 @@ export async function POST(req: Request) {
                         status: data.status
                     });
 
-                    // 2. Invalidate Previous Active Subscriptions (Strict Upgrade/Downgrade)
-                    // This ensures the new one we are about to insert is the ONLY active one.
+                    // 2. Update Previous Active Subscriptions with switch info
                     await supabaseAdmin
                         .schema('employer')
                         .from('subscriptions')
-                        .update({ status: 'replaced' })
+                        .update({
+                            status: 'switched',
+                            switched_from: null // This was the current plan being replaced
+                        })
                         .eq('company_id', companyId)
                         .eq('status', 'active');
 
                     // 3. Grant Access (Insert New Subscription)
-                    // Use the parsed variables from above, do not redeclare.
-
-                    // Calculate end date based on cycle
                     const endDate = new Date();
                     if (billingCycle === 'yearly') {
                         endDate.setFullYear(endDate.getFullYear() + 1);
@@ -115,14 +118,22 @@ export async function POST(req: Request) {
                         endDate.setMonth(endDate.getMonth() + 1);
                     }
 
+                    // Calculate actual amount paid in USD for future proration
+                    const rate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+                    const amountPaidUSD = (data.amount / 100) / rate;
+
                     await supabaseAdmin.schema('employer').from('subscriptions').upsert({
                         company_id: companyId,
                         status: 'active',
                         plan_type: plan,
                         billing_cycle: billingCycle,
                         current_period_end: endDate.toISOString(),
+                        current_period_start: new Date().toISOString(),
                         paystack_subscription_code: data.subscription_code || ('one_time_' + data.reference),
                         paystack_email_token: data.email_token || 'one_time',
+                        amount_paid: amountPaidUSD.toFixed(2),
+                        prorated_refund: proratedRefund.toFixed(2),
+                        switched_from: switchingFrom,
                         // Reset usage on new payment
                         usage_jobs: 0,
                         usage_connections: 0,
@@ -136,6 +147,59 @@ export async function POST(req: Request) {
                     if (plan === 'verified') badge = 'blue';
 
                     await supabaseAdmin.schema('employer').from('companies').update({ badge_type: badge }).eq('id', companyId);
+                }
+
+                // PROFESSIONAL SUBSCRIPTION HANDLING
+                const userId = metadata?.userId;
+                const entityType = metadata?.entityType;
+
+                if (userId && entityType === 'professional') {
+                    const proratedRefund = metadata?.proratedRefund ? parseFloat(metadata.proratedRefund) : 0;
+                    const switchingFrom = metadata?.switchingFrom || null;
+
+                    // 1. Update Previous Active Subscriptions
+                    await supabaseAdmin
+                        .schema('professional')
+                        .from('subscriptions')
+                        .update({
+                            status: 'switched',
+                            switched_from: null
+                        })
+                        .eq('user_id', userId)
+                        .eq('status', 'active');
+
+                    // 2. Grant Access (Insert New Subscription)
+                    const endDate = new Date();
+                    if (billingCycle === 'yearly') {
+                        endDate.setFullYear(endDate.getFullYear() + 1);
+                    } else {
+                        endDate.setMonth(endDate.getMonth() + 1);
+                    }
+
+                    // Calculate actual amount paid in USD for future proration
+                    const rate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
+                    const amountPaidUSD = (data.amount / 100) / rate;
+
+                    await supabaseAdmin.schema('professional').from('subscriptions').upsert({
+                        user_id: userId,
+                        status: 'active',
+                        plan_type: plan,
+                        current_period_end: endDate.toISOString(),
+                        current_period_start: new Date().toISOString(),
+                        paystack_subscription_code: data.subscription_code || ('one_time_' + data.reference),
+                        paystack_email_token: data.email_token || 'one_time',
+                        amount_paid: amountPaidUSD.toFixed(2),
+                        prorated_refund: proratedRefund.toFixed(2),
+                        switched_from: switchingFrom
+                    });
+
+                    // 3. Sync Badge Type based on plan
+                    let badge = 'none';
+                    if (plan === 'basic') badge = 'gray';
+                    if (plan === 'standard') badge = 'blue';
+                    if (plan === 'premium') badge = 'gold';
+
+                    await supabaseAdmin.schema('professional').from('users').update({ badge_type: badge }).eq('id', userId);
                 }
                 break;
             }

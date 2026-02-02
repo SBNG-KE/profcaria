@@ -31,24 +31,12 @@ export async function GET() {
         // Decrypt Data & Shuffle for Variety
         const companies = shuffle(data.companies || []).map((c: any) => ({
             ...c,
-            // Decrypt known fields, keep original enc_ for reference if needed (but frontend uses enc_ names in my code? I should fix frontend too)
-            // Actually, frontend I wrote uses `enc_company_name`. 
-            // If I decrypt here, I should probably expose them as `companyName` etc.
-            // AND the frontend code I just wrote used `item.data.enc_company_name`.
-            // So I should just decrypt it AND REPLACE the value? Or provide a new field?
-            // "enc_X" implies encrypted. 
-            // Let's decrypt into the SAME field to avoid changing frontend massively OR provide new fields.
-            // Wait, if frontend shows `{item.data.enc_company_name}`, it expects the value there.
-            // If I decrypt `enc_company_name` -> "Google", then `item.data.enc_company_name` will be "Google". 
-            // This is semantically weird (variable named enc_ having plain text).
-            // But efficient. 
-            // Better: Decrypt to `companyName` and update frontend to use `companyName`.
-
             companyName: decryptData(c.enc_company_name),
             logoUrl: c.enc_logo_url ? decryptData(c.enc_logo_url) : null
         }));
 
-        const professionals = shuffle(data.professionals || []).map((p: any) => ({
+        // Decrypt professional data
+        const decryptedProfessionals = shuffle(data.professionals || []).map((p: any) => ({
             ...p,
             firstName: decryptData(p.enc_first_name),
             lastName: decryptData(p.enc_last_name),
@@ -56,9 +44,43 @@ export async function GET() {
             profileImageUrl: p.enc_profile_image_url ? decryptData(p.enc_profile_image_url) : null
         }));
 
+        // Fetch employment info for each professional
+        const professionalsWithEmployment = await Promise.all(
+            decryptedProfessionals.map(async (p: any) => {
+                // Check for active employment connection
+                const { data: connections } = await supabaseAdmin
+                    .schema('professional')
+                    .from('connections')
+                    .select('company_id, status')
+                    .eq('user_id', p.id)
+                    .in('status', ['accepted', 'hired', 'employed', 'offered'])
+                    .limit(1);
+
+                let currentCompany = null;
+                if (connections && connections.length > 0) {
+                    // Get company name
+                    const { data: company } = await supabaseAdmin
+                        .schema('employer')
+                        .from('companies')
+                        .select('enc_company_name')
+                        .eq('id', connections[0].company_id)
+                        .single();
+
+                    if (company?.enc_company_name) {
+                        currentCompany = decryptData(company.enc_company_name);
+                    }
+                }
+
+                return {
+                    ...p,
+                    currentCompany
+                };
+            })
+        );
+
         return NextResponse.json({
             companies,
-            professionals
+            professionals: professionalsWithEmployment
         });
     } catch (error) {
         console.error('Recommendation API Error:', error);

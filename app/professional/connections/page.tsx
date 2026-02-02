@@ -2,41 +2,39 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
-import { Users, Building2, UserPlus, Loader2, Search, Zap, UserMinus } from 'lucide-react';
+import { Users, Building2, UserPlus, Loader2, Search, Zap, Sparkles } from 'lucide-react';
 import NetworkCard from '@/app/components/network/NetworkCard';
+import SuggestionCard from '@/app/components/network/SuggestionCard';
 import Link from 'next/link';
 
 export default function ConnectionsPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
-    const [activeTab, setActiveTab] = useState<'companies' | 'followers'>('companies');
+    const [activeTab, setActiveTab] = useState<'suggestions' | 'subscriptions' | 'followers'>('suggestions');
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Suggestions State
+    const [suggestions, setSuggestions] = useState<{ companies: any[], professionals: any[], followBacks: any[] }>({
+        companies: [],
+        professionals: [],
+        followBacks: []
+    });
+    const [suggestionsLoading, setSuggestionsLoading] = useState(true);
+
+    // Fetch Subscriptions/Followers data
     const fetchData = async () => {
+        if (activeTab === 'suggestions') return;
+
         setLoading(true);
         try {
-            // Tab 1: Subscriptions (Companies I Follow)
-            // Tab 2: Followers (People who follow me)
-            const typeParam = activeTab === 'companies' ? 'following_companies' : 'followers';
-
+            const typeParam = activeTab === 'subscriptions' ? 'following_companies' : 'followers';
             const res = await fetch(`/api/professional/follow?type=${typeParam}`);
             if (res.ok) {
                 const json = await res.json();
                 let list = json.following || json.followers || [];
-
-                // Filter Logic for "Followers" Tab
-                // Requirement: 
-                // 1. Show: People who follow ME (isFollowing = false [pending follow back])
-                // 2. Show: Mutual follows (isFollowing = true)
-                // 3. HIDE: People I follow who DO NOT follow me back. (The API `type=followers` ONLY returns people who follow ME, so this condition is automatically met. The API endpoint `followers` returns list of users where `following_id` == ME. So by definition, everyone in this list follows me. I just need to check if I `isFollowing` them back or not.)
-
-                // Note: The user said "it does not show those who you followed and never followed back". 
-                // This refers to the 'following' list. Since we REMOVED the "Following" tab, we don't need to worry about filtering that list because we aren't fetching it.
-                // We are fetching "Followers" (people following me).
-
                 setData(list);
             }
         } catch (error) {
@@ -46,23 +44,69 @@ export default function ConnectionsPage() {
         }
     };
 
+    // Fetch Suggestions data
+    const fetchSuggestions = async () => {
+        setSuggestionsLoading(true);
+        try {
+            // Fetch recommendations
+            const recRes = await fetch('/api/professional/recommendations');
+            const recData = recRes.ok ? await recRes.json() : { companies: [], professionals: [] };
+
+            // Fetch followers who I haven't followed back
+            const followRes = await fetch('/api/professional/follow?type=followers');
+            const followData = followRes.ok ? await followRes.json() : { followers: [] };
+            const followBacks = (followData.followers || []).filter((f: any) => !f.isFollowing);
+
+            setSuggestions({
+                companies: recData.companies || [],
+                professionals: recData.professionals || [],
+                followBacks
+            });
+        } catch (error) {
+            console.error("Error fetching suggestions", error);
+        } finally {
+            setSuggestionsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        fetchData();
+        if (activeTab === 'suggestions') {
+            fetchSuggestions();
+        } else {
+            fetchData();
+        }
     }, [activeTab]);
 
+    const handleFollow = async (id: string, type: 'user' | 'company') => {
+        const res = await fetch('/api/professional/follow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: id, type })
+        });
+
+        if (res.ok) {
+            // Remove from suggestions
+            setSuggestions(prev => ({
+                ...prev,
+                companies: type === 'company' ? prev.companies.filter(c => c.id !== id) : prev.companies,
+                professionals: type === 'user' ? prev.professionals.filter(p => p.id !== id) : prev.professionals,
+                followBacks: type === 'user' ? prev.followBacks.filter(p => p.id !== id) : prev.followBacks
+            }));
+        } else {
+            throw new Error('Follow failed');
+        }
+    };
+
     const handleUnfollow = (id: string) => {
-        // If in Subscriptions (Companies), unfollowing removes them from the list immediately.
-        if (activeTab === 'companies') {
+        if (activeTab === 'subscriptions') {
             setData(prev => prev.filter(item => item.id !== id));
         }
-        // If in Followers (People), unfollowing (or following back) just changes state, usually doesn't remove them from "Followers" list unless we block them (not implemented).
-        // Wait, "Unfollow" button implies I was following them (Mutual). If I unfollow, they are still my follower, just not mutual.
-        // So I should just update the `isFollowing` state locally?
         if (activeTab === 'followers') {
             setData(prev => prev.map(item => item.id === id ? { ...item, isFollowing: !item.isFollowing } : item));
         }
     };
 
+    // Filter data for subscriptions/followers
     const filteredData = useMemo(() => {
         if (!searchTerm) return data;
         const term = searchTerm.toLowerCase();
@@ -72,7 +116,27 @@ export default function ConnectionsPage() {
         );
     }, [data, searchTerm]);
 
-    const TabButton = ({ id, label, icon: Icon }: any) => (
+    // Filter suggestions
+    const filteredSuggestions = useMemo(() => {
+        if (!searchTerm) return suggestions;
+        const term = searchTerm.toLowerCase();
+        return {
+            companies: suggestions.companies.filter(c =>
+                (c.companyName || '').toLowerCase().includes(term) ||
+                (c.industry || '').toLowerCase().includes(term)
+            ),
+            professionals: suggestions.professionals.filter(p =>
+                (`${p.firstName} ${p.lastName}` || '').toLowerCase().includes(term) ||
+                (p.currentRole || '').toLowerCase().includes(term)
+            ),
+            followBacks: suggestions.followBacks.filter(p =>
+                (p.name || '').toLowerCase().includes(term) ||
+                (p.role || '').toLowerCase().includes(term)
+            )
+        };
+    }, [suggestions, searchTerm]);
+
+    const TabButton = ({ id, label, icon: Icon }: { id: 'suggestions' | 'subscriptions' | 'followers', label: string, icon: React.ElementType }) => (
         <button
             onClick={() => { setActiveTab(id); setSearchTerm(''); }}
             className={`
@@ -86,6 +150,127 @@ export default function ConnectionsPage() {
             {label}
         </button>
     );
+
+    const renderSuggestions = () => {
+        if (suggestionsLoading) {
+            return (
+                <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
+                    <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} size={32} />
+                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">Loading suggestions...</p>
+                </div>
+            );
+        }
+
+        const hasFollowBacks = filteredSuggestions.followBacks.length > 0;
+        const hasCompanies = filteredSuggestions.companies.length > 0;
+        const hasProfessionals = filteredSuggestions.professionals.length > 0;
+
+        if (!hasFollowBacks && !hasCompanies && !hasProfessionals) {
+            return (
+                <div className="flex-1 flex flex-col items-center justify-center py-32 text-center opacity-60">
+                    <div className={`p-6 rounded-full mb-4 ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
+                        <Sparkles size={48} className="opacity-20" />
+                    </div>
+                    <p className="text-lg font-bold mb-2">No suggestions yet</p>
+                    <p className="text-sm text-neutral-500 max-w-xs">
+                        {searchTerm ? `No matches for "${searchTerm}"` : "We're working on finding the best connections for you."}
+                    </p>
+                </div>
+            );
+        }
+
+        return (
+            <div className="space-y-10">
+                {/* Follow Backs Section */}
+                {hasFollowBacks && (
+                    <section>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                                <UserPlus size={14} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
+                            </div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                Follow Back
+                            </h3>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                                {filteredSuggestions.followBacks.length}
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {filteredSuggestions.followBacks.map((p: any) => (
+                                <SuggestionCard
+                                    key={p.id}
+                                    id={p.id}
+                                    name={p.name}
+                                    image={p.profileImage}
+                                    role={p.role}
+                                    type="user"
+                                    badgeType={p.badgeType}
+                                    onFollow={handleFollow}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Companies Section */}
+                {hasCompanies && (
+                    <section>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
+                                <Building2 size={14} className={isDark ? 'text-purple-400' : 'text-purple-600'} />
+                            </div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                Companies to Subscribe
+                            </h3>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {filteredSuggestions.companies.map((c: any) => (
+                                <SuggestionCard
+                                    key={c.id}
+                                    id={c.id}
+                                    name={c.companyName}
+                                    image={c.logoUrl}
+                                    role={c.industry}
+                                    type="company"
+                                    badgeType={c.badge_type}
+                                    onFollow={handleFollow}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Professionals Section */}
+                {hasProfessionals && (
+                    <section>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
+                                <Users size={14} className={isDark ? 'text-green-400' : 'text-green-600'} />
+                            </div>
+                            <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                People to Follow
+                            </h3>
+                        </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            {filteredSuggestions.professionals.map((p: any) => (
+                                <SuggestionCard
+                                    key={p.id}
+                                    id={p.id}
+                                    name={`${p.firstName} ${p.lastName}`}
+                                    image={p.profileImageUrl}
+                                    role={p.currentRole}
+                                    type="user"
+                                    badgeType={p.badge_type}
+                                    companyName={p.currentCompany}
+                                    onFollow={handleFollow}
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="max-w-7xl mx-auto w-full p-4 md:p-8 space-y-8 pb-32">
@@ -107,7 +292,7 @@ export default function ConnectionsPage() {
                     <Search className={`shrink-0 transition-colors ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`} size={18} />
                     <input
                         type="text"
-                        placeholder={activeTab === 'companies' ? "Search companies..." : "Search followers..."}
+                        placeholder={activeTab === 'subscriptions' ? "Search companies..." : activeTab === 'followers' ? "Search followers..." : "Search suggestions..."}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={`flex-1 min-w-0 bg-transparent focus:outline-none font-bold text-sm ${isDark ? 'text-white placeholder:text-neutral-600' : 'text-black placeholder:text-neutral-400'}`}
@@ -118,12 +303,15 @@ export default function ConnectionsPage() {
 
             {/* Tabs */}
             <div className={`flex border-b mb-6 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                <TabButton id="companies" label="Subscriptions" icon={Building2} />
+                <TabButton id="suggestions" label="Suggestions" icon={Sparkles} />
+                <TabButton id="subscriptions" label="Subscriptions" icon={Building2} />
                 <TabButton id="followers" label="Followers" icon={Users} />
             </div>
 
             {/* Content */}
-            {loading ? (
+            {activeTab === 'suggestions' ? (
+                renderSuggestions()
+            ) : loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
                     <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} size={32} />
                     <p className="text-xs font-bold uppercase tracking-widest text-neutral-500">Loading connections...</p>
@@ -137,8 +325,8 @@ export default function ConnectionsPage() {
                             name={item.name}
                             image={item.profileImage}
                             role={item.role}
-                            type={item.type || (activeTab === 'companies' ? 'company' : 'user')}
-                            isFollowing={activeTab === 'companies' ? true : !!item.isFollowing}
+                            type={item.type || (activeTab === 'subscriptions' ? 'company' : 'user')}
+                            isFollowing={activeTab === 'subscriptions' ? true : !!item.isFollowing}
                             badgeType={item.badgeType}
                             onToggle={() => handleUnfollow(item.id)}
                         />
@@ -147,12 +335,12 @@ export default function ConnectionsPage() {
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center py-32 text-center opacity-60">
                     <div className={`p-6 rounded-full mb-4 ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
-                        {activeTab === 'companies' ? <Building2 size={48} className="opacity-20" /> : <Users size={48} className="opacity-20" />}
+                        {activeTab === 'subscriptions' ? <Building2 size={48} className="opacity-20" /> : <Users size={48} className="opacity-20" />}
                     </div>
                     <p className="text-lg font-bold mb-2">No {activeTab} found</p>
-                    <p className="text-sm text-neutral-500 max-w-xs">{searchTerm ? `No matches for "${searchTerm}"` : activeTab === 'companies' ? "You haven't subscribed to any companies yet." : "You don't have any followers yet."}</p>
+                    <p className="text-sm text-neutral-500 max-w-xs">{searchTerm ? `No matches for "${searchTerm}"` : activeTab === 'subscriptions' ? "You haven't subscribed to any companies yet." : "You don't have any followers yet."}</p>
 
-                    {activeTab === 'companies' && !searchTerm && (
+                    {activeTab === 'subscriptions' && !searchTerm && (
                         <Link href="/professional/find" className={`mt-6 px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}>
                             Find Companies
                         </Link>
