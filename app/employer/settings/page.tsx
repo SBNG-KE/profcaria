@@ -316,7 +316,7 @@ function SettingsContent() {
                             <button
                                 onClick={handlePasswordChange}
                                 disabled={isLoading || !currentPassword || !newPassword}
-                                className="px-6 py-3 bg-white text-black hover:bg-neutral-200 rounded-xl font-bold text-sm border border-transparent transition-all"
+                                className={`px-6 py-3 rounded-xl font-bold text-sm border transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200 border-white' : 'bg-black text-white hover:bg-neutral-800 border-black'}`}
                             >
                                 Update Password
                             </button>
