@@ -426,3 +426,80 @@ export async function sendJobRecommendationEmail(to: string, recipientName: stri
         return { success: false, error: e.message };
     }
 }
+
+// NEW: Promo Welcome Email (for Early Adopters)
+export async function sendPromoWelcomeEmail(
+    to: string,
+    recipientName: string,
+    planName: string,
+    expiresAt: string,
+    entityType: 'professional' | 'employer'
+) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Promo Welcome to ${to}: ${planName} until ${expiresAt}`);
+        return { success: true };
+    }
+
+    const expiryDate = new Date(expiresAt);
+    const formattedExpiry = expiryDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    const dashboardUrl = entityType === 'employer'
+        ? 'https://www.profcaria.com/employer/dashboard'
+        : 'https://www.profcaria.com/professional/feed';
+
+    const content = `
+        <div style="text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 48px;">🎁</span>
+        </div>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #ffffff; text-align: center; letter-spacing: -1px;">Welcome, Early Adopter!</h1>
+        <p style="margin: 0 0 8px 0; color: #a855f7; font-size: 16px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
+            You're One of Our First Users
+        </p>
+        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            Hi ${recipientName}, thank you for being an early adopter of Profcaria!
+        </p>
+        
+        <div style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px;">Your Free Premium Access</p>
+            <p style="margin: 0 0 12px 0; font-size: 24px; font-weight: 800; color: #ffffff; text-transform: uppercase;">${planName} Plan</p>
+            <p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.9);">Valid until <strong>${formattedExpiry}</strong></p>
+        </div>
+        
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; line-height: 1.6;">
+                <strong style="color: #ffffff;">What's Included:</strong><br/>
+                ✓ All premium features unlocked<br/>
+                ✓ Priority support<br/>
+                ✓ No credit card required<br/>
+                ✓ Cancel anytime
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Start Using Premium</a>
+        </div>
+        
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.6;">
+            We're thrilled to have you as part of our founding community.<br/>
+            Your feedback helps shape the future of Profcaria! 🚀
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Premium <premium@profcaria.com>',
+            to,
+            subject: `🎁 Welcome! Your Free ${planName} Premium Access is Active`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}
+

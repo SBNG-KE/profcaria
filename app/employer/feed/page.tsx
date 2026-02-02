@@ -252,11 +252,32 @@ function EmployerFeedContent() {
     };
 
     const handleLike = async (postId: string) => {
+        const targetPost = viewMode === 'single' ? singlePost : posts.find(p => p.id === postId);
+        if (!targetPost) return;
+
+        const wasLiked = targetPost.isLiked;
+        const newLikedStatus = !wasLiked;
+        const countDelta = newLikedStatus ? 1 : -1;
+
+        // Optimistic Update
+        if (viewMode === 'single' && singlePost) {
+            setSinglePost({ ...singlePost, isLiked: newLikedStatus, likesCount: singlePost.likesCount + countDelta });
+        } else {
+            setPosts(prev => prev.map(p => p.id === postId ? { ...p, isLiked: newLikedStatus, likesCount: p.likesCount + countDelta } : p));
+        }
+
         try {
-            await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' });
-            if (viewMode === 'single') fetchSinglePost(postId);
-            else fetchPosts();
-        } catch (err) { console.error(err); }
+            const res = await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' });
+            if (!res.ok) throw new Error('Like failed');
+        } catch (err) {
+            console.error(err);
+            // Revert on error
+            if (viewMode === 'single' && singlePost) {
+                setSinglePost({ ...singlePost, isLiked: wasLiked, likesCount: singlePost.likesCount - countDelta });
+            } else {
+                setPosts(prev => prev.map(p => p.id === postId ? { ...p, isLiked: wasLiked, likesCount: p.likesCount - countDelta } : p));
+            }
+        }
     };
 
     const handleRepost = async (postId: string) => {
@@ -381,22 +402,30 @@ function EmployerFeedContent() {
         setShowPostModal(true);
     };
 
-    // Dummy handleFollow for now, or implement it if API supports it
     const handleFollow = async (userId: string) => {
-        // Employers following users? Or companies?
-        // Current API /api/professional/follow expects 'type'
-        // If employer follows user: POST /api/professional/follow { userId, type='user' }?
-        // We can try calling it.
+        // Optimistic Update
+        const updateFollowStatus = (isFollowing: boolean) => {
+            if (viewMode === 'single' && singlePost && singlePost.author.id === userId) {
+                setSinglePost({ ...singlePost, author: { ...singlePost.author, isFollowing } });
+            } else {
+                setPosts(prev => prev.map(p => p.author.id === userId ? { ...p, author: { ...p.author, isFollowing } } : p));
+            }
+        };
+
+        updateFollowStatus(true);
+
         try {
-            await fetch('/api/professional/follow', {
+            const res = await fetch('/api/professional/follow', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, type: 'user' }) // Default to user follow for now
+                body: JSON.stringify({ userId, type: 'user' })
             });
-            // Refresh
-            if (viewMode === 'single' && singlePost) fetchSinglePost(singlePost.id);
-            else fetchPosts();
-        } catch (e) { console.error(e); }
+            if (!res.ok) throw new Error('Follow failed');
+        } catch (err) {
+            console.error(err);
+            // Revert on error
+            updateFollowStatus(false);
+        }
     };
 
     return (
@@ -441,7 +470,7 @@ function EmployerFeedContent() {
                             onReport={handleReport}
                             onDelete={handleDeletePost}
                             onEdit={handleStartEdit}
-                            onCommentAdded={() => fetchSinglePost(singlePost.id)}
+                            onCommentAdded={() => setSinglePost((prev: any) => prev ? { ...prev, commentsCount: (prev.commentsCount || 0) + 1 } : prev)}
                             onFollow={() => handleFollow(singlePost.author.id)}
                             onSave={() => handleSave(singlePost.id, singlePost.author.type)}
                         />
@@ -465,7 +494,7 @@ function EmployerFeedContent() {
                         onReport={handleReport}
                         onDelete={handleDeletePost}
                         onEdit={handleStartEdit}
-                        onCommentAdded={fetchPosts}
+                        onCommentAdded={() => setPosts((prev: any[]) => prev.map(p => p.id === post.id ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p))}
                         onFollow={() => handleFollow(post.author.id)}
                         onSave={() => handleSave(post.id, post.author.type)}
                     />

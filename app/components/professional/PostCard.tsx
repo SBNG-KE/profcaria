@@ -12,12 +12,32 @@ import VerificationBadge from '../VerificationBadge';
 // Truncated Text Component for Mobile
 const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isTruncated, setIsTruncated] = useState(false);
+    const textRef = React.useRef<HTMLDivElement>(null);
+
     // Use new RegExp to avoid parser issues
     const parts = text.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
 
+    // Check if text is actually truncated by CSS
+    useEffect(() => {
+        const checkTruncation = () => {
+            if (textRef.current) {
+                // scrollHeight > clientHeight means content is overflowing
+                setIsTruncated(textRef.current.scrollHeight > textRef.current.clientHeight);
+            }
+        };
+        checkTruncation();
+        // Re-check on window resize
+        window.addEventListener('resize', checkTruncation);
+        return () => window.removeEventListener('resize', checkTruncation);
+    }, [text]);
+
     return (
         <div className={`relative ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>
-            <div className={`text-base leading-relaxed whitespace-pre-wrap ${!isExpanded ? 'line-clamp-3' : ''}`}>
+            <div
+                ref={textRef}
+                className={`text-base leading-relaxed whitespace-pre-wrap ${!isExpanded ? 'line-clamp-3' : ''}`}
+            >
                 {parts.map((part, i) => {
                     let displayPart = part;
                     let isHashtag = false;
@@ -40,23 +60,22 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                 })}
             </div>
 
-            {/* Show button if text is long enough OR has multiple newlines (likely truncated by line-clamp-3) */}
-            {
-                (text.length > 150 || text.split('\n').length > 3) && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsExpanded(!isExpanded);
-                        }}
-                        className={`mt-1 text-sm font-semibold underline decoration-2 underline-offset-2 ${isDark ? 'text-neutral-300 hover:text-white' : 'text-neutral-600 hover:text-black'}`}
-                    >
-                        {isExpanded ? 'Show less' : 'Show more'}
-                    </button>
-                )
-            }
+            {/* Show button if text is truncated OR already expanded (to allow collapse) */}
+            {(isTruncated || isExpanded) && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(!isExpanded);
+                    }}
+                    className={`mt-1 text-sm font-semibold underline decoration-2 underline-offset-2 ${isDark ? 'text-neutral-300 hover:text-white' : 'text-neutral-600 hover:text-black'}`}
+                >
+                    {isExpanded ? 'Show less' : 'Show more'}
+                </button>
+            )}
         </div >
     );
 };
+
 
 // Scrollable Text Component
 const ScrollableText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {

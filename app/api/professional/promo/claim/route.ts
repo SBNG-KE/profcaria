@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
+import { sendPromoWelcomeEmail } from '@/lib/email';
+import { decryptData } from '@/lib/security';
 
 // API to check and apply early adopter promotion for professionals
 export async function POST(req: NextRequest) {
@@ -131,6 +133,33 @@ export async function POST(req: NextRequest) {
             .from('users')
             .update({ badge_type: 'gold' })
             .eq('id', userId);
+
+        // 5. Send welcome email
+        try {
+            const { data: user } = await supabaseAdmin
+                .schema('professional')
+                .from('users')
+                .select('enc_email, enc_first_name')
+                .eq('id', userId)
+                .single();
+
+            if (user?.enc_email && user.enc_first_name) {
+                const email = decryptData(user.enc_email);
+                const firstName = decryptData(user.enc_first_name) || 'User';
+                if (email) {
+                    await sendPromoWelcomeEmail(
+                        email,
+                        firstName,
+                        'Premium',
+                        expiresAt.toISOString(),
+                        'professional'
+                    );
+                }
+            }
+        } catch (emailError) {
+            console.error('Promo welcome email failed:', emailError);
+            // Don't fail the claim if email fails
+        }
 
         return NextResponse.json({
             success: true,

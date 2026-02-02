@@ -684,23 +684,51 @@ export default function ProfessionalHome() {
 
 
 
-  // --- POST HANDLERS (Copied from FeedPage) ---
+  // --- POST HANDLERS (with optimistic updates) ---
   const handleLike = async (postId: string) => {
+    const targetPost = profilePosts.find(p => p.id === postId);
+    if (!targetPost) return;
+
+    const wasLiked = targetPost.isLiked;
+    const newLikedStatus = !wasLiked;
+    const countDelta = newLikedStatus ? 1 : -1;
+
+    // Optimistic Update
+    setProfilePosts(prev => prev.map(p => p.id === postId ? { ...p, isLiked: newLikedStatus, likesCount: (p.likesCount || 0) + countDelta } : p));
+
     try {
-      await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' });
-      fetchProfilePosts(); // Refresh posts to update like count/status
-    } catch (err) { console.error(err); }
+      const res = await fetch(`/api/professional/posts/${postId}/like`, { method: 'POST' });
+      if (!res.ok) throw new Error('Like failed');
+    } catch (err) {
+      console.error(err);
+      // Revert on error
+      setProfilePosts(prev => prev.map(p => p.id === postId ? { ...p, isLiked: wasLiked, likesCount: (p.likesCount || 0) - countDelta } : p));
+    }
   };
 
   const handleRepost = async (postId: string) => {
+    const targetPost = profilePosts.find(p => p.id === postId);
+    if (!targetPost) return;
+
+    const isReposting = !targetPost.isReposted;
+
+    // Optimistic Update
+    setProfilePosts(prev => prev.map(p => p.id === postId ? { ...p, isReposted: isReposting, repostsCount: (p.repostsCount || 0) + (isReposting ? 1 : -1) } : p));
+
     try {
-      await fetch(`/api/professional/posts/${postId}/repost`, {
-        method: 'POST',
+      const method = isReposting ? 'POST' : 'DELETE';
+      const res = await fetch(`/api/professional/posts/${postId}/repost`, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
       });
-      fetchProfilePosts();
-    } catch (err) { console.error(err); }
+      if (isReposting && res.status === 409) return; // Already reposted
+      if (!res.ok) throw new Error();
+    } catch (err) {
+      console.error(err);
+      // Revert on error
+      setProfilePosts(prev => prev.map(p => p.id === postId ? { ...p, isReposted: !isReposting, repostsCount: (p.repostsCount || 0) + (isReposting ? -1 : 1) } : p));
+    }
   };
 
   const handleShare = async (postId: string) => {
@@ -725,14 +753,25 @@ export default function ProfessionalHome() {
   };
 
   const handleFollow = async (targetUserId: string, type: string = 'user') => {
+    // Optimistic Update
+    const updateFollowStatus = (isFollowing: boolean) => {
+      setProfilePosts(prev => prev.map(p => p.author.id === targetUserId ? { ...p, author: { ...p.author, isFollowing } } : p));
+    };
+
+    updateFollowStatus(true);
+
     try {
-      await fetch('/api/professional/follow', {
+      const res = await fetch('/api/professional/follow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: targetUserId, type })
       });
-      fetchProfilePosts();
-    } catch (err) { console.error(err); }
+      if (!res.ok) throw new Error('Follow failed');
+    } catch (err) {
+      console.error(err);
+      // Revert on error
+      updateFollowStatus(false);
+    }
   };
 
   const handleReport = (postId: string) => {
@@ -2115,7 +2154,7 @@ export default function ProfessionalHome() {
                         onReport={handleReport}
                         onDelete={handleDeletePost}
                         onEdit={() => { }}
-                        onCommentAdded={fetchProfilePosts}
+                        onCommentAdded={() => setProfilePosts((prev: any[]) => prev.map(p => p.id === profilePosts[0].id ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p))}
                       />
                     </div>
                   ) : (
@@ -2765,7 +2804,7 @@ export default function ProfessionalHome() {
                   onDelete={handleDeletePost}
                   onEdit={() => { }} // or handleStartEdit if implemented
 
-                  onCommentAdded={fetchProfilePosts}
+                  onCommentAdded={() => setProfilePosts((prev: any[]) => prev.map(p => p.id === post.id ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p))}
                   onSave={() => handleSave(post.id, post.author.type)}
                 />
               ))}
