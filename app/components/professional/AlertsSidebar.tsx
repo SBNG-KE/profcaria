@@ -63,7 +63,9 @@ export default function AlertsSidebar() {
                 </Link>
             </div>
 
-            <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+            <div
+                className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            >
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     {/* REAL Network Sync Data */}
                     <div className={`p-3 rounded-xl border ${isDark ? 'bg-blue-900/10 border-blue-900/30' : 'bg-blue-50 border-blue-100'}`}>
