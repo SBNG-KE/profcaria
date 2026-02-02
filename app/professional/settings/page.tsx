@@ -6,6 +6,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import { useCurrency } from '@/app/hooks/useCurrency';
 import { usePayment } from '@/app/hooks/usePayment';
 import { PROFESSIONAL_PLANS } from '@/lib/billing-config';
+import EarlyAdopterBanner from '@/app/components/EarlyAdopterBanner';
 
 export default function ProfessionalSettingsPage() {
     const { theme } = useTheme();
@@ -282,6 +283,9 @@ export default function ProfessionalSettingsPage() {
                 </div>
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                    {/* Early Adopter Promotion Banner */}
+                    <EarlyAdopterBanner type="professional" isDark={isDark} />
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {renderPlanCard(
                             'free',

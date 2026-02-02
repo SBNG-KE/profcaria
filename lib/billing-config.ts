@@ -19,12 +19,13 @@ export const BILLING_PLANS = {
             topMatches: 0, // Access denied
             maxProfileViewPerJob: 0,
             restrictedLocations: false,
-            maxApplicationsPerJob: 10, // Very low cap for free
+            maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
-            '1 Active Job Post',
+            '1 Job Post per month',
+            'Unlimited Applications',
             '1 Year Analytics History',
-            'Standard Candidates'
+            'Basic Candidate Search'
         ]
     },
     basic: {
@@ -38,12 +39,14 @@ export const BILLING_PLANS = {
             topMatches: 5, // 5 Total Credits
             maxProfileViewPerJob: 1, // Show 1 at a time
             restrictedLocations: false,
-            maxApplicationsPerJob: 50,
+            maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
-            '5 Job Posts/mo',
+            '5 Job Posts per month',
+            'Unlimited Applications',
             '3 Years Analytics History',
-            'Top Match Access (Limited)'
+            '5 AI Top Match Credits',
+            'Preview 1 Top Candidate/Job'
         ]
     },
     pro: {
@@ -57,13 +60,16 @@ export const BILLING_PLANS = {
             topMatches: 15, // 15 Total Credits
             maxProfileViewPerJob: 2, // 2 per job view
             restrictedLocations: true,
-            maxApplicationsPerJob: 100,
+            maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
-            '30 Active Jobs',
-            'Unlimited Analytics',
-            'Priority Support',
-            'More Top Matches'
+            '30 Job Posts per month',
+            'Unlimited Applications',
+            'Unlimited Analytics History',
+            '15 AI Top Match Credits',
+            'Preview 2 Top Candidates/Job',
+            'Location-Restricted Jobs',
+            'Priority Support'
         ]
     },
     enterprise: {
@@ -77,13 +83,16 @@ export const BILLING_PLANS = {
             topMatches: 9999, // Unlimited
             maxProfileViewPerJob: 100, // Show 100 at a time
             restrictedLocations: true,
-            maxApplicationsPerJob: 9999, // Unlimited
+            maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
-            'Unlimited Jobs',
+            'Unlimited Job Posts',
+            'Unlimited Applications',
             'Unlimited Analytics',
-            'Dedicated Account Manager',
-            'Max Top Matches'
+            'Unlimited AI Top Matches',
+            'Preview 100 Candidates/Job',
+            'Location-Restricted Jobs',
+            'Dedicated Account Manager'
         ]
     }
 } as const;
@@ -100,25 +109,45 @@ export const PROFESSIONAL_PLANS = {
         name: 'Free',
         badge: 'none',
         priceMonthly: 0,
-        features: ['Standard Profile', 'Basic Feed Access']
+        features: [
+            'Standard Profile',
+            'Apply to Unlimited Jobs',
+            'Basic Feed Access'
+        ]
     },
     basic: {
         name: 'Basic',
         badge: 'gray', // Gray Checkmark
         priceMonthly: PROF_BASIC,
-        features: ['Gray Verification Badge', 'Algorithm Boost (1.5x)']
+        features: [
+            'Gray Verification Badge',
+            '1.5x Boost Visibility',
+            'Appear in Verified Filters',
+            'Priority Support'
+        ]
     },
     standard: {
         name: 'Standard',
         badge: 'blue', // Blue Checkmark
         priceMonthly: PROF_STANDARD,
-        features: ['Blue Verification Badge', 'Algorithm Boost (3.5x)']
+        features: [
+            'Blue Verification Badge',
+            '3.5x Boost Visibility',
+            'Stand Out to Employers',
+            'Enhanced Profile Views'
+        ]
     },
     premium: {
         name: 'Premium',
         badge: 'gold', // Gold Checkmark
         priceMonthly: PROF_PREMIUM,
-        features: ['Gold Verification Badge', 'Max Algorithm Boost (8.0x)']
+        features: [
+            'Gold Verification Badge',
+            '8x Maximum Visibility',
+            'Top of Employer Searches',
+            'Get Contacted First',
+            'VIP Support'
+        ]
     }
 } as const;
 
