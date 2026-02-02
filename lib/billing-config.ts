@@ -23,7 +23,6 @@ export const BILLING_PLANS = {
         },
         features: [
             '1 Job Post per month',
-            'Unlimited Applications',
             '1 Year Analytics History',
             'Basic Candidate Search'
         ]
@@ -43,7 +42,6 @@ export const BILLING_PLANS = {
         },
         features: [
             '5 Job Posts per month',
-            'Unlimited Applications',
             '3 Years Analytics History',
             '5 AI Top Match Credits',
             'Preview 1 Top Candidate/Job'
@@ -64,9 +62,8 @@ export const BILLING_PLANS = {
         },
         features: [
             '30 Job Posts per month',
-            'Unlimited Applications',
             'Unlimited Analytics History',
-            '15 AI Top Match Credits',
+            '15 AI Top Match Credits (3/job)',
             'Preview 2 Top Candidates/Job',
             'Location-Restricted Jobs',
             'Priority Support'
@@ -87,12 +84,11 @@ export const BILLING_PLANS = {
         },
         features: [
             'Unlimited Job Posts',
-            'Unlimited Applications',
             'Unlimited Analytics',
             'Unlimited AI Top Matches',
             'Preview 100 Candidates/Job',
             'Location-Restricted Jobs',
-            'Dedicated Account Manager'
+            'Personal Account Manager'
         ]
     }
 } as const;
@@ -111,7 +107,6 @@ export const PROFESSIONAL_PLANS = {
         priceMonthly: 0,
         features: [
             'Standard Profile',
-            'Apply to Unlimited Jobs',
             'Basic Feed Access'
         ]
     },
@@ -122,8 +117,7 @@ export const PROFESSIONAL_PLANS = {
         features: [
             'Gray Verification Badge',
             '1.5x Boost Visibility',
-            'Appear in Verified Filters',
-            'Priority Support'
+            'Appear in Verified Filters'
         ]
     },
     standard: {
@@ -145,8 +139,7 @@ export const PROFESSIONAL_PLANS = {
             'Gold Verification Badge',
             '8x Maximum Visibility',
             'Top of Employer Searches',
-            'Get Contacted First',
-            'VIP Support'
+            'Get Contacted First'
         ]
     }
 } as const;

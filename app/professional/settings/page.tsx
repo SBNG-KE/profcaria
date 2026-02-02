@@ -133,16 +133,35 @@ export default function ProfessionalSettingsPage() {
                     ))}
                 </ul>
 
-                <button
-                    onClick={() => handleSubscribe(id)}
-                    disabled={isCurrent || paymentLoading}
-                    className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${isCurrent
-                        ? `${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'} cursor-default`
-                        : `${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} shadow-lg hover:shadow-xl active:scale-95`
-                        }`}
-                >
-                    {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : isCurrent ? 'Active' : 'Upgrade'}
-                </button>
+                <div className="mt-auto">
+                    {isCurrent && subscription ? (
+                        <div className="text-center">
+                            <div className={`w-full py-3 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-1 border cursor-default ${isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/5 text-black border-black/10'}`}>
+                                Active Plan
+                            </div>
+                            {subscription.is_promo ? (
+                                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
+                                    Promo Ends: {new Date(subscription.promo_expires_at || subscription.current_period_end).toLocaleDateString()}
+                                </p>
+                            ) : (
+                                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
+                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => handleSubscribe(id)}
+                            disabled={isCurrent || paymentLoading}
+                            className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${isCurrent
+                                ? `${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'} cursor-default`
+                                : `${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} shadow-lg hover:shadow-xl active:scale-95`
+                                }`}
+                        >
+                            {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : 'Upgrade'}
+                        </button>
+                    )}
+                </div>
             </div>
         );
     };

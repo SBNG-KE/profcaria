@@ -418,9 +418,6 @@ function SettingsContent() {
                                             <CheckCircle size={14} className="text-neutral-500 shrink-0" /> 1 Job Post/mo
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
-                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Unlimited Applications
-                                        </div>
-                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
                                             <CheckCircle size={14} className="text-neutral-500 shrink-0" /> 1 Year Analytics History
                                         </div>
                                     </div>
@@ -480,9 +477,6 @@ function SettingsContent() {
                                     <div className="pt-2 space-y-3">
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> 5 Job Posts/mo
-                                        </div>
-                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
-                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Applications
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> 3 Years Analytics History
@@ -565,13 +559,10 @@ function SettingsContent() {
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> <span className="font-bold">30 Job Posts/mo</span>
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
-                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Applications
-                                        </div>
-                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Analytics History
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
-                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> 15 AI Top Match Credits
+                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> 15 AI Top Match Credits (3/job)
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Location-Restricted Jobs
@@ -650,9 +641,6 @@ function SettingsContent() {
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Job Posts
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
-                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Applications
-                                        </div>
-                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Unlimited Analytics
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
@@ -662,7 +650,7 @@ function SettingsContent() {
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Location-Restricted Jobs
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
-                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Dedicated Account Manager
+                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Personal Account Manager
                                         </div>
                                     </div>
                                 </div>
