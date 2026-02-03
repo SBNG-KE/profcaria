@@ -228,7 +228,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     enc_first_name,
                     enc_last_name,
                     enc_current_role,
-                    enc_current_role,
                     enc_profile_image_url,
                     follower_count
                 )

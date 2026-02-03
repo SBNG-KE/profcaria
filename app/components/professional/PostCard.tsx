@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark
+    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark, Link2, UserCircle, Search, Zap, Building2, CheckCheck, Plus, ChevronLeft
 } from 'lucide-react';
 import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
 import VerificationBadge from '../VerificationBadge';
 import { useCurrency } from '@/app/hooks/useCurrency';
-// ... (existing hooks)
 
 // Truncated Text Component for Mobile
 const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
@@ -145,7 +144,6 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
-    // ... (fetchComments, handleSubmitComment, toggleComments remain unchanged)
     const fetchComments = async () => {
         setIsLoadingComments(true);
         try {
@@ -228,21 +226,214 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                     </div>
                 )}
             </div>
+        </div>
+    );
 
-            {/* Comments Section */}
-            {showComments && (
-                <div className={`border-t ${isDark ? 'border-neutral-800 bg-neutral-900' : 'border-neutral-100 bg-neutral-50'}`}>
-                    {/* ... (Existing comments logic) ... */}
-                    {/* Simplified for brevity, keeping existing logic would be ideal if I could see it all, 
-                        but effectively we just want to ensure the Modal is OUTSIDE this. 
-                        Wait, I should not delete the comments logic. 
-                        I will just target the END of the file to move the Modal.
-                    */}
-                    {/* I will assume the comments section logic is fine and just needs to be preserved. 
-                        I'll use a specific replacement for the end of the component.
-                    */}
+    return (
+        <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+            {/* Repost Header Context (if in profile list) */}
+            {post.repostContext && (
+                <div className={`px-4 py-2 flex items-center gap-2 text-xs font-bold border-b ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-500'}`}>
+                    <Repeat2 size={12} />
+                    {post.repostContext.reposterImage && (
+                        <img src={post.repostContext.reposterImage} alt="" className="w-4 h-4 rounded-full object-cover" />
+                    )}
+                    <span>{post.repostContext.reposterName ? `${post.repostContext.reposterName} reposted` : 'You reposted'}</span>
                 </div>
             )}
+
+            <div className={`flex flex-col ${forceVertical ? '' : 'sm:flex-row'}`}>
+                {/* Mobile Header (Visible only on mobile) */}
+                <div className="sm:hidden">
+                    <PostHeader isMobile={true} />
+                </div>
+
+                {/* Mobile Text (Visible only on mobile) */}
+                <div className="sm:hidden px-4 pb-3">
+                    <TruncatedText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
+                </div>
+
+                {/* Media (Center on Mobile, Left on Desktop) */}
+                {(hasMedia || post.linkPreview) && (
+                    <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
+                        <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px]">
+                            {post.media && post.media.length > 0 ? (
+                                <>
+                                    {post.media[0].type === 'video' || post.media[0].url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                        <video
+                                            src={post.media[0].url}
+                                            className="w-full h-full max-h-[600px] object-contain"
+                                            muted
+                                            loop
+                                            autoPlay
+                                            playsInline
+                                            controls
+                                        />
+                                    ) : (
+                                        <img
+                                            src={post.media[0].url}
+                                            alt="Post content"
+                                            className="w-full h-full max-h-[600px] object-contain"
+                                        />
+                                    )}
+                                </>
+                            ) : post.linkPreview ? (
+                                <img
+                                    src={post.linkPreview.image}
+                                    alt="Link preview"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : null}
+                        </div>
+                    </div>
+                )}
+
+                {/* Content (Title, Text, Interactions) */}
+                <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${forceVertical ? 'w-full' : ''}`}>
+                    <div className={`p-4 flex-1 flex flex-col ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>
+
+                        {/* Desktop Header */}
+                        <div className="hidden sm:block">
+                            <PostHeader isMobile={false} />
+                        </div>
+
+                        {/* Desktop Text */}
+                        <div className="hidden sm:block mt-1 mb-3">
+                            <ScrollableText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
+                        </div>
+
+                        {/* Link Preview Details */}
+                        {post.linkPreview && (
+                            <a
+                                href={post.linkPreview.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`block mb-3 p-3 rounded-lg border text-sm hover:opacity-80 transition-opacity ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}
+                            >
+                                <div className="font-semibold truncate mb-0.5">{post.linkPreview.title}</div>
+                                <div className={`text-xs truncate ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{post.linkPreview.description}</div>
+                                <div className={`text-[10px] mt-1 flex items-center gap-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    <Link2 size={10} /> {new URL(post.linkPreview.url).hostname}
+                                </div>
+                            </a>
+                        )}
+
+                        {/* Metrics & Actions */}
+                        <div className="mt-auto pt-3 border-t border-dashed border-neutral-200 dark:border-neutral-800">
+                            <div className="flex items-center justify-between text-sm">
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => onLike?.()}
+                                        className={`flex items-center gap-1.5 transition-colors group ${post.isLiked ? 'text-rose-500' : (isDark ? 'text-neutral-400 hover:text-rose-400' : 'text-neutral-500 hover:text-rose-500')}`}
+                                    >
+                                        <Heart size={18} className={`transition-transform duration-300 ${post.isLiked ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
+                                        <span className="font-medium text-xs">{post.stats.likes}</span>
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); toggleComments(); }}
+                                        className={`flex items-center gap-1.5 transition-colors group ${showComments ? 'text-blue-500' : (isDark ? 'text-neutral-400 hover:text-blue-400' : 'text-neutral-500 hover:text-blue-500')}`}
+                                    >
+                                        <MessageCircle size={18} className="transition-transform duration-300 group-hover:scale-110" />
+                                        <span className="font-medium text-xs">{post.stats.comments}</span>
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onShare?.(); }}
+                                        className={`flex items-center gap-1.5 transition-colors group ${isDark ? 'text-neutral-400 hover:text-green-400' : 'text-neutral-500 hover:text-green-500'}`}
+                                    >
+                                        <Share2 size={18} className="transition-transform duration-300 group-hover:scale-110" />
+                                        <span className="font-medium text-xs">{post.stats.shares}</span>
+                                    </button>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    {isOwnPost && !post.repostContext && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} // Using menu for Promote now
+                                            className={`p-1.5 rounded-full transition-colors ${isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+                                        >
+                                            <TrendingUp size={18} />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onSave?.(); }}
+                                        className={`p-1.5 rounded-full transition-colors ${post.isSaved ? (isDark ? 'text-yellow-400 bg-yellow-400/10' : 'text-yellow-600 bg-yellow-50') : (isDark ? 'text-neutral-400 hover:text-yellow-400' : 'text-neutral-500 hover:text-yellow-600')}`}
+                                    >
+                                        <Bookmark size={18} className={post.isSaved ? 'fill-current' : ''} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Dropdown Menu */}
+                    {showMenu && (
+                        <div className={`absolute top-12 right-4 w-48 rounded-xl shadow-xl border overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                            {isOwnPost ? (
+                                <>
+                                    <button onClick={() => { setShowMenu(false); onEdit?.(post); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Edit2 size={14} /> Edit Post</button>
+                                    <button onClick={() => { setShowMenu(false); onDelete?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Post</button>
+                                    <div className={`h-px mx-2 ${isDark ? 'bg-neutral-700' : 'bg-neutral-200'}`}></div>
+                                    <button onClick={() => {
+                                        setShowMenu(false);
+                                        setShowPromoteModal(true);
+                                    }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-blue-500 font-bold ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><TrendingUp size={14} /> Promote Post</button>
+                                </>
+                            ) : (
+                                <button onClick={() => { setShowMenu(false); onReport?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Flag size={14} /> Report</button>
+                            )}
+                            {isRepostContext && onDeleteRepost && (
+                                <button onClick={() => { setShowMenu(false); if (post.repostId) onDeleteRepost(post.repostId); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Repost</button>
+                            )}
+                            {!isOwnPost && (
+                                <button onClick={() => { setShowMenu(false); onReport?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Flag size={14} /> Report</button>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Comments Section */}
+                {showComments && (
+                    <div className={`border-t ${isDark ? 'border-neutral-800 bg-neutral-900' : 'border-neutral-100 bg-neutral-50'}`}>
+                        <div className="p-3 space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                            {isLoadingComments ? (
+                                <div className="flex justify-center p-4"><div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full text-neutral-400"></div></div>
+                            ) : comments.length === 0 ? (
+                                <p className={`text-center py-4 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No comments yet. Be the first!</p>
+                            ) : (
+                                comments.map((c) => {
+                                    const authorType = c.author.type || 'professional';
+                                    const authorLink = authorType === 'employer'
+                                        ? `/professional/companies/${c.author.id}`
+                                        : `/professional/people/${c.author.id}`;
+
+                                    return (
+                                        <div key={c.id} className="flex gap-2">
+                                            <Link href={authorLink}>
+                                                <ProfileImage
+                                                    src={c.author.profileImage}
+                                                    name={c.author.name}
+                                                    type={authorType}
+                                                    size={14}
+                                                    className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
+                                                />
+                                            </Link>
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
+                                                    <Link href={authorLink} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</Link>
+                                                    <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
+                                                </div>
+                                                <p className={`text-[10px] mt-0.5 ml-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{new Date(c.createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
 
             <PromotePostModal
                 post={post}
@@ -255,235 +446,6 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
             />
         </div>
     );
-};
-
-return (
-    <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-        {/* Repost Header Context (if in profile list) */}
-        {post.repostContext && (
-            <div className={`px-4 py-2 flex items-center gap-2 text-xs font-bold border-b ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-500'}`}>
-                <Repeat2 size={12} />
-                {post.repostContext.reposterImage && (
-                    <img src={post.repostContext.reposterImage} alt="" className="w-4 h-4 rounded-full object-cover" />
-                )}
-                <span>{post.repostContext.reposterName ? `${post.repostContext.reposterName} reposted` : 'You reposted'}</span>
-            </div>
-        )}
-
-        <div className={`flex flex-col ${forceVertical ? '' : 'sm:flex-row'}`}>
-            {/* Mobile Header (Visible only on mobile) */}
-            <div className="sm:hidden">
-                <PostHeader isMobile={true} />
-            </div>
-
-            {/* Mobile Text (Visible only on mobile) */}
-            <div className="sm:hidden px-4 pb-3">
-                <TruncatedText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
-            </div>
-
-            {/* Media (Center on Mobile, Left on Desktop) */}
-            {(hasMedia || post.linkPreview) && (
-                <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
-                    <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px]">
-                        {post.media && post.media.length > 0 ? (
-                            <>
-                                {post.media[0].type === 'video' || post.media[0].url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                                    <video
-                                        src={post.media[0].url}
-                                        className="w-full h-full max-h-[600px] object-contain"
-                                        muted
-                                        loop
-                                        autoPlay
-                                        playsInline
-                                        controls
-                                    />
-                                ) : (
-                                    <>
-                                        {/* Blurred Background Layer for "Premium" feel */}
-                                        <div
-                                            className="absolute inset-0 bg-cover bg-center opacity-30 blur-xl scale-110"
-                                            style={{ backgroundImage: `url(${post.media[0].url})` }}
-                                        />
-                                        <img
-                                            src={post.media[0].url}
-                                            alt="Post media"
-                                            className="relative z-10 w-full h-auto max-h-[600px] object-contain"
-                                        />
-                                    </>
-                                )}
-                                {post.media.length > 1 && (
-                                    <div className={`absolute top-3 right-3 z-20 px-2 py-1 rounded-lg text-xs font-bold ${isDark ? 'bg-black/70 text-white' : 'bg-white/90 text-black'}`}>+{post.media.length - 1}</div>
-                                )}
-                            </>
-                        ) : post.linkPreview ? (
-                            <a href={(post.linkPreview.url && !post.linkPreview.url.match(/^https?:\/\//i)) ? `https://${post.linkPreview.url}` : post.linkPreview.url || '#'} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-30 block w-full h-full cursor-pointer">
-                                {post.linkPreview.image ? (
-                                    <div className="w-full h-full relative">
-                                        <img src={post.linkPreview.image} alt={post.linkPreview.title} className="w-full h-full object-cover" />
-                                        <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-sm p-3 text-white">
-                                            <p className="font-bold text-sm truncate">{post.linkPreview.title}</p>
-                                            <p className="text-xs opacity-80 truncate">{post.linkPreview.siteName}</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className={`w-full h-full flex flex-col items-center justify-center p-6 text-center ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                                        {/* Fallback to Favicon if no image */}
-                                        <img
-                                            src={`https://www.google.com/s2/favicons?domain=${post.linkPreview.url || post.linkPreview.siteName || 'google.com'}&sz=128`}
-                                            alt={post.linkPreview.siteName}
-                                            onError={(e) => e.currentTarget.style.display = 'none'}
-                                            className="w-16 h-16 mb-3 rounded-lg shadow-sm"
-                                        />
-                                        <p className={`font-bold line-clamp-2 ${isDark ? 'text-white' : 'text-black'}`}>{post.linkPreview.title || post.linkPreview.siteName}</p>
-                                        <p className={`text-xs mt-1 truncate max-w-full px-4 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{post.linkPreview.siteName}</p>
-                                    </div>
-                                )}
-                            </a>
-                        ) : null}
-                    </div>
-                </div>
-            )}
-
-            {/* Content (Desktop: Right Side | Mobile: Bottom Actions) */}
-            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${showComments && (hasMedia || post.linkPreview) ? 'sm:max-w-[30%]' : ''}`}>
-
-                {/* Desktop Header (Hidden on Mobile) */}
-                <div className="hidden sm:block">
-                    <PostHeader />
-                </div>
-
-                {/* Desktop Content (Hidden on Mobile) */}
-                <div className={`hidden sm:block px-4 py-2 flex-1 ${showComments ? 'min-h-[100px]' : 'min-h-[200px]'}`}>
-                    <ScrollableText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
-                </div>
-
-                {/* Ad Analytics for Author (Private) */}
-                {isOwnPost && post.isAd && (
-                    <div className={`mx-4 mt-3 p-4 rounded-xl border ${isDark ? 'bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-500/30' : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200'}`}>
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <TrendingUp size={16} className="text-blue-500" />
-                                <span className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-blue-400' : 'text-blue-700'}`}>Ad Performance</span>
-                            </div>
-                            <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700'}`}>Active</div>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2">
-                            <div>
-                                <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Views</div>
-                                <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{new Intl.NumberFormat('en-US', { notation: "compact" }).format(post.analytics?.views || 0)}</div>
-                            </div>
-                            <div>
-                                <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Clicks</div>
-                                <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{new Intl.NumberFormat('en-US', { notation: "compact" }).format(post.analytics?.clicks || 0)}</div>
-                            </div>
-                            <div>
-                                <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Spend</div>
-                                <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>${post.analytics?.spend || '0.00'}</div>
-                            </div>
-                            <div>
-                                <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>CPA</div>
-                                <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>${post.analytics?.cpa || '0.00'}</div>
-                            </div>
-                        </div>
-                        {/* AI Insight Placeholder */}
-                        <div className={`mt-3 pt-3 border-t text-[10px] flex items-center gap-2 ${isDark ? 'border-white/10 text-neutral-400' : 'border-black/5 text-neutral-500'}`}>
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-                            AI: Scaling reach based on user growth. Next tier unlocks at 100K users.
-                        </div>
-                    </div>
-                )}
-
-                {/* Engagement - Visible on both (but logically belongs here) */}
-                {(post.likesCount > 0 || post.commentsCount > 0 || post.repostsCount > 0) && (
-                    <div className={`px-3 py-1.5 flex items-center justify-between text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                        <div className="flex items-center gap-2">
-                            {post.likesCount > 0 && <span className="flex items-center gap-1"><span className="w-3.5 h-3.5 rounded-full bg-red-500 flex items-center justify-center"><Heart size={7} className="text-white" fill="white" /></span>{post.likesCount}</span>}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {post.commentsCount > 0 && <span>{post.commentsCount} comments</span>}
-                            {post.repostsCount > 0 && <span>{post.repostsCount} reposts</span>}
-                        </div>
-                    </div>
-                )}
-
-                {/* Actions */}
-                <div className={`px-2 py-2 flex flex-wrap items-center justify-between gap-1 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                    <button onClick={() => onLike?.()} disabled={!onLike} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isLiked ? 'text-red-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onLike ? 'opacity-50 cursor-default' : ''}`}><Heart size={16} fill={post.isLiked ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Like</span></button>
-                    <button onClick={toggleComments} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${showComments ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onLike ? 'opacity-50 cursor-default' : ''}`}><MessageCircle size={16} fill={showComments ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">Comment</span></button>
-                    {!isOwnPost && <button onClick={() => onRepost?.()} disabled={!onRepost} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isReposted ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onRepost ? 'opacity-50 cursor-default' : ''}`}><Repeat2 size={16} /><span className="font-medium hidden xs:inline">{post.isReposted ? 'Reposted' : 'Repost'}</span></button>}
-                    <button onClick={() => onSave?.()} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${post.isSaved ? 'text-blue-500' : isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'}`}><Bookmark size={16} fill={post.isSaved ? 'currentColor' : 'none'} /><span className="font-medium hidden xs:inline">{post.isSaved ? 'Saved' : 'Save'}</span></button>
-                    <button onClick={() => onShare?.()} disabled={!onShare} className={`flex-1 min-w-[60px] flex items-center justify-center gap-1 py-2 rounded-lg transition-colors text-xs ${isDark ? 'text-neutral-400 hover:bg-neutral-800' : 'text-neutral-600 hover:bg-neutral-100'} ${!onShare ? 'opacity-50 cursor-default' : ''}`}><Share2 size={16} /><span className="font-medium hidden xs:inline">Share</span></button>
-                </div>
-            </div>
-
-            {/* Comments Panel - Slide-in Drawer on Mobile | Inline on Desktop */}
-            {showComments && (
-                <div className={`
-                        fixed inset-y-0 right-0 z-50 w-full sm:static sm:z-auto sm:inset-auto 
-                        sm:w-[35%] sm:min-w-[280px] flex flex-col 
-                        border-t sm:border-t-0 sm:border-l transition-all duration-300 shadow-2xl sm:shadow-none
-                        ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}
-                    `}>
-                    {/* Mobile Back/Close Button */}
-                    <div className={`p-3 flex items-center justify-between border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                        <h3 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-black'}`}>Comments</h3>
-                        <button onClick={() => setShowComments(false)} className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-200 text-neutral-500'}`}><X size={16} /></button>
-                    </div>
-
-                    {/* Comment Input at Top */}
-                    <div className={`p-3 border-b flex gap-2 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                        <input
-                            type="text"
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Write a comment..."
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
-                            className={`flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none ${isDark ? 'bg-neutral-800 text-white placeholder-neutral-500' : 'bg-white text-black placeholder-neutral-400 border border-neutral-200'}`}
-                        />
-                        <button onClick={handleSubmitComment} disabled={!newComment.trim() || isSending} className={`p-2 rounded-lg transition-all disabled:opacity-50 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}><Send size={14} /></button>
-                    </div>
-
-                    {/* Comments List */}
-                    <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                        {isLoadingComments ? (
-                            <div className="flex justify-center py-4"><div className={`animate-spin w-5 h-5 border-2 border-t-transparent rounded-full ${isDark ? 'border-white' : 'border-black'}`} /></div>
-                        ) : comments.length === 0 ? (
-                            <p className={`text-center py-4 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No comments yet. Be the first!</p>
-                        ) : (
-                            comments.map((c) => {
-                                const authorType = c.author.type || 'professional';
-                                const authorLink = authorType === 'employer'
-                                    ? `/professional/companies/${c.author.id}`
-                                    : `/professional/people/${c.author.id}`;
-
-                                return (
-                                    <div key={c.id} className="flex gap-2">
-                                        <Link href={authorLink}>
-                                            <ProfileImage
-                                                src={c.author.profileImage}
-                                                name={c.author.name}
-                                                type={authorType}
-                                                size={14}
-                                                className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
-                                            />
-                                        </Link>
-                                        <div className="flex-1 min-w-0">
-                                            <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
-                                                <Link href={authorLink} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</Link>
-                                                <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
-                                            </div>
-                                            <p className={`text-[10px] mt-0.5 ml-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{new Date(c.createdAt).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    </div>
-);
 }
 
 export default PostCard;
