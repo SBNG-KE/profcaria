@@ -31,7 +31,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const applicationId = searchParams.get('applicationId');
         const applicationIdsParam = searchParams.get('applicationIds');
-        const otherPartyId = searchParams.get('otherPartyId'); // For DM
+        const otherPartyId = searchParams.get('otherPartyId') || searchParams.get('recipientId'); // Support both
 
         const session = await getSession();
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -50,6 +50,7 @@ export async function GET(req: Request) {
                 .in('id', targetAppIds);
 
             if (appError || !applications || applications.length === 0) {
+                console.error('[MESSAGES] Applications lookup failed', appError);
                 return NextResponse.json({ error: 'Applications not found' }, { status: 404 });
             }
 
@@ -67,7 +68,10 @@ export async function GET(req: Request) {
                 .in('application_id', targetAppIds)
                 .order('created_at', { ascending: true });
 
-            if (error) return NextResponse.json({ error: 'Fetch Error' }, { status: 500 });
+            if (error) {
+                console.error('[MESSAGES] Fetch Error', error);
+                return NextResponse.json({ error: 'Fetch Error' }, { status: 500 });
+            }
 
             const decryptedMessages = (messages || []).map((m: { enc_content: string; }) => ({
                 ...m,
@@ -84,13 +88,13 @@ export async function GET(req: Request) {
                 .from('messages')
                 .select('*, is_read')
                 .or(`and(sender_id.eq.${session.uid},recipient_id.eq.${otherPartyId}),and(sender_id.eq.${otherPartyId},recipient_id.eq.${session.uid})`)
-                .is('application_id', null) // Only fetch pure DMs here? Or mixed? Let's strictly fetch non-app DMs or all? 
-                // Let's safe guard: .is('application_id', null) to separate pure DMs from App threads.
-                // Or remove .is() to show everything? 
-                // Use .is('application_id', null) to enforce structure.
+                .is('application_id', null)
                 .order('created_at', { ascending: true });
 
-            if (error) return NextResponse.json({ error: 'Fetch DM Error' }, { status: 500 });
+            if (error) {
+                console.error('[MESSAGES] DM Fetch Error', error);
+                return NextResponse.json({ error: 'Fetch DM Error' }, { status: 500 });
+            }
 
             const decryptedMessages = (messages || []).map((m: { enc_content: string; }) => ({
                 ...m,
@@ -100,9 +104,11 @@ export async function GET(req: Request) {
             return NextResponse.json({ messages: decryptedMessages });
         }
 
+        console.error('[MESSAGES] Missing parameters', { url: req.url });
         return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
     } catch (error) {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        console.error('[MESSAGES] CRITICAL GET ERROR:', error);
+        return NextResponse.json({ error: 'Internal Server Error', details: String(error) }, { status: 500 });
     }
 }
 
