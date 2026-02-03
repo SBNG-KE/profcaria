@@ -327,7 +327,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         className={`flex items-center gap-1.5 transition-colors group ${post.isLiked ? 'text-rose-500' : (isDark ? 'text-neutral-400 hover:text-rose-400' : 'text-neutral-500 hover:text-rose-500')}`}
                                     >
                                         <Heart size={18} className={`transition-transform duration-300 ${post.isLiked ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
-                                        <span className="font-medium text-xs">{post.stats.likes}</span>
+                                        <span className="font-medium text-xs">{post.likesCount || 0}</span>
                                     </button>
 
                                     <button
@@ -335,7 +335,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         className={`flex items-center gap-1.5 transition-colors group ${showComments ? 'text-blue-500' : (isDark ? 'text-neutral-400 hover:text-blue-400' : 'text-neutral-500 hover:text-blue-500')}`}
                                     >
                                         <MessageCircle size={18} className="transition-transform duration-300 group-hover:scale-110" />
-                                        <span className="font-medium text-xs">{post.stats.comments}</span>
+                                        <span className="font-medium text-xs">{post.commentsCount || 0}</span>
                                     </button>
 
                                     <button
@@ -343,7 +343,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         className={`flex items-center gap-1.5 transition-colors group ${isDark ? 'text-neutral-400 hover:text-green-400' : 'text-neutral-500 hover:text-green-500'}`}
                                     >
                                         <Share2 size={18} className="transition-transform duration-300 group-hover:scale-110" />
-                                        <span className="font-medium text-xs">{post.stats.shares}</span>
+                                        <span className="font-medium text-xs">{post.sharesCount || 0}</span>
                                     </button>
                                 </div>
 
