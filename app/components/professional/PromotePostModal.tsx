@@ -33,22 +33,37 @@ const AD_PACKAGES = {
 
 export default function PromotePostModal({ post, isOpen, onClose, onSuccess, isDark }: PromotePostModalProps) {
     // State for Sliders
-    const [budget, setBudget] = useState(10); // Default $10
+    const [dailyBudget, setDailyBudget] = useState(5); // Default $5 daily
     const [duration, setDuration] = useState(3); // Default 3 days
 
     const { currency: currencyCode, symbol: currencySymbol, rate: exchangeRate, loading: currencyLoading } = useCurrency();
     const { startPayment, isLoading: paymentLoading } = usePayment();
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+    // SYSTEM CONSTANTS (Simulated for AI Logic)
+    const TOTAL_USERS = 500000; // Simulated user base for "Reach" calculation visualization (User request: "see how it will look")
+    // In production, this would be fetched. For now, we mock it to show the UI scaling.
+
     if (!isOpen) return null;
 
     const formatPrice = (usd: number) => {
         if (currencyLoading) return '...';
-        return `${currencySymbol}${new Intl.NumberFormat().format(Math.round(usd * exchangeRate))}`;
+        return `${currencySymbol}${new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(usd * exchangeRate)}`;
     };
 
-    // calculate reach
-    const estimatedReach = new Intl.NumberFormat().format(budget * 120); // approx 120 views per dollar
+    const totalCost = dailyBudget * duration;
+
+    // Dynamic Reach Calculation (AI Simulation)
+    // Base CPM assumption: $5 CPM => 200 views per $1.
+    // Reach Range: +/- 20% variance based on "AI matching"
+    const viewsPerDollar = 150;
+    const baseReach = dailyBudget * viewsPerDollar;
+    const minReach = Math.floor(baseReach * 0.8);
+    const maxReach = Math.floor(baseReach * 1.4);
+
+    const formatNumber = (num: number) => {
+        return new Intl.NumberFormat('en-US', { notation: "compact", compactDisplay: "short" }).format(num);
+    };
 
     const handlePromote = () => {
         setMessage(null);
@@ -56,11 +71,11 @@ export default function PromotePostModal({ post, isOpen, onClose, onSuccess, isD
         startPayment({
             plan: 'custom_boost',
             isAd: true,
-            postId: post.id, // Pass Post ID
-            budget: budget,
+            postId: post.id,
+            budget: totalCost, // Payment processes TOTAL
             duration: duration,
             onSuccess: () => {
-                setMessage({ type: 'success', text: 'Promotion active! Your post will now be boosted.' });
+                setMessage({ type: 'success', text: 'Promotion active! Your investment has been received.' });
                 setTimeout(() => {
                     onSuccess();
                     onClose();
@@ -85,7 +100,7 @@ export default function PromotePostModal({ post, isOpen, onClose, onSuccess, isD
                         <TrendingUp className="text-blue-500" size={24} />
                     </div>
                     <h2 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Boost Your Post</h2>
-                    <p className={`mt-2 text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Customize your budget and duration.</p>
+                    <p className={`mt-2 text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>How much do you want to invest?</p>
                 </div>
 
                 {message && (
@@ -95,24 +110,24 @@ export default function PromotePostModal({ post, isOpen, onClose, onSuccess, isD
                 )}
 
                 <div className="space-y-8 mb-8">
-                    {/* Budget Slider */}
+                    {/* Daily Budget Slider */}
                     <div className="space-y-4">
                         <div className="flex justify-between items-end">
-                            <label className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Budget</label>
-                            <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(budget)}</div>
+                            <label className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Daily Budget</label>
+                            <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(dailyBudget)}</div>
                         </div>
                         <input
                             type="range"
-                            min="5"
-                            max="500"
-                            step="5"
-                            value={budget}
-                            onChange={(e) => setBudget(parseInt(e.target.value))}
+                            min="0.4"
+                            max="800"
+                            step="0.1"
+                            value={dailyBudget}
+                            onChange={(e) => setDailyBudget(parseFloat(e.target.value))}
                             className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer dark:bg-neutral-700 accent-blue-500"
                         />
                         <div className="flex justify-between text-[10px] font-bold text-neutral-400 uppercase">
-                            <span>{formatPrice(5)}</span>
-                            <span>{formatPrice(500)}</span>
+                            <span>{formatPrice(0.4)}</span>
+                            <span>{formatPrice(800)}</span>
                         </div>
                     </div>
 
@@ -137,18 +152,25 @@ export default function PromotePostModal({ post, isOpen, onClose, onSuccess, isD
                         </div>
                     </div>
 
-                    {/* Est Reach Card */}
-                    <div className={`p-4 rounded-xl flex items-center justify-between border ${isDark ? 'bg-neutral-800/50 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><TrendingUp size={18} /></div>
-                            <div>
-                                <div className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Est. Reach</div>
-                                <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>~{estimatedReach} people</div>
+                    {/* Est Reach Card & Total Investment */}
+                    <div className={`p-4 rounded-xl space-y-4 border ${isDark ? 'bg-neutral-800/50 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500"><TrendingUp size={18} /></div>
+                                <div>
+                                    <div className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Est. Reach (Daily)</div>
+                                    <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>
+                                        {formatNumber(minReach)} - {formatNumber(maxReach)} <span className="text-sm font-medium text-neutral-500">people</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <div className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Daily Cost</div>
-                            <div className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(budget / duration)}/day</div>
+
+                        <div className={`h-px ${isDark ? 'bg-neutral-700' : 'bg-neutral-200'}`}></div>
+
+                        <div className="flex items-center justify-between">
+                            <div className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Total Investment</div>
+                            <div className={`text-xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{formatPrice(totalCost)}</div>
                         </div>
                     </div>
                 </div>
@@ -159,7 +181,7 @@ export default function PromotePostModal({ post, isOpen, onClose, onSuccess, isD
                     className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'
                         }`}
                 >
-                    {paymentLoading ? <Loader2 className="animate-spin" /> : `Boost Post • ${formatPrice(budget)}`}
+                    {paymentLoading ? <Loader2 className="animate-spin" /> : `Invest • ${formatPrice(totalCost)}`}
                 </button>
             </div>
         </div>

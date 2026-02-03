@@ -341,6 +341,42 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                         <ScrollableText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
                     </div>
 
+                    {/* Ad Analytics for Author (Private) */}
+                    {isOwnPost && post.isAd && (
+                        <div className={`mx-4 mt-3 p-4 rounded-xl border ${isDark ? 'bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-blue-500/30' : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200'}`}>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <TrendingUp size={16} className="text-blue-500" />
+                                    <span className={`text-xs font-black uppercase tracking-wider ${isDark ? 'text-blue-400' : 'text-blue-700'}`}>Ad Performance</span>
+                                </div>
+                                <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700'}`}>Active</div>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                                <div>
+                                    <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Views</div>
+                                    <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{new Intl.NumberFormat('en-US', { notation: "compact" }).format(post.analytics?.views || 0)}</div>
+                                </div>
+                                <div>
+                                    <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Clicks</div>
+                                    <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{new Intl.NumberFormat('en-US', { notation: "compact" }).format(post.analytics?.clicks || 0)}</div>
+                                </div>
+                                <div>
+                                    <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Spend</div>
+                                    <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>${post.analytics?.spend || '0.00'}</div>
+                                </div>
+                                <div>
+                                    <div className={`text-[10px] font-medium uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>CPA</div>
+                                    <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>${post.analytics?.cpa || '0.00'}</div>
+                                </div>
+                            </div>
+                            {/* AI Insight Placeholder */}
+                            <div className={`mt-3 pt-3 border-t text-[10px] flex items-center gap-2 ${isDark ? 'border-white/10 text-neutral-400' : 'border-black/5 text-neutral-500'}`}>
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                                AI: Scaling reach based on user growth. Next tier unlocks at 100K users.
+                            </div>
+                        </div>
+                    )}
+
                     {/* Engagement - Visible on both (but logically belongs here) */}
                     {(post.likesCount > 0 || post.commentsCount > 0 || post.repostsCount > 0) && (
                         <div className={`px-3 py-1.5 flex items-center justify-between text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
