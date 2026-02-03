@@ -56,23 +56,56 @@ function MessagesContent() {
         }
     }, [messages]);
 
-    // Handle URL Params for Direct Messaging
+    // Handle URL Params for Direct Messaging or Application Chat
     useEffect(() => {
         const targetCompanyId = searchParams.get('companyId');
+        const targetRecipientId = searchParams.get('recipientId');
+
         if (targetCompanyId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
             if (targetApp) {
                 setActiveConversation(targetApp);
-                window.history.replaceState(null, '', '/professional/messages');
+                window.history.replaceState(null, '', '/professional/notifications');
             }
+        } else if (targetRecipientId && !activeConversation) {
+            // Check if we already have a DM conversation with this person in 'applications' list (which stores DMs too?)
+            // Actually, the context 'applications' might be a mix of apps and DMs if we standarized it.
+            // If not, we create a temporary conversation object for the UI.
+
+            // Try to find existing first
+            const existingDM = applications.find(app => app.otherPartyId === targetRecipientId || app.companyId === targetRecipientId);
+
+            if (existingDM) {
+                setActiveConversation(existingDM);
+            } else {
+                // Create temporary DM object
+                const recipientName = searchParams.get('recipientName') || 'User';
+                const recipientImage = searchParams.get('recipientImage') || '';
+
+                setActiveConversation({
+                    id: 'new_dm_' + targetRecipientId, // Temporary ID
+                    isTemp: true,
+                    companyName: recipientName, // For DMs, we reuse companyName field for display
+                    jobTitle: 'Direct Message',
+                    companyLogoUrl: recipientImage,
+                    companyId: null, // No company
+                    otherPartyId: targetRecipientId, // The target user
+                    status: 'active'
+                });
+            }
+            window.history.replaceState(null, '', '/professional/notifications');
         }
     }, [searchParams, applications]);
 
     // 1. Fetch Messages
     useEffect(() => {
         if (activeConversation) {
-            const companyAppIds = getCompanyAppIds(activeConversation);
-            fetchMessages(companyAppIds);
+            if (activeConversation.otherPartyId) {
+                fetchMessages(activeConversation.otherPartyId);
+            } else {
+                const companyAppIds = getCompanyAppIds(activeConversation);
+                fetchMessages(companyAppIds);
+            }
         } else {
             setMessages([]);
         }
@@ -81,48 +114,85 @@ function MessagesContent() {
     // 2. Notification-Driven Updates
     useEffect(() => {
         if (!activeConversation) return;
-        const companyAppIds = getCompanyAppIds(activeConversation);
-        const hasRelevantNotification = notifications.some(n =>
-            !n.is_read && n.application_id && companyAppIds.includes(n.application_id)
-        );
-        if (hasRelevantNotification) {
-            fetchMessages(companyAppIds);
-            notifications.forEach(n => {
-                if (!n.is_read && n.application_id && companyAppIds.includes(n.application_id)) {
-                    markAsRead(n.id);
-                }
-            });
+
+        if (activeConversation.otherPartyId) {
+            const hasRelevantNotification = notifications.some(n =>
+                !n.is_read && n.sender_id === activeConversation.otherPartyId
+            );
+            if (hasRelevantNotification) {
+                fetchMessages(activeConversation.otherPartyId);
+                // Mark as read logic for DMs?
+            }
+        } else {
+            const companyAppIds = getCompanyAppIds(activeConversation);
+            const hasRelevantNotification = notifications.some(n =>
+                !n.is_read && n.application_id && companyAppIds.includes(n.application_id)
+            );
+            if (hasRelevantNotification) {
+                fetchMessages(companyAppIds);
+                notifications.forEach(n => {
+                    if (!n.is_read && n.application_id && companyAppIds.includes(n.application_id)) {
+                        markAsRead(n.id);
+                    }
+                });
+            }
         }
     }, [notifications, activeConversation]);
 
     // 3. Failsafe Polling
     useEffect(() => {
         if (!activeConversation) return;
-        const companyAppIds = getCompanyAppIds(activeConversation);
+
         const interval = setInterval(() => {
-            fetchMessages(companyAppIds);
+            if (activeConversation.otherPartyId) {
+                fetchMessages(activeConversation.otherPartyId);
+            } else {
+                const companyAppIds = getCompanyAppIds(activeConversation);
+                fetchMessages(companyAppIds);
+            }
         }, 3000);
         return () => clearInterval(interval);
     }, [activeConversation, applications]);
 
     const getCompanyAppIds = (conv: any) => {
+        // Only for Application-based conversations
         return applications
             .filter(app => app.companyName === conv.companyName)
             .filter(app => app.company?.id === conv.company?.id || app.companyId === conv.companyId)
             .map(app => app.id);
     };
 
-    const fetchMessages = async (appIds: string[]) => {
+    const fetchMessages = async (idsOrRecipient: string[] | string) => {
         try {
+            // If it's a temp DM, don't fetch, just empty messages
+            if (activeConversation?.isTemp) {
+                setMessages([]);
+                return;
+            }
+
             const requestTime = Date.now();
             lastFetchTimeRef.current = requestTime;
-            const idsParam = appIds.join(',');
-            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}&t=${requestTime}`, { cache: 'no-store' });
+
+            let url = '';
+            if (Array.isArray(idsOrRecipient)) {
+                // Application based
+                const idsParam = idsOrRecipient.join(',');
+                url = `/api/shared/messages?applicationIds=${idsParam}&t=${requestTime}`;
+            } else {
+                // DM based
+                url = `/api/shared/messages?recipientId=${idsOrRecipient}&t=${requestTime}`;
+            }
+
+            const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 if (requestTime < lastFetchTimeRef.current) return;
                 setMessages(data.messages || []);
-                markMessagesAsRead(appIds);
+                if (Array.isArray(idsOrRecipient)) {
+                    markMessagesAsRead(idsOrRecipient);
+                } else {
+                    // Mark DM as read? API might need update or we assumes fetching marks read
+                }
             }
         } catch (error) {
             console.error("Error fetching messages", error);
@@ -173,14 +243,21 @@ function MessagesContent() {
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
         try {
+            const payload: any = {
+                content: content + (finalAttachmentUrl || ''),
+                attachmentUrl: null
+            };
+
+            if (activeConversation.otherPartyId) {
+                payload.recipientId = activeConversation.otherPartyId;
+            } else {
+                payload.applicationId = activeConversation.id;
+            }
+
             const res = await fetch('/api/shared/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    applicationId: activeConversation.id,
-                    content: content + (finalAttachmentUrl || ''), // Append attachment markdown
-                    attachmentUrl: null // We append to content for now as per previous logic
-                })
+                body: JSON.stringify(payload)
             });
             if (res.ok) {
                 const data = await res.json();
