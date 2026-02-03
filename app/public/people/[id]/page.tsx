@@ -228,7 +228,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     enc_first_name,
                     enc_last_name,
                     enc_current_role,
-                    enc_profile_image_url
+                    enc_current_role,
+                    enc_profile_image_url,
+                    follower_count
                 )
             `)
             .eq('user_id', id)
@@ -248,7 +250,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     author: {
                         id: author.id || p.user_id, // Fallback if join empty
                         name: author.enc_first_name ? `${decryptData(author.enc_first_name)} ${decryptData(author.enc_last_name)}` : 'User',
-                        role: decryptData(author.enc_current_role) || '',
+                        followerCount: author.follower_count || 0,
+                        role: author.enc_current_role ? decryptData(author.enc_current_role) : '',
                         image: decryptData(author.enc_profile_image_url) || ''
                     }
                 };
@@ -373,7 +376,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 />
 
                 {/* Posts */}
-                <div className="pt-4">
+                <div className="pt-4 max-w-2xl mx-auto">
                     <div className="flex items-center justify-between mb-4 px-2">
                         <h3 className="text-xl font-bold flex items-center gap-2 text-black dark:text-white">
                             <Briefcase size={20} className="text-neutral-600 dark:text-neutral-400" /> Posts

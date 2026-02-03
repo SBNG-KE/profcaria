@@ -6,6 +6,7 @@ import LinkPreview from '@/app/components/LinkPreview';
 import ProfileAnalytics from '@/app/components/professional/ProfileAnalytics'; // Reuse analytics
 import EmployerAnalytics from '@/app/components/employer/EmployerAnalytics';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
+import CopyableText from '@/app/components/ui/CopyableText';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -612,23 +613,12 @@ export default function EmployerProfilePage() {
 
                         {/* Profile Link */}
                         <div className="space-y-2">
-                            <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Profile Link</label>
-                            <div className={`flex items-center p-1.5 rounded-xl border ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
-                                <div className={`px-3 text-sm truncate flex-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                    {typeof window !== 'undefined' ? `${window.location.origin}/public/companies/${profile?.id}` : '...'}
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        const link = `${window.location.origin}/public/companies/${profile?.id}`;
-                                        navigator.clipboard.writeText(link);
-                                        setMessage({ type: 'success', text: 'Profile link copied!' });
-                                        setTimeout(() => setMessage(null), 3000);
-                                    }}
-                                    className={`p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
-                                >
-                                    <Copy size={16} />
-                                </button>
-                            </div>
+                            <CopyableText
+                                label="Profile Link"
+                                text={typeof window !== 'undefined' ? `${window.location.origin}/public/companies/${profile?.id}` : ''}
+                                isLink={true}
+                                className="w-full"
+                            />
                         </div>
 
 
