@@ -280,10 +280,15 @@ function MessagesContent() {
     };
     const closeLinkPreview = () => { lastDetectedUrlRef.current = null; setLinkPreviewUrl(null); setLinkPreviewPosition(null); };
 
-    // Sidebar Data Processing
-    // Applications contain candidate info.
     // We assume 'applications' has 'professional' object and 'jobs' object.
-    const filteredConversations = applications.filter(app => {
+    const allConversations = [...applications];
+
+    // If activeConversation is a "new direct message" (has isDirect flag) and not in the list, add it temporarily
+    if (activeConversation && activeConversation.isDirect && !allConversations.find(a => a.id === activeConversation.id)) {
+        allConversations.unshift(activeConversation);
+    }
+
+    const filteredConversations = allConversations.filter(app => {
         const name = (app.professional?.first_name + ' ' + app.professional?.last_name) || 'Candidate';
         const job = app.jobs?.title || 'Job';
         return name.toLowerCase().includes(searchQuery.toLowerCase()) || job.toLowerCase().includes(searchQuery.toLowerCase());
@@ -377,9 +382,7 @@ function MessagesContent() {
                                                 {name}
                                                 <VerificationBadge tier={app.user?.badgeType} size={12} />
                                             </h4>
-                                            {/* Could add time here if available in app object, but usually it's last message time which we don't have easily without eager fetching */}
                                         </div>
-                                        <p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.jobs?.title || 'Applicant'}</p>
                                     </div>
                                 </button>
                             )

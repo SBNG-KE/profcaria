@@ -340,18 +340,18 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                         {isViewerProfessional && viewerId !== id && (
                             <Link
                                 href={`/professional/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
-                                className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
                             >
-                                <MessageSquare size={16} />
+                                <MessageSquare size={14} />
                                 <span>Message</span>
                             </Link>
                         )}
                         {isViewerEmployer && viewerId !== id && (
                             <Link
                                 href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
-                                className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
                             >
-                                <MessageSquare size={16} />
+                                <MessageSquare size={14} />
                                 <span>Message</span>
                             </Link>
                         )}

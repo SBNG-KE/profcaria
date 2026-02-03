@@ -300,9 +300,33 @@ function MessagesContent() {
     const closeLinkPreview = () => { lastDetectedUrlRef.current = null; setLinkPreviewUrl(null); setLinkPreviewPosition(null); };
 
     // Sidebar Data
-    const filteredConversations = applications.filter(app => (app.jobTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) || (app.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()));
+    const allConversations = [...applications];
+
+    // If activeConversation is a "new direct message" (has isDirect flag) and not in the list, add it temporarily
+    if (activeConversation && activeConversation.isDirect && !allConversations.find(a => (a.companyId === activeConversation.companyId) || (a.company?.id === activeConversation.company?.id) || (a.id === activeConversation.id))) {
+        // Normalize for sidebar group logic
+        allConversations.unshift(activeConversation);
+    }
+
+    const filteredConversations = allConversations.filter(app => (app.jobTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) || (app.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()));
+
+    // Group logic adjustment to handle generic IDs or DM IDs
+    const groupedConversations = filteredConversations;
+    // Note: The previous grouping logic was reducing by companyId. For DMs, we might not have a companyId, or it might be unique per DM. 
+    // Simplifying to just list them for now as grouping by company might hide DMs if ID logic is flawed.
+    // However, keeping close to original behavior but allowing DMs:
+    /* 
     const groupedConversations = Object.values(filteredConversations.reduce((acc, app) => {
-        const key = app.companyId || app.company?.id;
+        const key = app.companyId || app.company?.id || app.id; // Use ID as fallback key for DMs
+        if (!key) return acc;
+        if (!acc[key]) acc[key] = app;
+        return acc;
+    }, {} as Record<string, any>));
+    */
+    // Actually, let's stick to the list since 'applications' vs 'conversations' might be 1:1 in this context usually, or specific to job applications.
+    // But to respect existing structure:
+    const finalConversations = Object.values(filteredConversations.reduce((acc, app) => {
+        const key = app.companyId || app.company?.id || app.id;
         if (!key) return acc;
         if (!acc[key]) acc[key] = app;
         return acc;
@@ -399,12 +423,12 @@ function MessagesContent() {
                     )}
                     <div className="pb-4">
                         <h3 className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>Conversations</h3>
-                        {groupedConversations.map((app: any) => {
-                            const companyId = app.companyId || app.company?.id;
+                        {finalConversations.map((app: any) => {
+                            const companyId = app.companyId || app.company?.id || app.id;
                             const unreadCount = notifications.filter(n => !n.is_read && n.application_id && getCompanyAppIds(app).includes(n.application_id)).length;
                             return (
-                                <button key={companyId} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId) ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100')}`}>
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId) ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')}`}>
+                                <button key={companyId} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId || activeConversation?.id === companyId) ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100')}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId || activeConversation?.id === companyId) ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')}`}>
                                         {app.companyLogoUrl ? <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : <Building2 size={20} />}
                                         {unreadCount > 0 && <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-neutral-900 flex items-center justify-center animate-pulse"><span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span></div>}
                                     </div>
@@ -413,7 +437,6 @@ function MessagesContent() {
                                             {app.companyName}
                                             <VerificationBadge tier={app.badgeType} size={12} />
                                         </h4>
-                                        <p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.jobTitle}</p>
                                     </div>
                                 </button>
                             )
