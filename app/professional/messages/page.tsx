@@ -521,7 +521,7 @@ function MessagesContent() {
                                     onKeyDown={handleKeyDown}
                                     disabled={isSending || isUploading}
                                     placeholder="Type a message..."
-                                    className={`flex-1 bg-transparent border-none focus:ring-0 resize-none py-2.5 max-h-32 min-h-[44px] text-sm ${isDark ? 'text-white placeholder:text-neutral-600' : 'text-black placeholder:text-neutral-400'}`}
+                                    className={`flex-1 bg-transparent border-none focus:ring-0 outline-none placeholder:text-neutral-400 text-sm ${isDark ? 'text-white' : 'text-black'}`}
                                     rows={1}
                                 />
                                 <button

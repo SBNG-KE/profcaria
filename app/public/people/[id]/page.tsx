@@ -324,38 +324,38 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         />
                                     </div>
 
-                                    {/* Action Buttons */}
+                                    {/* Action Buttons - Moved inside flow */}
+                                    <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+                                        {/* Hide Follow/Subscribe if viewer is Company or Self */}
+                                        {(!isViewerEmployer && viewerId !== id) && (
+                                            <FollowButton targetId={id} type="user" />
+                                        )}
+
+                                        {isViewerProfessional && viewerId !== id && (
+                                            <Link
+                                                href={`/professional/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
+                                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                                            >
+                                                <MessageSquare size={14} />
+                                                <span>Message</span>
+                                            </Link>
+                                        )}
+                                        {isViewerEmployer && viewerId !== id && (
+                                            <Link
+                                                href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
+                                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                                            >
+                                                <MessageSquare size={14} />
+                                                <span>Message</span>
+                                            </Link>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="mt-6 md:mt-0 md:absolute md:top-6 md:right-6 flex flex-wrap gap-2 items-center">
-                        {/* Hide Follow/Subscribe if viewer is Company or Self */}
-                        {(!isViewerEmployer && viewerId !== id) && (
-                            <FollowButton targetId={id} type="user" />
-                        )}
-
-                        {isViewerProfessional && viewerId !== id && (
-                            <Link
-                                href={`/professional/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
-                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
-                            >
-                                <MessageSquare size={14} />
-                                <span>Message</span>
-                            </Link>
-                        )}
-                        {isViewerEmployer && viewerId !== id && (
-                            <Link
-                                href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
-                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
-                            >
-                                <MessageSquare size={14} />
-                                <span>Message</span>
-                            </Link>
-                        )}
-                    </div>
+                    {/* Old Absolute Action Buttons Removed */}
                 </div>
 
                 {/* About Section */}
