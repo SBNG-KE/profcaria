@@ -222,8 +222,9 @@ export async function POST(req: Request) {
                 type: 'message',
                 application_id: finalAppId, // Null for DMs
                 is_read: false,
-                // Store metadata for DM navigation?
-                // We might need 'sender_id' in notification to know who sent it if appId is null
+                // Add sender metadata for DMs
+                sender_id: session.uid,
+                sender_type: session.schema
             }]);
 
         // Email Logic (Simplified for DM reuse)
