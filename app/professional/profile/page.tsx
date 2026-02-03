@@ -1958,7 +1958,7 @@ export default function ProfessionalHome() {
                                   </span>
                                 ) : <span className="text-neutral-500 text-3xl">Your Name</span>}
                               </h1>
-                              <button onClick={() => setIsEditingName(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                              <button onClick={() => setIsEditingName(true)} className={`p-2 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'hover:bg-neutral-100 text-neutral-500 hover:text-black'}`}>
                                 <PenLine size={24} />
                               </button>
                             </>
@@ -1983,7 +1983,7 @@ export default function ProfessionalHome() {
                               <p className={`text-xl font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                 {role || 'No role set'}
                               </p>
-                              <button onClick={() => setIsEditingRole(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                              <button onClick={() => setIsEditingRole(true)} className={`p-1.5 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'hover:bg-neutral-100 text-neutral-500 hover:text-black'}`}>
                                 <PenLine size={18} />
                               </button>
                             </>
@@ -2035,7 +2035,7 @@ export default function ProfessionalHome() {
                                   >
                                     <Copy size={14} />
                                   </button>
-                                  <button onClick={() => setIsEditingEmail(true)} className={`p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                  <button onClick={() => setIsEditingEmail(true)} className={`p-1 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'hover:bg-neutral-100 text-neutral-500 hover:text-black'}`}>
                                     <PenLine size={14} />
                                   </button>
                                 </div>
@@ -2060,7 +2060,7 @@ export default function ProfessionalHome() {
                                 <div className={`flex items-center gap-2 font-medium truncate ${isDark ? 'text-neutral-300' : 'text-black'}`}>
                                   <Phone size={16} className="shrink-0" /> <span className="truncate">{phone || 'No phone provided'}</span>
                                 </div>
-                                <button onClick={() => setIsEditingPhone(true)} className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-full ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}>
+                                <button onClick={() => setIsEditingPhone(true)} className={`p-1 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-400 hover:text-white' : 'hover:bg-neutral-100 text-neutral-500 hover:text-black'}`}>
                                   <PenLine size={14} />
                                 </button>
                               </div>

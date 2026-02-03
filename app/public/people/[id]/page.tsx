@@ -93,8 +93,10 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const { data: otherProfilesRaw } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', id);
 
     // Decrypt Sections
-    const employment = (employmentRaw || []).map((e: any) => ({
+    // 1. Manual Employment
+    const manualEmployment = (employmentRaw || []).map((e: any) => ({
         id: e.id,
+        source: 'manual',
         title: decryptData(e.enc_title),
         company: decryptData(e.enc_company),
         location: decryptData(e.enc_location),
@@ -104,6 +106,52 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         endDate: decryptData(e.enc_end_date),
         isCurrent: e.is_current,
     }));
+
+    // 2. Verified Employment (Automatic from Applications)
+    const { data: autoData } = await supabaseAdmin
+        .schema('employer')
+        .from('applications')
+        .select('*, jobs(id, enc_title, company_id)')
+        .eq('user_id', id)
+        .in('status', ['hired', 'employed', 'terminated', 'resigned', 'pending_termination']);
+
+    const safeAutoData = autoData || [];
+    const companyIds = [...new Set(safeAutoData.map((a: any) => a.jobs?.company_id).filter(Boolean))];
+
+    const { data: companies } = await supabaseAdmin
+        .schema('employer')
+        .from('companies')
+        .select('id, enc_company_name, enc_logo_url')
+        .in('id', companyIds);
+
+    const autoEmployment = safeAutoData.map((app: any) => {
+        const job = app.jobs;
+        const company = companies?.find((c: any) => c.id === job?.company_id);
+        // Determine explicit dates if available, otherwise use created_at
+        const startDate = new Date(app.created_at).toISOString().split('T')[0];
+        const endDate = app.terminated_at ? new Date(app.terminated_at).toISOString().split('T')[0] : null;
+        const isCurrent = ['hired', 'employed', 'pending_termination'].includes(app.status);
+
+        return {
+            id: app.id,
+            source: 'automatic',
+            title: job ? decryptData(job.enc_title) : 'Verified Role',
+            company: company ? decryptData(company.enc_company_name) : 'Verified Company',
+            location: 'Remote', // Default for now
+            type: 'Full-time', // Default for now
+            description: 'Verified Employment via Profcaria',
+            startDate: startDate,
+            endDate: endDate,
+            isCurrent: isCurrent,
+        };
+    });
+
+    // 3. Merge & Sort
+    const employment = [...manualEmployment, ...autoEmployment].sort((a, b) => {
+        const dateA = new Date(a.startDate || '1900-01-01').getTime();
+        const dateB = new Date(b.startDate || '1900-01-01').getTime();
+        return dateB - dateA;
+    });
 
     const education = (educationRaw || []).map((e: any) => ({
         id: e.id,

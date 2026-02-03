@@ -66,16 +66,26 @@ export default function ProfileInfoSection({
 
     const EditActions = ({ section, item }: { section: string, item: any }) => {
         if (readOnly) return null;
+
+        // Disable edit/delete for verified items (automatic source)
+        if (item.source === 'automatic') {
+             return (
+                <div className="flex items-center gap-2" title="Verified entry cannot be edited">
+                    <BadgeCheck size={16} className="text-blue-500" />
+                </div>
+            );
+        }
+
         return (
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 transition-opacity">
                 {onEdit && (
-                    <button onClick={() => onEdit(section, item)} className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400">
-                        <PenLine size={14} />
+                    <button onClick={() => onEdit(section, item)} className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white transition-colors">
+                        <PenLine size={16} />
                     </button>
                 )}
                 {onDelete && (
-                    <button onClick={() => onDelete(section, item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400">
-                        <Trash2 size={14} />
+                    <button onClick={() => onDelete(section, item.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-neutral-400 hover:text-red-500 dark:text-neutral-500 dark:hover:text-red-400 transition-colors">
+                        <Trash2 size={16} />
                     </button>
                 )}
             </div>
