@@ -198,39 +198,51 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
     // Fetch Latest Post
     // This requires a similar query to `api/professional/profile/posts` but for a specific user.
-    const { data: latestPosts } = await supabaseAdmin
-        .schema('professional')
-        .from('posts')
-        .select(`
-            *,
-            post_likes (count),
-            post_comments (count),
-            author:users!user_id (
-                id,
-                enc_first_name,
-                enc_last_name,
-                enc_current_role,
-                enc_profile_image_url
-            )
-        `)
-        .eq('user_id', id)
-        .order('created_at', { ascending: false })
-        .limit(5) as any;
+    // Fetch Latest Post with Safety
+    let formattedPosts = [];
+    try {
+        const { data: latestPosts, error: postsError } = await supabaseAdmin
+            .schema('professional')
+            .from('posts')
+            .select(`
+                *,
+                post_likes (count),
+                post_comments (count),
+                author:users!user_id (
+                    id,
+                    enc_first_name,
+                    enc_last_name,
+                    enc_current_role,
+                    enc_profile_image_url
+                )
+            `)
+            .eq('user_id', id)
+            .order('created_at', { ascending: false })
+            .limit(5) as any;
 
-    const formattedPosts = latestPosts?.map((p: any) => ({
-        id: p.id,
-        content: decryptData(p.enc_content),
-        media: p.media_urls?.map((url: string) => ({ url, type: url.match(/\.(mp4|webm)$/) ? 'video' : 'image' })),
-        timestamp: formatDistanceToNow(new Date(p.created_at), { addSuffix: true }),
-        likesCount: p.post_likes?.[0]?.count || 0,
-        commentsCount: p.post_comments?.[0]?.count || 0,
-        author: {
-            id: p.author?.id,
-            name: `${decryptData(p.author?.enc_first_name)} ${decryptData(p.author?.enc_last_name)}`,
-            role: decryptData(p.author?.enc_current_role),
-            image: decryptData(p.author?.enc_profile_image_url)
+        if (!postsError && latestPosts) {
+            formattedPosts = latestPosts.map((p: any) => {
+                const author = p.author || {};
+                return {
+                    id: p.id,
+                    content: decryptData(p.enc_content),
+                    media: p.media_urls?.map((url: string) => ({ url, type: url.match(/\.(mp4|webm)$/) ? 'video' : 'image' })),
+                    timestamp: formatDistanceToNow(new Date(p.created_at), { addSuffix: true }),
+                    likesCount: p.post_likes?.[0]?.count || 0,
+                    commentsCount: p.post_comments?.[0]?.count || 0,
+                    author: {
+                        id: author.id || p.user_id, // Fallback if join empty
+                        name: author.enc_first_name ? `${decryptData(author.enc_first_name)} ${decryptData(author.enc_last_name)}` : 'User',
+                        role: decryptData(author.enc_current_role) || '',
+                        image: decryptData(author.enc_profile_image_url) || ''
+                    }
+                };
+            });
         }
-    })) || [];
+    } catch (e) {
+        console.error("Error fetching posts for public profile:", e);
+        // Fail silently for posts, don't crash the page
+    }
 
 
     return (
