@@ -93,6 +93,34 @@ export async function POST(req: Request) {
       throw error;
     }
 
+    // --- EARLY ADOPTER PROMO (Assignments) ---
+    // Check if user is within the first 500 signups
+    try {
+      const { count } = await supabaseAdmin
+        .schema('professional')
+        .from('users')
+        .select('*', { count: 'exact', head: true });
+
+      if (count !== null && count <= 500) {
+        // Grant Premium Subscription (2 Months)
+        await supabaseAdmin
+          .schema('professional')
+          .from('subscriptions')
+          .insert({
+            user_id: data.id,
+            plan_type: 'premium',
+            status: 'active',
+            is_promo: true,
+            current_period_start: new Date().toISOString(),
+            current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(), // 60 Days (2 Months)
+          });
+      }
+    } catch (promoError) {
+      console.error('Failed to apply promo:', promoError);
+      // Don't block signup if promo fails, but log it
+    }
+    // ------------------------------------------
+
     // 7. Generate Session Token (JWT) - 30 Days
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const token = await new SignJWT({ uid: data.id, schema: 'professional' })

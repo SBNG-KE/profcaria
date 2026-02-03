@@ -175,7 +175,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     const PostHeader = ({ isMobile = false }) => (
         <div className={`flex items-start justify-between ${isMobile ? 'p-4 pb-2' : 'p-4'}`}>
             <div className="flex items-start gap-3">
-                <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className="flex flex-col items-center gap-1 group">
+                <Link href={post.author.type === 'employer' ? `/public/companies/${post.author.id}` : `/public/people/${post.author.id}`} className="flex flex-col items-center gap-1 group">
                     <ProfileImage
                         src={post.author.profileImage}
                         type={post.author.type}
@@ -191,7 +191,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 </Link>
                 <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <Link href={post.author.type === 'employer' ? `/professional/companies/${post.author.id}` : `/professional/people/${post.author.id}`} className={`font-bold text-base truncate hover:underline flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                        <Link href={post.author.type === 'employer' ? `/public/companies/${post.author.id}` : `/public/people/${post.author.id}`} className={`font-bold text-base truncate hover:underline flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
                             {post.author.name}
                             <VerificationBadge tier={post.author.badgeType} size={24} />
                         </Link>
