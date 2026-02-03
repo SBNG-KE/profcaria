@@ -222,7 +222,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 <div className="pt-4">
                     <ProfessionalPostsSection
                         userId={profile.user_id || profile.id}
-                        latestPost={formattedPosts[0] || null}
+                        initialPosts={formattedPosts}
                     />
                 </div>
 
