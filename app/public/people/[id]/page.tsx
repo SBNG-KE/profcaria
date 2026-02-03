@@ -46,14 +46,17 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     let isViewerEmployer = false;
     let viewerId = '';
 
-    if (session) {
+    if (session && typeof session === 'string') {
         try {
-            const payload = JSON.parse(atob(session.split('.')[1]));
-            viewerId = payload.uid || payload.id;
-            if (payload.schema === 'professional') {
-                isViewerProfessional = true;
-            } else if (payload.schema === 'employer') {
-                isViewerEmployer = true;
+            const parts = session.split('.');
+            if (parts.length > 1) {
+                const payload = JSON.parse(atob(parts[1]));
+                viewerId = payload.uid || payload.id;
+                if (payload.schema === 'professional') {
+                    isViewerProfessional = true;
+                } else if (payload.schema === 'employer') {
+                    isViewerEmployer = true;
+                }
             }
         } catch (e) { }
     }
@@ -128,8 +131,20 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         const job = app.jobs;
         const company = companies?.find((c: any) => c.id === job?.company_id);
         // Determine explicit dates if available, otherwise use created_at
-        const startDate = new Date(app.created_at).toISOString().split('T')[0];
-        const endDate = app.terminated_at ? new Date(app.terminated_at).toISOString().split('T')[0] : null;
+        let startDate = 'N/A';
+        try {
+            if (app.created_at) {
+                startDate = new Date(app.created_at).toISOString().split('T')[0];
+            }
+        } catch (e) { }
+
+        let endDate = null;
+        if (app.terminated_at) {
+            try {
+                endDate = new Date(app.terminated_at).toISOString().split('T')[0];
+            } catch (e) { }
+        }
+
         const isCurrent = ['hired', 'employed', 'pending_termination'].includes(app.status);
 
         return {
