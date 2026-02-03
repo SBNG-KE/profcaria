@@ -126,8 +126,8 @@ export async function POST(request: NextRequest) {
             });
 
         if (error) {
-            console.error('Search click save error:', error);
-            return NextResponse.json({ error: 'Failed to save' }, { status: 500 });
+            console.warn('Search click save error (non-fatal):', error);
+            return NextResponse.json({ success: false }, { status: 200 });
         }
 
         // Also log the query to search_logs for text-based algorithm training
@@ -145,6 +145,7 @@ export async function POST(request: NextRequest) {
 
     } catch (error: any) {
         console.error('Search History POST Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        // Fail gracefully so frontend doesn't show error to user
+        return NextResponse.json({ success: false, warning: error.message }, { status: 200 });
     }
 }

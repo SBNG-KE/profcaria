@@ -114,6 +114,13 @@ export async function POST(req: Request) {
             current_period_start: new Date().toISOString(),
             current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(), // 60 Days (2 Months)
           });
+
+        // Also update the user's badge type to matches the premium plan
+        await supabaseAdmin
+          .schema('professional')
+          .from('users')
+          .update({ badge_type: 'gold' })
+          .eq('id', data.id);
       }
     } catch (promoError) {
       console.error('Failed to apply promo:', promoError);

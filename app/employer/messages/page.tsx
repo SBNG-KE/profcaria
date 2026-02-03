@@ -64,27 +64,47 @@ function MessagesContent() {
         const recipientImage = searchParams.get('recipientImage');
 
         if (targetAppId && applications.length > 0 && !activeConversation) {
-            const targetApp = applications.find(app => app.id === targetAppId);
-            if (targetApp) {
-                setActiveConversation(targetApp);
-                window.history.replaceState(null, '', '/employer/messages');
+            const app = applications.find(a => a.id === targetAppId);
+            if (app) {
+                // Check if conversation already exists for this app
+                const existingConv = allConversations.find(c => c.id === targetAppId); // Assuming 'id' is the application ID for existing conversations
+                if (existingConv) {
+                    setActiveConversation(existingConv);
+                } else {
+                    // Create temporary conversation state for UI
+                    setActiveConversation({
+                        id: 'new_' + targetAppId,
+                        application_id: targetAppId,
+                        professional: app.professional,
+                        jobs: app.jobs,
+                        status: app.status
+                    });
+                }
             }
         } else if (recipientId && !activeConversation) {
             // Direct Message Mode
-            setActiveConversation({
-                id: 'new_dm_' + recipientId,
-                isDirect: true,
-                recipientId: recipientId,
-                professional: {
-                    first_name: recipientName || 'Professional',
-                    last_name: '',
-                    avatar_url: recipientImage || null
-                },
-                jobs: { title: 'Direct Message' },
-                status: 'Open'
-            });
+            // 1. Check if we already have a conversation with this recipient
+            const existingConv = allConversations.find(c => c.isDirect && c.recipientId === recipientId || c.professional?.id === recipientId);
+
+            if (existingConv) {
+                setActiveConversation(existingConv);
+            } else {
+                // 2. Only if NOT found, create new temporary state
+                setActiveConversation({
+                    id: 'new_dm_' + recipientId,
+                    isDirect: true,
+                    recipientId: recipientId,
+                    professional: {
+                        first_name: recipientName || 'Professional',
+                        last_name: '',
+                        avatar_url: recipientImage || null
+                    },
+                    jobs: { title: 'Direct Message' },
+                    status: 'Open'
+                });
+            }
         }
-    }, [searchParams, applications]);
+    }, [searchParams, applications, activeConversation]);
 
     // 1. Fetch Messages
     useEffect(() => {
