@@ -16,7 +16,8 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
     const textRef = React.useRef<HTMLDivElement>(null);
 
     // Use new RegExp to avoid parser issues
-    const parts = text.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
+    const safeText = text || '';
+    const parts = safeText.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
 
     // Check if text is actually truncated by CSS
     useEffect(() => {
@@ -79,7 +80,8 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
 
 // Scrollable Text Component
 const ScrollableText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
-    const parts = text.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
+    const safeText = text || '';
+    const parts = safeText.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
     return (
         <div className={`max-h-72 overflow-y-auto text-base leading-relaxed pr-2 scrollbar-thin ${isDark ? 'text-neutral-200 scrollbar-thumb-neutral-700' : 'text-neutral-800 scrollbar-thumb-neutral-300'}`}>
             <p className="whitespace-pre-wrap">
