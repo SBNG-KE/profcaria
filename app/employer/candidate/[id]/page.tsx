@@ -188,11 +188,10 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
                 </div>
             )}
 
-            {/* Posts Section */}
             <div className="pt-4">
                 <ProfessionalPostsSection
                     userId={id}
-                    latestPost={null} // Will fetch
+                    initialPosts={[]} // Will fetch internally if needed, or we safely pass empty
                 />
             </div>
 
