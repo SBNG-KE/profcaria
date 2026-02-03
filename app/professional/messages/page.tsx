@@ -59,6 +59,7 @@ function MessagesContent() {
         const recipientId = searchParams.get('recipientId');
         const recipientName = searchParams.get('recipientName');
         const recipientType = searchParams.get('recipientType') || 'professional';
+        const recipientImage = searchParams.get('recipientImage');
 
         if (targetCompanyId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
@@ -75,7 +76,7 @@ function MessagesContent() {
                 recipientType: recipientType, // Store dynamic type
                 companyName: recipientName || (recipientType === 'employer' ? 'Company' : 'Professional'),
                 jobTitle: 'Direct Message',
-                companyLogoUrl: null
+                companyLogoUrl: recipientImage || null // Use image from params
             });
         }
     }, [searchParams, applications]);

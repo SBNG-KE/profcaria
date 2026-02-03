@@ -61,6 +61,7 @@ function MessagesContent() {
         const targetAppId = searchParams.get('applicationId');
         const recipientId = searchParams.get('recipientId');
         const recipientName = searchParams.get('recipientName');
+        const recipientImage = searchParams.get('recipientImage');
 
         if (targetAppId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => app.id === targetAppId);
@@ -77,7 +78,7 @@ function MessagesContent() {
                 professional: {
                     first_name: recipientName || 'Professional',
                     last_name: '',
-                    avatar_url: null
+                    avatar_url: recipientImage || null
                 },
                 jobs: { title: 'Direct Message' },
                 status: 'Open'

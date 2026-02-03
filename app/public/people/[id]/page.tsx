@@ -333,7 +333,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
                                         {isViewerProfessional && viewerId !== id && (
                                             <Link
-                                                href={`/professional/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
+                                                href={`/professional/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
                                                 className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
                                             >
                                                 <MessageSquare size={14} />
@@ -342,7 +342,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         )}
                                         {isViewerEmployer && viewerId !== id && (
                                             <Link
-                                                href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}`}
+                                                href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
                                                 className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
                                             >
                                                 <MessageSquare size={14} />
