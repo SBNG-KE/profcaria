@@ -24,12 +24,15 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const schemaName = user.schema === 'professional' ? 'professional' : 'employer';
+        const userField = user.schema === 'professional' ? 'user_id' : 'company_id';
+
         // Get recent search clicks with target info
         const { data: clicks, error } = await supabaseAdmin
-            .schema('professional')
+            .schema(schemaName)
             .from('search_clicks')
             .select('id, target_id, target_type, query, created_at')
-            .eq('user_id', user.id)
+            .eq(userField, user.id)
             .order('created_at', { ascending: false })
             .limit(20);
 
@@ -107,6 +110,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const schemaName = user.schema === 'professional' ? 'professional' : 'employer';
+        const userField = user.schema === 'professional' ? 'user_id' : 'company_id';
+
         const { targetId, targetType, query, industry } = await request.json();
 
         if (!targetId || !targetType) {
@@ -115,10 +121,10 @@ export async function POST(request: NextRequest) {
 
         // Insert click record
         const { error } = await supabaseAdmin
-            .schema('professional')
+            .schema(schemaName)
             .from('search_clicks')
             .insert({
-                user_id: user.id,
+                [userField]: user.id,
                 target_id: targetId,
                 target_type: targetType,
                 query: query || null,
@@ -127,16 +133,17 @@ export async function POST(request: NextRequest) {
 
         if (error) {
             console.warn('Search click save error (non-fatal):', error);
+            // Don't fail the request, just return warning if strict
             return NextResponse.json({ success: false }, { status: 200 });
         }
 
         // Also log the query to search_logs for text-based algorithm training
         if (query && query.trim()) {
             await supabaseAdmin
-                .schema('professional')
+                .schema(schemaName)
                 .from('search_logs')
                 .insert({
-                    user_id: user.id,
+                    [userField]: user.id,
                     query: query.trim()
                 });
         }
