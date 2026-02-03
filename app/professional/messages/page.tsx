@@ -429,7 +429,14 @@ function MessagesContent() {
                             return (
                                 <button key={companyId} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId || activeConversation?.id === companyId) ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100')}`}>
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId || activeConversation?.id === companyId) ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')}`}>
-                                        {app.companyLogoUrl ? <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : <Building2 size={20} />}
+                                        {app.companyLogoUrl ? (
+                                            <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" />
+                                        ) : app.isDirect && app.role === 'professional' ? (
+                                            /* If we have a profile image in the app object (needs to be ensured in construction) */
+                                            <UserCircle size={20} /> /* Placeholder until we map profileImage correctly in activeConversation constr */
+                                        ) : (
+                                            <Building2 size={20} />
+                                        )}
                                         {unreadCount > 0 && <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-neutral-900 flex items-center justify-center animate-pulse"><span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span></div>}
                                     </div>
                                     <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
@@ -500,7 +507,7 @@ function MessagesContent() {
                         {/* Message input */}
                         <footer className={`px-4 py-4 border-t shrink-0 relative ${isDark ? 'border-neutral-800 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
                             {linkPreviewUrl && linkPreviewPosition && <div className="absolute bottom-full left-0 right-0 mb-2 px-4"><LinkPreview url={linkPreviewUrl} onClose={closeLinkPreview} onInsert={() => closeLinkPreview()} /></div>}
-                            <div className={`flex items-end gap-3 p-2 rounded-[24px] border transition-all ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-neutral-50 border-neutral-300'}`}>
+                            <div className={`flex items-end gap-3 p-2 rounded-[24px] transition-all ${isDark ? 'bg-neutral-900' : 'bg-neutral-50'}`}>
                                 <div className="flex gap-1 pb-1">
                                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} accept="image/*,application/pdf" />
                                     <button onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-full transition-all ${isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-200 hover:text-black'}`} title="Attach file">

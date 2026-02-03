@@ -457,7 +457,7 @@ function MessagesContent() {
                         {/* Input Area */}
                         <footer className={`px-4 py-4 border-t shrink-0 relative ${isDark ? 'border-white/10 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
                             {linkPreviewUrl && linkPreviewPosition && <div className="absolute bottom-full left-0 right-0 mb-2 px-4"><LinkPreview url={linkPreviewUrl} onClose={closeLinkPreview} onInsert={() => closeLinkPreview()} /></div>}
-                            <div className={`flex items-end gap-3 p-2 rounded-[24px] border transition-all ${isDark ? 'bg-neutral-900 border-white/10 focus-within:border-emerald-500/50' : 'bg-neutral-50 border-neutral-300 focus-within:border-emerald-500/30'}`}>
+                            <div className={`flex items-end gap-3 p-2 rounded-[24px] transition-all ${isDark ? 'bg-neutral-900 border-white/10' : 'bg-neutral-50'}`}>
                                 <div className="flex gap-1 pb-1">
                                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} accept="image/*,application/pdf" />
                                     <button onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-full transition-all ${isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-200 hover:text-black'}`} title="Attach file">

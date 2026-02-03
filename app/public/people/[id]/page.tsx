@@ -331,7 +331,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="mt-6 md:mt-0 md:absolute md:top-8 md:right-8 flex flex-wrap gap-2">
+                    <div className="mt-6 md:mt-0 md:absolute md:top-6 md:right-6 flex flex-wrap gap-2 items-center">
                         {/* Hide Follow/Subscribe if viewer is Company or Self */}
                         {(!isViewerEmployer && viewerId !== id) && (
                             <FollowButton targetId={id} type="user" />
