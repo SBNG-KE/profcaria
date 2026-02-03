@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -8,6 +6,8 @@ import {
 import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
 import VerificationBadge from '../VerificationBadge';
+import { useCurrency } from '@/app/hooks/useCurrency';
+// ... (existing hooks)
 
 // Truncated Text Component for Mobile
 const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
@@ -131,6 +131,7 @@ interface PostCardProps {
 
 
 const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSave, onFollow, onReport, onDelete, onDeleteRepost, onEdit, onCommentAdded, onHashtagClick, forceVertical = false }: PostCardProps) => {
+    const { symbol: currencySymbol } = useCurrency();
     const isProfessional = post.author.type === 'professional';
     const hasMedia = post.media && post.media.length > 0;
     const isOwnPost = post.isOwnPost !== undefined ? post.isOwnPost : post.author.id === currentUserId;
