@@ -85,8 +85,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
     // Fetch Sections
     // Fetch Sections
-    const { data: employmentRaw } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', id).order('start_date', { ascending: false });
-    const { data: educationRaw } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', id).order('start_date', { ascending: false });
+    const { data: employmentRaw } = await supabaseAdmin.schema('professional').from('employment_history').select('*').eq('user_id', id);
+    const { data: educationRaw } = await supabaseAdmin.schema('professional').from('education').select('*').eq('user_id', id);
     const { data: skillsRaw } = await supabaseAdmin.schema('professional').from('skills').select('*').eq('user_id', id);
     const { data: certificationsRaw } = await supabaseAdmin.schema('professional').from('certifications').select('*').eq('user_id', id);
     const { data: awardsRaw } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', id);
@@ -213,9 +213,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 profile_image_url
             )
         `)
-        .eq('author_id', id)
+        .eq('user_id', id)
         .order('created_at', { ascending: false })
-        .limit(3) as any;
+        .limit(5) as any;
 
     const formattedPosts = latestPosts?.map((p: any) => ({
         id: p.id,
@@ -355,7 +355,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
                     <ProfessionalPostsSection
                         userId={id}
-                        latestPost={formattedPosts[0] || null}
+                        initialPosts={formattedPosts}
                     />
                 </div>
 

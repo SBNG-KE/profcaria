@@ -10,10 +10,10 @@ import { useRouter } from 'next/navigation';
 
 interface ProfessionalPostsSectionProps {
     userId: string;
-    latestPost: any; // Initial latest post passed from server
+    initialPosts: any[]; // List of initial posts passed from server
 }
 
-export default function ProfessionalPostsSection({ userId, latestPost }: ProfessionalPostsSectionProps) {
+export default function ProfessionalPostsSection({ userId, initialPosts }: ProfessionalPostsSectionProps) {
     const { theme } = useTheme();
     const router = useRouter();
     const isDark = theme === 'dark';
@@ -22,7 +22,7 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
     const [hasFetchedReposts, setHasFetchedReposts] = useState(false);
     const [isLoadingReposts, setIsLoadingReposts] = useState(false);
     const [activeTab, setActiveTab] = useState<'POSTS' | 'REPOSTS'>('POSTS');
-    const [posts, setPosts] = useState<any[]>(latestPost ? [latestPost] : []);
+    const [posts, setPosts] = useState<any[]>(initialPosts || []);
     const [loading, setLoading] = useState(false);
     const [hasFetched, setHasFetched] = useState(false);
 
@@ -72,7 +72,7 @@ export default function ProfessionalPostsSection({ userId, latestPost }: Profess
         <>
             <PostsPreview
                 isDark={isDark}
-                latestPost={latestPost}
+                latestPost={initialPosts[0] || null}
                 onViewAll={handleViewAll}
                 title="Activity"
                 userId={userId}

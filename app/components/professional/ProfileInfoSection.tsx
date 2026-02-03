@@ -40,6 +40,20 @@ export default function ProfileInfoSection({
     const { theme } = useTheme();
     // const isDark = propIsDark ?? (theme === 'dark'); // styling is now handled by CSS
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'N/A';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+    };
+
+    const formatYear = (dateString: string) => {
+        if (!dateString) return 'N/A';
+        const d = new Date(dateString);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.getFullYear();
+    };
+
     const getProfileIcon = (platform: string) => {
         const p = platform?.toLowerCase() || '';
         if (p.includes('linkedin')) return <Linkedin size={18} />;
@@ -69,7 +83,7 @@ export default function ProfileInfoSection({
 
         // Disable edit/delete for verified items (automatic source)
         if (item.source === 'automatic') {
-             return (
+            return (
                 <div className="flex items-center gap-2" title="Verified entry cannot be edited">
                     <BadgeCheck size={16} className="text-blue-500" />
                 </div>
@@ -109,7 +123,7 @@ export default function ProfileInfoSection({
                                         <h4 className="text-lg font-bold text-black dark:text-white">{job.title}</h4>
                                         <p className="font-medium text-neutral-600 dark:text-neutral-400">{job.company}</p>
                                         <p className="text-xs uppercase tracking-wider font-bold mt-1 text-neutral-400 dark:text-neutral-500">
-                                            {new Date(job.startDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} — {job.isCurrent ? 'Present' : new Date(job.endDate).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}
+                                            {formatDate(job.startDate)} — {job.isCurrent ? 'Present' : formatDate(job.endDate)}
                                         </p>
                                         {job.description && (
                                             <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-500 dark:text-neutral-400">{job.description}</p>
@@ -136,7 +150,7 @@ export default function ProfileInfoSection({
                                     <h4 className="font-bold text-black dark:text-white">{edu.school}</h4>
                                     <p className="text-sm text-neutral-600 dark:text-neutral-400">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</p>
                                     <p className="text-xs mt-1 text-neutral-400 dark:text-neutral-500">
-                                        {new Date(edu.startDate).getFullYear()} - {edu.isCurrent ? 'Present' : new Date(edu.endDate).getFullYear()}
+                                        {formatYear(edu.startDate)} - {edu.isCurrent ? 'Present' : formatYear(edu.endDate)}
                                     </p>
                                 </div>
                                 <EditActions section="education" item={edu} />
@@ -181,7 +195,7 @@ export default function ProfileInfoSection({
                                     <div>
                                         <h4 className="font-bold text-sm text-black dark:text-white">{cert.name}</h4>
                                         <p className="text-xs text-neutral-600 dark:text-neutral-400">{cert.issuer}</p>
-                                        <p className="text-[10px] mt-0.5 text-neutral-400 dark:text-neutral-500">{new Date(cert.issueDate).getFullYear()}</p>
+                                        <p className="text-[10px] mt-0.5 text-neutral-400 dark:text-neutral-500">{formatYear(cert.issueDate)}</p>
                                     </div>
                                     <EditActions section="certifications" item={cert} />
                                 </div>
@@ -202,7 +216,7 @@ export default function ProfileInfoSection({
                                     <div>
                                         <h4 className="font-bold text-sm text-black dark:text-white">{award.title}</h4>
                                         <p className="text-xs text-neutral-600 dark:text-neutral-400">{award.issuer}</p>
-                                        <p className="text-[10px] mt-0.5 text-neutral-400 dark:text-neutral-500">{new Date(award.date).getFullYear()}</p>
+                                        <p className="text-[10px] mt-0.5 text-neutral-400 dark:text-neutral-500">{formatYear(award.date)}</p>
                                     </div>
                                     <EditActions section="awards" item={award} />
                                 </div>
