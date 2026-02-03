@@ -58,6 +58,7 @@ function MessagesContent() {
         const targetCompanyId = searchParams.get('companyId');
         const recipientId = searchParams.get('recipientId');
         const recipientName = searchParams.get('recipientName');
+        const recipientType = searchParams.get('recipientType') || 'professional';
 
         if (targetCompanyId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
@@ -71,9 +72,10 @@ function MessagesContent() {
                 id: 'new_dm_' + recipientId, // Temporary ID
                 isDirect: true,
                 recipientId: recipientId,
-                companyName: recipientName || 'Professional', // Re-using companyName field for display
+                recipientType: recipientType, // Store dynamic type
+                companyName: recipientName || (recipientType === 'employer' ? 'Company' : 'Professional'),
                 jobTitle: 'Direct Message',
-                companyLogoUrl: null // Could fetch user image if available
+                companyLogoUrl: null
             });
         }
     }, [searchParams, applications]);
@@ -179,9 +181,7 @@ function MessagesContent() {
 
             if (activeConversation.isDirect) {
                 body.recipientId = activeConversation.recipientId;
-                body.recipientType = 'professional'; // Assuming internal pro-to-pro messages
-                // If chatting with company via DM, type would be employer. 
-                // Currently implementing Pro-to-Pro based on recent request.
+                body.recipientType = activeConversation.recipientType || 'professional';
             } else {
                 body.applicationId = activeConversation.id;
             }
@@ -195,7 +195,6 @@ function MessagesContent() {
             if (res.ok) {
                 const data = await res.json();
                 setMessages(prev => {
-                    // Avoid duplicates
                     if (prev.some(m => m.id === data.message.id)) return prev;
                     return [...prev, { ...data.message, content: content }];
                 });
