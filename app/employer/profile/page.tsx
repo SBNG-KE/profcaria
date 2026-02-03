@@ -633,7 +633,7 @@ export default function EmployerProfilePage() {
 
 
             {/* 3. Posts Section */}
-            <div className="pt-4">
+            <div className="pt-4 max-w-2xl mx-auto">
                 <CompanyPostsSection
                     companyId={profile?.id}
                     latestPost={null} // Will fetch automatically

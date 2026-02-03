@@ -252,7 +252,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                         name: author.enc_first_name ? `${decryptData(author.enc_first_name)} ${decryptData(author.enc_last_name)}` : 'User',
                         followerCount: author.follower_count || 0,
                         role: author.enc_current_role ? decryptData(author.enc_current_role) : '',
-                        image: decryptData(author.enc_profile_image_url) || ''
+                        profileImage: decryptData(author.enc_profile_image_url) || ''
                     }
                 };
             });
