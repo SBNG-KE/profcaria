@@ -199,8 +199,8 @@ export async function POST(req: Request) {
                 application_id: finalAppId,
                 sender_id: session.uid,
                 sender_type: session.schema,
-                // recipient_id: finalRecipientId, // Column missing in DB
-                // recipient_type: finalRecipientType, // Column missing in DB
+                recipient_id: finalRecipientId,
+                recipient_type: finalRecipientType,
                 enc_content: encContent,
                 is_read: false
             }])

@@ -56,25 +56,43 @@ function MessagesContent() {
         }
     }, [messages]);
 
-    // Handle URL Params for Direct Messaging (e.g. from Applicants list)
+    // Handle URL Params for Direct Messaging (e.g. from Applicants list or Public Profile)
     useEffect(() => {
         const targetAppId = searchParams.get('applicationId');
+        const recipientId = searchParams.get('recipientId');
+        const recipientName = searchParams.get('recipientName');
+
         if (targetAppId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => app.id === targetAppId);
             if (targetApp) {
                 setActiveConversation(targetApp);
                 window.history.replaceState(null, '', '/employer/messages');
             }
+        } else if (recipientId && !activeConversation) {
+            // Direct Message Mode
+            setActiveConversation({
+                id: 'new_dm_' + recipientId,
+                isDirect: true,
+                recipientId: recipientId,
+                professional: {
+                    first_name: recipientName || 'Professional',
+                    last_name: '',
+                    avatar_url: null
+                },
+                jobs: { title: 'Direct Message' },
+                status: 'Open'
+            });
         }
     }, [searchParams, applications]);
 
     // 1. Fetch Messages
     useEffect(() => {
         if (activeConversation) {
-            // Employer chat is usually 1-on-1 per application.
-            // If we want to group messages from the same candidate across different jobs, we'd need complex logic.
-            // For now, let's treat each 'application' as a distinct conversation channel.
-            fetchMessages([activeConversation.id]);
+            if (activeConversation.isDirect) {
+                fetchMessages([], activeConversation.recipientId);
+            } else {
+                fetchMessages([activeConversation.id]);
+            }
         } else {
             setMessages([]);
         }
@@ -83,17 +101,21 @@ function MessagesContent() {
     // 2. Notification-Driven Updates
     useEffect(() => {
         if (!activeConversation) return;
-        const currentAppId = activeConversation.id;
-        const hasRelevantNotification = notifications.some(n =>
-            !n.is_read && n.application_id === currentAppId
-        );
-        if (hasRelevantNotification) {
-            fetchMessages([currentAppId]);
-            notifications.forEach(n => {
-                if (!n.is_read && n.application_id === currentAppId) {
-                    markAsRead(n.id);
-                }
-            });
+
+        if (activeConversation.isDirect) {
+            const hasRelevantNotification = notifications.some(n =>
+                !n.is_read && !n.application_id && n.user_id === activeConversation.recipientId
+            );
+            if (hasRelevantNotification) fetchMessages([], activeConversation.recipientId);
+        } else {
+            const currentAppId = activeConversation.id;
+            const hasRelevantNotification = notifications.some(n =>
+                !n.is_read && n.application_id === currentAppId
+            );
+            if (hasRelevantNotification) {
+                fetchMessages([currentAppId]);
+                // Mark as read logic handled in fetch
+            }
         }
     }, [notifications, activeConversation]);
 
@@ -101,23 +123,36 @@ function MessagesContent() {
     useEffect(() => {
         if (!activeConversation) return;
         const interval = setInterval(() => {
-            fetchMessages([activeConversation.id]);
+            if (activeConversation.isDirect) {
+                fetchMessages([], activeConversation.recipientId);
+            } else {
+                fetchMessages([activeConversation.id]);
+            }
         }, 3000);
         return () => clearInterval(interval);
     }, [activeConversation]);
 
 
-    const fetchMessages = async (appIds: string[]) => {
+    const fetchMessages = async (appIds: string[], otherPartyId?: string) => {
         try {
             const requestTime = Date.now();
             lastFetchTimeRef.current = requestTime;
-            const idsParam = appIds.join(',');
-            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}&t=${requestTime}`, { cache: 'no-store' });
+            let url = `/api/shared/messages?t=${requestTime}`;
+            if (otherPartyId) {
+                url += `&otherPartyId=${otherPartyId}`;
+            } else {
+                const idsParam = appIds.join(',');
+                url += `&applicationIds=${idsParam}`;
+            }
+
+            const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 if (requestTime < lastFetchTimeRef.current) return;
                 setMessages(data.messages || []);
-                markMessagesAsRead(appIds);
+                // Mark as read
+                if (otherPartyId) markMessagesAsRead([], otherPartyId);
+                else markMessagesAsRead(appIds);
             }
         } catch (error) {
             console.error("Error fetching messages", error);
@@ -132,14 +167,22 @@ function MessagesContent() {
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
         try {
+            const body: any = {
+                content: content,
+                attachmentUrl: attachmentUrl
+            };
+
+            if (activeConversation.isDirect) {
+                body.recipientId = activeConversation.recipientId;
+                body.recipientType = 'professional';
+            } else {
+                body.applicationId = activeConversation.id;
+            }
+
             const res = await fetch('/api/shared/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    applicationId: activeConversation.id,
-                    content: content,
-                    attachmentUrl: attachmentUrl
-                })
+                body: JSON.stringify(body)
             });
             if (res.ok) {
                 const data = await res.json();
@@ -156,9 +199,13 @@ function MessagesContent() {
         }
     };
 
-    const markMessagesAsRead = async (appIds: string[]) => {
+    const markMessagesAsRead = async (appIds: string[], senderId?: string) => {
         try {
-            await fetch('/api/shared/messages', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ applicationIds: appIds }) });
+            const body: any = {};
+            if (senderId) body.senderId = senderId;
+            else body.applicationIds = appIds;
+
+            await fetch('/api/shared/messages', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         } catch (e) { console.error(e); }
     };
 

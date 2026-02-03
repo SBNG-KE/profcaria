@@ -158,7 +158,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
                                     <a
-                                        href={`/professional/notifications?companyId=${id}`}
+                                        href={`/professional/messages?recipientId=${id}&recipientType=employer&recipientName=${encodeURIComponent(companyName || 'Company')}`}
                                         className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
                                     >
                                         <MessageSquare size={14} />

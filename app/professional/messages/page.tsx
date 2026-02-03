@@ -53,23 +53,40 @@ function MessagesContent() {
         }
     }, [messages]);
 
-    // Handle URL Params for Direct Messaging
+    // Handle URL Params for Direct Messaging or Application Messaging
     useEffect(() => {
         const targetCompanyId = searchParams.get('companyId');
+        const recipientId = searchParams.get('recipientId');
+        const recipientName = searchParams.get('recipientName');
+
         if (targetCompanyId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
             if (targetApp) {
                 setActiveConversation(targetApp);
                 window.history.replaceState(null, '', '/professional/messages');
             }
+        } else if (recipientId && !activeConversation) {
+            // Direct Message Mode
+            setActiveConversation({
+                id: 'new_dm_' + recipientId, // Temporary ID
+                isDirect: true,
+                recipientId: recipientId,
+                companyName: recipientName || 'Professional', // Re-using companyName field for display
+                jobTitle: 'Direct Message',
+                companyLogoUrl: null // Could fetch user image if available
+            });
         }
     }, [searchParams, applications]);
 
     // 1. Fetch Messages
     useEffect(() => {
         if (activeConversation) {
-            const companyAppIds = getCompanyAppIds(activeConversation);
-            fetchMessages(companyAppIds);
+            if (activeConversation.isDirect) {
+                fetchMessages([], activeConversation.recipientId);
+            } else {
+                const companyAppIds = getCompanyAppIds(activeConversation);
+                fetchMessages(companyAppIds);
+            }
         } else {
             setMessages([]);
         }
@@ -78,48 +95,69 @@ function MessagesContent() {
     // 2. Notification-Driven Updates
     useEffect(() => {
         if (!activeConversation) return;
-        const companyAppIds = getCompanyAppIds(activeConversation);
-        const hasRelevantNotification = notifications.some(n =>
-            !n.is_read && n.application_id && companyAppIds.includes(n.application_id)
-        );
-        if (hasRelevantNotification) {
-            fetchMessages(companyAppIds);
-            notifications.forEach(n => {
-                if (!n.is_read && n.application_id && companyAppIds.includes(n.application_id)) {
-                    markAsRead(n.id);
-                }
-            });
+
+        if (activeConversation.isDirect) {
+            // Poll or check notifications for DM? For now, we rely on polling/manual refresh for DMs or implement specific logic
+            const hasRelevantNotification = notifications.some(n =>
+                !n.is_read && !n.application_id && (n.user_id === activeConversation.recipientId || n.company_id === activeConversation.recipientId) // Logic for DM notifications needs refinement
+            );
+            if (hasRelevantNotification) fetchMessages([], activeConversation.recipientId);
+
+        } else {
+            const companyAppIds = getCompanyAppIds(activeConversation);
+            const hasRelevantNotification = notifications.some(n =>
+                !n.is_read && n.application_id && companyAppIds.includes(n.application_id)
+            );
+            if (hasRelevantNotification) {
+                fetchMessages(companyAppIds);
+                // Mark as read...
+            }
         }
     }, [notifications, activeConversation]);
 
     // 3. Failsafe Polling
     useEffect(() => {
         if (!activeConversation) return;
-        const companyAppIds = getCompanyAppIds(activeConversation);
         const interval = setInterval(() => {
-            fetchMessages(companyAppIds);
+            if (activeConversation.isDirect) {
+                fetchMessages([], activeConversation.recipientId);
+            } else {
+                const companyAppIds = getCompanyAppIds(activeConversation);
+                fetchMessages(companyAppIds);
+            }
         }, 3000);
         return () => clearInterval(interval);
     }, [activeConversation, applications]);
 
     const getCompanyAppIds = (conv: any) => {
+        if (conv.isDirect) return [];
         return applications
             .filter(app => app.companyName === conv.companyName)
             .filter(app => app.company?.id === conv.company?.id || app.companyId === conv.companyId)
             .map(app => app.id);
     };
 
-    const fetchMessages = async (appIds: string[]) => {
+    const fetchMessages = async (appIds: string[], otherPartyId?: string) => {
         try {
             const requestTime = Date.now();
             lastFetchTimeRef.current = requestTime;
-            const idsParam = appIds.join(',');
-            const res = await fetch(`/api/shared/messages?applicationIds=${idsParam}&t=${requestTime}`, { cache: 'no-store' });
+            let url = `/api/shared/messages?t=${requestTime}`;
+
+            if (otherPartyId) {
+                url += `&otherPartyId=${otherPartyId}`;
+            } else {
+                const idsParam = appIds.join(',');
+                url += `&applicationIds=${idsParam}`;
+            }
+
+            const res = await fetch(url, { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 if (requestTime < lastFetchTimeRef.current) return;
                 setMessages(data.messages || []);
-                markMessagesAsRead(appIds);
+                // Mark as read logic needs adapting for DMs
+                if (otherPartyId) markMessagesAsRead([], otherPartyId);
+                else markMessagesAsRead(appIds);
             }
         } catch (error) {
             console.error("Error fetching messages", error);
@@ -134,20 +172,32 @@ function MessagesContent() {
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
         try {
+            const body: any = {
+                content: content,
+                attachmentUrl: attachmentUrl
+            };
+
+            if (activeConversation.isDirect) {
+                body.recipientId = activeConversation.recipientId;
+                body.recipientType = 'professional'; // Assuming internal pro-to-pro messages
+                // If chatting with company via DM, type would be employer. 
+                // Currently implementing Pro-to-Pro based on recent request.
+            } else {
+                body.applicationId = activeConversation.id;
+            }
+
             const res = await fetch('/api/shared/messages', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    applicationId: activeConversation.id,
-                    content: content,
-                    attachmentUrl: attachmentUrl // Ensure backend supports this or append to content
-                })
+                body: JSON.stringify(body)
             });
+
             if (res.ok) {
                 const data = await res.json();
                 setMessages(prev => {
+                    // Avoid duplicates
                     if (prev.some(m => m.id === data.message.id)) return prev;
-                    return [...prev, { ...data.message, content: content }]; // Optimistic update might need adjustment for attachments
+                    return [...prev, { ...data.message, content: content }];
                 });
                 refresh();
             }
@@ -158,9 +208,13 @@ function MessagesContent() {
         }
     };
 
-    const markMessagesAsRead = async (appIds: string[]) => {
+    const markMessagesAsRead = async (appIds: string[], senderId?: string) => {
         try {
-            await fetch('/api/shared/messages', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ applicationIds: appIds }) });
+            const body: any = {};
+            if (senderId) body.senderId = senderId;
+            else body.applicationIds = appIds;
+
+            await fetch('/api/shared/messages', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         } catch (e) { console.error(e); }
     };
 
