@@ -205,12 +205,12 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             *,
             post_likes (count),
             post_comments (count),
-            author:author_id (
+            author:users!user_id (
                 id,
-                first_name,
-                last_name,
-                role,
-                profile_image_url
+                enc_first_name,
+                enc_last_name,
+                enc_current_role,
+                enc_profile_image_url
             )
         `)
         .eq('user_id', id)
@@ -226,9 +226,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         commentsCount: p.post_comments?.[0]?.count || 0,
         author: {
             id: p.author?.id,
-            name: `${p.author?.first_name} ${p.author?.last_name}`,
-            role: p.author?.role,
-            image: p.author?.profile_image_url
+            name: `${decryptData(p.author?.enc_first_name)} ${decryptData(p.author?.enc_last_name)}`,
+            role: decryptData(p.author?.enc_current_role),
+            image: decryptData(p.author?.enc_profile_image_url)
         }
     })) || [];
 
