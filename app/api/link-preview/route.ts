@@ -34,6 +34,18 @@ export async function GET(request: NextRequest) {
             throw new Error('Failed to fetch URL');
         }
 
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('text/html')) {
+            // It's a file (image, pdf, etc.) or not HTML. Return basic info.
+            return NextResponse.json({
+                url: targetUrl,
+                title: targetUrl.split('/').pop() || '',
+                description: 'File',
+                image: '',
+                siteName: new URL(targetUrl).hostname
+            });
+        }
+
         const html = await response.text();
         const dom = new JSDOM(html);
         const doc = dom.window.document;
@@ -72,13 +84,20 @@ export async function GET(request: NextRequest) {
 
     } catch (error: any) {
         console.error('Link Preview Error:', error);
-        // Return fallback data instead of 500 so UI can still show valid "link" without preview
+
+        let hostname = '';
+        try {
+            hostname = new URL(targetUrl).hostname;
+        } catch (e) {
+            hostname = 'Invalid URL';
+        }
+
         return NextResponse.json({
             url: targetUrl,
-            title: new URL(targetUrl).hostname, // Use hostname as title fallback
+            title: hostname,
             description: '',
             image: '',
-            siteName: new URL(targetUrl).hostname
+            siteName: hostname
         });
     }
 }
