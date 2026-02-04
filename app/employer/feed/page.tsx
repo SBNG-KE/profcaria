@@ -59,8 +59,8 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
         if (initialData) return;
         if (images.length > 0 || linkMedia || userDismissedLink) return;
 
-        // Robust URL detection (http/https)
-        const urlMatch = content.match(/(https?:\/\/[^\s]+)/);
+        // Robust URL detection (http/https/www/domain.com)
+        const urlMatch = content.match(/((?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b(?:[-a-zA-Z0-9@:%_\+.~#?&//=]*))/i);
         if (urlMatch) {
             setLinkMedia(urlMatch[0]);
         }
@@ -138,7 +138,10 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     };
 
     const handlePost = () => {
-        if (!content.trim() || wordCount > 500) return;
+        const hasContent = content.trim().length > 0;
+        const hasMedia = images.length > 0 || !!linkPreview;
+
+        if ((!hasContent && !hasMedia) || wordCount > 500) return;
         onPost({
             content: content.trim(),
             mediaUrls: images,
@@ -248,7 +251,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
                 )}
                 <div className={`sticky bottom-0 p-4 flex items-center justify-between border-t ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                     <span className={`text-sm ${wordCount > 500 ? 'text-red-500' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{wordCount}/500</span>
-                    <button onClick={handlePost} disabled={!content.trim() || wordCount > 500} className={`px-5 py-2.5 rounded-full text-sm font-bold disabled:opacity-50 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>{initialData ? 'Save' : 'Post'}</button>
+                    <button onClick={handlePost} disabled={(!content.trim() && images.length === 0 && !linkPreview) || wordCount > 500 || isFetchingPreview} className={`px-5 py-2.5 rounded-full text-sm font-bold disabled:opacity-50 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>{initialData ? 'Save' : 'Post'}</button>
                 </div>
             </div>
         </div>

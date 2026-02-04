@@ -128,7 +128,9 @@ export default function InlineLinkPreview({ url, className = '' }: InlineLinkPre
 
 // Helper function to extract first URL from text
 export function extractFirstUrl(text: string): string | null {
-    const urlPattern = /(https?:\/\/[^\s]+)/gi;
+    // Matches https://, http://, www., or just domain.com (but requires at least one dot and 2+ char TLD)
+    // Avoids matching simple filenames or short typos by requiring 2 char TLD
+    const urlPattern = /(?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b(?:[-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi;
     const matches = text.match(urlPattern);
     return matches ? matches[0] : null;
 }

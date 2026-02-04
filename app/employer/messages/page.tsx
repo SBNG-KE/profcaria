@@ -255,7 +255,7 @@ function MessagesContent() {
     const handleMessageInput = (value: string) => {
         setNewMessage(value);
         if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-        const urlPattern = /(https?:\/\/|www\.)[^\s]+/gi;
+        const urlPattern = /(?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b(?:[-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi;
         const matches = value.match(urlPattern);
         if (matches && matches.length > 0) {
             const url = matches[matches.length - 1];
@@ -302,7 +302,7 @@ function MessagesContent() {
     };
 
     const linkifyText = (text: string, isSenderMessage: boolean = false) => {
-        const urlPattern = /(https?:\/\/[^\s]+)/gi;
+        const urlPattern = /(?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b(?:[-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi;
         const parts = text.split(urlPattern);
         return parts.map((part, i) => {
             if (urlPattern.test(part)) {
@@ -310,8 +310,9 @@ function MessagesContent() {
                 if (part.match(/\.(jpeg|jpg|gif|png)$/) != null) {
                     return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="block mt-2"><img src={part} alt="attachment" className="max-w-full rounded-lg border border-white/10" /></a>
                 }
+                const displayUrl = part.startsWith('http') ? part : 'https://' + part;
                 const linkClass = isSenderMessage ? 'text-emerald-100 underline hover:text-white break-all font-medium' : (isDark ? 'text-neutral-300 underline hover:text-white break-all' : 'text-neutral-600 underline hover:text-black break-all');
-                return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className={linkClass}>{part}</a>;
+                return <a key={i} href={displayUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>{part}</a>;
             }
             return part;
         });
