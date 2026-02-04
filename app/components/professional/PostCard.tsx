@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark, Link2, UserCircle, Search, Zap, Building2, CheckCheck, Plus, ChevronLeft
+    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark, Link2, UserCircle, Search, Zap, Building2, CheckCheck, Plus, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
@@ -14,9 +14,9 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
     const [isTruncated, setIsTruncated] = useState(false);
     const textRef = React.useRef<HTMLDivElement>(null);
 
-    // Use new RegExp to avoid parser issues
+    // Updated RegExp to split: URLs, Hashtags, Mentions, newlines (same as ScrollableText)
     const safeText = text || '';
-    const parts = safeText.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
+    const parts = safeText.split(new RegExp('((?:(?:https?://)?(?:www\\.)?[\\w-]+\\.\\w{2,}(?:/[\\w-./?%&=]*)?)|(?:hashtag#[\\w]+|#[\\w]+)|(?:@[\\w]+(?:\\s+[\\w]+)?)|\\n)', 'g'));
 
     // Check if text is actually truncated by CSS
     useEffect(() => {
@@ -39,6 +39,25 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                 className={`text-base leading-relaxed whitespace-pre-wrap ${!isExpanded ? 'line-clamp-3' : ''}`}
             >
                 {parts.map((part, i) => {
+                    // Match URL (broader check)
+                    if (part.match(/(?:https?:\/\/)?(?:www\.)?[\w-]+\.\w{2,}/)) {
+                        let href = part;
+                        if (!href.match(/^https?:\/\//)) href = `https://${href}`;
+                        return (
+                            <a key={i} href={href} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-500 hover:underline relative z-10">
+                                {part}
+                            </a>
+                        );
+                    }
+                    // Match Mention
+                    if (part.match(/^@/)) {
+                        return (
+                            <span key={i} className="text-blue-500 font-semibold cursor-pointer hover:underline relative z-10">
+                                {part}
+                            </span>
+                        );
+                    }
+                    // Match Hashtag
                     let displayPart = part;
                     let isHashtag = false;
                     if (part.match(new RegExp('^(hashtag)?#[\\w]+$', 'i'))) {
@@ -50,7 +69,7 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                             <button
                                 key={i}
                                 onClick={(e) => { e.stopPropagation(); onHashtagClick?.(displayPart.replace('#', '')); }}
-                                className="hashtag font-medium hover:underline cursor-pointer"
+                                className="hashtag font-medium hover:underline cursor-pointer relative z-10"
                             >
                                 {displayPart}
                             </button>
@@ -67,7 +86,7 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
                         e.stopPropagation();
                         setIsExpanded(!isExpanded);
                     }}
-                    className={`mt-1 text-sm font-semibold underline decoration-2 underline-offset-2 ${isDark ? 'text-neutral-300 hover:text-white' : 'text-neutral-600 hover:text-black'}`}
+                    className={`mt-1 text-sm font-semibold underline decoration-2 underline-offset-2 relative z-10 ${isDark ? 'text-neutral-300 hover:text-white' : 'text-neutral-600 hover:text-black'}`}
                 >
                     {isExpanded ? 'Show less' : 'Show more'}
                 </button>
@@ -164,6 +183,9 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     const [newComment, setNewComment] = useState('');
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isSending, setIsSending] = useState(false);
+
+    // Carousel State
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
     const fetchComments = async () => {
         setIsLoadingComments(true);
@@ -276,12 +298,12 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 {/* Media (Center on Mobile, Left on Desktop) */}
                 {(hasMedia || (post.linkPreview && post.linkPreview.image)) && (
                     <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
-                        <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px]">
+                        <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px] group/media">
                             {post.media && post.media.length > 0 ? (
                                 <>
-                                    {post.media[0].type === 'video' || post.media[0].url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                    {post.media[currentMediaIndex].type === 'video' || post.media[currentMediaIndex].url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
                                         <video
-                                            src={post.media[0].url}
+                                            src={post.media[currentMediaIndex].url}
                                             className="w-full h-full max-h-[600px] object-contain"
                                             muted
                                             loop
@@ -291,10 +313,43 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         />
                                     ) : (
                                         <img
-                                            src={post.media[0].url}
+                                            src={post.media[currentMediaIndex].url}
                                             alt="Post content"
                                             className="w-full h-full max-h-[600px] object-contain"
                                         />
+                                    )}
+
+                                    {/* Carousel Controls */}
+                                    {post.media.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCurrentMediaIndex(prev => prev === 0 ? post.media.length - 1 : prev - 1);
+                                                }}
+                                                className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 opacity-0 group-hover/media:opacity-100 transition-opacity"
+                                            >
+                                                <ChevronLeft size={20} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCurrentMediaIndex(prev => prev === post.media.length - 1 ? 0 : prev + 1);
+                                                }}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/50 text-white hover:bg-black/70 opacity-0 group-hover/media:opacity-100 transition-opacity"
+                                            >
+                                                <ChevronRight size={20} />
+                                            </button>
+                                            {/* Dots */}
+                                            <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5 z-10">
+                                                {post.media.map((_: any, idx: number) => (
+                                                    <div
+                                                        key={idx}
+                                                        className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentMediaIndex ? 'bg-white scale-125' : 'bg-white/50'}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </>
                                     )}
                                 </>
                             ) : post.linkPreview ? (
