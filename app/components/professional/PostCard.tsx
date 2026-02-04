@@ -350,8 +350,9 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                 <div className="flex gap-1">
                                     {isOwnPost && !post.repostContext && (
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} // Using menu for Promote now
-                                            className={`p-1.5 rounded-full transition-colors ${isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+                                            onClick={(e) => { e.stopPropagation(); }} // Disabled for now
+                                            className={`p-1.5 rounded-full transition-colors opacity-50 cursor-not-allowed ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}
+                                            title="Promote feature coming soon"
                                         >
                                             <TrendingUp size={18} />
                                         </button>
@@ -374,11 +375,6 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                 <>
                                     <button onClick={() => { setShowMenu(false); onEdit?.(post); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Edit2 size={14} /> Edit Post</button>
                                     <button onClick={() => { setShowMenu(false); onDelete?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Post</button>
-                                    <div className={`h-px mx-2 ${isDark ? 'bg-neutral-700' : 'bg-neutral-200'}`}></div>
-                                    <button onClick={() => {
-                                        setShowMenu(false);
-                                        setShowPromoteModal(true);
-                                    }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-blue-500 font-bold ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><TrendingUp size={14} /> Promote Post</button>
                                 </>
                             ) : (
                                 <button onClick={() => { setShowMenu(false); onReport?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Flag size={14} /> Report</button>

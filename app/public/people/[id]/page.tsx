@@ -266,96 +266,96 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
-                {/* 1. Identity Card (Exact Copy of Private Profile Design) */}
-                <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
-                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                {/* Header Card Redesign (Matching Employer/Company Static View) */}
+                <div className="rounded-2xl border overflow-hidden bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
+                    {/* Banner Area (Gradient) */}
+                    <div className="h-32 bg-gradient-to-r from-neutral-200 to-neutral-300 dark:from-neutral-800 dark:to-neutral-700" />
 
-                        {/* Left: Profile Image */}
-                        <div className="flex-shrink-0 relative group">
-                            <div className="w-40 h-40 md:w-48 md:h-48 rounded-[2rem] overflow-hidden border-4 flex items-center justify-center bg-white dark:bg-neutral-900 border-white dark:border-neutral-800 shadow-lg">
-                                {profileImageUrl ? (
-                                    <img
-                                        src={profileImageUrl}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover transition-none select-none"
-                                        style={{ objectPosition: imagePosition }}
-                                        draggable={false}
-                                    />
-                                ) : (
-                                    <div className="font-black text-6xl text-neutral-300 dark:text-neutral-700">
-                                        {firstName?.[0]}{lastName?.[0]}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Right: Details */}
-                        <div className="flex-1 w-full space-y-6">
-
-                            {/* Name & Role Section */}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-black dark:text-white flex items-center gap-3">
-                                        {firstName} {lastName}
-                                        <VerificationBadge tier={profile.badge_type} size={32} />
-                                    </h1>
+                    <div className="px-6 pb-6">
+                        <div className="flex items-end gap-4 -mt-12">
+                            {/* Overlapping Profile Image */}
+                            <div className="relative">
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 overflow-hidden flex items-center justify-center bg-white dark:bg-neutral-900 border-white dark:border-neutral-900 shadow-lg">
+                                    {profileImageUrl ? (
+                                        <img
+                                            src={profileImageUrl}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover transition-none select-none"
+                                            style={{ objectPosition: imagePosition }}
+                                            draggable={false}
+                                        />
+                                    ) : (
+                                        <div className="font-black text-4xl text-neutral-300 dark:text-neutral-700">
+                                            {firstName?.[0]}{lastName?.[0]}
+                                        </div>
+                                    )}
                                 </div>
+                            </div>
 
-                                <div className="flex items-center gap-3">
-                                    <p className="text-xl font-medium text-neutral-600 dark:text-neutral-400">
+                            {/* Info & Actions */}
+                            <div className="flex-1 pb-1 flex flex-col md:flex-row justify-between items-end md:items-end gap-4 min-w-0">
+                                <div className="min-w-0 flex-1">
+                                    <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-black dark:text-white flex items-center gap-2 truncate">
+                                        {firstName} {lastName}
+                                        <VerificationBadge tier={profile.badge_type} size={24} />
+                                    </h1>
+                                    <p className="text-sm md:text-base font-medium text-neutral-600 dark:text-neutral-400 truncate">
                                         {role}
                                     </p>
+                                    <div className="flex items-center gap-2 mt-1 text-xs text-neutral-500 dark:text-neutral-500">
+                                        {city && country && <span className="flex items-center gap-1"><MapPin size={12} /> {city}, {country}</span>}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Content Section: Contact & Links */}
-                            <div className="space-y-6 pt-2">
-                                <div className="flex flex-col md:flex-row gap-8">
+                                {/* Action Buttons Row */}
+                                <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
+                                    {/* Additional Contact Info handled in its own card below, but we can put buttons here */}
 
-                                    {/* Contact Info Column */}
-                                    <div className="space-y-4 flex-1 min-w-0 w-full max-w-full">
-                                        <ContactInfoCard
-                                            email={email}
-                                            emailLabel="Email"
-                                            phone={phone}
-                                            city={city}
-                                            country={country}
-                                            profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/public/people/${id}`}
-                                        />
-                                    </div>
+                                    {/* Message Button */}
+                                    {isViewerProfessional && viewerId !== id && (
+                                        <Link
+                                            href={`/professional/notifications?recipientId=${id}&recipientType=professional&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
+                                            className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                                        >
+                                            <MessageSquare size={14} />
+                                            <span>Message</span>
+                                        </Link>
+                                    )}
+                                    {isViewerEmployer && viewerId !== id && (
+                                        <Link
+                                            href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
+                                            className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                                        >
+                                            <MessageSquare size={14} />
+                                            <span>Message</span>
+                                        </Link>
+                                    )}
 
-                                    {/* Action Buttons - Moved inside flow */}
-                                    <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-                                        {/* Hide Follow/Subscribe if viewer is Company or Self */}
-                                        {(!isViewerEmployer && viewerId !== id) && (
-                                            <FollowButton targetId={id} type="user" />
-                                        )}
-
-                                        {isViewerProfessional && viewerId !== id && (
-                                            <Link
-                                                href={`/professional/notifications?recipientId=${id}&recipientType=professional&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
-                                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
-                                            >
-                                                <MessageSquare size={14} />
-                                                <span>Message</span>
-                                            </Link>
-                                        )}
-                                        {isViewerEmployer && viewerId !== id && (
-                                            <Link
-                                                href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
-                                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
-                                            >
-                                                <MessageSquare size={14} />
-                                                <span>Message</span>
-                                            </Link>
-                                        )}
-                                    </div>
+                                    {/* Follow Button */}
+                                    {(!isViewerEmployer && viewerId !== id) && (
+                                        <FollowButton targetId={id} type="user" />
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Old Absolute Action Buttons Removed */}
+                        {/* Additional Contact Info Details (Hidden mostly, passed to ContactCard in body) */}
+                    </div>
+                </div>
+
+                {/* About Section & Contact Card Container */}
+                <div className="grid grid-cols-1 gap-6">
+                    {/* Contact Info Card (Full Width) */}
+                    <div className="p-5 md:p-6 rounded-[32px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
+                        <ContactInfoCard
+                            email={email}
+                            emailLabel="Email"
+                            phone={phone}
+                            city={city}
+                            country={country}
+                            profileLink={`${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/public/people/${id}`}
+                        />
+                    </div>
                 </div>
 
                 {/* About Section */}

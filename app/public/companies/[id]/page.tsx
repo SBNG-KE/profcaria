@@ -231,13 +231,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                 </div>
 
 
-                {/* Company Posts Section (Moved Up to match Private Profile structure) */}
-                <div className="pt-4 max-w-2xl mx-auto">
-                    <CompanyPostsSection
-                        companyId={id}
-                        latestPost={formattedPosts[0] || null}
-                    />
-                </div>
+
 
                 {/* 3. About Section */}
                 <div className="p-8 rounded-[40px] space-y-4 border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm">
@@ -268,6 +262,14 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* Company Posts Section (Moved to Bottom) */}
+                <div className="pt-4 max-w-2xl mx-auto">
+                    <CompanyPostsSection
+                        companyId={id}
+                        latestPost={formattedPosts[0] || null}
+                    />
                 </div>
 
             </div>
