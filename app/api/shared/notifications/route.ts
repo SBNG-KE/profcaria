@@ -54,9 +54,52 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Failed' }, { status: 500 });
         }
 
-        const decryptedNotifications = (notifications || []).map((notif: { enc_message: string; }) => ({
-            ...notif,
-            message: decryptData(notif.enc_message)
+
+        const decryptedNotifications = await Promise.all((notifications || []).map(async (notif: { enc_message: string; sender_id?: string; sender_type?: string; }) => {
+            const base = {
+                ...notif,
+                message: decryptData(notif.enc_message)
+            };
+
+            // Enrich with sender details
+            if (notif.sender_id) {
+                try {
+                    let senderName = 'Professional';
+                    let senderImage = null;
+                    let senderRole = '';
+
+                    if (notif.sender_type === 'employer' || notif.sender_type === 'company') {
+                        const { data: comp } = await supabaseAdmin
+                            .schema('employer')
+                            .from('companies')
+                            .select('company_name, logo_url')
+                            .eq('id', notif.sender_id)
+                            .single();
+                        if (comp) {
+                            senderName = comp.company_name;
+                            senderImage = comp.logo_url;
+                            senderRole = 'Company';
+                        }
+                    } else {
+                        // Professional
+                        const { data: prof } = await supabaseAdmin
+                            .schema('professional')
+                            .from('professional_profiles')
+                            .select('first_name, last_name, profile_image_url, role')
+                            .eq('id', notif.sender_id)
+                            .single();
+                        if (prof) {
+                            senderName = `${prof.first_name} ${prof.last_name}`;
+                            senderImage = prof.profile_image_url;
+                            senderRole = prof.role || 'Professional';
+                        }
+                    }
+                    return { ...base, senderName, senderImage, senderRole };
+                } catch (e) {
+                    return base;
+                }
+            }
+            return base;
         }));
 
         return NextResponse.json({ notifications: decryptedNotifications });

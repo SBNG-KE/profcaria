@@ -35,6 +35,13 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     // Auto-detect link in content
     const [userDismissedLink, setUserDismissedLink] = useState(false);
 
+    // Mentions State
+    const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+    const [mentionResults, setMentionResults] = useState<any[]>([]);
+    const [mentionIndex, setMentionIndex] = useState<number>(-1); // Start position of @
+    const [mentionsList, setMentionsList] = useState<{ id: string, name: string, type: string }[]>([]); // To send to backend
+    const [isSearchingMentions, setIsSearchingMentions] = useState(false);
+
     // Initialize with data if editing
     useEffect(() => {
         if (isOpen && initialData) {
@@ -61,11 +68,53 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
         // Let's keep existing behavior but maybe guard against overwriting existing linkMedia?
 
         if (images.length > 0 || linkMedia || userDismissedLink) return;
+
+        // Robust URL detection (http/https)
         const urlMatch = content.match(/(https?:\/\/[^\s]+)/);
         if (urlMatch) {
             setLinkMedia(urlMatch[0]);
         }
     }, [content, images.length, linkMedia, userDismissedLink, initialData]);
+
+    // Mentions Detection
+    useEffect(() => {
+        const lastChar = content.slice(-1);
+        const matches = content.match(/@(\w*)$/); // Match @name at end
+        if (matches) {
+            setMentionQuery(matches[1]);
+            setMentionIndex(matches.index!);
+        } else {
+            setMentionQuery(null);
+            setMentionResults([]);
+        }
+    }, [content]);
+
+    // Fetch Mentions
+    useEffect(() => {
+        if (mentionQuery === null) return;
+
+        setIsSearchingMentions(true);
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch(`/api/search/users?q=${encodeURIComponent(mentionQuery)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setMentionResults(data.results || []);
+                }
+            } catch (err) { console.error(err); } finally { setIsSearchingMentions(false); }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [mentionQuery]);
+
+    const insertMention = (user: { id: string, name: string, type: string }) => {
+        const before = content.slice(0, mentionIndex);
+        const after = content.slice(mentionIndex + (mentionQuery?.length || 0) + 1);
+        const newContent = `${before}@${user.name} ${after}`;
+        setContent(newContent);
+        setMentionsList(prev => [...prev, { id: user.id, name: user.name, type: user.type }]);
+        setMentionQuery(null);
+        setMentionResults([]);
+    };
 
     // Fetch link preview
     useEffect(() => {
@@ -120,8 +169,9 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
         onPost({
             content: content.trim(),
             mediaUrls: images,
-            linkMedia: linkMedia || undefined
-        });
+            linkMedia: linkMedia || undefined,
+            mentions: mentionsList // Pass mentions list
+        } as any);
         setContent('');
         setImages([]);
         setLinkMedia('');
@@ -183,35 +233,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
                     </div>
                 )}
 
-                {/* Link Preview Card (In Modal) */}
-                {linkMedia && (
-                    <div className={`p-3 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                        {isFetchingPreview ? (
-                            <div className="flex items-center gap-2 text-sm text-neutral-500">
-                                <div className="animate-spin w-4 h-4 border-2 border-t-transparent border-neutral-500 rounded-full" />
-                                Generating preview...
-                            </div>
-                        ) : linkPreview ? (
-                            <div className="relative group rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
-                                <button
-                                    onClick={() => { setLinkMedia(''); setLinkPreview(null); setUserDismissedLink(true); }}
-                                    className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                >
-                                    <X size={12} />
-                                </button>
-                                {linkPreview.image && (
-                                    <div className="h-32 w-full overflow-hidden">
-                                        <img src={linkPreview.image} alt="" className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-                                <div className={`p-3 ${isDark ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                                    <p className={`font-semibold text-sm truncate ${isDark ? 'text-white' : 'text-black'}`}>{linkPreview.title}</p>
-                                    <p className={`text-xs truncate ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{linkPreview.siteName}</p>
-                                </div>
-                            </div>
-                        ) : null}
-                    </div>
-                )}
+
 
                 {/* Image Preview Grid */}
                 {images.length > 0 && (
@@ -243,14 +265,71 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
                 )}
 
                 {/* Text Area */}
-                <div className="p-4">
+                <div className="p-4 relative">
                     <textarea
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="What do you want to talk about?"
                         className={`w-full min-h-[150px] resize-none text-base focus:outline-none ${isDark ? 'bg-transparent text-white placeholder-neutral-500' : 'bg-transparent text-black placeholder-neutral-400'}`}
                     />
+
+                    {/* Mentions Dropdown */}
+                    {mentionQuery !== null && (
+                        <div className={`absolute bottom-full left-4 mb-2 w-64 max-h-48 overflow-y-auto rounded-xl border shadow-xl z-20 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                            {isSearchingMentions ? (
+                                <div className="p-3 text-xs text-neutral-500 text-center">Searching...</div>
+                            ) : mentionResults.length === 0 ? (
+                                <div className="p-3 text-xs text-neutral-500 text-center">No matching users found.</div>
+                            ) : (
+                                mentionResults.map(user => (
+                                    <button
+                                        key={user.id}
+                                        onClick={() => insertMention(user)}
+                                        className={`w-full px-3 py-2 text-left flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-50 text-black'}`}
+                                    >
+                                        <div className="w-6 h-6 rounded-full overflow-hidden bg-neutral-200">
+                                            {user.image && <img src={user.image} className="w-full h-full object-cover" />}
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold">{user.name}</p>
+                                            <p className="text-[10px] opacity-60">{user.headline || user.role || 'User'}</p>
+                                        </div>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    )}
                 </div>
+
+                {/* Link Preview Card (Moved to Bottom) */}
+                {linkMedia && (
+                    <div className={`mx-4 mb-4 rounded-xl overflow-hidden border ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                        {isFetchingPreview ? (
+                            <div className="p-4 flex items-center gap-3 text-sm text-neutral-500">
+                                <div className="animate-spin w-4 h-4 border-2 border-t-transparent border-neutral-500 rounded-full" />
+                                <span className={isDark ? 'text-neutral-400' : 'text-neutral-500'}>Generating preview...</span>
+                            </div>
+                        ) : linkPreview ? (
+                            <div className="relative group">
+                                <button
+                                    onClick={() => { setLinkMedia(''); setLinkPreview(null); setUserDismissedLink(true); }}
+                                    className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                >
+                                    <X size={12} />
+                                </button>
+                                {linkPreview.image && (
+                                    <div className="h-48 w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                                        <img src={linkPreview.image} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <div className={`p-3 ${isDark ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                                    <p className={`font-semibold text-sm truncate ${isDark ? 'text-white' : 'text-black'}`}>{linkPreview.title}</p>
+                                    <p className={`text-xs truncate ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{linkPreview.siteName}</p>
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className={`sticky bottom-0 p-4 flex items-center justify-between border-t ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>

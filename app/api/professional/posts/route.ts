@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
-import { decryptData } from '@/lib/security';
+import { decryptData, encryptData } from '@/lib/security';
 import { unstable_cache } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
@@ -523,6 +523,46 @@ export async function POST(request: NextRequest) {
                 .single();
 
             if (error) throw error;
+
+            // --- HANDLE MENTIONS ---
+            if (body.mentions && Array.isArray(body.mentions) && body.mentions.length > 0) {
+                const message = `mentioned you in a post: "${content.substring(0, 30)}..."`;
+                const enc_message = encryptData(message);
+
+                // Filter by type
+                // Note: Frontend sends type: 'professional' or 'employer'
+                const profMentions = body.mentions.filter((m: any) => m.type === 'professional' || m.type === 'user');
+                const empMentions = body.mentions.filter((m: any) => m.type === 'employer' || m.type === 'company');
+
+                if (profMentions.length > 0 && enc_message) {
+                    await supabaseAdmin.schema('professional').from('notifications').insert(
+                        profMentions.map((m: any) => ({
+                            user_id: m.id,
+                            enc_message,
+                            type: 'mention',
+                            sender_id: user.id,
+                            sender_type: user.schema,
+                            related_id: post.id,
+                            is_read: false
+                        }))
+                    );
+                }
+
+                if (empMentions.length > 0 && enc_message) {
+                    await supabaseAdmin.schema('employer').from('notifications').insert(
+                        empMentions.map((m: any) => ({
+                            company_id: m.id,
+                            enc_message,
+                            type: 'mention',
+                            sender_id: user.id,
+                            sender_type: user.schema,
+                            related_id: post.id,
+                            is_read: false
+                        }))
+                    );
+                }
+            }
+
             return NextResponse.json({ post, message: 'Post created successfully' });
         }
     } catch (error: any) {

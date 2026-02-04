@@ -80,11 +80,30 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
 // Scrollable Text Component
 const ScrollableText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
     const safeText = text || '';
-    const parts = safeText.split(new RegExp('(\\s+|hashtag#[\\w]+|#[\\w]+)', 'g'));
+    // Updated Regex to split: URLs, Hashtags, Mentions, newlines
+    const parts = safeText.split(new RegExp('((?:https?://[^\\s]+)|(?:hashtag#[\\w]+|#[\\w]+)|(?:@[\\w]+(?:\\s+[\\w]+)?)|\\n)', 'g'));
+
     return (
         <div className={`max-h-72 overflow-y-auto text-base leading-relaxed pr-2 scrollbar-thin ${isDark ? 'text-neutral-200 scrollbar-thumb-neutral-700' : 'text-neutral-800 scrollbar-thumb-neutral-300'}`}>
             <p className="whitespace-pre-wrap">
                 {parts.map((part, i) => {
+                    // Match URL
+                    if (part.match(/^https?:\/\//)) {
+                        return (
+                            <a key={i} href={part} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-500 hover:underline">
+                                {part}
+                            </a>
+                        );
+                    }
+                    // Match Mention
+                    if (part.match(/^@/)) {
+                        return (
+                            <span key={i} className="text-blue-500 font-semibold cursor-pointer hover:underline">
+                                {part}
+                            </span>
+                        );
+                    }
+                    // Match Hashtag
                     let displayPart = part;
                     let isHashtag = false;
                     if (part.match(new RegExp('^(hashtag)?#[\\w]+$', 'i'))) {

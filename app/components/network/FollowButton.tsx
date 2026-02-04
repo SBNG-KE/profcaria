@@ -91,7 +91,7 @@ export default function FollowButton({
                 : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 hover:text-black border border-neutral-200")
             : (isDark
                 ? "bg-white text-black hover:bg-blue-50 hover:text-blue-600"
-                : "bg-black text-white hover:bg-neutral-800"),
+                : "bg-black text-white hover:bg-neutral-800 shadow-md"),
         outline: isFollowing
             ? (isDark
                 ? "border border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500"
