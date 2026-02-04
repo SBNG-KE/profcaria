@@ -186,6 +186,40 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
 
     // Carousel State
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+    // Min swipe distance
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            // Next
+            if (post.media && post.media.length > 1) {
+                setCurrentMediaIndex(prev => prev === post.media.length - 1 ? 0 : prev + 1);
+            }
+        }
+        if (isRightSwipe) {
+            // Prev
+            if (post.media && post.media.length > 1) {
+                setCurrentMediaIndex(prev => prev === 0 ? post.media.length - 1 : prev - 1);
+            }
+        }
+    };
 
     const fetchComments = async () => {
         setIsLoadingComments(true);
@@ -298,7 +332,12 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 {/* Media (Center on Mobile, Left on Desktop) */}
                 {(hasMedia || (post.linkPreview && post.linkPreview.image)) && (
                     <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
-                        <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px] group/media">
+                        <div
+                            className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px] group/media touch-pan-y"
+                            onTouchStart={onTouchStart}
+                            onTouchMove={onTouchMove}
+                            onTouchEnd={onTouchEnd}
+                        >
                             {post.media && post.media.length > 0 ? (
                                 <>
                                     {post.media[currentMediaIndex].type === 'video' || post.media[currentMediaIndex].url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
