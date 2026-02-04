@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { JSDOM } from 'jsdom';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-    console.log('Link Preview API called');
+    console.log('Link Preview API called (Regex Version)');
     let targetUrl = '';
 
     try {
@@ -66,24 +65,46 @@ export async function GET(request: NextRequest) {
         const html = await response.text();
         console.log('HTML length:', html.length);
 
-        console.log('Initializing JSDOM...');
-        const dom = new JSDOM(html);
-        const doc = dom.window.document;
+        // Zero-dependency Regex Parser to avoid JSDOM/ESM issues
+        const getMetaContent = (propName: string, propValue: string) => {
+            const regex = new RegExp(`<meta[^>]*${propName}=["']${propValue}["'][^>]*content=["']([^"']*)["']`, 'i');
+            const match = html.match(regex);
+            return match ? match[1] : null;
+        };
 
-        const getMeta = (prop: string) =>
-            doc.querySelector(`meta[property="${prop}"]`)?.getAttribute('content') ||
-            doc.querySelector(`meta[name="${prop}"]`)?.getAttribute('content');
+        const getTitle = () => {
+            const ogTitle = getMetaContent('property', 'og:title');
+            if (ogTitle) return ogTitle;
+            const match = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+            return match ? match[1] : '';
+        };
 
-        const title = getMeta('og:title') || doc.title || '';
-        const description = getMeta('og:description') || getMeta('description') || '';
+        const getDescription = () => {
+            return getMetaContent('property', 'og:description') ||
+                getMetaContent('name', 'description') || '';
+        };
+
+        const getImage = () => {
+            let img = getMetaContent('property', 'og:image') ||
+                getMetaContent('property', 'twitter:image');
+
+            if (!img) {
+                const linkMatch = html.match(/<link[^>]*rel=["']image_src["'][^>]*href=["']([^"']*)["']/i);
+                img = linkMatch ? linkMatch[1] : '';
+            }
+            return img;
+        };
+
+        const getSiteName = () => {
+            return getMetaContent('property', 'og:site_name') || new URL(targetUrl).hostname;
+        };
+
+        const title = getTitle();
+        const description = getDescription();
+        let image = getImage() || '';
+        const siteName = getSiteName();
 
         console.log('Extracted Title:', title);
-
-        // Robust image extraction
-        let image = getMeta('og:image') ||
-            getMeta('twitter:image') ||
-            doc.querySelector('link[rel="image_src"]')?.getAttribute('href') ||
-            '';
 
         // Fix relative image URLs
         if (image && !image.match(/^https?:\/\//i)) {
@@ -95,8 +116,6 @@ export async function GET(request: NextRequest) {
         }
 
         console.log('Extracted Image:', image);
-
-        const siteName = getMeta('og:site_name') || new URL(targetUrl).hostname;
 
         return NextResponse.json({
             url: targetUrl,
