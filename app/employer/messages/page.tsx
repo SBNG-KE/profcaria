@@ -74,6 +74,7 @@ function MessagesContent() {
                     // Create temporary conversation state for UI
                     setActiveConversation({
                         id: 'new_' + targetAppId,
+                        isTemp: true,
                         application_id: targetAppId,
                         professional: app.professional,
                         jobs: app.jobs,
@@ -92,6 +93,7 @@ function MessagesContent() {
                 // 2. Only if NOT found, create new temporary state
                 setActiveConversation({
                     id: 'new_dm_' + recipientId,
+                    isTemp: true,
                     isDirect: true,
                     recipientId: recipientId,
                     professional: {
@@ -119,43 +121,18 @@ function MessagesContent() {
         }
     }, [activeConversation]);
 
-    // 2. Notification-Driven Updates
-    useEffect(() => {
-        if (!activeConversation) return;
+    // ... (keep notification effect) ...
 
-        if (activeConversation.isDirect) {
-            const hasRelevantNotification = notifications.some(n =>
-                !n.is_read && !n.application_id && n.user_id === activeConversation.recipientId
-            );
-            if (hasRelevantNotification) fetchMessages([], activeConversation.recipientId);
-        } else {
-            const currentAppId = activeConversation.id;
-            const hasRelevantNotification = notifications.some(n =>
-                !n.is_read && n.application_id === currentAppId
-            );
-            if (hasRelevantNotification) {
-                fetchMessages([currentAppId]);
-                // Mark as read logic handled in fetch
-            }
-        }
-    }, [notifications, activeConversation]);
-
-    // 3. Failsafe Polling
-    useEffect(() => {
-        if (!activeConversation) return;
-        const interval = setInterval(() => {
-            if (activeConversation.isDirect) {
-                fetchMessages([], activeConversation.recipientId);
-            } else {
-                fetchMessages([activeConversation.id]);
-            }
-        }, 3000);
-        return () => clearInterval(interval);
-    }, [activeConversation]);
-
+    // ... (keep failsafe polling) ...
 
     const fetchMessages = async (appIds: string[], otherPartyId?: string) => {
         try {
+            // Guard: Do not fetch for temporary/new conversations
+            if (activeConversation?.isTemp) {
+                setMessages([]);
+                return;
+            }
+
             const requestTime = Date.now();
             lastFetchTimeRef.current = requestTime;
             let url = `/api/shared/messages?t=${requestTime}`;

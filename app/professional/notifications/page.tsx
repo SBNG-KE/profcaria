@@ -60,6 +60,7 @@ function MessagesContent() {
     useEffect(() => {
         const targetCompanyId = searchParams.get('companyId');
         const targetRecipientId = searchParams.get('recipientId');
+        const targetRecipientType = searchParams.get('recipientType') || 'professional'; // Default to professional if missing? Or employer? Better to have it.
 
         if (targetCompanyId && applications.length > 0 && !activeConversation) {
             const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
@@ -68,11 +69,7 @@ function MessagesContent() {
                 window.history.replaceState(null, '', '/professional/notifications');
             }
         } else if (targetRecipientId && !activeConversation) {
-            // Check if we already have a DM conversation with this person in 'applications' list (which stores DMs too?)
-            // Actually, the context 'applications' might be a mix of apps and DMs if we standarized it.
-            // If not, we create a temporary conversation object for the UI.
-
-            // Try to find existing first
+            // Check if we already have a DM conversation with this person/company
             const existingDM = applications.find(app => app.otherPartyId === targetRecipientId || app.companyId === targetRecipientId);
 
             if (existingDM) {
@@ -90,6 +87,7 @@ function MessagesContent() {
                     companyLogoUrl: recipientImage,
                     companyId: null, // No company
                     otherPartyId: targetRecipientId, // The target user
+                    otherPartyType: targetRecipientType, // Store the type!
                     status: 'active'
                 });
             }
@@ -121,7 +119,6 @@ function MessagesContent() {
             );
             if (hasRelevantNotification) {
                 fetchMessages(activeConversation.otherPartyId);
-                // Mark as read logic for DMs?
             }
         } else {
             const companyAppIds = getCompanyAppIds(activeConversation);
@@ -164,7 +161,7 @@ function MessagesContent() {
 
     const fetchMessages = async (idsOrRecipient: string[] | string) => {
         try {
-            // If it's a temp DM, don't fetch, just empty messages
+            // Guard: Do not fetch for temporary/new conversations
             if (activeConversation?.isTemp) {
                 setMessages([]);
                 return;
@@ -190,8 +187,6 @@ function MessagesContent() {
                 setMessages(data.messages || []);
                 if (Array.isArray(idsOrRecipient)) {
                     markMessagesAsRead(idsOrRecipient);
-                } else {
-                    // Mark DM as read? API might need update or we assumes fetching marks read
                 }
             }
         } catch (error) {
@@ -250,6 +245,11 @@ function MessagesContent() {
 
             if (activeConversation.otherPartyId) {
                 payload.recipientId = activeConversation.otherPartyId;
+                // Use the stored type, or fallback to inferring?
+                // Ideally activeConversation has otherPartyType.
+                // If it's an existing conversation from API, it might have 'recipient_type' or 'otherPartyType' if we mapped it.
+                // Let's check `app/api/professional/applications/route.ts`: it maps `otherPartyType`.
+                payload.recipientType = activeConversation.otherPartyType || 'professional'; // Fallback
             } else {
                 payload.applicationId = activeConversation.id;
             }
