@@ -5,22 +5,34 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
-    const url = searchParams.get('url');
-
-    if (!url) {
-        return NextResponse.json({ error: 'URL is required' }, { status: 400 });
-    }
-
-    let targetUrl = url;
-    if (!/^https?:\/\//i.test(url)) {
-        targetUrl = 'https://' + url;
-    }
+    console.log('Link Preview API called');
+    let targetUrl = '';
 
     try {
-        // Validate URL
-        new URL(targetUrl);
+        const { searchParams } = new URL(request.url);
+        const url = searchParams.get('url');
 
+        console.log('Requested URL:', url);
+
+        if (!url) {
+            return NextResponse.json({ error: 'URL is required' }, { status: 400 });
+        }
+
+        targetUrl = url;
+        if (!/^https?:\/\//i.test(url)) {
+            targetUrl = 'https://' + url;
+        }
+        console.log('Target URL with protocol:', targetUrl);
+
+        // Validate URL
+        try {
+            new URL(targetUrl);
+        } catch (e) {
+            console.error('Invalid URL format:', targetUrl);
+            return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+        }
+
+        console.log('Fetching:', targetUrl);
         const response = await fetch(targetUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -30,13 +42,13 @@ export async function GET(request: NextRequest) {
             cache: 'no-store'
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch URL');
-        }
+        console.log('Fetch response status:', response.status);
 
         const contentType = response.headers.get('content-type');
+        console.log('Content-Type:', contentType);
+
         if (!contentType || !contentType.includes('text/html')) {
-            // It's a file (image, pdf, etc.) or not HTML. Return basic info.
+            console.log('Not HTML, returning file/generic info');
             return NextResponse.json({
                 url: targetUrl,
                 title: targetUrl.split('/').pop() || '',
@@ -46,7 +58,15 @@ export async function GET(request: NextRequest) {
             });
         }
 
+        if (!response.ok) {
+            throw new Error(`Failed to fetch URL. Status: ${response.status}`);
+        }
+
+        console.log('Parsing HTML text...');
         const html = await response.text();
+        console.log('HTML length:', html.length);
+
+        console.log('Initializing JSDOM...');
         const dom = new JSDOM(html);
         const doc = dom.window.document;
 
@@ -56,6 +76,8 @@ export async function GET(request: NextRequest) {
 
         const title = getMeta('og:title') || doc.title || '';
         const description = getMeta('og:description') || getMeta('description') || '';
+
+        console.log('Extracted Title:', title);
 
         // Robust image extraction
         let image = getMeta('og:image') ||
@@ -72,6 +94,8 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        console.log('Extracted Image:', image);
+
         const siteName = getMeta('og:site_name') || new URL(targetUrl).hostname;
 
         return NextResponse.json({
@@ -83,17 +107,19 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error: any) {
-        console.error('Link Preview Error:', error);
+        console.error('CRITICAL Link Preview Error:', error);
 
-        let hostname = '';
+        // Handle case where targetUrl is still empty/invalid if error happened very early
+        let hostname = 'Error';
         try {
-            hostname = new URL(targetUrl).hostname;
+            if (targetUrl) hostname = new URL(targetUrl).hostname;
         } catch (e) {
             hostname = 'Invalid URL';
         }
 
+        // Return 200 with fallback data to prevent UI crash
         return NextResponse.json({
-            url: targetUrl,
+            url: targetUrl || '',
             title: hostname,
             description: '',
             image: '',
