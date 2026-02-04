@@ -363,7 +363,8 @@ function MessagesContent() {
     // Sidebar Data
     const filteredConversations = applications.filter(app => (app.jobTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) || (app.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()));
     const groupedConversations = Object.values(filteredConversations.reduce((acc, app) => {
-        const key = app.companyId || app.company?.id;
+        // Use companyId, or otherPartyId (for DMs), or just unique App ID as fallback
+        const key = app.companyId || app.company?.id || app.otherPartyId || app.id;
         if (!key) return acc;
         if (!acc[key]) acc[key] = app;
         return acc;
@@ -491,11 +492,20 @@ function MessagesContent() {
                     <div className="pb-4">
                         <h3 className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>Conversations</h3>
                         {groupedConversations.map((app: any) => {
-                            const companyId = app.companyId || app.company?.id;
-                            const unreadCount = notifications.filter(n => !n.is_read && n.application_id && getCompanyAppIds(app).includes(n.application_id)).length;
+                            const uniqueId = app.companyId || app.company?.id || app.otherPartyId || app.id;
+                            const unreadCount = notifications.filter(n => !n.is_read && (
+                                (n.application_id && getCompanyAppIds(app).includes(n.application_id)) ||
+                                (n.sender_id === uniqueId || n.sender_id === app.otherPartyId)
+                            )).length;
+
+                            const isActive = (activeConversation?.companyId === uniqueId) ||
+                                (activeConversation?.company?.id === uniqueId) ||
+                                (activeConversation?.otherPartyId === uniqueId) ||
+                                (activeConversation?.id === app.id);
+
                             return (
-                                <button key={companyId} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId) ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100')}`}>
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${(activeConversation?.companyId === companyId || activeConversation?.company?.id === companyId) ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')}`}>
+                                <button key={uniqueId} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${isActive ? (isDark ? 'bg-white/10' : 'bg-black/5') : (isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100')}`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${isActive ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')}`}>
                                         {app.companyLogoUrl ? <img src={app.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : <Building2 size={20} />}
                                         {unreadCount > 0 && <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-neutral-900 flex items-center justify-center animate-pulse"><span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span></div>}
                                     </div>
