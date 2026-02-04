@@ -473,8 +473,11 @@ export async function POST(request: NextRequest) {
                     throw new Error('Preview fetch failed');
                 }
             } catch (e) {
-                console.error('Link preview generation failed, using fallback:', e);
-                const safeUrl = linkMedia.match(/^https?:\/\//i) ? linkMedia : `https://${linkMedia}`;
+                console.log('Preview fallback triggered for:', linkMedia);
+                // Aggressive fallback
+                let safeUrl = linkMedia;
+                if (!safeUrl.match(/^https?:\/\//)) safeUrl = `https://${safeUrl}`;
+
                 try {
                     const urlObj = new URL(safeUrl);
                     linkPreview = {
@@ -485,6 +488,7 @@ export async function POST(request: NextRequest) {
                         image: ''
                     };
                 } catch (err) {
+                    console.error('Invalid URL for fallback:', safeUrl);
                     linkPreview = null;
                 }
             }
