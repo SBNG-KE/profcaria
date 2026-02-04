@@ -330,7 +330,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 </div>
 
                 {/* Media (Center on Mobile, Left on Desktop) */}
-                {(hasMedia || (post.linkPreview && post.linkPreview.image)) && (
+                {(hasMedia || post.linkPreview) && (
                     <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
                         <div
                             className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px] group/media touch-pan-y"
