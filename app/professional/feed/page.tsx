@@ -69,8 +69,8 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
 
         if (images.length > 0 || linkMedia || userDismissedLink) return;
 
-        // Robust URL detection (http/https)
-        const urlMatch = content.match(/(https?:\/\/[^\s]+)/);
+        // Robust URL detection (http/https/www/domain.com)
+        const urlMatch = content.match(/((?:https?:\/\/)?(?:www\.)?[\w-]+\.\w{2,}(?:\/[\w-./?%&=]*)?)/);
         if (urlMatch) {
             setLinkMedia(urlMatch[0]);
         }

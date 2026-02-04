@@ -80,17 +80,19 @@ const TruncatedText = ({ text, isDark, onHashtagClick }: { text: string, isDark:
 // Scrollable Text Component
 const ScrollableText = ({ text, isDark, onHashtagClick }: { text: string, isDark: boolean, onHashtagClick?: (t: string) => void }) => {
     const safeText = text || '';
-    // Updated Regex to split: URLs, Hashtags, Mentions, newlines
-    const parts = safeText.split(new RegExp('((?:https?://[^\\s]+)|(?:hashtag#[\\w]+|#[\\w]+)|(?:@[\\w]+(?:\\s+[\\w]+)?)|\\n)', 'g'));
+    // Updated Regex to split: URLs (including simple domains), Hashtags, Mentions, newlines
+    const parts = safeText.split(new RegExp('((?:(?:https?://)?(?:www\\.)?[\\w-]+\\.\\w{2,}(?:/[\\w-./?%&=]*)?)|(?:hashtag#[\\w]+|#[\\w]+)|(?:@[\\w]+(?:\\s+[\\w]+)?)|\\n)', 'g'));
 
     return (
         <div className={`max-h-72 overflow-y-auto text-base leading-relaxed pr-2 scrollbar-thin ${isDark ? 'text-neutral-200 scrollbar-thumb-neutral-700' : 'text-neutral-800 scrollbar-thumb-neutral-300'}`}>
             <p className="whitespace-pre-wrap">
                 {parts.map((part, i) => {
-                    // Match URL
-                    if (part.match(/^https?:\/\//)) {
+                    // Match URL (broader check)
+                    if (part.match(/(?:https?:\/\/)?(?:www\.)?[\w-]+\.\w{2,}/)) {
+                        let href = part;
+                        if (!href.match(/^https?:\/\//)) href = `https://${href}`;
                         return (
-                            <a key={i} href={part} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-500 hover:underline">
+                            <a key={i} href={href} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-500 hover:underline">
                                 {part}
                             </a>
                         );
@@ -345,7 +347,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         className={`flex items-center gap-1.5 transition-colors group ${post.isLiked ? 'text-rose-500' : (isDark ? 'text-neutral-400 hover:text-rose-400' : 'text-neutral-500 hover:text-rose-500')}`}
                                     >
                                         <Heart size={18} className={`transition-transform duration-300 ${post.isLiked ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
-                                        <span className="font-medium text-xs">{post.likesCount || 0}</span>
+                                        {post.likesCount > 0 && <span className="font-medium text-xs">{post.likesCount}</span>}
                                     </button>
 
                                     <button
@@ -353,7 +355,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         className={`flex items-center gap-1.5 transition-colors group ${showComments ? 'text-blue-500' : (isDark ? 'text-neutral-400 hover:text-blue-400' : 'text-neutral-500 hover:text-blue-500')}`}
                                     >
                                         <MessageCircle size={18} className="transition-transform duration-300 group-hover:scale-110" />
-                                        <span className="font-medium text-xs">{post.commentsCount || 0}</span>
+                                        {post.commentsCount > 0 && <span className="font-medium text-xs">{post.commentsCount}</span>}
                                     </button>
 
                                     <button
@@ -361,7 +363,6 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                         className={`flex items-center gap-1.5 transition-colors group ${isDark ? 'text-neutral-400 hover:text-green-400' : 'text-neutral-500 hover:text-green-500'}`}
                                     >
                                         <Share2 size={18} className="transition-transform duration-300 group-hover:scale-110" />
-                                        <span className="font-medium text-xs">{post.sharesCount || 0}</span>
                                     </button>
                                 </div>
 
