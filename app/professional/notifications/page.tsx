@@ -37,7 +37,7 @@ function MessagesContent() {
     useEffect(() => {
         fetch('/api/auth/me')
             .then(res => res.json())
-            .then(data => { if (data.uid) setCurrentUserId(data.uid); })
+            .then(data => { if (data.id) setCurrentUserId(data.id); })
             .catch(e => console.error("Error fetching user", e));
     }, []);
 
