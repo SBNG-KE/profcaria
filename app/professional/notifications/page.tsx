@@ -58,39 +58,56 @@ function MessagesContent() {
 
     // Handle URL Params for Direct Messaging or Application Chat
     useEffect(() => {
-        const targetCompanyId = searchParams.get('companyId');
-        const targetRecipientId = searchParams.get('recipientId');
-        const targetRecipientType = searchParams.get('recipientType') || 'professional'; // Default to professional if missing? Or employer? Better to have it.
+        const targetId = searchParams.get('recipientId'); // Can be CompanyID or ProfessionalID
+        const targetType = searchParams.get('recipientType'); // 'employer' or 'professional'
+        const targetName = searchParams.get('recipientName');
+        const targetImage = searchParams.get('recipientImage');
 
-        if (targetCompanyId && applications.length > 0 && !activeConversation) {
-            const targetApp = applications.find(app => (app.companyId === targetCompanyId || app.company?.id === targetCompanyId));
-            if (targetApp) {
-                setActiveConversation(targetApp);
-                window.history.replaceState(null, '', '/professional/notifications');
-            }
-        } else if (targetRecipientId && !activeConversation) {
-            // Check if we already have a DM conversation with this person/company
-            const existingDM = applications.find(app => app.otherPartyId === targetRecipientId || app.companyId === targetRecipientId);
+        // Only run if we have a target and aren't already viewing it
+        if (targetId && applications.length > 0 && !activeConversation) {
+            let existingParamsMatch: any = null;
 
-            if (existingDM) {
-                setActiveConversation(existingDM);
+            if (targetType === 'employer') {
+                // 1. Look for an existing Job Application for this company
+                // OR an existing DM with this employer
+                existingParamsMatch = applications.find(app => (app.companyId === targetId) || (app.otherPartyId === targetId));
             } else {
-                // Create temporary DM object
-                const recipientName = searchParams.get('recipientName') || 'User';
-                const recipientImage = searchParams.get('recipientImage') || '';
+                // 2. Look for existing Professional DM
+                existingParamsMatch = applications.find(app => app.otherPartyId === targetId);
+            }
 
+            if (existingParamsMatch) {
+                // Found existing conversation -> Switch to it
+                setActiveConversation(existingParamsMatch);
+            } else if (!activeConversation) {
+                // No match found -> Create new Temp Conversation
                 setActiveConversation({
-                    id: 'new_dm_' + targetRecipientId, // Temporary ID
+                    id: 'new_dm_' + targetId, // Temporary ID
                     isTemp: true,
-                    companyName: recipientName, // For DMs, we reuse companyName field for display
+                    companyName: targetName || 'User', // Reusing field
                     jobTitle: 'Direct Message',
-                    companyLogoUrl: recipientImage,
-                    companyId: null, // No company
-                    otherPartyId: targetRecipientId, // The target user
-                    otherPartyType: targetRecipientType, // Store the type!
+                    companyLogoUrl: targetImage || null,
+                    companyId: targetType === 'employer' ? targetId : null,
+                    otherPartyId: targetId,
+                    otherPartyType: targetType || 'professional',
                     status: 'active'
                 });
             }
+            // Clean URL
+            window.history.replaceState(null, '', '/professional/notifications');
+        } else if (targetId && !activeConversation) {
+            // Fallback if applications list is empty but we have a target (very first load)
+            setActiveConversation({
+                id: 'new_dm_' + targetId,
+                isTemp: true,
+                companyName: targetName || 'User',
+                jobTitle: 'Direct Message',
+                companyLogoUrl: targetImage || null,
+                companyId: targetType === 'employer' ? targetId : null,
+                otherPartyId: targetId,
+                otherPartyType: targetType || 'professional',
+                status: 'active'
+            });
             window.history.replaceState(null, '', '/professional/notifications');
         }
     }, [searchParams, applications]);
