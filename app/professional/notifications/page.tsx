@@ -24,6 +24,7 @@ function MessagesContent() {
     const [isSending, setIsSending] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
     // Refs
     const messageEndRef = useRef<HTMLDivElement>(null);
@@ -31,6 +32,14 @@ function MessagesContent() {
     const lastFetchTimeRef = useRef(0);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Fetch Current User (for alignment logic)
+    useEffect(() => {
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => { if (data.uid) setCurrentUserId(data.uid); })
+            .catch(e => console.error("Error fetching user", e));
+    }, []);
 
     // Link preview state
     const [linkPreviewUrl, setLinkPreviewUrl] = useState<string | null>(null);
@@ -541,7 +550,7 @@ function MessagesContent() {
                                     <div className="flex items-center justify-center sticky top-0 z-10 py-2"><span className={`backdrop-blur text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-lg border ${isDark ? 'bg-neutral-800/80 text-neutral-400 border-neutral-700/50' : 'bg-neutral-100/80 text-neutral-500 border-neutral-200'}`}>{group.label}</span></div>
                                     <div className="space-y-2">
                                         {group.messages.map((msg: any) => {
-                                            const isMe = msg.sender_type === 'professional';
+                                            const isMe = currentUserId ? msg.sender_id === currentUserId : msg.sender_type === 'professional'; // Fallback
                                             return (
                                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                     <div className={`max-w-[85%] md:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
