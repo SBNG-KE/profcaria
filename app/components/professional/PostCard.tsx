@@ -273,7 +273,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 </div>
 
                 {/* Media (Center on Mobile, Left on Desktop) */}
-                {(hasMedia || post.linkPreview) && (
+                {(hasMedia || (post.linkPreview && post.linkPreview.image)) && (
                     <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
                         <div className="relative overflow-hidden bg-black/5 dark:bg-white/5 flex items-center justify-center min-h-[200px] sm:min-h-[300px] max-h-[600px]">
                             {post.media && post.media.length > 0 ? (
@@ -367,15 +367,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                 </div>
 
                                 <div className="flex gap-1">
-                                    {isOwnPost && !post.repostContext && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); }} // Disabled for now
-                                            className={`p-1.5 rounded-full transition-colors opacity-50 cursor-not-allowed ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}
-                                            title="Promote feature coming soon"
-                                        >
-                                            <TrendingUp size={18} />
-                                        </button>
-                                    )}
+
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onSave?.(); }}
                                         className={`p-1.5 rounded-full transition-colors ${post.isSaved ? (isDark ? 'text-yellow-400 bg-yellow-400/10' : 'text-yellow-600 bg-yellow-50') : (isDark ? 'text-neutral-400 hover:text-yellow-400' : 'text-neutral-500 hover:text-yellow-600')}`}
@@ -401,9 +393,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                             {isRepostContext && onDeleteRepost && (
                                 <button onClick={() => { setShowMenu(false); if (post.repostId) onDeleteRepost(post.repostId); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Repost</button>
                             )}
-                            {!isOwnPost && (
-                                <button onClick={() => { setShowMenu(false); onReport?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Flag size={14} /> Report</button>
-                            )}
+
                         </div>
                     )}
                 </div>

@@ -457,8 +457,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Post exceeds 500 word limit' }, { status: 400 });
         }
 
-        let linkPreview = null;
-        if (linkMedia) {
+        let linkPreview = body.linkPreview || null;
+
+        // Only generate if not provided and media link exists
+        if (!linkPreview && linkMedia) {
             try {
                 const protocol = request.headers.get('x-forwarded-proto') || 'http';
                 const host = request.headers.get('host') || 'localhost:3000';

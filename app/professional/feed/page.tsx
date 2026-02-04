@@ -170,7 +170,8 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
             content: content.trim(),
             mediaUrls: images,
             linkMedia: linkMedia || undefined,
-            mentions: mentionsList // Pass mentions list
+            linkPreview: linkPreview || undefined,
+            mentions: mentionsList
         } as any);
         setContent('');
         setImages([]);

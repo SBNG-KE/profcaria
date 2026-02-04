@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
         // Return fallback data instead of 500 so UI can still show valid "link" without preview
         return NextResponse.json({
             url: targetUrl,
-            title: targetUrl,
+            title: new URL(targetUrl).hostname, // Use hostname as title fallback
             description: '',
             image: '',
             siteName: new URL(targetUrl).hostname
