@@ -231,7 +231,6 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                     <div className={`absolute right-0 top-8 w-40 rounded-lg shadow-lg border z-50 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200'}`}>
                         {isOwnPost && (
                             <>
-                                <button onClick={() => { setShowMenu(false); setShowPromoteModal(true); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-blue-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><TrendingUp size={14} /> Promote Post</button>
                                 <button onClick={() => { setShowMenu(false); onEdit?.(post); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-neutral-100 text-black'}`}><Edit2 size={14} /> Edit</button>
                                 <button onClick={() => { setShowMenu(false); onDelete?.(post.id); }} className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2 text-red-500 ${isDark ? 'hover:bg-neutral-700' : 'hover:bg-neutral-100'}`}><Trash2 size={14} /> Delete Post</button>
                             </>
