@@ -9,7 +9,7 @@ export default function FeaturesShowcase() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`py-40 px-6 md:px-20 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
+        <section className={`py-0 pt-20 px-6 md:px-20 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
             <div className="max-w-[1400px] mx-auto">
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-end">
@@ -39,28 +39,47 @@ export default function FeaturesShowcase() {
 
                     {/* Right: Abstract Visual */}
                     <div className="lg:col-span-5 relative h-[600px] flex items-center justify-center">
-                        {/* Abstract Shapes - No "UI Cards" */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-80">
-                            {/* Circle 1 */}
-                            <div className="w-96 h-96 rounded-full border-[1px] border-amber-500/20 animate-[spin_20s_linear_infinite]" />
-                            {/* Circle 2 */}
-                            <div className="absolute w-[500px] h-[500px] rounded-full border-[1px] border-amber-500/10 animate-[spin_30s_linear_infinite_reverse]" />
+                        {/* Abstract Shapes - Animated Background */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-100">
+                            {/* Circle 1 - Inner Ring with Marker */}
+                            <div
+                                className="relative w-96 h-96 rounded-full border-[2px] border-amber-500/40"
+                                style={{ animation: 'spin-slow 20s linear infinite' }}
+                            >
+                                <div className="absolute -top-1.5 left-1/2 w-3 h-3 bg-amber-500 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+                            </div>
+
+                            {/* Circle 2 - Outer Ring with Marker */}
+                            <div
+                                className="absolute w-[500px] h-[500px] rounded-full border-[1px] border-amber-500/30"
+                                style={{ animation: 'spin-slow 30s linear infinite reverse' }}
+                            >
+                                <div className="absolute top-1/2 -right-1.5 w-3 h-3 bg-amber-500/50 rounded-full" />
+                            </div>
+
                             {/* Gradient Center */}
-                            <div className="absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl" />
+                            <div className="absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
                         </div>
 
-                        {/* Floating Word Cloud / Concepts */}
-                        <div className="relative z-10 text-center space-y-8">
+                        {/* Vertical Roles Stack (Static Text, Fits in Circle) */}
+                        <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-6">
                             {["Designers", "Engineers", "Founders", "Architects"].map((role, i) => (
                                 <div key={i} className={`
-                                    text-2xl font-light tracking-widest uppercase
+                                    text-2xl md:text-3xl font-light tracking-[0.2em] uppercase transition-all duration-500 cursor-default
                                     ${isDark ? 'text-white' : 'text-black'}
-                                    opacity-${100 - (i * 20)}
+                                    hover:scale-110 hover:text-amber-500
                                  `}>
                                     {role}
                                 </div>
                             ))}
                         </div>
+
+                        <style jsx>{`
+                            @keyframes spin-slow {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `}</style>
                     </div>
 
                 </div>

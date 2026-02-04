@@ -10,43 +10,13 @@ import {
     Handshake
 } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next";
+import Lenis from 'lenis';
 import { useTheme } from '@/app/context/ThemeContext';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import HangingAuthCard from '@/app/components/HangingAuthCard';
 import HangingContactCard from '@/app/components/HangingContactCard';
 import BusinessSolutions from '@/app/components/landing/BusinessSolutions';
 import FeaturesShowcase from '@/app/components/landing/FeaturesShowcase';
-
-// Scroll Reveal Component
-const ScrollReveal = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
-    const [isVisible, setIsVisible] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.unobserve(entry.target);
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (ref.current) observer.observe(ref.current);
-        return () => observer.disconnect();
-    }, []);
-
-    return (
-        <div
-            ref={ref}
-            className={`transition-all duration-1000 transform ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-20 blur-sm"
-                } ${className}`}
-        >
-            {children}
-        </div>
-    );
-};
 
 // Main Landing Page Client Component
 export default function LandingPageClient() {
@@ -57,6 +27,30 @@ export default function LandingPageClient() {
     const [isContactOpen, setIsContactOpen] = useState(false);
     const [initialAuthScreen, setInitialAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>('auth');
     const [initialAuthTab, setInitialAuthTab] = useState<'professional' | 'employer'>('professional');
+
+    // Initialize Smooth Scrolling (Lenis)
+    useEffect(() => {
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            orientation: 'vertical',
+            gestureOrientation: 'vertical',
+            smoothWheel: true,
+            wheelMultiplier: 1,
+            touchMultiplier: 2,
+        });
+
+        function raf(time: number) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
+        return () => {
+            lenis.destroy();
+        };
+    }, []);
 
     // Handle URL Query Params
     useEffect(() => {
@@ -148,13 +142,12 @@ export default function LandingPageClient() {
           HERO SECTION - Minimalist & Bold
           ============================================ */}
             <section className="relative min-h-[90vh] flex flex-col justify-center px-6 md:px-20 z-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-16">
 
-                <ScrollReveal>
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-16">
-
-                        {/* LEFT: VINTAGE FRAME & LOGO */}
+                    {/* LEFT: VINTAGE FRAME & LOGO */}
+                    <div className="flex-1">
                         <div className={`
-              border-[8px] p-2
+              border-[8px] p-2 inline-block
               ${isDark ? 'border-neutral-800' : 'border-neutral-200'}
             `}>
                             <div className={`
@@ -178,113 +171,72 @@ export default function LandingPageClient() {
                             </div>
                         </div>
 
-                        {/* RIGHT: Main Value Prop - Connecting Focus */}
-                        <div className="max-w-xl text-right md:text-left">
-                            <h2 className={`text-4xl md:text-5xl font-light leading-tight ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                Where <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>ambition</span> finds its home. <br />
-                                <span className="opacity-60 text-3xl">The professional network for the modern era.</span>
-                            </h2>
-                        </div>
 
                     </div>
-                </ScrollReveal>
+
+                    {/* RIGHT: Main Value Prop - Connecting Focus */}
+                    <div className="max-w-xl text-right md:text-left">
+                        <h2 className={`text-4xl md:text-5xl font-light leading-tight ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                            Where <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>ambition</span> finds its home. <br />
+                            <span className="opacity-60 text-3xl">The professional network for the modern era.</span>
+                        </h2>
+                    </div>
+
+                </div>
             </section>
 
             {/* ============================================
           FEATURES - NO CARDS, JUST CONTENT
           ============================================ */}
-            <ScrollReveal>
-                <BusinessSolutions onStart={() => setIsAuthOpen(true)} />
-            </ScrollReveal>
+            <BusinessSolutions onStart={() => setIsAuthOpen(true)} />
 
-            <ScrollReveal>
-                <FeaturesShowcase />
-            </ScrollReveal>
-
-            {/* NEW SECTION: The Standard / Future of Work */}
-            <section className={`py-40 px-6 ${isDark ? 'bg-neutral-900/50' : 'bg-neutral-50'}`}>
-                <ScrollReveal>
-                    <div className="max-w-4xl mx-auto text-center space-y-12">
-                        <h3 className={`text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none ${isDark ? 'text-white' : 'text-black'}`}>
-                            The Standard <br /> Has Been Raised.
-                        </h3>
-                        <p className={`text-2xl font-light italic font-serif ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                            "We are not just filling positions. We are architecting the future of human collaboration."
-                        </p>
-                    </div>
-                </ScrollReveal>
-            </section>
+            <FeaturesShowcase />
 
             {/* ============================================
-          TAILORED FOR YOUR GROWTH - The Only "Card"
+          VERIFIED EMPLOYMENT SECTION (Replaced Scale)
           ============================================ */}
             <section className={`py-40 px-6 ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
                 <div className="max-w-7xl mx-auto">
-                    <ScrollReveal>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-
-                            {/* Left Side - Narrative */}
-                            <div className="space-y-10">
-                                <h2 className="text-5xl md:text-7xl font-black tracking-tighter">
-                                    TAILORED FOR <br /> YOUR GROWTH
-                                </h2>
-                                <div className="h-1 w-20 bg-current" />
-                                <p className={`text-2xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                    Focus on your career trajectory. We provide the tools and connections you need to level up.
-                                </p>
-
-                                <div className="grid grid-cols-2 gap-10 pt-10">
-                                    <div>
-                                        <div className="text-5xl font-black">100%</div>
-                                        <div className="text-xs uppercase tracking-widest mt-2 opacity-60">Career Focus</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-5xl font-black">Global</div>
-                                        <div className="text-xs uppercase tracking-widest mt-2 opacity-60">Opportunities</div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-8">
-                                    <button disabled className="px-8 py-4 rounded-full bg-neutral-500/10 border border-neutral-500/20 text-neutral-500 font-black uppercase tracking-widest text-xs backdrop-blur-sm cursor-not-allowed opacity-50 hover:opacity-50">
-                                        Mobile App Coming Soon
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Right Side - The Specific Layout "Card" - CURVED EDGES */}
-                            <div className={`
-                p-12 md:p-16 flex flex-col justify-between rounded-[3rem]
-                ${isDark ? 'bg-black' : 'bg-white'}
-              `}>
-                                <div className="space-y-8">
-                                    <h3 className="text-2xl font-bold uppercase tracking-widest border-b border-current pb-6">Why Profcaria?</h3>
-
-                                    <ul className="space-y-6">
-                                        {[
-                                            { icon: Users, label: "Exclusive Networking" },
-                                            { icon: Building2, label: "Business Connections" },
-                                            { icon: Handshake, label: "Direct Partnerships" },
-                                            { icon: Globe, label: "Global Opportunities" }
-                                        ].map((item, i) => (
-                                            <li key={i} className="flex items-center gap-6 group cursor-default">
-                                                <item.icon size={24} className="opacity-50 group-hover:opacity-100 transition-opacity" />
-                                                <span className={`text-lg font-medium group-hover:translate-x-2 transition-transform duration-300`}>
-                                                    {item.label}
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                <div className="mt-12 text-sm opacity-40 font-mono">
-                                    Member Verified Platform
-                                </div>
-                            </div>
-
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+                        <div className="space-y-8">
+                            <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]">
+                                VERIFIED <br />
+                                EMPLOYMENT
+                            </h2>
+                            <div className="h-1 w-20 bg-current" />
                         </div>
-                    </ScrollReveal>
+
+                        <div className="space-y-10">
+                            <p className={`text-3xl font-light leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                                No more reference checks. <br />
+                                No more background screens.
+                            </p>
+                            <p className={`text-xl leading-relaxed opacity-80 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                Your employment history is cryptographically verified at the source.
+                                When you join a company on Profcaria, your role is stamped as authentic.
+                                When you leave, your history is yours to keep instantly trusted by your next employer.
+                            </p>
+
+                            <div className="pt-8">
+                                <button
+                                    onClick={() => setIsAuthOpen(true)}
+                                    className={`
+                                        px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest
+                                        border transition-all duration-300
+                                        ${isDark
+                                            ? 'border-white text-white hover:bg-white hover:text-black'
+                                            : 'border-black text-black hover:bg-black hover:text-white'}
+                                    `}
+                                >
+                                    Claim Your Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
+
+
 
             {/* ============================================
           FLOATING FOOTER ELEMENT (No Container)
