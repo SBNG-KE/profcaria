@@ -392,11 +392,31 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                     )}
                                 </>
                             ) : post.linkPreview ? (
-                                <img
-                                    src={post.linkPreview.image}
-                                    alt="Link preview"
-                                    className="w-full h-full object-cover"
-                                />
+                                <a
+                                    href={post.linkPreview.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-full h-full block relative group/link cursor-pointer"
+                                >
+                                    {post.linkPreview.image ? (
+                                        <img
+                                            src={post.linkPreview.image}
+                                            alt="Link preview"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover/link:scale-105"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                                            <Link2 className="text-neutral-400" size={48} />
+                                        </div>
+                                    )}
+                                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-black/60 backdrop-blur-sm text-white border-t border-white/10">
+                                        <div className="font-bold text-sm truncate">{post.linkPreview.title || 'Link Preview'}</div>
+                                        <div className="text-[10px] opacity-80 truncate flex items-center gap-1 mt-0.5">
+                                            <Link2 size={10} /> {(() => { try { return new URL(post.linkPreview.url).hostname } catch (e) { return 'link' } })()}
+                                        </div>
+                                    </div>
+                                </a>
                             ) : null}
                         </div>
                     </div>
