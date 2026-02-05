@@ -262,11 +262,13 @@ export async function GET(request: NextRequest) {
         }
 
         // MAIN FEED: Use AI Ranking RPC
-        const { data: rankedPosts, error: rpcError } = await supabaseAdmin.rpc('get_ranked_feed', {
-            p_user_id: user.id,
+        // FIXME: RPC 'get_ranked_feed' definition is stale and missing 'link_preview' column.
+        // Temporarily bypassing RPC to use standard select('*') which returns all columns.
+        const { data: rankedPosts, error: rpcError } = { data: null, error: 'Standard Query Fallback' }; // await supabaseAdmin.rpc('get_ranked_feed', { 
+        /*    p_user_id: user.id,
             p_limit: limit,
             p_offset: offset
-        });
+        }); */
 
         if (rpcError) {
             console.error('Feed RPC Error:', rpcError);
