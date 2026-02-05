@@ -331,10 +331,8 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
 
                 {/* Media (Center on Mobile, Left on Desktop) */}
                 {(hasMedia || (post.linkPreview && !(() => {
-                    try {
-                        const hostname = new URL(post.linkPreview.url).hostname.toLowerCase().replace(/^www\./, '');
-                        return post.content.toLowerCase().includes(hostname);
-                    } catch (e) { return false; }
+                    // Robust check: If content contains a URL, treat as inline link -> Hide left card (show bottom instead)
+                    return /(?:https?:\/\/|www\.)[\w-]+\.\w{2,}/i.test(post.content);
                 })())) && (
                         <div className={`flex-shrink-0 transition-all duration-300 sm:order-first ${showComments ? 'w-full sm:w-[35%]' : 'w-full sm:w-[55%]'}`}>
                             <div
@@ -441,12 +439,10 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                             <ScrollableText text={post.content} isDark={isDark} onHashtagClick={onHashtagClick} />
                         </div>
 
-                        {/* Link Preview Details (Show if media is present OR if it's an inline link) */}
+                        {/* Link Preview Details (Show if media is present OR if content appears to contain a link) */}
                         {post.linkPreview && (hasMedia || (() => {
-                            try {
-                                const hostname = new URL(post.linkPreview.url).hostname.toLowerCase().replace(/^www\./, '');
-                                return post.content.toLowerCase().includes(hostname);
-                            } catch (e) { return false; }
+                            // Robust check: If content contains a URL, treat as inline link -> Show bottom card
+                            return /(?:https?:\/\/|www\.)[\w-]+\.\w{2,}/i.test(post.content);
                         })()) && (
                                 <a
                                     href={post.linkPreview.url}
