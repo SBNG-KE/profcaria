@@ -102,7 +102,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                         {/* Left Side System Visual (Abstract System Stack - Animated) */}
                         <div className="mt-20 relative">
                             {/* Left: The Kinetic Core (Abstract Visualization) */}
-                            <div className="relative h-[600px] hidden md:flex items-center justify-center">
+                            <div className="relative h-auto md:h-[700px] flex items-center justify-center py-12 md:py-0">
                                 {/* Central "Spine" */}
                                 <div className={`absolute inset-y-0 left-1/2 w-[1px] -translate-x-1/2 ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
 
