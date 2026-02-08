@@ -84,7 +84,7 @@ export async function GET(req: Request) {
                         // Professional
                         const { data: prof } = await supabaseAdmin
                             .schema('professional')
-                            .from('professional_profiles')
+                            .from('profiles')
                             .select('first_name, last_name, profile_image_url, role')
                             .eq('id', notif.sender_id)
                             .single();
