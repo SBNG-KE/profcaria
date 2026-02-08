@@ -401,25 +401,33 @@ function EmployerFeedContent() {
     };
 
     const handleShare = async (postId: string) => {
-        const url = `${window.location.origin}/employer/feed?post=${postId}`;
-
-        if (typeof navigator !== 'undefined' && navigator.share) {
-            try {
-                await navigator.share({ title: 'Check out this post', url });
-                return;
-            } catch (err: any) {
-                if (err.name === 'AbortError') return;
-                console.error('Share failed, trying fallback:', err);
-            }
-        }
-
         try {
-            // Simplified fallback
-            await navigator.clipboard.writeText(url);
-            alert('Link copied to clipboard!');
+            // Use unified share API for clean short links
+            const res = await fetch(`/api/share?type=post&id=${postId}`);
+            if (res.ok) {
+                const { link } = await res.json();
+                if (typeof navigator !== 'undefined' && navigator.share) {
+                    try {
+                        await navigator.share({ title: 'Check out this post', url: link });
+                        return;
+                    } catch (err: any) {
+                        if (err.name === 'AbortError') return;
+                        console.error('Share failed, trying fallback:', err);
+                    }
+                }
+                // Fallback to clipboard
+                await navigator.clipboard.writeText(link);
+                alert('Link copied to clipboard!');
+            } else {
+                // Fallback to direct URL if API fails
+                const fallbackUrl = `${window.location.origin}/professional/feed?post=${postId}`;
+                await navigator.clipboard.writeText(fallbackUrl);
+                alert('Link copied to clipboard!');
+            }
         } catch (err) {
             console.error(err);
-            prompt('Copy this link:', url);
+            const fallbackUrl = `${window.location.origin}/professional/feed?post=${postId}`;
+            prompt('Copy this link:', fallbackUrl);
         }
     };
 

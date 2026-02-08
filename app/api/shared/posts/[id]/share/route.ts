@@ -26,7 +26,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         // User asked "like how share for jobs works".
         // Jobs link to: /professional/jobs/[id] usually.
         // Let's assume /post/[id] or /feed?postId=[id].
-        const longLink = `${origin}/feed?postId=${postId}`;
+        const longLink = `${origin}/professional/feed?post=${postId}`;
 
         // Generate Short Link
         const link = await createShortLink(longLink);

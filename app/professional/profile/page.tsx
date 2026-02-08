@@ -348,10 +348,26 @@ export default function ProfessionalHome() {
     };
   }, [isRepositioning, dragStart, imagePosition]);
 
-  const handleCopyLink = () => {
-    const link = `${window.location.origin}/public/people/${userId}`;
-    navigator.clipboard.writeText(link);
-    setProfileMessage({ type: 'success', text: 'Profile link copied!' });
+  const handleCopyLink = async () => {
+    try {
+      // Use unified share API for clean short links
+      const res = await fetch(`/api/share?type=profile&userType=professional&id=${userId}`);
+      if (res.ok) {
+        const { link } = await res.json();
+        await navigator.clipboard.writeText(link);
+        setProfileMessage({ type: 'success', text: 'Profile link copied!' });
+      } else {
+        // Fallback to direct link
+        const fallbackLink = `${window.location.origin}/p/${firstName}-${lastName}`.toLowerCase();
+        await navigator.clipboard.writeText(fallbackLink);
+        setProfileMessage({ type: 'success', text: 'Profile link copied!' });
+      }
+    } catch (err) {
+      console.error(err);
+      const fallbackLink = `${window.location.origin}/p/${firstName}-${lastName}`.toLowerCase();
+      navigator.clipboard.writeText(fallbackLink);
+      setProfileMessage({ type: 'success', text: 'Profile link copied!' });
+    }
     setTimeout(() => setProfileMessage(null), 3000);
   };
 
