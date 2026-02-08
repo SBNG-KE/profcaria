@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy initialization to avoid build-time errors
+let _supabaseAdmin: SupabaseClient | null = null;
+
+function getSupabaseAdmin(): SupabaseClient {
+    if (!_supabaseAdmin) {
+        _supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+    }
+    return _supabaseAdmin;
+}
 
 // Google Safe Browsing API key (add to .env.local)
 const SAFE_BROWSING_API_KEY = process.env.GOOGLE_SAFE_BROWSING_API_KEY;
@@ -98,7 +106,7 @@ export async function POST(req: Request) {
         const urlHash = hashUrl(normalizedUrl);
 
         // Check if we already have this URL in our database
-        const { data: existingRecord } = await supabaseAdmin
+        const { data: existingRecord } = await getSupabaseAdmin()
             .from('url_security')
             .select('*')
             .eq('url_hash', urlHash)
@@ -155,7 +163,7 @@ export async function POST(req: Request) {
         }
 
         // Upsert the record
-        const { error: upsertError } = await supabaseAdmin
+        const { error: upsertError } = await getSupabaseAdmin()
             .from('url_security')
             .upsert({
                 id: existingRecord?.id || crypto.randomUUID(),
@@ -208,7 +216,7 @@ export async function GET(req: Request) {
     const urlHash = hashUrl(url.trim().toLowerCase());
 
     // Quick lookup in database without calling external API
-    const { data: record } = await supabaseAdmin
+    const { data: record } = await getSupabaseAdmin()
         .from('url_security')
         .select('status, strike_count, is_permanently_blocked, threat_type')
         .eq('url_hash', urlHash)
