@@ -64,7 +64,7 @@ export async function GET(req: Request) {
             // Enrich with sender details
             if (notif.sender_id) {
                 try {
-                    let senderName = 'Professional';
+                    let senderName = '';
                     let senderImage = null;
                     let senderRole = '';
 
@@ -72,30 +72,38 @@ export async function GET(req: Request) {
                         const { data: comp } = await supabaseAdmin
                             .schema('employer')
                             .from('companies')
-                            .select('company_name, logo_url')
+                            .select('enc_company_name, enc_logo_url')
                             .eq('id', notif.sender_id)
                             .single();
                         if (comp) {
-                            senderName = comp.company_name;
-                            senderImage = comp.logo_url;
+                            senderName = decryptData(comp.enc_company_name) || 'Company';
+                            senderImage = comp.enc_logo_url ? decryptData(comp.enc_logo_url) : null;
                             senderRole = 'Company';
                         }
                     } else {
-                        // Professional
+                        // Professional - use users table with encrypted fields
                         const { data: prof } = await supabaseAdmin
                             .schema('professional')
-                            .from('profiles')
-                            .select('first_name, last_name, profile_image_url, role')
+                            .from('users')
+                            .select('enc_first_name, enc_last_name, enc_profile_image_url, enc_current_role')
                             .eq('id', notif.sender_id)
                             .single();
                         if (prof) {
-                            senderName = `${prof.first_name} ${prof.last_name}`;
-                            senderImage = prof.profile_image_url;
-                            senderRole = prof.role || 'Professional';
+                            const firstName = decryptData(prof.enc_first_name) || '';
+                            const lastName = decryptData(prof.enc_last_name) || '';
+                            senderName = `${firstName} ${lastName}`.trim() || 'User';
+                            senderImage = prof.enc_profile_image_url ? decryptData(prof.enc_profile_image_url) : null;
+                            senderRole = decryptData(prof.enc_current_role) || 'Professional';
                         }
                     }
-                    return { ...base, senderName, senderImage, senderRole };
+
+                    // Only return enriched data if we found a name
+                    if (senderName) {
+                        return { ...base, senderName, senderImage, senderRole };
+                    }
+                    return base;
                 } catch (e) {
+                    console.error('Error fetching sender details:', e);
                     return base;
                 }
             }
