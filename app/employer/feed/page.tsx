@@ -27,6 +27,10 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
     const [isFetchingPreview, setIsFetchingPreview] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // URL Security Check State
+    const [isCheckingUrl, setIsCheckingUrl] = useState(false);
+    const [securityError, setSecurityError] = useState<string | null>(null);
+
     const [userDismissedLink, setUserDismissedLink] = useState(false);
 
     // Mentions State
@@ -137,11 +141,50 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
         } catch (err) { console.error(err); } finally { setIsUploading(false); }
     };
 
-    const handlePost = () => {
+    const handlePost = async () => {
         const hasContent = content.trim().length > 0;
         const hasMedia = images.length > 0 || !!linkPreview;
 
         if ((!hasContent && !hasMedia) || wordCount > 500) return;
+
+        // Extract all URLs from content and linkMedia
+        const urlRegex = /((?:https?:\/\/|www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,10}\b(?:[-a-zA-Z0-9@:%_\+.~#?&//=]*))/gi;
+        const contentUrls = content.match(urlRegex) || [];
+        const allUrls = linkMedia ? [...contentUrls, linkMedia] : contentUrls;
+
+        // Check all URLs for security
+        if (allUrls.length > 0) {
+            setIsCheckingUrl(true);
+            setSecurityError(null);
+            try {
+                for (const url of allUrls) {
+                    const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
+                    const res = await fetch('/api/security/check-url', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: normalizedUrl })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.status === 'blocked' || data.status === 'malicious') {
+                            setSecurityError(`Cannot post: The link "${url}" has been flagged as malicious and is blocked for safety reasons.`);
+                            setIsCheckingUrl(false);
+                            return;
+                        }
+                        if (data.status === 'suspicious' && data.strikeCount >= 5) {
+                            setSecurityError(`Cannot post: The link "${url}" appears to be unsafe. Please remove it and try again.`);
+                            setIsCheckingUrl(false);
+                            return;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('URL security check failed:', error);
+            } finally {
+                setIsCheckingUrl(false);
+            }
+        }
+
         onPost({
             content: content.trim(),
             mediaUrls: images,
@@ -149,7 +192,7 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
             linkPreview: linkPreview || undefined,
             mentions: mentionsList
         } as any);
-        setContent(''); setImages([]); setLinkMedia(''); onClose();
+        setContent(''); setImages([]); setLinkMedia(''); setSecurityError(null); onClose();
     };
 
     if (!isOpen) return null;
@@ -249,9 +292,36 @@ const PostCreationModal = ({ isOpen, onClose, isDark, onPost, initialData }: {
                         ) : null}
                     </div>
                 )}
+                {/* Security Error Display */}
+                {securityError && (
+                    <div className="mx-4 mb-2 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
+                        <div className="p-1.5 bg-red-500/20 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-xs font-bold text-red-500 uppercase tracking-wider mb-0.5">Malicious Link Detected</p>
+                            <p className="text-xs text-red-400">{securityError}</p>
+                        </div>
+                        <button onClick={() => setSecurityError(null)} className="text-red-500 hover:text-red-400 transition-colors">
+                            <X size={16} />
+                        </button>
+                    </div>
+                )}
                 <div className={`sticky bottom-0 p-4 flex items-center justify-between border-t ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                     <span className={`text-sm ${wordCount > 500 ? 'text-red-500' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{wordCount}/500</span>
-                    <button onClick={handlePost} disabled={(!content.trim() && images.length === 0 && !linkPreview) || wordCount > 500 || isFetchingPreview} className={`px-5 py-2.5 rounded-full text-sm font-bold disabled:opacity-50 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>{initialData ? 'Save' : 'Post'}</button>
+                    <button onClick={handlePost} disabled={(!content.trim() && images.length === 0 && !linkPreview) || wordCount > 500 || isFetchingPreview || isCheckingUrl} className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold disabled:opacity-50 ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
+                        {isCheckingUrl ? (
+                            <>
+                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Checking...
+                            </>
+                        ) : initialData ? 'Save' : 'Post'}
+                    </button>
                 </div>
             </div>
         </div>

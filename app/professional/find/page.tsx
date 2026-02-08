@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart, ChevronLeft, Share2 } from 'lucide-react';
+import { Search, Briefcase, MapPin, Building2, Clock, ChevronRight, Zap, CheckCircle2, Trash2, Heart, ChevronLeft, Share2, ChevronDown, Filter, Check, X } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
 interface Job {
@@ -12,6 +12,7 @@ interface Job {
     location?: string;
     location_type?: string;
     employment_type?: string;
+    role_categories?: string[];
     company: {
         name: string;
         logoUrl?: string;
@@ -21,6 +22,11 @@ interface Job {
     applicationId?: string | null;
     isInvited?: boolean;
     isSaved?: boolean;
+}
+
+interface CategoryOption {
+    value: string;
+    label: string;
 }
 
 const ITEMS_PER_PAGE = 100;
@@ -41,10 +47,52 @@ export default function FindJobsPage() {
     const [copiedJobId, setCopiedJobId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Role Category Filter State
+    const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+    const [categorySearch, setCategorySearch] = useState('');
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Location Filter State
+    const [locationFilter, setLocationFilter] = useState<'all' | 'remote' | 'onsite' | 'hybrid'>('all');
+    const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+    const locationDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Fetch categories on mount
+    useEffect(() => {
+        fetch('/api/employer/categories')
+            .then(res => res.json())
+            .then(data => {
+                if (data.categories) {
+                    setCategoryOptions(data.categories.map((c: any) => ({
+                        value: c.slug,
+                        label: c.label
+                    })));
+                }
+            })
+            .catch(console.error);
+    }, []);
+
+    // Close dropdowns on outside click
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target as Node)) {
+                setIsCategoryDropdownOpen(false);
+            }
+            if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
+                setIsLocationDropdownOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     // Analytics tracking
     const trackedImpressions = useRef<Set<string>>(new Set());
     const impressionQueue = useRef<string[]>([]);
     const flushTimeout = useRef<NodeJS.Timeout | null>(null);
+
 
     useEffect(() => {
         // Handle URL Ref Param
@@ -228,7 +276,7 @@ export default function FindJobsPage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [viewMode, appliedFilter, searchTerm, searchType]);
+    }, [viewMode, appliedFilter, searchTerm, searchType, selectedCategory, locationFilter]);
 
     const filteredJobs = jobs.filter(job => {
         if (linkedJobId) return job.id === linkedJobId;
@@ -241,6 +289,20 @@ export default function FindJobsPage() {
                 job.company?.name?.toLowerCase().includes(term) ||
                 (job.description || '').toLowerCase().includes(term);
         }
+
+        // Category filter
+        let matchesCategory = true;
+        if (selectedCategory !== 'all') {
+            const jobCategories = job.role_categories || [];
+            matchesCategory = jobCategories.includes(selectedCategory);
+        }
+
+        // Location type filter
+        let matchesLocation = true;
+        if (locationFilter !== 'all') {
+            matchesLocation = job.location_type?.toLowerCase() === locationFilter;
+        }
+
         let matchesMode = false;
         if (viewMode === 'find') {
             matchesMode = !job.applicationStatus;
@@ -259,7 +321,7 @@ export default function FindJobsPage() {
         } else if (viewMode === 'saved') {
             matchesMode = savedJobIds.has(job.id) && !job.applicationStatus;
         }
-        return matchesSearch && matchesMode;
+        return matchesSearch && matchesMode && matchesCategory && matchesLocation;
     });
 
     const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE);
@@ -321,6 +383,151 @@ export default function FindJobsPage() {
                             {searchTerm && <button onClick={() => setSearchTerm('')} className={`p-1.5 rounded-full transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500 hover:text-white' : 'hover:bg-neutral-100 text-neutral-400 hover:text-black'}`}>×</button>}
                         </div>
                     </div>
+                </div>
+
+                {/* Filter Dropdowns Row */}
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className={`flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                        <Filter size={14} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Filters</span>
+                    </div>
+
+                    {/* Role Category Filter */}
+                    <div className="relative" ref={categoryDropdownRef}>
+                        <button
+                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-xs font-bold ${selectedCategory !== 'all'
+                                    ? isDark
+                                        ? 'bg-blue-600/10 border-blue-500/30 text-blue-400'
+                                        : 'bg-blue-50 border-blue-200 text-blue-600'
+                                    : isDark
+                                        ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'
+                                        : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:border-neutral-400'
+                                }`}
+                        >
+                            <Briefcase size={14} />
+                            <span className="uppercase tracking-wider">
+                                {selectedCategory === 'all' ? 'All Roles' : categoryOptions.find(c => c.value === selectedCategory)?.label || selectedCategory}
+                            </span>
+                            <ChevronDown size={14} className={`transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isCategoryDropdownOpen && (
+                            <div className={`absolute top-full left-0 mt-2 w-64 border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                <div className={`p-2 border-b sticky top-0 z-10 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                    <div className="relative">
+                                        <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`} />
+                                        <input
+                                            type="text"
+                                            value={categorySearch}
+                                            onChange={(e) => setCategorySearch(e.target.value)}
+                                            placeholder="Search roles..."
+                                            className={`w-full rounded-lg pl-9 pr-4 py-2 text-sm font-medium focus:outline-none focus:ring-1 ${isDark ? 'bg-neutral-800 text-white placeholder:text-neutral-600 focus:ring-neutral-700' : 'bg-neutral-100 text-black placeholder:text-neutral-400 focus:ring-neutral-300'}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="max-h-[240px] overflow-y-auto p-1">
+                                    <button
+                                        onClick={() => {
+                                            setSelectedCategory('all');
+                                            setIsCategoryDropdownOpen(false);
+                                            setCategorySearch('');
+                                        }}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${selectedCategory === 'all'
+                                                ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
+                                                : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
+                                            }`}
+                                    >
+                                        <span>All Roles</span>
+                                        {selectedCategory === 'all' && <Check size={14} />}
+                                    </button>
+                                    {categoryOptions
+                                        .filter(opt => opt.label.toLowerCase().includes(categorySearch.toLowerCase()))
+                                        .map(opt => (
+                                            <button
+                                                key={opt.value}
+                                                onClick={() => {
+                                                    setSelectedCategory(opt.value);
+                                                    setIsCategoryDropdownOpen(false);
+                                                    setCategorySearch('');
+                                                }}
+                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${selectedCategory === opt.value
+                                                        ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
+                                                        : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
+                                                    }`}
+                                            >
+                                                <span>{opt.label}</span>
+                                                {selectedCategory === opt.value && <Check size={14} />}
+                                            </button>
+                                        ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Location Type Filter */}
+                    <div className="relative" ref={locationDropdownRef}>
+                        <button
+                            onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-xs font-bold ${locationFilter !== 'all'
+                                    ? isDark
+                                        ? 'bg-emerald-600/10 border-emerald-500/30 text-emerald-400'
+                                        : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                    : isDark
+                                        ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'
+                                        : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:border-neutral-400'
+                                }`}
+                        >
+                            <MapPin size={14} />
+                            <span className="uppercase tracking-wider">
+                                {locationFilter === 'all' ? 'All Locations' : locationFilter.charAt(0).toUpperCase() + locationFilter.slice(1)}
+                            </span>
+                            <ChevronDown size={14} className={`transition-transform ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isLocationDropdownOpen && (
+                            <div className={`absolute top-full left-0 mt-2 w-48 border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                <div className="p-1">
+                                    {(['all', 'remote', 'onsite', 'hybrid'] as const).map(loc => (
+                                        <button
+                                            key={loc}
+                                            onClick={() => {
+                                                setLocationFilter(loc);
+                                                setIsLocationDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${locationFilter === loc
+                                                    ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
+                                                    : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
+                                                }`}
+                                        >
+                                            <span className="flex items-center gap-2">
+                                                {loc === 'remote' && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+                                                {loc === 'onsite' && <span className="w-2 h-2 rounded-full bg-orange-500" />}
+                                                {loc === 'hybrid' && <span className="w-2 h-2 rounded-full bg-purple-500" />}
+                                                {loc === 'all' ? 'All Locations' : loc.charAt(0).toUpperCase() + loc.slice(1)}
+                                            </span>
+                                            {locationFilter === loc && <Check size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Clear Filters Button */}
+                    {(selectedCategory !== 'all' || locationFilter !== 'all') && (
+                        <button
+                            onClick={() => {
+                                setSelectedCategory('all');
+                                setLocationFilter('all');
+                            }}
+                            className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold transition-all ${isDark ? 'text-neutral-500 hover:text-white hover:bg-neutral-800' : 'text-neutral-500 hover:text-black hover:bg-neutral-100'}`}
+                        >
+                            <X size={12} />
+                            Clear
+                        </button>
+                    )}
                 </div>
 
                 {viewMode === 'applied' && (

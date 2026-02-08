@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     Users, Calendar, Clock, Link as LinkIcon, FileText,
-    Send, ChevronRight, UserCircle, CheckCircle2, X, Eye, Lock, Unlock
+    Send, ChevronRight, UserCircle, CheckCircle2, X, Eye, Lock, Unlock, Star
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import EmployerProfileViewModal from '../../../components/EmployerProfileViewModal';
@@ -14,6 +14,8 @@ interface Application {
     status: string;
     formData: Record<string, any>;
     createdAt: string;
+    is_starred?: boolean;
+    user_id?: string;
     applicant: {
         firstName: string;
         lastName: string;
@@ -28,6 +30,43 @@ export default function ViewApplicationsPage() {
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
     const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
+
+    // Star filter state
+    const [starFilter, setStarFilter] = useState<'all' | 'starred'>('all');
+    const [togglingStarId, setTogglingStarId] = useState<string | null>(null);
+
+    // Toggle star handler
+    const handleToggleStar = async (e: React.MouseEvent, app: Application) => {
+        e.stopPropagation();
+        if (togglingStarId) return;
+        setTogglingStarId(app.id);
+        try {
+            const res = await fetch(`/api/employer/jobs/${jobId}/applications`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ applicationId: app.id, isStarred: !app.is_starred })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setApplications(prev => prev.map(a =>
+                    a.id === app.id ? { ...a, is_starred: data.isStarred } : a
+                ));
+                if (selectedApp?.id === app.id) {
+                    setSelectedApp(prev => prev ? { ...prev, is_starred: data.isStarred } : prev);
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling star:', error);
+        } finally {
+            setTogglingStarId(null);
+        }
+    };
+
+    // Filter applications
+    const filteredApplications = applications.filter(app => {
+        if (starFilter === 'starred') return app.is_starred;
+        return true;
+    });
 
     // Interview State
     const [showInterviewModal, setShowInterviewModal] = useState(false);
@@ -154,9 +193,27 @@ export default function ViewApplicationsPage() {
                     <p className="text-slate-400 mt-2 text-sm">Review encrypted applications and invite candidates to interviews.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[10px] font-black text-emerald-400 uppercase tracking-widest">
-                        {applications.length} Applicants
-                    </span>
+                    <div className="flex p-1 bg-slate-800/50 rounded-xl border border-slate-700">
+                        <button
+                            onClick={() => setStarFilter('all')}
+                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${starFilter === 'all'
+                                ? 'bg-white text-black'
+                                : 'text-slate-400 hover:text-white'
+                                }`}
+                        >
+                            All ({applications.length})
+                        </button>
+                        <button
+                            onClick={() => setStarFilter('starred')}
+                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${starFilter === 'starred'
+                                ? 'bg-amber-500 text-black'
+                                : 'text-slate-400 hover:text-amber-400'
+                                }`}
+                        >
+                            <Star size={12} className={starFilter === 'starred' ? 'fill-black' : ''} />
+                            Starred ({applications.filter(a => a.is_starred).length})
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -174,48 +231,74 @@ export default function ViewApplicationsPage() {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
                     {/* LIST AREA */}
                     <div className="space-y-4">
-                        {applications.map((app) => (
-                            <div
-                                key={app.id}
-                                onClick={() => setSelectedApp(app)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedApp(app); }}
-                                className={`w-full text-left p-6 rounded-[32px] border transition-all duration-300 flex items-center justify-between group cursor-pointer ${selectedApp?.id === app.id ? 'bg-blue-600/10 border-blue-500/50 shadow-2xl' : 'bg-[#0f172a] border-slate-800 hover:border-slate-700'}`}
-                            >
-                                <div className="flex items-center gap-5">
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden">
-                                        {app.applicant.profileImageUrl ? (
-                                            <img src={app.applicant.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-600"><UserCircle size={32} /></div>
-                                        )}
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{app.applicant.firstName} {app.applicant.lastName}</h3>
-                                        <div className="flex items-center gap-3">
-                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                                {app.status.replace('_', ' ')}
-                                            </span>
-                                            <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-                                                {app.createdAt && !isNaN(Date.parse(app.createdAt))
-                                                    ? new Date(app.createdAt).toLocaleDateString()
-                                                    : 'Date N/A'}
-                                            </span>
+                        {filteredApplications.length === 0 && starFilter === 'starred' ? (
+                            <div className="py-16 flex flex-col items-center justify-center text-slate-600 space-y-4">
+                                <Star size={48} className="opacity-10" />
+                                <p className="font-bold text-sm uppercase tracking-widest text-center">No starred applicants yet</p>
+                                <p className="text-xs text-slate-500 text-center">Star applicants who pass your external interviews to track them here.</p>
+                            </div>
+                        ) : (
+                            filteredApplications.map((app) => (
+                                <div
+                                    key={app.id}
+                                    onClick={() => setSelectedApp(app)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedApp(app); }}
+                                    className={`w-full text-left p-6 rounded-[32px] border transition-all duration-300 flex items-center justify-between group cursor-pointer ${selectedApp?.id === app.id ? 'bg-blue-600/10 border-blue-500/50 shadow-2xl' : 'bg-[#0f172a] border-slate-800 hover:border-slate-700'}`}
+                                >
+                                    <div className="flex items-center gap-5">
+                                        {/* Star Button */}
+                                        <button
+                                            onClick={(e) => handleToggleStar(e, app)}
+                                            disabled={togglingStarId === app.id}
+                                            className={`p-2 rounded-xl transition-all active:scale-90 ${app.is_starred
+                                                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                    : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-amber-400 hover:border-amber-500/30'
+                                                } ${togglingStarId === app.id ? 'opacity-50 animate-pulse' : ''}`}
+                                        >
+                                            <Star size={16} className={app.is_starred ? 'fill-amber-400' : ''} />
+                                        </button>
+                                        <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden">
+                                            {app.applicant.profileImageUrl ? (
+                                                <img src={app.applicant.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-slate-600"><UserCircle size={32} /></div>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{app.applicant.firstName} {app.applicant.lastName}</h3>
+                                                {app.is_starred && (
+                                                    <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded text-[8px] font-black text-amber-400 uppercase tracking-widest">
+                                                        Starred
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                                    {app.status.replace('_', ' ')}
+                                                </span>
+                                                <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+                                                    {app.createdAt && !isNaN(Date.parse(app.createdAt))
+                                                        ? new Date(app.createdAt).toLocaleDateString()
+                                                        : 'Date N/A'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); openChat(app); }}
+                                            className="p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-all active:scale-90"
+                                        >
+                                            <Send size={16} />
+                                        </button>
+                                        <ChevronRight size={20} className={`text-slate-700 group-hover:text-blue-500 transition-all ${selectedApp?.id === app.id ? 'translate-x-1 text-blue-500' : ''}`} />
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); openChat(app); }}
-                                        className="p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-all active:scale-90"
-                                    >
-                                        <Send size={16} />
-                                    </button>
-                                    <ChevronRight size={20} className={`text-slate-700 group-hover:text-blue-500 transition-all ${selectedApp?.id === app.id ? 'translate-x-1 text-blue-500' : ''}`} />
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
 
                     {/* DETAIL AREA */}

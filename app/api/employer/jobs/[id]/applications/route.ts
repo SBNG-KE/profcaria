@@ -71,3 +71,71 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+// PATCH - Toggle star status on an application
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id: jobId } = await params;
+        const { applicationId, isStarred } = await req.json();
+
+        if (!applicationId) {
+            return NextResponse.json({ error: 'applicationId is required' }, { status: 400 });
+        }
+
+        const cookieStore = await cookies();
+        const token = cookieStore.get('profcaria_session')?.value;
+
+        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
+        let payload;
+        try {
+            const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
+            payload = verifiedPayload;
+        } catch (e) {
+            return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
+        }
+
+        const { schema } = payload;
+        if (schema !== 'employer') {
+            return NextResponse.json({ error: 'Only employers can star applications' }, { status: 403 });
+        }
+
+        // Verify the application belongs to this job
+        const { data: application, error: fetchError } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .select('id, job_id, is_starred')
+            .eq('id', applicationId)
+            .eq('job_id', jobId)
+            .single();
+
+        if (fetchError || !application) {
+            return NextResponse.json({ error: 'Application not found' }, { status: 404 });
+        }
+
+        // Toggle or set the star status
+        const newStarred = typeof isStarred === 'boolean' ? isStarred : !application.is_starred;
+
+        const { error: updateError } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .update({ is_starred: newStarred })
+            .eq('id', applicationId);
+
+        if (updateError) {
+            console.error('Update Error:', updateError);
+            return NextResponse.json({ error: 'Failed to update star status' }, { status: 500 });
+        }
+
+        return NextResponse.json({
+            success: true,
+            applicationId,
+            isStarred: newStarred
+        });
+
+    } catch (error: any) {
+        console.error('PATCH Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
