@@ -89,6 +89,7 @@ export async function POST(req: Request) {
                     // EMPLOYER SUBSCRIPTION HANDLING
                     const proratedRefund = metadata?.proratedRefund ? parseFloat(metadata.proratedRefund) : 0;
                     const switchingFrom = metadata?.switchingFrom || null;
+                    const isOneTime = metadata?.isOneTime || false;
 
                     // 1. Log Payment
                     await supabaseAdmin.schema('employer').from('payments').insert({
@@ -134,6 +135,7 @@ export async function POST(req: Request) {
                         amount_paid: amountPaidUSD.toFixed(2),
                         prorated_refund: proratedRefund.toFixed(2),
                         switched_from: switchingFrom,
+                        is_one_time: isOneTime, // Track one-time vs recurring
                         // Reset usage on new payment
                         usage_jobs: 0,
                         usage_connections: 0,
@@ -156,6 +158,7 @@ export async function POST(req: Request) {
                 if (userId && entityType === 'professional') {
                     const proratedRefund = metadata?.proratedRefund ? parseFloat(metadata.proratedRefund) : 0;
                     const switchingFrom = metadata?.switchingFrom || null;
+                    const isOneTime = metadata?.isOneTime || false;
 
                     // 1. Update Previous Active Subscriptions
                     await supabaseAdmin
@@ -190,7 +193,8 @@ export async function POST(req: Request) {
                         paystack_email_token: data.email_token || 'one_time',
                         amount_paid: amountPaidUSD.toFixed(2),
                         prorated_refund: proratedRefund.toFixed(2),
-                        switched_from: switchingFrom
+                        switched_from: switchingFrom,
+                        is_one_time: isOneTime // Track one-time vs recurring
                     });
 
                     // 3. Sync Badge Type based on plan

@@ -15,6 +15,9 @@ export default function ProfessionalSettingsPage() {
     const [subscription, setSubscription] = useState<any | null>(null);
     const [currentPlan, setCurrentPlan] = useState<string>('free');
 
+    // Payment Mode State
+    const [paymentModes, setPaymentModes] = useState<Record<string, 'default' | 'choose'>>({});
+
     // Security & UI State (Restored)
     const [activeTab, setActiveTab] = useState<'security' | 'billing'>('security');
     const [isLoading, setIsLoading] = useState(false);
@@ -78,11 +81,13 @@ export default function ProfessionalSettingsPage() {
         }
     };
 
-    const handleSubscribe = (planName: string) => {
+    const handleSubscribe = (planName: string, isOneTime: boolean = false) => {
         startPayment({
             plan: planName,
+            isOneTime,
             onSuccess: () => {
-                setMessage({ type: 'success', text: `Successfully subscribed to ${planName}!` });
+                setMessage({ type: 'success', text: isOneTime ? `One-time payment successful! ${planName} active for 30 days.` : `Successfully subscribed to ${planName}!` });
+                setPaymentModes(prev => ({ ...prev, [planName]: 'default' })); // Reset UI
                 fetchBilling();
             },
             onError: (err) => setMessage({ type: 'error', text: err })
@@ -145,21 +150,44 @@ export default function ProfessionalSettingsPage() {
                                 </p>
                             ) : (
                                 <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
-                                    Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                    {subscription.is_one_time ? 'Expires: ' : 'Renews: '} {new Date(subscription.current_period_end).toLocaleDateString()}
                                 </p>
                             )}
                         </div>
                     ) : (
-                        <button
-                            onClick={() => handleSubscribe(id)}
-                            disabled={isCurrent || paymentLoading}
-                            className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${isCurrent
-                                ? `${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'} cursor-default`
-                                : `${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} shadow-lg hover:shadow-xl active:scale-95`
-                                }`}
-                        >
-                            {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : subscription ? `Switch to ${name}` : `Get ${name}`}
-                        </button>
+                        <div className="relative overflow-hidden">
+                            <div className={`transition-transform duration-300 ease-in-out flex w-[200%] ${paymentModes[id] === 'choose' ? '-translate-x-1/2' : 'translate-x-0'}`}>
+                                {/* Slide 1: Main Button */}
+                                <div className="w-1/2 px-1">
+                                    <button
+                                        onClick={() => setPaymentModes(prev => ({ ...prev, [id]: 'choose' }))}
+                                        disabled={isCurrent || paymentLoading}
+                                        className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${isCurrent
+                                            ? `${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'} cursor-default`
+                                            : `${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} shadow-lg hover:shadow-xl active:scale-95`
+                                            }`}
+                                    >
+                                        {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : subscription ? `Switch to ${name}` : `Get ${name}`}
+                                    </button>
+                                </div>
+
+                                {/* Slide 2: Options */}
+                                <div className="w-1/2 px-1 flex gap-2">
+                                    <button
+                                        onClick={() => handleSubscribe(id, true)}
+                                        className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-black'}`}
+                                    >
+                                        One-Time
+                                    </button>
+                                    <button
+                                        onClick={() => handleSubscribe(id, false)}
+                                        className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                    >
+                                        Subscribe
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

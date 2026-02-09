@@ -79,6 +79,9 @@ function SettingsContent() {
     const [derivedPlan, setDerivedPlan] = useState<string | null>(null);
     const [isAutoRenew, setIsAutoRenew] = useState(true);
 
+    // Payment Mode State: { [planId]: 'choose' | 'default' } (if 'choose', UI shows 2 buttons)
+    const [paymentModes, setPaymentModes] = useState<Record<string, 'default' | 'choose'>>({});
+
     // Pricing Config State
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
     const [pricing, setPricing] = useState({
@@ -117,7 +120,7 @@ function SettingsContent() {
                 const data = await res.json();
                 setSubscription(data.subscription);
                 if (data.subscription) {
-                    setIsAutoRenew(!data.subscription.cancel_at_period_end);
+                    setIsAutoRenew(!data.subscription.cancel_at_period_end && !data.subscription.is_one_time);
                 }
 
                 // Use the plan returned by the API (which calls getCompanyPlan)
@@ -156,11 +159,13 @@ function SettingsContent() {
     // Payment Hook
     const { startPayment, isLoading: paymentLoading } = usePayment();
 
-    const handleSubscribe = async (plan: 'basic' | 'pro' | 'enterprise') => {
+    const handleSubscribe = async (plan: 'basic' | 'pro' | 'enterprise', isOneTime: boolean = false) => {
         startPayment({
             plan,
+            isOneTime,
             onSuccess: () => {
-                setMessage({ type: 'success', text: 'Payment successful! Updating subscription...' });
+                setMessage({ type: 'success', text: isOneTime ? 'One-time payment successful! Plan active for 30 days.' : 'Subscription successful! Plan active.' });
+                setPaymentModes(prev => ({ ...prev, [plan]: 'default' })); // Reset UI
                 fetchBilling(); // Refresh UI
             },
             onError: (err: string) => {
@@ -503,13 +508,36 @@ function SettingsContent() {
                                             )}
                                         </div>
                                     ) : (
-                                        <button
-                                            onClick={() => handleSubscribe('basic')}
-                                            disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className={`w-full py-3 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black shadow-white/10' : 'bg-black hover:bg-neutral-800 text-white shadow-black/10'}`}
-                                        >
-                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Basic' : 'Get Basic'}
-                                        </button>
+                                        <div className="relative overflow-hidden">
+                                            <div className={`transition-transform duration-300 ease-in-out flex w-[200%] ${paymentModes['basic'] === 'choose' ? '-translate-x-1/2' : 'translate-x-0'}`}>
+                                                {/* Slide 1: Main Button */}
+                                                <div className="w-1/2 px-1">
+                                                    <button
+                                                        onClick={() => setPaymentModes(prev => ({ ...prev, basic: 'choose' }))}
+                                                        disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
+                                                        className={`w-full py-3 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black shadow-white/10' : 'bg-black hover:bg-neutral-800 text-white shadow-black/10'}`}
+                                                    >
+                                                        {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Basic' : 'Get Basic'}
+                                                    </button>
+                                                </div>
+
+                                                {/* Slide 2: Options */}
+                                                <div className="w-1/2 px-1 flex gap-2">
+                                                    <button
+                                                        onClick={() => handleSubscribe('basic', true)}
+                                                        className={`flex-1 py-3 font-bold rounded-xl text-[9px] uppercase tracking-wider transition-all active:scale-95 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-black'}`}
+                                                    >
+                                                        One-Time
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSubscribe('basic', false)}
+                                                        className={`flex-1 py-3 font-bold rounded-xl text-[9px] uppercase tracking-wider transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                    >
+                                                        Subscribe
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -586,13 +614,36 @@ function SettingsContent() {
                                             )}
                                         </div>
                                     ) : (
-                                        <button
-                                            onClick={() => handleSubscribe('pro')}
-                                            disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className={`w-full py-3.5 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black' : 'bg-black hover:bg-neutral-800 text-white'}`}
-                                        >
-                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Pro' : 'Get Pro'}
-                                        </button>
+                                        <div className="relative overflow-hidden">
+                                            <div className={`transition-transform duration-300 ease-in-out flex w-[200%] ${paymentModes['pro'] === 'choose' ? '-translate-x-1/2' : 'translate-x-0'}`}>
+                                                {/* Slide 1: Main Button */}
+                                                <div className="w-1/2 px-1">
+                                                    <button
+                                                        onClick={() => setPaymentModes(prev => ({ ...prev, pro: 'choose' }))}
+                                                        disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
+                                                        className={`w-full py-3.5 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black' : 'bg-black hover:bg-neutral-800 text-white'}`}
+                                                    >
+                                                        {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Pro' : 'Get Pro'}
+                                                    </button>
+                                                </div>
+
+                                                {/* Slide 2: Options */}
+                                                <div className="w-1/2 px-1 flex gap-2">
+                                                    <button
+                                                        onClick={() => handleSubscribe('pro', true)}
+                                                        className={`flex-1 py-3.5 font-bold rounded-xl text-[9px] uppercase tracking-wider transition-all active:scale-95 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-black'}`}
+                                                    >
+                                                        One-Time
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSubscribe('pro', false)}
+                                                        className={`flex-1 py-3.5 font-bold rounded-xl text-[9px] uppercase tracking-wider transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                    >
+                                                        Subscribe
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -671,13 +722,36 @@ function SettingsContent() {
                                             )}
                                         </div>
                                     ) : (
-                                        <button
-                                            onClick={() => handleSubscribe('enterprise')}
-                                            disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
-                                            className={`w-full py-3 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black' : 'bg-black hover:bg-neutral-800 text-white'}`}
-                                        >
-                                            {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Enterprise' : 'Get Enterprise'}
-                                        </button>
+                                        <div className="relative overflow-hidden">
+                                            <div className={`transition-transform duration-300 ease-in-out flex w-[200%] ${paymentModes['enterprise'] === 'choose' ? '-translate-x-1/2' : 'translate-x-0'}`}>
+                                                {/* Slide 1: Main Button */}
+                                                <div className="w-1/2 px-1">
+                                                    <button
+                                                        onClick={() => setPaymentModes(prev => ({ ...prev, enterprise: 'choose' }))}
+                                                        disabled={isLoading || (subscription?.status === 'active' && !isAutoRenew)}
+                                                        className={`w-full py-3 font-black rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'bg-white hover:bg-neutral-200 text-black' : 'bg-black hover:bg-neutral-800 text-white'}`}
+                                                    >
+                                                        {isLoading ? <Loader2 className="animate-spin" size={14} /> : subscription?.status === 'active' ? 'Switch to Enterprise' : 'Get Enterprise'}
+                                                    </button>
+                                                </div>
+
+                                                {/* Slide 2: Options */}
+                                                <div className="w-1/2 px-1 flex gap-2">
+                                                    <button
+                                                        onClick={() => handleSubscribe('enterprise', true)}
+                                                        className={`flex-1 py-3 font-bold rounded-xl text-[9px] uppercase tracking-wider transition-all active:scale-95 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-black'}`}
+                                                    >
+                                                        One-Time
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSubscribe('enterprise', false)}
+                                                        className={`flex-1 py-3 font-bold rounded-xl text-[9px] uppercase tracking-wider transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                    >
+                                                        Subscribe
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>

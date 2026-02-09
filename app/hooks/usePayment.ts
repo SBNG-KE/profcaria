@@ -10,6 +10,7 @@ interface PaymentConfig {
 interface StartPaymentArgs {
     plan: string;
     isAd?: boolean;
+    isOneTime?: boolean; // One-time payment (no auto-renewal)
     postId?: string; // New Arg
     budget?: number; // New Arg for custom boost
     duration?: number; // New Arg for custom boost
@@ -20,14 +21,14 @@ interface StartPaymentArgs {
 export function usePayment() {
     const [isLoading, setIsLoading] = useState(false);
 
-    const startPayment = async ({ plan, isAd, postId, budget, duration, onSuccess, onError }: StartPaymentArgs) => {
+    const startPayment = async ({ plan, isAd, isOneTime, postId, budget, duration, onSuccess, onError }: StartPaymentArgs) => {
         setIsLoading(true);
         try {
             // 1. Call Backend to Initialize
             const res = await fetch('/api/payments/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan, isAd, postId, budget, duration })
+                body: JSON.stringify({ plan, isAd, isOneTime, postId, budget, duration })
             });
 
             const data = await res.json();

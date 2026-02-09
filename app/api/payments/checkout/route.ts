@@ -28,7 +28,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { plan, isAd, budget, duration, postId } = await req.json(); // plan can be plan name OR ad package ID
+        const { plan, isAd, isOneTime, budget, duration, postId } = await req.json(); // plan can be plan name OR ad package ID
 
         // We strictly use the fixed USD_EXCHANGE_RATE from env now as requested.
         let exchangeRate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
@@ -40,7 +40,8 @@ export async function POST(req: Request) {
             userId: user.uid,
             entityType: user.schema,
             plan: plan,
-            postId: postId // Add Post ID to metadata
+            postId: postId, // Add Post ID to metadata
+            isOneTime: isOneTime || false // Track if this is a one-time payment
         };
 
         if (isAd) {
@@ -81,14 +82,20 @@ export async function POST(req: Request) {
                     }
                 };
                 priceUSD = getPrice(plan);
-                planCodeEnvKey = `PAYSTACK_PLAN_${plan.toUpperCase()}_MONTHLY`;
+                // Only set plan code for recurring subscriptions, NOT one-time payments
+                if (!isOneTime) {
+                    planCodeEnvKey = `PAYSTACK_PLAN_${plan.toUpperCase()}_MONTHLY`;
+                }
             } else {
                 // Professional
                 const profPlan = Object.values(PROFESSIONAL_PLANS).find(p => p.name.toLowerCase() === plan.toLowerCase());
                 if (!profPlan) return NextResponse.json({ error: 'Invalid Professional Plan' }, { status: 400 });
                 priceUSD = profPlan.priceMonthly;
-                // e.g. PAYSTACK_PLAN_PROF_STANDARD_MONTHLY
-                planCodeEnvKey = `PAYSTACK_PLAN_PROF_${plan.toUpperCase()}_MONTHLY`;
+                // Only set plan code for recurring subscriptions, NOT one-time payments
+                if (!isOneTime) {
+                    // e.g. PAYSTACK_PLAN_PROF_STANDARD_MONTHLY
+                    planCodeEnvKey = `PAYSTACK_PLAN_PROF_${plan.toUpperCase()}_MONTHLY`;
+                }
             }
 
             // --- PRORATED PLAN SWITCHING ---
