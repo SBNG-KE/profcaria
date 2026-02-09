@@ -5,7 +5,8 @@ import {
     X, UserCircle, Briefcase, Mail, FileText,
     Download, User, Building2, GraduationCap,
     BadgeCheck, Phone, MapPin, Award, Globe,
-    BookOpen, Linkedin, Github, Copy, Check, Twitter
+    BookOpen, Linkedin, Github, Copy, Check, Twitter,
+    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -47,6 +48,21 @@ interface ProfileData {
     }
 }
 
+interface VerifiedEmployment {
+    id: string;
+    companyId: string;
+    companyName: string;
+    companyLogo: string | null;
+    companyEmail: string | null;
+    companyPhone: string | null;
+    jobTitle: string;
+    startDate: string;
+    endDate: string;
+    terminationType: 'involuntary' | 'resignation' | 'mutual' | null;
+    terminationReason: string | null;
+    status: string;
+}
+
 export default function EmployerProfileViewModal({
     applicationId,
     onClose
@@ -59,11 +75,16 @@ export default function EmployerProfileViewModal({
 
     const [data, setData] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'profile' | 'documents'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'documents' | 'references'>('profile');
     const [activeDocumentType, setActiveDocumentType] = useState<string | null>(null);
     const [activeUploadedDocId, setActiveUploadedDocId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copiedField, setCopiedField] = useState<string | null>(null);
+
+    // References state
+    const [verifiedEmployments, setVerifiedEmployments] = useState<VerifiedEmployment[]>([]);
+    const [loadingReferences, setLoadingReferences] = useState(false);
+    const [referencesLoaded, setReferencesLoaded] = useState(false);
 
     const handleCopy = (text: string, field: string) => {
         navigator.clipboard.writeText(text);
@@ -238,7 +259,25 @@ export default function EmployerProfileViewModal({
                             >
                                 <FileText size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> Documents
                             </button>
-                            {/* Job Preferences Tab is REMOVED completely */}
+                            <button
+                                onClick={() => {
+                                    setActiveTab('references');
+                                    if (!referencesLoaded) {
+                                        setLoadingReferences(true);
+                                        fetch(`/api/employer/applications/${applicationId}/references`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                setVerifiedEmployments(data.verifiedEmployments || []);
+                                                setReferencesLoaded(true);
+                                            })
+                                            .catch(err => console.error('Failed to load references:', err))
+                                            .finally(() => setLoadingReferences(false));
+                                    }
+                                }}
+                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'references' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
+                            >
+                                <Users size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> References
+                            </button>
                         </div>
 
                         {/* VIEW: PROFILE INFO */}
@@ -603,6 +642,128 @@ export default function EmployerProfileViewModal({
                                 </div>
                             );
                         })()}
+
+                        {/* VIEW: REFERENCES */}
+                        {activeTab === 'references' && (
+                            <div className="space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+
+                                {/* Info Banner */}
+                                <div className={`p-4 sm:p-6 rounded-[20px] sm:rounded-[32px] border flex items-start gap-4 ${isDark ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-200'}`}>
+                                    <AlertCircle size={24} className={isDark ? 'text-blue-400 shrink-0' : 'text-blue-600 shrink-0'} />
+                                    <div>
+                                        <h3 className={`font-bold text-sm sm:text-base ${isDark ? 'text-blue-400' : 'text-blue-700'}`}>About References</h3>
+                                        <p className={`text-xs sm:text-sm mt-1 ${isDark ? 'text-blue-300/80' : 'text-blue-600'}`}>
+                                            References are from companies registered in Profcaria that verified this professional's employment. Employment verification is recorded when employment ends (resignation, termination, or mutual separation).
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Loading State */}
+                                {loadingReferences && (
+                                    <div className="flex items-center justify-center py-20">
+                                        <div className="w-8 h-8 border-4 border-neutral-700 border-t-white rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+
+                                {/* Empty State */}
+                                {!loadingReferences && verifiedEmployments.length === 0 && (
+                                    <div className={`p-10 sm:p-20 rounded-[24px] sm:rounded-[40px] border text-center ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                        <div className={`mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center mb-4 sm:mb-6 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                            <Building2 size={32} className={`sm:w-10 sm:h-10 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
+                                        </div>
+                                        <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No Verified Employment</h3>
+                                        <p className={`text-xs sm:text-sm font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                            This professional has no verified employment history from other companies in the Profcaria network.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Verified Employment Cards */}
+                                {!loadingReferences && verifiedEmployments.length > 0 && (
+                                    <div className="space-y-4">
+                                        {verifiedEmployments.map((emp) => {
+                                            // Determine termination type display
+                                            const getTerminationInfo = () => {
+                                                switch (emp.terminationType) {
+                                                    case 'resignation':
+                                                        return { icon: <LogOut size={14} />, label: 'Resigned', color: isDark ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-amber-600 bg-amber-50 border-amber-200' };
+                                                    case 'involuntary':
+                                                        return { icon: <UserX size={14} />, label: 'Terminated', color: isDark ? 'text-red-400 bg-red-500/10 border-red-500/20' : 'text-red-600 bg-red-50 border-red-200' };
+                                                    case 'mutual':
+                                                        return { icon: <Handshake size={14} />, label: 'Mutual Separation', color: isDark ? 'text-blue-400 bg-blue-500/10 border-blue-500/20' : 'text-blue-600 bg-blue-50 border-blue-200' };
+                                                    default:
+                                                        return { icon: <Briefcase size={14} />, label: 'Ended', color: isDark ? 'text-neutral-400 bg-neutral-800 border-neutral-700' : 'text-neutral-500 bg-neutral-100 border-neutral-200' };
+                                                }
+                                            };
+                                            const termInfo = getTerminationInfo();
+
+                                            return (
+                                                <div key={emp.id} className={`p-6 sm:p-8 rounded-[24px] sm:rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                                                    <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+                                                        {/* Company Logo */}
+                                                        <div className={`w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl flex items-center justify-center overflow-hidden border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}`}>
+                                                            {emp.companyLogo ? (
+                                                                <img src={emp.companyLogo} alt={emp.companyName} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <Building2 size={24} className={isDark ? 'text-neutral-500' : 'text-neutral-400'} />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Details */}
+                                                        <div className="flex-1 space-y-3">
+                                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                                <div>
+                                                                    <h4 className={`text-lg sm:text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>{emp.companyName}</h4>
+                                                                    <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{emp.jobTitle}</p>
+                                                                </div>
+                                                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] sm:text-xs font-bold uppercase tracking-widest ${termInfo.color}`}>
+                                                                    {termInfo.icon}
+                                                                    <span>{termInfo.label}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Dates */}
+                                                            <div className={`flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                                <span>{new Date(emp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                                                                <span>—</span>
+                                                                <span>{new Date(emp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                                                            </div>
+
+                                                            {/* Termination Reason */}
+                                                            {emp.terminationReason && (
+                                                                <div className={`mt-4 p-4 rounded-xl border ${isDark ? 'bg-neutral-800/50 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}>
+                                                                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Reason for {emp.terminationType === 'resignation' ? 'Resignation' : emp.terminationType === 'involuntary' ? 'Termination' : 'Separation'}</p>
+                                                                    <p className={`text-sm ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>{emp.terminationReason}</p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Contact Info */}
+                                                            <div className={`mt-4 pt-4 border-t flex flex-wrap gap-4 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                                                                {emp.companyEmail && (
+                                                                    <a href={`mailto:${emp.companyEmail}`} className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>
+                                                                        <Mail size={14} />
+                                                                        <span>{emp.companyEmail}</span>
+                                                                    </a>
+                                                                )}
+                                                                {emp.companyPhone && (
+                                                                    <a href={`tel:${emp.companyPhone}`} className={`flex items-center gap-2 text-xs font-medium transition-colors ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}>
+                                                                        <Phone size={14} />
+                                                                        <span>{emp.companyPhone}</span>
+                                                                    </a>
+                                                                )}
+                                                                {!emp.companyEmail && !emp.companyPhone && (
+                                                                    <span className={`text-xs ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>No contact information available</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                     </div>
                 </main>
