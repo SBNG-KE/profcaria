@@ -11,6 +11,7 @@ import {
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTheme } from '@/app/context/ThemeContext';
 import ReferenceRequestModal from './ReferenceRequestModal';
+import ViewReferenceResponseModal from './ViewReferenceResponseModal';
 
 interface ProfileData {
     profile: {
@@ -90,6 +91,11 @@ export default function EmployerProfileViewModal({
     // Reference request modal state
     const [referenceModalOpen, setReferenceModalOpen] = useState(false);
     const [selectedEmploymentForRef, setSelectedEmploymentForRef] = useState<VerifiedEmployment | null>(null);
+
+    // Sent requests and response viewing state
+    const [sentRequests, setSentRequests] = useState<{ id: string; targetCompanyId: string; targetCompanyName: string; status: string; createdAt: string; respondedAt: string | null }[]>([]);
+    const [viewResponseModalOpen, setViewResponseModalOpen] = useState(false);
+    const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
 
     const handleCopy = (text: string, field: string) => {
         navigator.clipboard.writeText(text);
@@ -269,13 +275,22 @@ export default function EmployerProfileViewModal({
                                     setActiveTab('references');
                                     if (!referencesLoaded) {
                                         setLoadingReferences(true);
+                                        // Fetch verified employments
                                         fetch(`/api/employer/applications/${applicationId}/references`)
                                             .then(res => res.json())
                                             .then(data => {
                                                 setVerifiedEmployments(data.verifiedEmployments || []);
+                                            })
+                                            .catch(err => console.error('Failed to load references:', err));
+
+                                        // Fetch sent requests
+                                        fetch(`/api/employer/applications/${applicationId}/references/sent`)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                setSentRequests(data.sentRequests || []);
                                                 setReferencesLoaded(true);
                                             })
-                                            .catch(err => console.error('Failed to load references:', err))
+                                            .catch(err => console.error('Failed to load sent requests:', err))
                                             .finally(() => setLoadingReferences(false));
                                     }
                                 }}
@@ -683,6 +698,54 @@ export default function EmployerProfileViewModal({
                                     </div>
                                 )}
 
+                                {/* Sent Reference Requests Section */}
+                                {!loadingReferences && sentRequests.length > 0 && (
+                                    <div className={`p-6 rounded-[24px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                                        <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                            Your Sent Reference Requests
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {sentRequests.map((req) => {
+                                                const getStatusBadge = () => {
+                                                    switch (req.status) {
+                                                        case 'responded':
+                                                            return { label: 'Responded', color: isDark ? 'text-emerald-400 bg-emerald-500/20' : 'text-emerald-600 bg-emerald-50' };
+                                                        case 'viewed':
+                                                            return { label: 'Viewed', color: isDark ? 'text-blue-400 bg-blue-500/20' : 'text-blue-600 bg-blue-50' };
+                                                        case 'sent':
+                                                            return { label: 'Sent', color: isDark ? 'text-yellow-400 bg-yellow-500/20' : 'text-yellow-600 bg-yellow-50' };
+                                                        case 'declined':
+                                                            return { label: 'Declined', color: isDark ? 'text-red-400 bg-red-500/20' : 'text-red-600 bg-red-50' };
+                                                        default:
+                                                            return { label: 'Pending', color: isDark ? 'text-neutral-400 bg-neutral-500/20' : 'text-neutral-600 bg-neutral-100' };
+                                                    }
+                                                };
+                                                const statusBadge = getStatusBadge();
+                                                return (
+                                                    <div key={req.id} className={`flex items-center justify-between p-4 rounded-xl border ${isDark ? 'bg-neutral-800/50 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <Building2 size={16} className={isDark ? 'text-neutral-500' : 'text-neutral-400'} />
+                                                            <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>{req.targetCompanyName}</span>
+                                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${statusBadge.color}`}>{statusBadge.label}</span>
+                                                        </div>
+                                                        {req.status === 'responded' && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedRequestId(req.id);
+                                                                    setViewResponseModalOpen(true);
+                                                                }}
+                                                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                            >
+                                                                View Response
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Verified Employment Cards */}
                                 {!loadingReferences && verifiedEmployments.length > 0 && (
                                     <div className="space-y-4">
@@ -800,6 +863,18 @@ export default function EmployerProfileViewModal({
                     }}
                     applicationId={applicationId}
                     employment={selectedEmploymentForRef}
+                />
+            )}
+
+            {/* View Reference Response Modal */}
+            {selectedRequestId && (
+                <ViewReferenceResponseModal
+                    isOpen={viewResponseModalOpen}
+                    onClose={() => {
+                        setViewResponseModalOpen(false);
+                        setSelectedRequestId(null);
+                    }}
+                    referenceId={selectedRequestId}
                 />
             )}
         </div>
