@@ -190,7 +190,7 @@ function ApplicationsPageContent() {
         <div className={`p-4 md:p-8 h-screen flex flex-col overflow-hidden ${isDark ? 'bg-black text-white' : 'bg-neutral-50 text-black'}`}>
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 shrink-0 mb-8">
                 <div className="text-left">
-                    <div className="flex items-center gap-2 text-emerald-500 mb-2">
+                    <div className={`flex items-center gap-2 mb-2 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                         <FileText size={16} />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Applicant Tracking</span>
                     </div>
@@ -218,7 +218,7 @@ function ApplicationsPageContent() {
                             <input
                                 type="text"
                                 placeholder="Search..."
-                                className={`w-full rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-emerald-500/50 border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                className={`w-full rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:border-neutral-500' : 'bg-neutral-50 border-neutral-200 text-black focus:border-neutral-400'}`}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -229,7 +229,7 @@ function ApplicationsPageContent() {
                                     key={s}
                                     onClick={() => setStatusFilter(s)}
                                     className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${statusFilter === s
-                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
+                                        ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
                                         : (isDark ? 'bg-neutral-800 text-neutral-500 border-transparent hover:border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-transparent hover:border-neutral-300')
                                         }`}
                                 >
@@ -250,8 +250,8 @@ function ApplicationsPageContent() {
                                     key={app.id}
                                     onClick={() => handleSelectApp(app)}
                                     className={`w-full text-left p-4 rounded-2xl border transition-all group relative ${selectedApp?.id === app.id
-                                        ? (isDark ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-emerald-50 border-emerald-200')
-                                        : (isDark ? 'bg-neutral-900/50 border-neutral-800 hover:border-emerald-500/20' : 'bg-white border-neutral-100 hover:border-emerald-500/20 shadow-sm')
+                                        ? (isDark ? 'bg-neutral-800 border-neutral-600' : 'bg-neutral-100 border-neutral-400')
+                                        : (isDark ? 'bg-neutral-900/50 border-neutral-800 hover:border-neutral-600' : 'bg-white border-neutral-100 hover:border-neutral-400 shadow-sm')
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">
@@ -328,13 +328,13 @@ function ApplicationsPageContent() {
                             <div className={`flex border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                                 <button
                                     onClick={() => setActiveTab('profile')}
-                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-neutral-800 text-white border-b-2 border-emerald-500' : 'bg-neutral-50 text-black border-b-2 border-emerald-500') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black')}`}
+                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-neutral-800 text-white border-b-2 border-white' : 'bg-neutral-50 text-black border-b-2 border-black') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black')}`}
                                 >
                                     Details & Actions
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('chat')}
-                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'chat' ? (isDark ? 'bg-neutral-800 text-white border-b-2 border-emerald-500' : 'bg-neutral-50 text-black border-b-2 border-emerald-500') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black')}`}
+                                    className={`flex-1 py-4 text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'chat' ? (isDark ? 'bg-neutral-800 text-white border-b-2 border-white' : 'bg-neutral-50 text-black border-b-2 border-black') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black')}`}
                                 >
                                     Messages
                                 </button>
@@ -347,7 +347,7 @@ function ApplicationsPageContent() {
                                         {/* 1. Application Questions (Form Data) - FIRST */}
                                         {selectedApp.formData && Object.keys(selectedApp.formData).length > 0 && (
                                             <div className="space-y-4">
-                                                <h3 className={`text-xs font-black uppercase tracking-widest border-b pb-2 flex items-center gap-2 ${isDark ? 'text-emerald-400 border-neutral-800' : 'text-emerald-600 border-neutral-200'}`}>
+                                                <h3 className={`text-xs font-black uppercase tracking-widest border-b pb-2 flex items-center gap-2 ${isDark ? 'text-neutral-300 border-neutral-800' : 'text-neutral-700 border-neutral-200'}`}>
                                                     <FileText size={14} /> Application Answers
                                                 </h3>
                                                 {Object.entries(selectedApp.formData).map(([key, value]) => (
@@ -369,7 +369,7 @@ function ApplicationsPageContent() {
 
                                         {/* 2. Candidate Profile - SECOND */}
                                         <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-                                            <h3 className={`text-xs font-black uppercase tracking-widest border-b pb-2 ${isDark ? 'text-emerald-500 border-neutral-800' : 'text-emerald-600 border-neutral-200'}`}>Candidate Profile</h3>
+                                            <h3 className={`text-xs font-black uppercase tracking-widest border-b pb-2 ${isDark ? 'text-neutral-300 border-neutral-800' : 'text-neutral-700 border-neutral-200'}`}>Candidate Profile</h3>
 
                                             {/* Contact Information */}
                                             {((selectedApp.user as any).email || (selectedApp.user as any).phone) && (
@@ -505,7 +505,7 @@ function ApplicationsPageContent() {
                                                 onChange={(e) => setNewMessage(e.target.value)}
                                                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                                 placeholder="Type a message..."
-                                                className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                                className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-400/50'}`}
                                             />
                                             <button
                                                 onClick={handleSendMessage}

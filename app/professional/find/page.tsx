@@ -392,91 +392,17 @@ export default function FindJobsPage() {
                         <span className="text-[10px] font-black uppercase tracking-widest">Filters</span>
                     </div>
 
-                    {/* Role Category Filter */}
-                    <div className="relative" ref={categoryDropdownRef}>
-                        <button
-                            onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-xs font-bold ${selectedCategory !== 'all'
-                                    ? isDark
-                                        ? 'bg-blue-600/10 border-blue-500/30 text-blue-400'
-                                        : 'bg-blue-50 border-blue-200 text-blue-600'
-                                    : isDark
-                                        ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'
-                                        : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:border-neutral-400'
-                                }`}
-                        >
-                            <Briefcase size={14} />
-                            <span className="uppercase tracking-wider">
-                                {selectedCategory === 'all' ? 'All Roles' : categoryOptions.find(c => c.value === selectedCategory)?.label || selectedCategory}
-                            </span>
-                            <ChevronDown size={14} className={`transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {isCategoryDropdownOpen && (
-                            <div className={`absolute top-full left-0 mt-2 w-64 border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                <div className={`p-2 border-b sticky top-0 z-10 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                    <div className="relative">
-                                        <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`} />
-                                        <input
-                                            type="text"
-                                            value={categorySearch}
-                                            onChange={(e) => setCategorySearch(e.target.value)}
-                                            placeholder="Search roles..."
-                                            className={`w-full rounded-lg pl-9 pr-4 py-2 text-sm font-medium focus:outline-none focus:ring-1 ${isDark ? 'bg-neutral-800 text-white placeholder:text-neutral-600 focus:ring-neutral-700' : 'bg-neutral-100 text-black placeholder:text-neutral-400 focus:ring-neutral-300'}`}
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="max-h-[240px] overflow-y-auto p-1">
-                                    <button
-                                        onClick={() => {
-                                            setSelectedCategory('all');
-                                            setIsCategoryDropdownOpen(false);
-                                            setCategorySearch('');
-                                        }}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${selectedCategory === 'all'
-                                                ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
-                                                : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
-                                            }`}
-                                    >
-                                        <span>All Roles</span>
-                                        {selectedCategory === 'all' && <Check size={14} />}
-                                    </button>
-                                    {categoryOptions
-                                        .filter(opt => opt.label.toLowerCase().includes(categorySearch.toLowerCase()))
-                                        .map(opt => (
-                                            <button
-                                                key={opt.value}
-                                                onClick={() => {
-                                                    setSelectedCategory(opt.value);
-                                                    setIsCategoryDropdownOpen(false);
-                                                    setCategorySearch('');
-                                                }}
-                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${selectedCategory === opt.value
-                                                        ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
-                                                        : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
-                                                    }`}
-                                            >
-                                                <span>{opt.label}</span>
-                                                {selectedCategory === opt.value && <Check size={14} />}
-                                            </button>
-                                        ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
                     {/* Location Type Filter */}
                     <div className="relative" ref={locationDropdownRef}>
                         <button
                             onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-xs font-bold ${locationFilter !== 'all'
-                                    ? isDark
-                                        ? 'bg-emerald-600/10 border-emerald-500/30 text-emerald-400'
-                                        : 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                                    : isDark
-                                        ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'
-                                        : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:border-neutral-400'
+                                ? isDark
+                                    ? 'bg-emerald-600/10 border-emerald-500/30 text-emerald-400'
+                                    : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                : isDark
+                                    ? 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:border-neutral-600'
+                                    : 'bg-neutral-100 border-neutral-200 text-neutral-600 hover:border-neutral-400'
                                 }`}
                         >
                             <MapPin size={14} />
@@ -497,8 +423,8 @@ export default function FindJobsPage() {
                                                 setIsLocationDropdownOpen(false);
                                             }}
                                             className={`w-full text-left px-3 py-2 rounded-lg text-sm font-bold transition-all flex items-center justify-between ${locationFilter === loc
-                                                    ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
-                                                    : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
+                                                ? isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black'
+                                                : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'
                                                 }`}
                                         >
                                             <span className="flex items-center gap-2">
@@ -516,10 +442,9 @@ export default function FindJobsPage() {
                     </div>
 
                     {/* Clear Filters Button */}
-                    {(selectedCategory !== 'all' || locationFilter !== 'all') && (
+                    {locationFilter !== 'all' && (
                         <button
                             onClick={() => {
-                                setSelectedCategory('all');
                                 setLocationFilter('all');
                             }}
                             className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold transition-all ${isDark ? 'text-neutral-500 hover:text-white hover:bg-neutral-800' : 'text-neutral-500 hover:text-black hover:bg-neutral-100'}`}
