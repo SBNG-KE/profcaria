@@ -295,7 +295,7 @@ export default function ViewApplicationsPage() {
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); openChat(app); }}
+                                            onClick={(e) => { e.stopPropagation(); router.push('/employer/notifications'); }}
                                             className="p-3 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/20 transition-all active:scale-90"
                                         >
                                             <Send size={16} />
@@ -318,7 +318,7 @@ export default function ViewApplicationsPage() {
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2">
                                         <button
-                                            onClick={() => openChat(selectedApp)}
+                                            onClick={() => router.push('/employer/notifications')}
                                             className="px-4 py-2.5 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600/20 transition-all whitespace-nowrap"
                                         >
                                             <Send size={12} className="inline mr-1.5" />
