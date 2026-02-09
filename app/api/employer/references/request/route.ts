@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Predefined reference questions
-export const REFERENCE_QUESTIONS = [
+const REFERENCE_QUESTIONS = [
     { id: 'work_quality', label: 'How would you rate the quality of their work?' },
     { id: 'reliability', label: 'Was this person reliable and punctual?' },
     { id: 'teamwork', label: 'How well did they work with others?' },
