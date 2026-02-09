@@ -131,7 +131,7 @@ function ApplicationsPageContent() {
 
     const handleOpenMessages = () => {
         if (selectedApp) {
-            router.push(`/employer/messages?applicationId=${selectedApp.id}`);
+            router.push(`/employer/notifications`);
         }
     };
 
