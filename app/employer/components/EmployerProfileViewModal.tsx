@@ -6,10 +6,11 @@ import {
     Download, User, Building2, GraduationCap,
     BadgeCheck, Phone, MapPin, Award, Globe,
     BookOpen, Linkedin, Github, Copy, Check, Twitter,
-    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake
+    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake, MessageSquare
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTheme } from '@/app/context/ThemeContext';
+import ReferenceRequestModal from './ReferenceRequestModal';
 
 interface ProfileData {
     profile: {
@@ -85,6 +86,10 @@ export default function EmployerProfileViewModal({
     const [verifiedEmployments, setVerifiedEmployments] = useState<VerifiedEmployment[]>([]);
     const [loadingReferences, setLoadingReferences] = useState(false);
     const [referencesLoaded, setReferencesLoaded] = useState(false);
+
+    // Reference request modal state
+    const [referenceModalOpen, setReferenceModalOpen] = useState(false);
+    const [selectedEmploymentForRef, setSelectedEmploymentForRef] = useState<VerifiedEmployment | null>(null);
 
     const handleCopy = (text: string, field: string) => {
         navigator.clipboard.writeText(text);
@@ -755,6 +760,22 @@ export default function EmployerProfileViewModal({
                                                                     <span className={`text-xs ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>No contact information available</span>
                                                                 )}
                                                             </div>
+
+                                                            {/* Ask for Reference Button */}
+                                                            {emp.companyEmail && (
+                                                                <div className="mt-4 pt-4 border-t flex justify-end" style={{ borderColor: isDark ? '#262626' : '#e5e5e5' }}>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSelectedEmploymentForRef(emp);
+                                                                            setReferenceModalOpen(true);
+                                                                        }}
+                                                                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                                                    >
+                                                                        <MessageSquare size={14} />
+                                                                        Ask for Reference
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -768,6 +789,19 @@ export default function EmployerProfileViewModal({
                     </div>
                 </main>
             </div>
+
+            {/* Reference Request Modal */}
+            {selectedEmploymentForRef && (
+                <ReferenceRequestModal
+                    isOpen={referenceModalOpen}
+                    onClose={() => {
+                        setReferenceModalOpen(false);
+                        setSelectedEmploymentForRef(null);
+                    }}
+                    applicationId={applicationId}
+                    employment={selectedEmploymentForRef}
+                />
+            )}
         </div>
     );
 }
