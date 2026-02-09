@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, Send, UserCircle, Building2, ChevronLeft
+    FileText, Search, User, CheckCircle2, XCircle, Clock, ExternalLink, X, Briefcase, Filter, UserCircle, Building2, ChevronLeft, MessageSquare
 } from 'lucide-react';
 import VerificationBadge from '@/app/components/VerificationBadge';
 import ScrollableContainer from '@/app/components/ScrollableContainer';
@@ -47,12 +47,6 @@ function ApplicationsPageContent() {
     const [activeTab, setActiveTab] = useState<'profile' | 'chat'>('profile');
     const [viewingArtifact, setViewingArtifact] = useState<string | null>(null);
 
-    // Chat State
-    const [chatMessages, setChatMessages] = useState<any[]>([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [isSending, setIsSending] = useState(false);
-    const chatEndRef = useRef<HTMLDivElement>(null);
-
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -65,12 +59,7 @@ function ApplicationsPageContent() {
         fetchApplications();
     }, []);
 
-    // Scroll chat to bottom
-    useEffect(() => {
-        if (activeTab === 'chat' && chatEndRef.current) {
-            chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [chatMessages, activeTab]);
+
 
     const fetchApplications = async () => {
         try {
@@ -95,11 +84,7 @@ function ApplicationsPageContent() {
                     setSelectedApp(prev => prev ? { ...prev, ...data.application } : data.application);
                 }
             }
-            const msgRes = await fetch(`/api/shared/messages?applicationId=${appId}`);
-            if (msgRes.ok) {
-                const msgData = await msgRes.json();
-                setChatMessages(msgData.messages || []);
-            }
+
         } catch (error) {
             console.error('Error fetching details:', error);
         }
@@ -144,27 +129,9 @@ function ApplicationsPageContent() {
         setConfirmModal({ isOpen: false, type: null, appId: null });
     };
 
-    const handleSendMessage = async () => {
-        if (!newMessage.trim() || !selectedApp || isSending) return;
-        setIsSending(true);
-        try {
-            const res = await fetch('/api/shared/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    applicationId: selectedApp.id,
-                    content: newMessage
-                })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setChatMessages([...chatMessages, { ...data.message, content: newMessage }]);
-                setNewMessage('');
-            }
-        } catch (error) {
-            console.error("Error sending message", error);
-        } finally {
-            setIsSending(false);
+    const handleOpenMessages = () => {
+        if (selectedApp) {
+            router.push(`/employer/messages?applicationId=${selectedApp.id}`);
         }
     };
 
@@ -471,51 +438,23 @@ function ApplicationsPageContent() {
                                 </ScrollableContainer>
 
                             ) : (
-                                <div className="flex flex-col h-full">
-                                    <ScrollableContainer className="p-6 space-y-4">
-                                        {chatMessages.length === 0 ? (
-                                            <div className={`text-center py-10 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No messages yet.</div>
-                                        ) : (
-                                            chatMessages.map((msg, i) => {
-                                                const isMe = msg.sender_type === 'employer';
-                                                return (
-                                                    <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                                        <div className={`max-w-[80%] space-y-1 ${isMe ? 'text-right' : 'text-left'}`}>
-                                                            <div className={`p-4 rounded-[24px] text-sm font-medium ${isMe
-                                                                ? (isDark ? 'bg-neutral-800 text-white rounded-br-none' : 'bg-black text-white rounded-br-none')
-                                                                : (isDark ? 'bg-neutral-900 border border-neutral-800 text-neutral-300 rounded-bl-none' : 'bg-neutral-100 text-neutral-700 rounded-bl-none')
-                                                                }`}>
-                                                                {msg.content}
-                                                            </div>
-                                                            <p className={`text-[8px] font-bold uppercase tracking-widest px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                                                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })
-                                        )}
-                                        <div ref={chatEndRef} />
-                                    </ScrollableContainer>
-                                    <div className={`p-4 border-t mt-auto ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={newMessage}
-                                                onChange={(e) => setNewMessage(e.target.value)}
-                                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                                placeholder="Type a message..."
-                                                className={`w-full rounded-xl px-4 py-3 focus:outline-none focus:ring-2 border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-400/50'}`}
-                                            />
-                                            <button
-                                                onClick={handleSendMessage}
-                                                disabled={!newMessage.trim() || isSending}
-                                                className={`absolute right-2 top-2 bottom-2 w-10 rounded-lg flex items-center justify-center disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
-                                            >
-                                                <Send size={16} />
-                                            </button>
-                                        </div>
+                                <div className="flex flex-col h-full items-center justify-center p-8 space-y-4">
+                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                        <MessageSquare size={28} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
                                     </div>
+                                    <div className="text-center space-y-2">
+                                        <h3 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-black'}`}>Message {selectedApp.user.name.split(' ')[0]}</h3>
+                                        <p className={`text-xs max-w-[200px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                            Chat with this applicant in the messages hub for a better experience.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={handleOpenMessages}
+                                        className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                    >
+                                        <MessageSquare size={16} />
+                                        Open Conversation
+                                    </button>
                                 </div>
                             )}
                         </div>
