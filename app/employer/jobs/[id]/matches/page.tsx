@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, MapPin, Briefcase, Star, Send, CheckCircle, Zap } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
+import MatchCard from '@/app/components/employer/MatchCard';
+import { Zap, Search, Users, CheckCircle2 } from 'lucide-react';
 
 interface Candidate {
     id: string;
@@ -18,23 +19,30 @@ interface Candidate {
         relocation: boolean;
     };
     invited: boolean;
+    inviteStatus: string | null;
 }
 
 export default function JobMatchesPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const params = useParams();
-    const useRouterHook = useRouter();
+    const router = useRouter();
+
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [invitingId, setInvitingId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'suggestions' | 'invited'>('suggestions');
+
+    // Limits
     const [isLimitReached, setIsLimitReached] = useState(false);
     const [limitCount, setLimitCount] = useState(0);
+
+    const jobId = params.id as string;
 
     useEffect(() => {
         const fetchMatches = async () => {
             try {
-                const res = await fetch(`/api/employer/jobs/${params.id}/matches`);
+                const res = await fetch(`/api/employer/jobs/${jobId}/matches`);
                 if (res.ok) {
                     const data = await res.json();
                     setCandidates(data.candidates || []);
@@ -48,13 +56,13 @@ export default function JobMatchesPage() {
             }
         };
 
-        fetchMatches();
-    }, [params.id]);
+        if (jobId) fetchMatches();
+    }, [jobId]);
 
-    const handleInvite = async (candidateId: string) => {
+    const handleInvite = async (candidateId: string, isReminder = false) => {
         setInvitingId(candidateId);
         try {
-            const res = await fetch(`/api/employer/jobs/${params.id}/invite`, {
+            const res = await fetch(`/api/employer/jobs/${jobId}/invite`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ professionalId: candidateId })
@@ -63,10 +71,15 @@ export default function JobMatchesPage() {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                setCandidates(prev => prev.map(c => c.id === candidateId ? { ...c, invited: true } : c));
+                // Update local state
+                setCandidates(prev => prev.map(c =>
+                    c.id === candidateId ? { ...c, invited: true, inviteStatus: 'pending' } : c
+                ));
+                if (isReminder) {
+                    alert("Reminder sent successfully!");
+                }
             } else {
                 alert(`Failed to send invite: ${data.error || 'Unknown error'}`);
-                console.error("Invite response error", data);
             }
         } catch (e: any) {
             console.error("Invite error", e);
@@ -76,115 +89,100 @@ export default function JobMatchesPage() {
         }
     };
 
+    // Derived Lists
+    const suggestions = useMemo(() => candidates.filter(c => !c.invited), [candidates]);
+    const invitedCandidates = useMemo(() => candidates.filter(c => c.invited), [candidates]);
+
+    const displayedCandidates = activeTab === 'suggestions' ? suggestions : invitedCandidates;
+
     return (
-        <div className={`p-8 max-w-5xl mx-auto min-h-screen pb-32 font-sans ${isDark ? 'bg-black text-white' : 'bg-neutral-50 text-black'}`}>
-            <header className="flex items-center gap-6 mb-12 animate-in fade-in slide-in-from-top-4">
+        <div className={`p-8 max-w-7xl mx-auto min-h-screen pb-32 font-sans ${isDark ? 'bg-black text-white' : 'bg-neutral-50 text-black'}`}>
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-in fade-in slide-in-from-top-4">
                 <div>
                     <h1 className={`text-3xl font-black uppercase tracking-tight flex items-center gap-3 ${isDark ? 'text-white' : 'text-black'}`}>
-                        <Zap className={isDark ? 'text-white' : 'text-black'} fill="currentColor" />
+                        <Zap className="fill-current text-amber-400" />
                         Top Matches
                     </h1>
                     <p className={`mt-1 font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                        Candidates for your job. Invite them to get instant attention.
+                        AI-curated candidates for your role.
                     </p>
                 </div>
             </header>
 
+            {/* Tabs */}
+            <div className="flex items-center gap-1 mb-8 border-b border-neutral-800">
+                <button
+                    onClick={() => setActiveTab('suggestions')}
+                    className={`
+                        px-6 py-4 text-sm font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2
+                        ${activeTab === 'suggestions'
+                            ? (isDark ? 'border-amber-400 text-white' : 'border-black text-black')
+                            : 'border-transparent text-neutral-500 hover:text-neutral-300'}
+                    `}
+                >
+                    <Search size={16} />
+                    Suggestions ({suggestions.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('invited')}
+                    className={`
+                        px-6 py-4 text-sm font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2
+                        ${activeTab === 'invited'
+                            ? (isDark ? 'border-emerald-500 text-white' : 'border-emerald-600 text-black')
+                            : 'border-transparent text-neutral-500 hover:text-neutral-300'}
+                    `}
+                >
+                    <CheckCircle2 size={16} />
+                    Invited ({invitedCandidates.length})
+                </button>
+            </div>
+
             {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                    <div className={`w-12 h-12 border-4 border-t-transparent rounded-full animate-spin ${isDark ? 'border-white' : 'border-black'}`} />
-                    <p className={`font-bold uppercase tracking-widest text-xs animate-pulse ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Analyzing Profiles...</p>
+                <div className="flex flex-col items-center justify-center py-32 space-y-4">
+                    <div className={`w-12 h-12 border-4 border-t-transparent rounded-full animate-spin ${isDark ? 'border-neutral-700 border-t-white' : 'border-neutral-200 border-t-black'}`} />
+                    <p className={`font-bold uppercase tracking-widest text-xs animate-pulse ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Finding best matches...</p>
                 </div>
-            ) : candidates.length === 0 ? (
-                <div className={`text-center py-20 rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                    <User size={48} className={`mx-auto mb-4 ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`} />
-                    <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-black'}`}>No Matches Found Yet</h3>
+            ) : displayedCandidates.length === 0 ? (
+                <div className={`text-center py-32 rounded-[32px] border border-dashed ${isDark ? 'border-neutral-800' : 'border-neutral-300'}`}>
+                    <Users size={48} className={`mx-auto mb-4 opacity-20 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`} />
+                    <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                        {activeTab === 'suggestions' ? 'No New Suggestions' : 'No Candidates Invited Yet'}
+                    </h3>
                     <p className={`max-w-md mx-auto ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                        We couldn't find strong matches for this role right now. Check back later as new professionals join!
+                        {activeTab === 'suggestions'
+                            ? "We've analyzed the talent pool and couldn't find more strong matches right now. Check back later!"
+                            : "You haven't invited anyone from the Top Matches list yet."}
                     </p>
                 </div>
             ) : (
-                <div className="grid gap-6">
-                    {candidates.map((candidate, i) => (
-                        <div
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                    {displayedCandidates.map((candidate) => (
+                        <MatchCard
                             key={candidate.id}
-                            style={{ animationDelay: `${i * 100}ms` }}
-                            className={`group p-6 rounded-[24px] border transition-all flex flex-col md:flex-row gap-6 items-center animate-in fade-in slide-in-from-bottom-4 ${isDark
-                                ? 'bg-neutral-900/50 border-neutral-800 hover:border-neutral-700'
-                                : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm'
-                                }`}
-                        >
-                            {/* Score Badge */}
-                            <div className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl border shrink-0 transition-all ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}`}>
-                                <span className={`text-2xl font-black ${candidate.score >= 80 ? (isDark ? 'text-white' : 'text-black') : (isDark ? 'text-neutral-300' : 'text-neutral-500')}`}>
-                                    {candidate.score}%
-                                </span>
-                                <span className={`text-[9px] font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Match</span>
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex-1 text-center md:text-left space-y-2">
-                                <h3 className={`text-xl font-bold transition-colors ${isDark ? 'text-white group-hover:text-neutral-200' : 'text-black group-hover:text-neutral-700'}`}>
-                                    {candidate.name}
-                                </h3>
-                                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                                    <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
-                                        <Briefcase size={12} /> {candidate.role}
-                                    </span>
-                                    <span className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
-                                        <MapPin size={12} /> {candidate.location || 'Unknown Location'}
-                                    </span>
-                                </div>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {candidate.matchBreakdown.role && <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-200 text-neutral-700'}`}>Role Match</span>}
-                                    {candidate.matchBreakdown.location && <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-200 text-neutral-700'}`}>Local</span>}
-                                    {candidate.matchBreakdown.relocation && <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-200 text-neutral-700'}`}>Relocation</span>}
-                                </div>
-                            </div>
-
-                            {/* Action */}
-                            <button
-                                onClick={() => handleInvite(candidate.id)}
-                                disabled={candidate.invited || invitingId === candidate.id}
-                                className={`
-                                    flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all
-                                    ${candidate.invited
-                                        ? (isDark ? 'bg-neutral-800 text-neutral-500 border border-neutral-700 cursor-default' : 'bg-neutral-100 text-neutral-400 border border-neutral-200 cursor-default')
-                                        : (isDark ? 'bg-white hover:bg-neutral-200 text-black shadow-lg shadow-white/10 active:scale-95' : 'bg-black hover:bg-neutral-800 text-white shadow-lg active:scale-95')
-                                    }
-                                `}
-                            >
-                                {candidate.invited ? (
-                                    <>
-                                        <CheckCircle size={16} /> Invited
-                                    </>
-                                ) : invitingId === candidate.id ? (
-                                    <>Sending...</>
-                                ) : (
-                                    <>
-                                        <Send size={16} /> Invite
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                            {...candidate}
+                            isLoading={invitingId === candidate.id}
+                            onInvite={() => handleInvite(candidate.id, false)}
+                            onRemind={() => handleInvite(candidate.id, true)}
+                        />
                     ))}
                 </div>
             )}
-            {!isLoading && isLimitReached && candidates.length > 0 && (
-                <div className={`mt-8 p-6 rounded-2xl flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4 border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                        <Star className={isDark ? 'text-white' : 'text-black'} size={24} />
+
+            {!isLoading && isLimitReached && activeTab === 'suggestions' && candidates.length > 0 && (
+                <div className={`mt-12 p-8 rounded-3xl flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4 border bg-gradient-to-b ${isDark ? 'from-neutral-900 to-black border-neutral-800' : 'from-white to-neutral-50 border-neutral-200 shadow-xl'}`}>
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                        <Zap className="text-amber-400 fill-current" size={32} />
                     </div>
-                    <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                        Matches Limited by Plan
+                    <h3 className={`text-2xl font-black mb-2 uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
+                        Unlock More Matches
                     </h3>
-                    <p className={`max-w-lg mb-6 text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                        You are seeing the top {limitCount} candidates allowed by your current plan.
-                        Upgrade to Enterprise or check back next month to see more matches.
+                    <p className={`max-w-lg mb-8 text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                        You've reached the limit of {limitCount} top matches for your current plan.
+                        Upgrade to Enterprise to access the full talent pool.
                     </p>
                     <button
-                        onClick={() => useRouterHook.push('/employer/settings')}
-                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${isDark ? 'bg-white hover:bg-neutral-200 text-black' : 'bg-black hover:bg-neutral-800 text-white'}`}
+                        onClick={() => router.push('/employer/settings')}
+                        className={`px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
                     >
                         Upgrade Plan
                     </button>

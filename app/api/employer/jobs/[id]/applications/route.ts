@@ -58,10 +58,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return acc;
         }, {});
 
+        // Fetch invites for these applicants
+        const { data: invites } = await supabaseAdmin
+            .schema('employer')
+            .from('job_invites')
+            .select('professional_id')
+            .eq('job_id', jobId)
+            .in('professional_id', applicantIds);
+
+        const invitedSet = new Set(invites?.map((i: { professional_id: any; }) => i.professional_id));
+
         const decryptedApplications = applications?.map((app: { enc_form_data: string; user_id: string | number; }) => ({
             ...app,
             formData: JSON.parse(decryptData(app.enc_form_data) || '{}'),
-            applicant: usersMap[app.user_id] || { firstName: 'Unknown', lastName: 'User' }
+            applicant: usersMap[app.user_id] || { firstName: 'Unknown', lastName: 'User' },
+            wasInvited: invitedSet.has(app.user_id) // Add flag
         }));
 
         return NextResponse.json({ applications: decryptedApplications });

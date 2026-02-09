@@ -251,6 +251,7 @@ export default function ProfessionalHome() {
   const [city, setCity] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
+  const [isAvailableForHire, setIsAvailableForHire] = useState<boolean>(true);
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [badgeType, setBadgeType] = useState<string | null>(null);
@@ -468,6 +469,7 @@ export default function ProfessionalHome() {
           setProfileImageUrl(userData.profile.profileImageUrl || '');
           setImagePosition(userData.profile.imagePosition || 'center');
           setBadgeType(userData.profile.badgeType || 'none');
+          setIsAvailableForHire(userData.profile.isAvailableForHire ?? true);
         }
       }
     } catch (error) {
@@ -989,7 +991,8 @@ export default function ProfessionalHome() {
           phone,
           role,
           about,
-          imagePosition
+          imagePosition,
+          isAvailableForHire
         })
       });
       if (res.ok) {
@@ -1081,6 +1084,26 @@ export default function ProfessionalHome() {
       setProfileMessage({ type: 'error', text: 'An error occurred while removing' });
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const handleToggleAvailability = async (checked: boolean) => {
+    setIsAvailableForHire(checked);
+    try {
+      const res = await fetch('/api/professional/profile/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAvailableForHire: checked })
+      });
+      if (!res.ok) {
+        setProfileMessage({ type: 'error', text: 'Failed to update availability.' });
+        // Revert on failure
+        setIsAvailableForHire(!checked);
+      }
+    } catch (error) {
+      console.error('Error updating availability:', error);
+      setProfileMessage({ type: 'error', text: 'Error updating availability.' });
+      setIsAvailableForHire(!checked);
     }
   };
 
@@ -2004,6 +2027,23 @@ export default function ProfessionalHome() {
                               </button>
                             </>
                           )}
+                        </div>
+
+                        {/* Availability Toggle */}
+                        <div className="flex items-center gap-3 mt-2">
+                          <label className={`relative inline-flex items-center cursor-pointer`}>
+                            <input
+                              type="checkbox"
+                              checked={isAvailableForHire}
+                              onChange={(e) => handleToggleAvailability(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className={`w-9 h-5 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 transition-colors ${isDark ? 'bg-neutral-700 peer-checked:bg-emerald-500' : 'bg-neutral-200 peer-checked:bg-emerald-500'}`}></div>
+                            <div className={`absolute top-[2px] left-[2px] bg-white border border-gray-300 border-none rounded-full h-4 w-4 transition-all peer-checked:translate-x-full`}></div>
+                          </label>
+                          <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? (isAvailableForHire ? 'text-emerald-400' : 'text-neutral-500') : (isAvailableForHire ? 'text-emerald-600' : 'text-neutral-400')}`}>
+                            {isAvailableForHire ? 'Available for Hire' : 'Not Open to Offers'}
+                          </span>
                         </div>
 
                       </div>

@@ -21,6 +21,7 @@ interface Application {
         lastName: string;
         profileImageUrl?: string;
     };
+    wasInvited?: boolean;
 }
 
 export default function ViewApplicationsPage() {
@@ -253,8 +254,8 @@ export default function ViewApplicationsPage() {
                                             onClick={(e) => handleToggleStar(e, app)}
                                             disabled={togglingStarId === app.id}
                                             className={`p-2 rounded-xl transition-all active:scale-90 ${app.is_starred
-                                                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                                    : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-amber-400 hover:border-amber-500/30'
+                                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-amber-400 hover:border-amber-500/30'
                                                 } ${togglingStarId === app.id ? 'opacity-50 animate-pulse' : ''}`}
                                         >
                                             <Star size={16} className={app.is_starred ? 'fill-amber-400' : ''} />
@@ -269,6 +270,11 @@ export default function ViewApplicationsPage() {
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{app.applicant.firstName} {app.applicant.lastName}</h3>
+                                                {app.wasInvited && (
+                                                    <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[8px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                                                        <CheckCircle2 size={10} /> Was Invited
+                                                    </span>
+                                                )}
                                                 {app.is_starred && (
                                                     <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded text-[8px] font-black text-amber-400 uppercase tracking-widest">
                                                         Starred

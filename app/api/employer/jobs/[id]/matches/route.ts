@@ -61,8 +61,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 id, 
                 enc_first_name, 
                 enc_last_name, 
+                enc_last_name, 
                 enc_current_role,
                 enc_profile_image_url,
+                is_available_for_hire,
                 preferences!inner (
                     target_roles,
                     work_modes,
@@ -84,8 +86,32 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return NextResponse.json({ error: 'Failed to find candidates' }, { status: 500 });
         }
 
+        // 3b. Fetch Invitations and Applications
+        const { data: invites } = await supabaseAdmin
+            .schema('employer')
+            .from('job_invites')
+            .select('professional_id, status')
+            .eq('job_id', jobId);
+
+        const inviteMap = new Map(invites?.map((i: { professional_id: any; status: any; }) => [i.professional_id, i.status]));
+
+        const { data: apps } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .select('user_id')
+            .eq('job_id', jobId);
+
+        const appliedSet = new Set(apps?.map((a: { user_id: any; }) => a.user_id));
+
         // 4. Scoring Engine
         const candidates = pros.map((pro: any) => {
+            // Filter: Already Applied
+            if (appliedSet.has(pro.id)) return null;
+
+            // Filter: Not Available (unless already invited)
+            const inviteStatus = inviteMap.get(pro.id);
+            if (pro.is_available_for_hire === false && !inviteStatus) return null;
+
             let score = 0;
             const prefs = pro.preferences || {};
 
@@ -228,7 +254,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                     role: score >= 40,
                     location: isLocal || job.location_type === 'remote',
                     relocation: !isLocal && !isRestricted && job.location_type !== 'remote'
-                }
+                },
+                invited: !!inviteStatus,
+                inviteStatus: inviteStatus || null
             };
 
         })

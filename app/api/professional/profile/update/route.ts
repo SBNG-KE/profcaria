@@ -33,11 +33,13 @@ export async function PUT(req: Request) {
             city,
             address,
             about,
-            imagePosition // Add this
+            imagePosition, // Add this
+            isAvailableForHire // Add this
         } = body;
 
         // 3. Update User Table (Name, Role, Email, Phone)
         const userUpdates: any = {};
+        if (typeof isAvailableForHire === 'boolean') userUpdates.is_available_for_hire = isAvailableForHire;
         if (imagePosition) userUpdates.image_position = imagePosition; // Save unencrypted
         if (firstName) userUpdates.enc_first_name = encryptData(firstName);
         if (lastName) userUpdates.enc_last_name = encryptData(lastName);
