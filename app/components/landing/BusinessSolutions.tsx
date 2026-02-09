@@ -17,7 +17,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                 <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
                         <h2 className={`
-                        text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85]
+                        text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] font-pixel
                         ${isDark ? 'text-white' : 'text-black'}
                     `}>
                             SCALE <br />
@@ -32,8 +32,10 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                     {/* Abstract "Global Network" Visualization - Replaced Images */}
                     <div className={`
                         relative w-full aspect-[16/10] rounded-[2rem] overflow-hidden shadow-2xl 
-                        flex items-center justify-center border
-                        ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}
+                        flex items-center justify-center
+                        ${isDark
+                            ? 'glass-card border-neutral-800/50 glow-white'
+                            : 'glass-card-light border-neutral-200'}
                     `}>
                         {/* Background Grid */}
                         <div className={`absolute inset-0 opacity-[0.03] ${isDark ? 'bg-[url("/grid.svg")]' : 'bg-[url("/grid-dark.svg")]'}`} />
@@ -78,8 +80,8 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                     {/* Left: Narrative Focus & Visuals */}
                     <div className="space-y-12 sticky top-32">
                         <div className="space-y-4">
-                            <div className="h-1 w-20 bg-current opacity-50" />
-                            <h3 className="text-4xl font-bold tracking-tight uppercase">The Ecosystem</h3>
+                            <div className="h-1 w-20 bg-current opacity-50 glow-amber" />
+                            <h3 className="text-4xl font-bold tracking-tight uppercase font-pixel">The Ecosystem</h3>
                         </div>
                         <p className={`text-xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                             We don't just connect you with people. We connect you with verified, intelligent professionals who are ready to make an impact. Our system handles the complexity so you can focus on the culture.
@@ -110,7 +112,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
 
                                     {/* Visual 1: The Scanner (Global Intelligence) */}
                                     <div className="relative group perspective-500">
-                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-sm relative flex items-center justify-center ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white/80 border-neutral-200 shadow-sm'}`}>
+                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-md relative flex items-center justify-center ${isDark ? 'glass-panel border-neutral-800/50' : 'glass-panel-light border-neutral-200/50 shadow-lg'}`}>
                                             {/* Grid Background */}
                                             <div className={`absolute inset-0 bg-[size:20px_20px] opacity-20 ${isDark ? 'bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]' : 'bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)]'}`} />
                                             {/* Scanning Beam */}
@@ -125,7 +127,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
 
                                     {/* Visual 2: The Fusion (Predictive Alignment) */}
                                     <div className="relative group">
-                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-sm relative flex items-center justify-center gap-12 ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white/80 border-neutral-200 shadow-sm'}`}>
+                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-md relative flex items-center justify-center gap-12 ${isDark ? 'glass-panel border-neutral-800/50' : 'glass-panel-light border-neutral-200/50 shadow-lg'}`}>
                                             {/* Left Circle */}
                                             <div className={`w-8 h-8 rounded-full border animate-[merge-left_3s_ease-in-out_infinite] ${isDark ? 'border-neutral-500' : 'border-neutral-400'}`} />
                                             {/* Right Circle */}
@@ -138,7 +140,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
 
                                     {/* Visual 3: The Beam (Direct Connection) */}
                                     <div className="relative group">
-                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-sm relative flex items-center justify-center ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white/80 border-neutral-200 shadow-sm'}`}>
+                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-md relative flex items-center justify-center ${isDark ? 'glass-panel border-neutral-800/50' : 'glass-panel-light border-neutral-200/50 shadow-lg'}`}>
                                             <div className={`absolute inset-x-0 h-[1px] ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
                                             {/* The Energy Pulse - Shoots across */}
                                             <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] w-20 bg-gradient-to-r from-transparent via-amber-500 to-transparent animate-[shoot_1.5s_cubic-bezier(0.4,0,0.2,1)_infinite]" />
@@ -148,7 +150,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
 
                                     {/* Visual 4: The Levitation (Zero Friction) */}
                                     <div className="relative group">
-                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-sm relative flex items-center justify-center ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white/80 border-neutral-200 shadow-sm'}`}>
+                                        <div className={`h-24 w-full rounded-lg overflow-hidden border backdrop-blur-md relative flex items-center justify-center ${isDark ? 'glass-panel border-neutral-800/50' : 'glass-panel-light border-neutral-200/50 shadow-lg'}`}>
                                             {/* Base Shadow */}
                                             <div className="absolute bottom-6 w-8 h-1 bg-black/20 rounded-[100%] blur-sm animate-[shadow-scale_4s_ease-in-out_infinite]" />
                                             {/* Floating Orb */}

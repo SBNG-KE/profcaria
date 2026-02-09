@@ -22,7 +22,7 @@ export default function FeaturesShowcase() {
 
                         <h2 className={`text-6xl md:text-8xl font-serif italic tracking-tight leading-[0.9] ${isDark ? 'text-white' : 'text-black'}`}>
                             Connect with <br />
-                            <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600">Visionaries.</span>
+                            <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600 font-pixel">Visionaries.</span>
                         </h2>
 
                         <div className="space-y-8 max-w-2xl">
@@ -57,17 +57,18 @@ export default function FeaturesShowcase() {
                                 <div className="absolute top-1/2 -right-1.5 w-3 h-3 bg-amber-500/50 rounded-full" />
                             </div>
 
-                            {/* Gradient Center */}
+                            {/* Gradient Center - Enhanced Glow */}
                             <div className="absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+                            <div className="absolute w-48 h-48 bg-amber-400/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
                         </div>
 
                         {/* Vertical Roles Stack (Static Text, Fits in Circle) */}
                         <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-6">
                             {["Designers", "Engineers", "Founders", "Architects"].map((role, i) => (
                                 <div key={i} className={`
-                                    text-2xl md:text-3xl font-light tracking-[0.2em] uppercase transition-all duration-500 cursor-default
+                                    text-2xl md:text-3xl font-light tracking-[0.2em] uppercase transition-all duration-500 cursor-default font-pixel
                                     ${isDark ? 'text-white' : 'text-black'}
-                                    hover:scale-110 hover:text-amber-500
+                                    hover:scale-110 hover:text-amber-500 hover:text-glow-amber
                                  `}>
                                     {role}
                                 </div>

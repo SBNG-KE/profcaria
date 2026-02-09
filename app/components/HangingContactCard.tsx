@@ -110,20 +110,21 @@ export default function HangingContactCard({
     return (
         <div className="fixed inset-0 z-[100] flex justify-center items-start pt-24 pointer-events-none">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-md pointer-events-auto" onClick={onClose} />
 
-            {/* CARD */}
+            {/* CARD - Enhanced Glassmorphism */}
             <div
                 className={`
                     relative pointer-events-auto mt-8 
                     w-[95vw] md:w-[90vw] max-w-[500px]
                     mx-auto
-                    rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden
+                    rounded-[2rem] p-6 md:p-8 overflow-hidden
                     transform transition-all duration-500 origin-top
-                    ${isDark ? 'bg-black border border-neutral-800' : 'bg-white border text-black'}
+                    ${isDark
+                        ? 'glass-card border-neutral-700/50 glow-white'
+                        : 'glass-card-light border-neutral-200'}
                 `}
                 style={{
-                    boxShadow: isDark ? '0 20px 60px -10px rgba(0,0,0,0.8)' : '0 20px 60px -10px rgba(0,0,0,0.2)',
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
             >

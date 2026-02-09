@@ -140,31 +140,32 @@ export default function LandingPageClient() {
 
             {/* ============================================
           HERO SECTION - Minimalist & Bold
+          Shows peek of next section at bottom
           ============================================ */}
-            <section className="relative min-h-[90vh] flex flex-col justify-center px-6 md:px-20 z-10">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-16">
+            <section className="relative min-h-[75vh] md:min-h-[80vh] flex flex-col justify-center px-4 sm:px-6 md:px-20 z-10 py-8 md:py-0">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16">
 
-                    {/* LEFT: VINTAGE FRAME & LOGO */}
-                    <div className="flex-1">
+                    {/* LEFT: VINTAGE FRAME & LOGO - Enhanced with Glassmorphism */}
+                    <div className="flex-1 flex justify-center md:justify-start">
                         <div className={`
-              border-[8px] p-2 inline-block
-              ${isDark ? 'border-neutral-800' : 'border-neutral-200'}
+              border-[6px] md:border-[8px] p-1 md:p-2 inline-block rounded-2xl animate-float-slow
+              ${isDark ? 'border-neutral-800/50 glass-panel glow-white' : 'border-neutral-200/50 glass-panel-light'}
             `}>
                             <div className={`
-                border border-current p-12 flex flex-col items-center gap-6
-                ${isDark ? 'text-white' : 'text-black'}
+                border border-current p-6 sm:p-8 md:p-12 flex flex-col items-center gap-4 md:gap-6 rounded-xl
+                ${isDark ? 'text-white bg-black/20 backdrop-blur-sm' : 'text-black bg-white/30 backdrop-blur-sm'}
               `}>
                                 <Image
                                     src="/profcaria.png"
                                     alt="Profcaria Logo"
                                     width={100}
                                     height={100}
-                                    className="rounded-full shadow-2xl"
+                                    className="rounded-full w-16 h-16 sm:w-20 sm:h-20 md:w-[100px] md:h-[100px]"
                                 />
-                                {/* MASSIVE TYPOGRAPHY */}
+                                {/* MASSIVE TYPOGRAPHY - Geist Pixel Font */}
                                 <h1 className={`
-                  text-6xl md:text-8xl font-black tracking-tighter leading-none
-                  font-serif italic
+                  text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-none
+                  font-pixel uppercase text-center
                 `}>
                                     #PROFCARIA
                                 </h1>
@@ -175,11 +176,13 @@ export default function LandingPageClient() {
                     </div>
 
                     {/* RIGHT: Main Value Prop - Connecting Focus */}
-                    <div className="max-w-xl text-right md:text-left">
-                        <h2 className={`text-4xl md:text-5xl font-light leading-tight ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                            Where <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>ambition</span> finds its home. <br />
-                            <span className="opacity-60 text-3xl">The professional network for the modern era.</span>
+                    <div className="max-w-xl text-center md:text-left">
+                        <h2 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
+                            Where <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>ambition</span> finds its home.
                         </h2>
+                        <p className={`mt-4 md:mt-6 text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                            The professional network for the modern era.
+                        </p>
                     </div>
 
                 </div>
@@ -195,15 +198,17 @@ export default function LandingPageClient() {
             {/* ============================================
           VERIFIED EMPLOYMENT SECTION (Replaced Scale)
           ============================================ */}
-            <section className={`py-40 px-6 ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
-                <div className="max-w-7xl mx-auto">
+            <section className={`py-40 px-6 relative overflow-hidden ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
+                {/* Background glow effect */}
+                <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-br from-amber-500/5 via-transparent to-transparent' : 'bg-gradient-to-br from-amber-500/10 via-transparent to-transparent'}`} />
+                <div className="max-w-7xl mx-auto relative z-10">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
                         <div className="space-y-8">
-                            <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]">
+                            <h2 className={`text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] font-pixel`}>
                                 VERIFIED <br />
                                 EMPLOYMENT
                             </h2>
-                            <div className="h-1 w-20 bg-current" />
+                            <div className="h-1 w-20 bg-current glow-amber" />
                         </div>
 
                         <div className="space-y-10">
