@@ -213,8 +213,8 @@ export default function LandingPageClient() {
 
                         <div className="space-y-10">
                             <p className={`text-3xl font-light leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                No more reference checks. <br />
-                                No more background screens.
+                                No more employment verification. <br />
+                                No more background checks.
                             </p>
                             <p className={`text-xl leading-relaxed opacity-80 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                 Your employment history is cryptographically verified at the source.
