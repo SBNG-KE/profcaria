@@ -375,7 +375,7 @@ export default function HangingAuthCard({
     // AUTH SCREEN
     // =============================================
     return (
-        <div className="fixed inset-0 z-[100] flex justify-center items-start pt-6 md:pt-20 pointer-events-none">
+        <div className="fixed inset-0 z-[100] flex justify-center items-start pt-4 md:pt-8 pointer-events-none">
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-md pointer-events-auto" onClick={onClose} />
 
@@ -384,7 +384,7 @@ export default function HangingAuthCard({
                 className={`
                     relative pointer-events-auto mt-0
                     w-[95vw] md:w-[90vw] max-w-[500px] max-h-[90vh] overflow-y-auto custom-scrollbar
-                    mx-auto lg:mx-0 lg:mr-[calc(4rem-250px)]
+                    mx-auto
                     rounded-[2rem] p-6 md:p-8 pb-10 md:pb-12
                     transform transition-all duration-500 origin-top
                     ${isDark
