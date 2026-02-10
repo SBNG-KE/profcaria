@@ -216,33 +216,17 @@ body {
 }
 
 /* ============================================
-   CUSTOM SCROLLBAR (For specific elements)
+   CUSTOM SCROLLBAR (Hidden but functional)
    ============================================ */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  /* gray-400/50 */
-  border-radius: 20px;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.dark .custom-scrollbar {
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @layer utilities {
