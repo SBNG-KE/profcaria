@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 import {
     User,
     Briefcase,
@@ -28,6 +29,31 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import HangingSecurityCard from './HangingSecurityCard';
+
+// Supabase client for OAuth only
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+const supabaseAuth = createClient(supabaseUrl, supabaseKey);
+
+// --- SOCIAL PROVIDER ICONS ---
+const GoogleIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+    </svg>
+);
+
+const MicrosoftIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 21 21">
+        <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+        <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+        <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+        <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+    </svg>
+);
+
 
 // --- MODERN INPUT COMPONENT ---
 interface ModernInputProps {
@@ -118,6 +144,7 @@ export default function HangingAuthCard({
 
     // AUTH STATE (PRESERVED FROM auth/page.tsx)
     const [globalMode, setGlobalMode] = useState<'login' | 'signup'>('login');
+    const [socialLoading, setSocialLoading] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<'professional' | 'employer'>(initialTab);
     const [loading, setLoading] = useState(false);
 
@@ -189,6 +216,31 @@ export default function HangingAuthCard({
         const hasNonalphas = /\W/.test(password);
         const minLength = password.length >= 12;
         return hasUpperCase && hasLowerCase && hasNumbers && hasNonalphas && minLength;
+    };
+
+    // Social Auth Handler
+    const handleSocialLogin = async (provider: 'google' | 'azure' | 'apple') => {
+        setSocialLoading(provider);
+        try {
+            // Store role for callback page
+            localStorage.setItem('pendingOAuthRole', activeTab);
+
+            const { error } = await supabaseAuth.auth.signInWithOAuth({
+                provider,
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                }
+            });
+
+            if (error) {
+                alert(error.message || 'Social login failed');
+                setSocialLoading(null);
+            }
+            // If successful, the page will redirect — no need to reset loading
+        } catch (err: any) {
+            alert(err.message || 'Social login failed');
+            setSocialLoading(null);
+        }
     };
 
     // Validation Checks (UNCHANGED)
@@ -323,17 +375,17 @@ export default function HangingAuthCard({
     // AUTH SCREEN
     // =============================================
     return (
-        <div className="fixed inset-0 z-[100] flex justify-center items-start pt-24 pointer-events-none">
+        <div className="fixed inset-0 z-[100] flex justify-center items-start pt-16 md:pt-24 pointer-events-none">
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-md pointer-events-auto" onClick={onClose} />
 
             {/* CARD - Enhanced Glassmorphism */}
             <div
                 className={`
-                    relative pointer-events-auto mt-8 
-                    w-[95vw] md:w-[90vw] max-w-[500px]
+                    relative pointer-events-auto mt-4 
+                    w-[95vw] md:w-[90vw] max-w-[500px] max-h-[85vh] overflow-y-auto custom-scrollbar
                     mx-auto lg:mx-0 lg:mr-[calc(4rem-250px)]
-                    rounded-[2rem] p-6 md:p-8 overflow-hidden
+                    rounded-[2rem] p-6 md:p-8
                     transform transition-all duration-500 origin-top
                     ${isDark
                         ? 'glass-card border-neutral-700/50 glow-white'
@@ -381,8 +433,54 @@ export default function HangingAuthCard({
                         </div>
                     </div>
 
+                    {/* SOCIAL LOGIN BUTTONS */}
+                    <div className="space-y-3">
+                        <button
+                            type="button"
+                            onClick={() => handleSocialLogin('google')}
+                            disabled={!!socialLoading}
+                            className={`
+                                w-full py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3
+                                border transition-all duration-300
+                                ${isDark
+                                    ? 'border-neutral-700 bg-neutral-900/50 text-white hover:bg-neutral-800'
+                                    : 'border-neutral-200 bg-white text-black hover:bg-neutral-50'}
+                                ${socialLoading === 'google' ? 'opacity-50 cursor-wait' : ''}
+                                ${socialLoading && socialLoading !== 'google' ? 'opacity-30 cursor-not-allowed' : ''}
+                            `}
+                        >
+                            <GoogleIcon />
+                            {socialLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => handleSocialLogin('azure')}
+                            disabled={!!socialLoading}
+                            className={`
+                                w-full py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3
+                                border transition-all duration-300
+                                ${isDark
+                                    ? 'border-neutral-700 bg-neutral-900/50 text-white hover:bg-neutral-800'
+                                    : 'border-neutral-200 bg-white text-black hover:bg-neutral-50'}
+                                ${socialLoading === 'azure' ? 'opacity-50 cursor-wait' : ''}
+                                ${socialLoading && socialLoading !== 'azure' ? 'opacity-30 cursor-not-allowed' : ''}
+                            `}
+                        >
+                            <MicrosoftIcon />
+                            {socialLoading === 'azure' ? 'Redirecting...' : 'Continue with Microsoft'}
+                        </button>
+                    </div>
+
+                    {/* DIVIDER */}
+                    <div className="flex items-center gap-4">
+                        <div className={`flex-1 h-px ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
+                        <span className={`text-xs font-bold uppercase tracking-widest ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>or</span>
+                        <div className={`flex-1 h-px ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
+                    </div>
+
                     {/* FORM */}
-                    <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6 mt-4">
+                    <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
 
                         {/* PROFESSIONAL INPUTS */}
                         {activeTab === 'professional' && (
