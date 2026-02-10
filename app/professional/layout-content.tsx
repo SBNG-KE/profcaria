@@ -223,7 +223,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     {sidebarOpen && (
                         <div className="w-full text-center mb-4">
                             <h2 className="text-sm font-bold truncate">
-                                {userData?.profile?.firstName ? `${userData.profile.firstName} ${userData.profile.lastName}` : '...'}
+                                {userData?.profile?.firstName ? `${userData.profile.firstName} ${userData.profile.lastName === 'null' ? '' : userData.profile.lastName}` : '...'}
                             </h2>
                             <p className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{userData?.profile?.role || '---'}</p>
                         </div>

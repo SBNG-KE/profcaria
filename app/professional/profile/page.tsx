@@ -1893,7 +1893,7 @@ export default function ProfessionalHome() {
                           />
                         ) : (
                           <div className={`font-black text-6xl ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`}>
-                            {firstName.charAt(0)}{lastName.charAt(0)}
+                            {firstName.charAt(0)}{(lastName && lastName !== 'null') ? lastName.charAt(0) : ''}
                           </div>
                         )}
                       </div>
@@ -1971,7 +1971,7 @@ export default function ProfessionalHome() {
                         {/* Name */}
                         <div className="flex items-center gap-3 group">
                           {isEditingName ? (
-                            <div className="flex gap-2 w-full max-w-md">
+                            <div className="flex flex-col md:flex-row gap-2 w-full max-w-md relative z-10">
                               <input
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
@@ -1990,9 +1990,9 @@ export default function ProfessionalHome() {
                           ) : (
                             <>
                               <h1 className={`text-3xl md:text-5xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>
-                                {firstName || lastName ? (
+                                {firstName || (lastName && lastName !== 'null') ? (
                                   <span className="flex items-center gap-2">
-                                    {firstName} {lastName}
+                                    {firstName} {lastName === 'null' ? '' : lastName}
                                     <VerificationBadge tier={badgeType} size={32} />
                                   </span>
                                 ) : <span className="text-neutral-500 text-3xl">Your Name</span>}

@@ -1,0 +1,271 @@
+﻿
+> profcaria@0.1.0 build
+> next build --webpack
+
+node.exe : ΓÜá Warning: 
+Next.js inferred your 
+workspace root, but it 
+may not be correct.
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE 
+$NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo        
+      : NotSpe    cified: 
+(ΓÜá War    ning: 
+Ne...not b    e 
+correct.:Strin    g) [], 
+RemoteExc    eption
+    + FullyQualified    
+ErrorId : Native    
+CommandError
+ 
+ We detected multiple 
+lockfiles and selected 
+the directory of C:\Users\
+steve\package-lock.json 
+as the root directory.
+ To silence this warning, 
+set 
+`outputFileTracingRoot` 
+in your Next.js config, 
+or consider removing one 
+of the lockfiles if it's 
+not needed.
+   See https://nextjs.org/
+docs/app/api-reference/con
+fig/next-config-js/output#
+caveats for more 
+information.
+ Detected additional 
+lockfiles: 
+   * C:\Users\steve\profca
+ria\package-lock.json
+
+Γû▓ Next.js 16.1.0 (webpack)
+- Environments: .env.local
+- Experiments (use with caution):
+  ┬╖ optimizePackageImports
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 15.0s
+  Running TypeScript ...
+  Collecting page data using 7 workers ...
+ΓÜá Using edge runtime on 
+a page currently disables 
+static generation for 
+that page
+  Generating static pages using 7 workers (0/133) ...
+  Generating static pages using 7 workers (33/133) 
+  Generating static pages using 7 workers (66/133) 
+  Generating static pages using 7 workers (99/133) 
+Γ£ô Generating static pages using 7 workers (133/133) in 4.9s
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+Γöî ╞Æ /
+Γö£ Γùï /_not-found
+Γö£ ╞Æ /api/admin/promo-emails
+Γö£ ╞Æ /api/analytics/job-event
+Γö£ ╞Æ /api/auth/activity
+Γö£ ╞Æ /api/auth/logout
+Γö£ ╞Æ /api/auth/me
+Γö£ ╞Æ /api/auth/reset-password
+Γö£ ╞Æ /api/auth/social
+Γö£ ╞Æ /api/common/industries
+Γö£ ╞Æ /api/config/exchange-rate
+Γö£ ╞Æ /api/contact
+Γö£ ╞Æ /api/debug_db
+Γö£ ╞Æ /api/debug/content-check
+Γö£ ╞Æ /api/debug/db
+Γö£ ╞Æ /api/debug/employer_columns
+Γö£ ╞Æ /api/debug/feed
+Γö£ ╞Æ /api/debug/repro-delete
+Γö£ ╞Æ /api/debug/schema-check
+Γö£ ╞Æ /api/debug/system-check
+Γö£ ╞Æ /api/debug/test-save
+Γö£ ╞Æ /api/debug/verify-repost
+Γö£ ╞Æ /api/documents
+Γö£ ╞Æ /api/documents/parse
+Γö£ ╞Æ /api/documents/share
+Γö£ ╞Æ /api/embeddings/generate
+Γö£ ╞Æ /api/employer/analytics
+Γö£ ╞Æ /api/employer/analytics/dashboard
+Γö£ ╞Æ /api/employer/applications
+Γö£ ╞Æ /api/employer/applications/[id]
+Γö£ ╞Æ /api/employer/applications/[id]/connections
+Γö£ ╞Æ /api/employer/applications/[id]/profile
+Γö£ ╞Æ /api/employer/applications/[id]/references
+Γö£ ╞Æ /api/employer/applications/[id]/references/sent
+Γö£ ╞Æ /api/employer/applications/[id]/snapshot
+Γö£ ╞Æ /api/employer/billing
+Γö£ ╞Æ /api/employer/billing/autorenew
+Γö£ ╞Æ /api/employer/categories
+Γö£ ╞Æ /api/employer/check-email
+Γö£ ╞Æ /api/employer/connections
+Γö£ ╞Æ /api/employer/contracts
+Γö£ ╞Æ /api/employer/interviews
+Γö£ ╞Æ /api/employer/jobs
+Γö£ ╞Æ /api/employer/jobs/[id]
+Γö£ ╞Æ /api/employer/jobs/[id]/applications
+Γö£ ╞Æ /api/employer/jobs/[id]/invite
+Γö£ ╞Æ /api/employer/jobs/[id]/matches
+Γö£ ╞Æ /api/employer/jobs/[id]/share
+Γö£ ╞Æ /api/employer/limits
+Γö£ ╞Æ /api/employer/login
+Γö£ ╞Æ /api/employer/posts
+Γö£ ╞Æ /api/employer/profile
+Γö£ ╞Æ /api/employer/profile/image
+Γö£ ╞Æ /api/employer/profile/other-profiles
+Γö£ ╞Æ /api/employer/profile/update
+Γö£ ╞Æ /api/employer/promo/claim
+Γö£ ╞Æ /api/employer/public/[slug]
+Γö£ ╞Æ /api/employer/references/[id]
+Γö£ ╞Æ /api/employer/references/request
+Γö£ ╞Æ /api/employer/security/activity
+Γö£ ╞Æ /api/employer/security/mfa
+Γö£ ╞Æ /api/employer/security/password
+Γö£ ╞Æ /api/employer/signup
+Γö£ ╞Æ /api/employer/stats
+Γö£ ╞Æ /api/link-preview
+Γö£ ╞Æ /api/location
+Γö£ ╞Æ /api/payments/checkout
+Γö£ ╞Æ /api/payments/portal
+Γö£ ╞Æ /api/payments/verify
+Γö£ ╞Æ /api/payments/webhook
+Γö£ ╞Æ /api/pricing
+Γö£ ╞Æ /api/professional/analytics
+Γö£ ╞Æ /api/professional/applications
+Γö£ ╞Æ /api/professional/applications/[id]
+Γö£ ╞Æ /api/professional/billing
+Γö£ ╞Æ /api/professional/cards
+Γö£ ╞Æ /api/professional/check-email
+Γö£ ╞Æ /api/professional/connections
+Γö£ ╞Æ /api/professional/contracts
+Γö£ ╞Æ /api/professional/documents/mode
+Γö£ ╞Æ /api/professional/documents/upload
+Γö£ ╞Æ /api/professional/follow
+Γö£ ╞Æ /api/professional/interviews
+Γö£ ╞Æ /api/professional/jobs
+Γö£ ╞Æ /api/professional/jobs/[id]
+Γö£ ╞Æ /api/professional/jobs/[id]/apply
+Γö£ ╞Æ /api/professional/jobs/feed
+Γö£ ╞Æ /api/professional/jobs/verify-link
+Γö£ ╞Æ /api/professional/login
+Γö£ ╞Æ /api/professional/permissions/update
+Γö£ ╞Æ /api/professional/posts
+Γö£ ╞Æ /api/professional/posts/[id]
+Γö£ ╞Æ /api/professional/posts/[id]/comments
+Γö£ ╞Æ /api/professional/posts/[id]/like
+Γö£ ╞Æ /api/professional/posts/[id]/repost
+Γö£ ╞Æ /api/professional/posts/[id]/save
+Γö£ ╞Æ /api/professional/posts/saved
+Γö£ ╞Æ /api/professional/preferences
+Γö£ ╞Æ /api/professional/profile
+Γö£ ╞Æ /api/professional/profile/employment
+Γö£ ╞Æ /api/professional/profile/image
+Γö£ ╞Æ /api/professional/profile/posts
+Γö£ ╞Æ /api/professional/profile/sections/[section]
+Γö£ ╞Æ /api/professional/profile/update
+Γö£ ╞Æ /api/professional/promo/claim
+Γö£ ╞Æ /api/professional/public/[username]
+Γö£ ╞Æ /api/professional/recommendations
+Γö£ ╞Æ /api/professional/saved-jobs
+Γö£ ╞Æ /api/professional/search/history
+Γö£ ╞Æ /api/professional/search/log
+Γö£ ╞Æ /api/professional/security/activity
+Γö£ ╞Æ /api/professional/security/mfa
+Γö£ ╞Æ /api/professional/security/password
+Γö£ ╞Æ /api/professional/signup
+Γö£ ╞Æ /api/search/history
+Γö£ ╞Æ /api/search/users
+Γö£ ╞Æ /api/security/check-url
+Γö£ ╞Æ /api/security/default-method
+Γö£ ╞Æ /api/security/email/remove
+Γö£ ╞Æ /api/security/otp/setup
+Γö£ ╞Æ /api/security/otp/verify
+Γö£ ╞Æ /api/security/passkey/authentication/options
+Γö£ ╞Æ /api/security/passkey/authentication/verify
+Γö£ ╞Æ /api/security/passkey/registration/options
+Γö£ ╞Æ /api/security/passkey/registration/verify
+Γö£ ╞Æ /api/security/passkey/remove
+Γö£ ╞Æ /api/security/totp/remove
+Γö£ ╞Æ /api/security/totp/setup
+Γö£ ╞Æ /api/security/totp/verify
+Γö£ ╞Æ /api/share
+Γö£ ╞Æ /api/shared/messages
+Γö£ ╞Æ /api/shared/notifications
+Γö£ ╞Æ /api/shared/posts/[id]/share
+Γö£ ╞Æ /api/support
+Γö£ ╞Æ /api/upload
+Γö£ Γùï /auth
+Γö£ Γùï /auth/callback
+Γö£ ╞Æ /c/[slug]
+Γö£ Γùï /contact
+Γö£ Γùï /documentation
+Γö£ Γùï /documentation/employer
+Γö£ Γùï /documentation/legal
+Γö£ Γùï /documentation/privacy-vault
+Γö£ Γùï /documentation/professional
+Γö£ Γùï /documentation/security-audit
+Γö£ Γùï /employer/admin/promo-emails
+Γö£ Γùï /employer/applications
+Γö£ ╞Æ /employer/applications/[id]/profile
+Γö£ ╞Æ /employer/applications/[id]/view
+Γö£ Γùï /employer/backups
+Γö£ ╞Æ /employer/candidate/[id]
+Γö£ Γùï /employer/connections
+Γö£ Γùï /employer/contracts
+Γö£ Γùï /employer/feed
+Γö£ Γùï /employer/home
+Γö£ Γùï /employer/interviews
+Γö£ Γùï /employer/jobs
+Γö£ ╞Æ /employer/jobs/[id]/applications
+Γö£ ╞Æ /employer/jobs/[id]/matches
+Γö£ Γùï /employer/jobs/create
+Γö£ Γùï /employer/login
+Γö£ Γùï /employer/messages
+Γö£ Γùï /employer/notifications
+Γö£ Γùï /employer/profile
+Γö£ ╞Æ /employer/references/[id]
+Γö£ Γùï /employer/settings
+Γö£ Γùï /employer/support
+Γö£ Γùï /icon.ico
+Γö£ ╞Æ /l/[code]
+Γö£ ╞Æ /p/[username]
+Γö£ Γùï /payment/callback
+Γö£ Γùï /pricing
+Γö£ ╞Æ /professional/companies/[id]
+Γö£ Γùï /professional/connections
+Γö£ Γùï /professional/contracts
+Γö£ Γùï /professional/employment
+Γö£ Γùï /professional/feed
+Γö£ Γùï /professional/find
+Γö£ Γùï /professional/interview
+Γö£ ╞Æ /professional/jobs/[id]
+Γö£ Γùï /professional/login
+Γö£ Γùï /professional/messages
+Γö£ Γùï /professional/notifications
+Γö£ ╞Æ /professional/people/[id]
+Γö£ Γùï /professional/profile
+Γö£ Γùï /professional/roles-jobs
+Γö£ Γùï /professional/settings
+Γö£ Γùï /professional/support
+Γö£ ╞Æ /public/companies/[id]
+Γö£ ╞Æ /public/people/[id]
+Γö£ Γùï /robots.txt
+Γö£ Γùï /security/setup
+Γö£ Γùï /security/verify
+Γö£ ╞Æ /share/doc/[token]
+Γöö Γùï /sitemap.xml
+
+
+╞Æ Proxy (Middleware)
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+
