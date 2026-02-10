@@ -1976,16 +1976,16 @@ export default function ProfessionalHome() {
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 placeholder="First Name"
-                                className={`flex-1 px-4 py-2 rounded-xl font-bold text-2xl outline-none border-2 focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                className={`flex-1 px-3 py-2 rounded-lg font-bold text-lg md:text-xl outline-none border focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
                                 autoFocus
                               />
                               <input
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 placeholder="Last Name"
-                                className={`flex-1 px-4 py-2 rounded-xl font-bold text-2xl outline-none border-2 focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
+                                className={`flex-1 px-3 py-2 rounded-lg font-bold text-lg md:text-xl outline-none border focus:border-blue-500 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-neutral-50 border-neutral-200 text-black'}`}
                               />
-                              <button onClick={() => { handleSaveProfile(); setIsEditingName(false); }} className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700"><Check size={20} /></button>
+                              <button onClick={() => { handleSaveProfile(); setIsEditingName(false); }} className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex-shrink-0"><Check size={20} /></button>
                             </div>
                           ) : (
                             <>
