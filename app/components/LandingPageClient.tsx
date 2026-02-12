@@ -74,6 +74,8 @@ export default function LandingPageClient() {
 
     useEffect(() => {
         const checkSession = async () => {
+            if (searchParams.get('mode')) return;
+
             try {
                 const res = await fetch('/api/auth/me');
                 if (res.ok) {
