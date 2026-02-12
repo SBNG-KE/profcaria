@@ -10,14 +10,17 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
     const isDark = theme === 'dark';
 
     return (
-        <section className={`py-24 px-6 md:px-20 overflow-hidden relative ${isDark ? 'bg-black' : 'bg-white'}`}>
+        <section className={`pt-12 pb-0 px-6 md:px-20 overflow-hidden relative ${isDark ? 'bg-black' : 'bg-white'}`}>
             <div className="max-w-[1400px] mx-auto">
 
                 {/* HEADLINE - Grid Layout */}
                 <div className="mb-20 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
+                        <div className={`text-xs font-bold uppercase tracking-[0.3em] pl-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                            The Infrastructure
+                        </div>
                         <h2 className={`
-                        text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] font-pixel
+                        text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-[0.85] font-pixel
                         ${isDark ? 'text-white' : 'text-black'}
                     `}>
                             SCALE <br />

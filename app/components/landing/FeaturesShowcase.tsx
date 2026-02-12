@@ -9,7 +9,7 @@ export default function FeaturesShowcase() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`py-0 pt-20 px-6 md:px-20 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
+        <section className={`py-0 pt-12 px-6 md:px-20 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
             <div className="max-w-[1400px] mx-auto">
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-end">
@@ -20,13 +20,13 @@ export default function FeaturesShowcase() {
                             The Philosophy
                         </div>
 
-                        <h2 className={`text-6xl md:text-8xl font-serif italic tracking-tight leading-[0.9] ${isDark ? 'text-white' : 'text-black'}`}>
+                        <h2 className={`text-4xl md:text-6xl lg:text-7xl font-serif italic tracking-tight leading-[0.9] ${isDark ? 'text-white' : 'text-black'}`}>
                             Connect with <br />
                             <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600 font-pixel">Visionaries.</span>
                         </h2>
 
                         <div className="space-y-8 max-w-2xl">
-                            <p className={`text-2xl md:text-3xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                            <p className={`text-xl md:text-2xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                 We’re building a sanctuary for the world's most dedicated professionals. A space where craft is respected, and connections are curated.
                             </p>
                             <p className={`text-lg font-light leading-relaxed ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>

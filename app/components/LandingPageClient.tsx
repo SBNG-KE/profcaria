@@ -17,6 +17,8 @@ import HangingAuthCard from '@/app/components/HangingAuthCard';
 import HangingContactCard from '@/app/components/HangingContactCard';
 import BusinessSolutions from '@/app/components/landing/BusinessSolutions';
 import FeaturesShowcase from '@/app/components/landing/FeaturesShowcase';
+import PlatformTour from '@/app/components/landing/PlatformTour';
+import JourneyAnimation from '@/app/components/landing/JourneyAnimation';
 
 // Main Landing Page Client Component
 export default function LandingPageClient() {
@@ -144,105 +146,120 @@ export default function LandingPageClient() {
           HERO SECTION - Minimalist & Bold
           Shows peek of next section at bottom
           ============================================ */}
-            <section className="relative min-h-[75vh] md:min-h-[80vh] flex flex-col justify-center px-4 sm:px-6 md:px-20 z-10 py-8 md:py-0">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16">
+            <section className="relative min-h-[75vh] flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10 py-12 md:py-0">
+                {/* Full Width Background Animation REMOVED */}
 
-                    {/* LEFT: VINTAGE FRAME & LOGO - Enhanced with Glassmorphism */}
-                    <div className="flex-1 flex justify-center md:justify-start">
-                        <div className={`
-              border-[6px] md:border-[8px] p-1 md:p-2 inline-block rounded-2xl animate-float-slow
-              ${isDark ? 'border-neutral-800/50 glass-panel glow-white' : 'border-neutral-200/50 glass-panel-light'}
-            `}>
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-24 w-full relative z-10">
+
+                    {/* LEFT: CARD & DETAILS */}
+                    <div className="flex-1 flex flex-col items-center lg:items-start gap-12 w-full lg:w-auto">
+
+                        {/* PROFCARIA CARD - Stone/Rigid Shape */}
+                        <div className="flex flex-col items-center gap-6">
                             <div className={`
-                border border-current p-6 sm:p-8 md:p-12 flex flex-col items-center gap-4 md:gap-6 rounded-xl
-                ${isDark ? 'text-white bg-black/20 backdrop-blur-sm' : 'text-black bg-white/30 backdrop-blur-sm'}
-              `}>
-                                <Image
-                                    src="/profcaria.png"
-                                    alt="Profcaria Logo"
-                                    width={100}
-                                    height={100}
-                                    className="rounded-full w-16 h-16 sm:w-20 sm:h-20 md:w-[100px] md:h-[100px]"
-                                />
-                                {/* MASSIVE TYPOGRAPHY - Geist Pixel Font */}
-                                <h1 className={`
-                  text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black tracking-tighter leading-none
-                  font-pixel uppercase text-center
-                `}>
-                                    #PROFCARIA
-                                </h1>
+                                relative p-2 inline-block animate-float-slow shadow-2xl scale-[0.85] md:scale-90 origin-center
+                                before:absolute before:inset-0 before:bg-neutral-500/20 before:blur-xl before:-z-10
+                            `}>
+                                <div
+                                    className={`
+                                        border-[4px] md:border-[6px] p-6 md:p-10 flex flex-col items-center gap-4
+                                        ${isDark ? 'text-white bg-neutral-900 border-neutral-700' : 'text-black bg-white border-neutral-300'}
+                                    `}
+                                    style={{
+                                        // Complex jagged "ruins" polygon
+                                        clipPath: "polygon(2% 0%, 15% 4%, 25% 1%, 40% 3%, 55% 0%, 75% 4%, 85% 1%, 98% 2%, 100% 15%, 96% 25%, 99% 40%, 97% 60%, 100% 75%, 96% 90%, 95% 100%, 80% 96%, 60% 99%, 40% 97%, 20% 99%, 5% 98%, 0% 90%, 3% 75%, 0% 60%, 2% 40%, 0% 20%, 3% 10%)",
+                                        borderRadius: "0px"
+                                    }}
+                                >
+                                    <Image
+                                        src="/profcaria.png"
+                                        alt="Profcaria Logo"
+                                        width={100}
+                                        height={100}
+                                        className="rounded-full w-16 h-16 md:w-24 md:h-24 shadow-lg shrink-0"
+                                    />
+                                    <h1 className={`
+                                    text-4xl md:text-6xl font-black tracking-tighter leading-none
+                                    font-pixel uppercase text-center
+                                    `}>
+                                        #PROFCARIA
+                                    </h1>
+                                </div>
+                            </div>
+
+                            {/* DETAILS TEXT (Tiny, under card) */}
+                            <div className="text-center max-w-xs space-y-2 opacity-70">
+                                <h2 className={`
+                                    text-xs font-bold uppercase tracking-widest
+                                    ${isDark ? 'text-neutral-400' : 'text-neutral-600'}
+                                `}>
+                                    Where ambition finds its home.
+                                </h2>
+                                <p className={`
+                                    text-[10px] uppercase tracking-widest font-pixel
+                                    ${isDark ? 'text-neutral-600' : 'text-neutral-400'}
+                                `}>
+                                    The professional network for the modern era.
+                                </p>
                             </div>
                         </div>
 
-
                     </div>
 
-                    {/* RIGHT: Main Value Prop - Connecting Focus */}
-                    <div className="max-w-xl text-center md:text-left">
-                        <h2 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-light leading-tight ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                            Where <span className={isDark ? 'text-white font-medium' : 'text-black font-medium'}>ambition</span> finds its home.
-                        </h2>
-                        <p className={`mt-4 md:mt-6 text-lg sm:text-xl md:text-2xl lg:text-3xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                            The professional network for the modern era.
-                        </p>
+                    {/* RIGHT: SPACER (Animation is now background) */}
+                    <div className="hidden lg:block flex-1 h-[400px] md:h-[600px] relative">
+                        <div className="absolute inset-0 z-0">
+                            <JourneyAnimation />
+                        </div>
                     </div>
 
                 </div>
             </section>
 
             {/* ============================================
-          FEATURES - NO CARDS, JUST CONTENT
+          BUSINESS SOLUTIONS (Restored)
           ============================================ */}
             <BusinessSolutions onStart={() => setIsAuthOpen(true)} />
 
+            {/* ============================================
+          FEATURES SHOWCASE (Restored)
+          ============================================ */}
             <FeaturesShowcase />
 
             {/* ============================================
-          VERIFIED EMPLOYMENT SECTION (Replaced Scale)
+          PLATFORM TOUR (New)
           ============================================ */}
-            <section className={`py-40 px-6 relative overflow-hidden ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
-                {/* Background glow effect */}
-                <div className={`absolute inset-0 ${isDark ? 'bg-gradient-to-br from-amber-500/5 via-transparent to-transparent' : 'bg-gradient-to-br from-amber-500/10 via-transparent to-transparent'}`} />
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
-                        <div className="space-y-8">
-                            <h2 className={`text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] font-pixel`}>
-                                VERIFIED <br />
-                                EMPLOYMENT
-                            </h2>
-                            <div className="h-1 w-20 bg-current glow-amber" />
-                        </div>
+            <PlatformTour />
 
-                        <div className="space-y-10">
-                            <p className={`text-3xl font-light leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                No more employment verification. <br />
-                                No more background checks.
-                            </p>
-                            <p className={`text-xl leading-relaxed opacity-80 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                Your employment history is cryptographically verified at the source.
-                                When you join a company on Profcaria, your role is stamped as authentic.
-                                When you leave, your history is yours to keep instantly trusted by your next employer.
-                            </p>
+            {/* ============================================
+          VERIFIED EMPLOYMENT SECTION REMOVED (Merged into Platform Tour)
+          ============================================ */}
 
-                            <div className="pt-8">
-                                <button
-                                    onClick={() => setIsAuthOpen(true)}
-                                    className={`
-                                        px-8 py-4 rounded-full text-sm font-black uppercase tracking-widest
-                                        border transition-all duration-300
-                                        ${isDark
-                                            ? 'border-white text-white hover:bg-white hover:text-black'
-                                            : 'border-black text-black hover:bg-black hover:text-white'}
-                                    `}
-                                >
-                                    Claim Your Profile
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+
+
+            {/* CALL TO ACTION - Join Profcaria Today */}
+            <section className={`py-32 px-6 text-center relative z-10 ${isDark ? 'bg-black' : 'bg-white'}`}>
+                <div className="max-w-4xl mx-auto space-y-12">
+                    <h2 className={`text-5xl md:text-8xl font-black tracking-tighter leading-none ${isDark ? 'text-white' : 'text-black'}`}>
+                        JOIN <br /> PROFCARIA <br /> TODAY
+                    </h2>
+                    <p className={`text-2xl md:text-3xl font-light ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                        Connect. Apply. Hire. Securely.
+                    </p>
+                    <button
+                        onClick={() => setIsAuthOpen(true)}
+                        className={`
+                            px-12 py-6 rounded-none text-lg font-black uppercase tracking-[0.2em]
+                            border-2 transition-all duration-300 hover:scale-105
+                            ${isDark
+                                ? 'border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black shadow-[0_0_30px_rgba(245,158,11,0.3)]'
+                                : 'border-black text-black hover:bg-black hover:text-white'}
+                        `}
+                    >
+                        Get Started
+                    </button>
                 </div>
             </section>
-
 
 
             {/* ============================================
