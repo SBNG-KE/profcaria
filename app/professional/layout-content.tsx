@@ -135,10 +135,42 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     const activeTab = pathname.split('/').pop() || 'home';
     const showBackButton = pathname !== '/professional/feed';
 
+    const [hasNewPosts, setHasNewPosts] = useState(false);
+
+    // Simulate checking for new posts
+    useEffect(() => {
+        const checkNewPosts = () => {
+            // In a real app, this would check a timestamp or count from the server
+            // For now, we'll simulate "new posts" appearing occasionally
+            if (Math.random() > 0.7) {
+                setHasNewPosts(true);
+            }
+        };
+
+        const interval = setInterval(checkNewPosts, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleFeedClick = () => {
+        if (hasNewPosts) {
+            setHasNewPosts(false);
+            if (pathname === '/professional/feed') {
+                window.location.reload(); // Force reload if already on feed
+            } else {
+                router.push('/professional/feed');
+            }
+        } else {
+            router.push('/professional/feed');
+        }
+    };
+
     // Compact NavItem
-    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount, comingSoon }: { id: string; href: string; icon: React.ElementType; label: string; badgeCount?: number; comingSoon?: boolean }) => (
+    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount, comingSoon, hasUpdate, onClick }: { id: string; href: string; icon: React.ElementType; label: string; badgeCount?: number; comingSoon?: boolean, hasUpdate?: boolean, onClick?: () => void }) => (
         <button
-            onClick={() => !comingSoon && router.push(href)}
+            onClick={() => {
+                if (onClick) onClick();
+                else if (!comingSoon) router.push(href);
+            }}
             className={`
                 w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group relative
                 ${activeTab === id
@@ -157,12 +189,15 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
                         {id === 'notifications' ? unreadCount : badgeCount}
                     </span>
+                ) : hasUpdate ? (
+                    <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white dark:ring-black"></span>
                 ) : null}
             </div>
             {sidebarOpen && (
-                <span className="font-medium text-xs flex items-center gap-2">
+                <span className="font-medium text-xs flex items-center gap-2 flex-1">
                     {label}
                     {comingSoon && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold uppercase">Soon</span>}
+                    {hasUpdate && <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500 text-white font-bold uppercase">New</span>}
                 </span>
             )}
         </button>
@@ -233,7 +268,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 {/* Navigation - COMPACT */}
                 <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Menu</div>
-                    <NavItem id="feed" href="/professional/feed" icon={Rss} label="Feed" />
+                    <NavItem id="feed" href="/professional/feed" icon={Rss} label="Feed" hasUpdate={hasNewPosts} onClick={handleFeedClick} />
                     <NavItem id="home" href="/professional/profile" icon={Home} label="Profile" />
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />
                     <NavItem id="roles-jobs" href="/professional/roles-jobs" icon={Briefcase} label="My Jobs" />

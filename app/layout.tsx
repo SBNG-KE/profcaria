@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.profcaria.com'),
   manifest: '/manifest.json',
   title: {
-    default: "Profcaria",
+    default: "Profcaria | Network & Find Work",
     template: "%s | Profcaria"
   },
   description: "The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching. No ghosting, just results.",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png', // Using profcaria.png as apple icon since apple-icon.png doesn't exist
+    apple: '/apple-touch-icon.png',
     other: {
       rel: 'apple-touch-icon-precomposed',
       url: '/apple-touch-icon.png',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://www.profcaria.com',
     siteName: 'Profcaria',
-    title: 'Profcaria | Exclusive Professional Network',
+    title: 'Profcaria | Network & Find Work',
     description: 'The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.',
     images: [
       {
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Profcaria | Exclusive Professional Network',
+    title: 'Profcaria | Network & Find Work',
     description: 'The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.',
     creator: '@profcaria',
   },
@@ -79,7 +79,7 @@ const structuredData = {
     {
       "@type": "Organization",
       "@id": "https://www.profcaria.com/#organization",
-      "name": "Profcaria",
+      "name": "Profcaria | Network & Find Work",
       "url": "https://www.profcaria.com",
       "logo": {
         "@type": "ImageObject",
@@ -96,7 +96,7 @@ const structuredData = {
       "@type": "WebSite",
       "@id": "https://www.profcaria.com/#website",
       "url": "https://www.profcaria.com",
-      "name": "Profcaria",
+      "name": "Profcaria | Network & Find Work",
       "publisher": {
         "@id": "https://www.profcaria.com/#organization"
       },
@@ -110,7 +110,7 @@ const structuredData = {
     {
       "@type": "WebApplication",
       "@id": "https://www.profcaria.com/#application",
-      "name": "Profcaria",
+      "name": "Profcaria | Network & Find Work",
       "url": "https://www.profcaria.com",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
