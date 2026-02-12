@@ -105,7 +105,7 @@ const getCachedAuthorProfile = unstable_cache(
 
                     authorData = {
                         ...authorData,
-                        name: `${firstName} ${lastName}`.trim() || 'User',
+                        name: [firstName, lastName].filter(Boolean).join(' ') || 'User',
                         profileImage: profileImage,
                         role: role,
                         badgeType: profUser.badge_type,
