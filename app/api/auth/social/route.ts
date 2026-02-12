@@ -61,7 +61,10 @@ export async function POST(req: Request) {
                 // Issue session
                 const token = await issueToken(existingUser.id, 'professional', existingUser.has_totp || false);
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
-                const redirectPath = has2fa ? '/security/verify?redirect=/professional/feed' : '/professional/feed';
+                // Direct to homepage mode to avoid redirects
+                const redirectPath = has2fa
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/professional/feed')}`
+                    : '/professional/feed';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -128,7 +131,8 @@ export async function POST(req: Request) {
             }
 
             const token = await issueToken(newUser.id, 'professional', false);
-            const response = NextResponse.json({ success: true, redirect: '/professional/feed' });
+            // New user needs security setup
+            const response = NextResponse.json({ success: true, redirect: '/?mode=setup' });
             setSessionCookie(response, token);
             return response;
         }
@@ -167,7 +171,10 @@ export async function POST(req: Request) {
 
                 const token = await issueToken(existingCompany.id, 'employer', existingCompany.has_totp || false);
                 const has2fa = existingCompany.has_totp || existingCompany.has_passkey || existingCompany.has_phone_otp;
-                const redirectPath = has2fa ? '/security/verify?redirect=/employer/feed' : '/employer/feed';
+                // Direct to homepage mode
+                const redirectPath = has2fa
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/employer/feed')}`
+                    : '/employer/feed';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -226,7 +233,8 @@ export async function POST(req: Request) {
             }
 
             const token = await issueToken(newCompany.id, 'employer', false);
-            const response = NextResponse.json({ success: true, redirect: '/employer/feed' });
+            // New employer needs security setup
+            const response = NextResponse.json({ success: true, redirect: '/?mode=setup' });
             setSessionCookie(response, token);
             return response;
         }

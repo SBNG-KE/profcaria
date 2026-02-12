@@ -19,17 +19,13 @@ export default async function LandingPage({
     if (token && !mode) {
       const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
       const { payload } = await jwtVerify(token, secretKey);
-      
+
       if (payload?.schema === 'professional') {
         redirect('/professional/feed');
       } else if (payload?.schema === 'employer') {
         redirect('/employer/feed');
       }
     }
-  } catch (e) {
-    // If token is invalid or verification fails, just render the landing page
-    // No action needed, flow continues below
-  }
   } catch (e) {
     // If token is invalid or verification fails, just render the landing page
     // No action needed, flow continues below

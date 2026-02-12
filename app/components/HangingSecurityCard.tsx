@@ -13,7 +13,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
     ShieldCheck,
@@ -53,6 +53,7 @@ interface HangingSecurityCardProps {
 
 export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'setup' }: HangingSecurityCardProps) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const autoStarted = useRef(false);
@@ -312,7 +313,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
             }
 
             router.refresh();
-            router.push(data.redirect || '/');
+            const redirectUrl = searchParams.get('redirect');
+            router.push(data.redirect || redirectUrl || '/');
         } catch (err: any) {
             setError(err.message || 'Invalid code');
         } finally {
@@ -363,7 +365,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
             }
 
             router.refresh();
-            router.push(verificationJSON.redirect || '/');
+            const redirectUrl = searchParams.get('redirect');
+            router.push(verificationJSON.redirect || redirectUrl || '/');
         } catch (err: any) {
             console.error('Passkey Auth Error:', err);
             setError(err.message || 'Passkey authentication failed');
@@ -394,7 +397,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
             }
 
             router.refresh();
-            router.push(data.redirect || '/');
+            const redirectUrl = searchParams.get('redirect');
+            router.push(data.redirect || redirectUrl || '/');
         } catch (err: any) {
             setError(err.message || 'Invalid code');
             setVerifying(false);
@@ -418,17 +422,17 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
     // RENDER
     // =============================================
     return (
-        <div className="fixed inset-0 z-[100] flex justify-center items-start pt-24 pointer-events-none">
+        <div className="fixed inset-0 z-[100] flex justify-center items-start pt-4 md:pt-8 pointer-events-none">
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto" onClick={onClose} />
 
             {/* HANGING CARD */}
             <div
                 className={`
-                    relative pointer-events-auto mt-8 
+                    relative pointer-events-auto mt-0
                     w-[95vw] md:w-[90vw] max-w-[550px]
-                    mx-auto lg:mx-0 lg:mr-[calc(4rem-250px)]
-                    rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[80vh]
+                    mx-auto
+                    rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] custom-scrollbar
                     transform transition-all duration-500 origin-top
                     ${isDark ? 'bg-black border border-neutral-800' : 'bg-white border text-black'}
                 `}
