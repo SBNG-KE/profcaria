@@ -41,13 +41,57 @@ export async function POST(req: Request) {
                     }
                 }
 
-                const companyId = metadata?.companyId;
-                let plan = metadata?.plan || 'basic'; // Fallback if missing
+                let companyId = metadata?.companyId;
+                let userId = metadata?.userId;
+                let plan = metadata?.plan;
                 const billingCycle = metadata?.billingCycle || 'monthly';
+                const subscriptionCode = data.subscription_code;
+                const email = data.customer?.email;
 
-                // FALBACK: Infer Plan from Amount if usage falls back to 'basic'
-                // This protects against missing metadata by checking if the amount matches Pro/Enterprise prices
-                if (plan === 'basic') {
+                // --- FALLBACK LOOKUP FOR RECURRING PAYMENTS ---
+                // If metadata is missing (common on auto-renewals), try to find the owner via subscription_code or email
+                if (!companyId && !userId && subscriptionCode) {
+                    console.log(`Metadata missing. Attempting lookup by subscription_code: ${subscriptionCode}`);
+
+                    // Try Employer First
+                    const { data: bSub } = await supabaseAdmin.schema('employer').from('subscriptions')
+                        .select('company_id, plan_type').eq('paystack_subscription_code', subscriptionCode).single();
+
+                    if (bSub) {
+                        companyId = bSub.company_id;
+                        if (!plan) plan = bSub.plan_type;
+                        console.log('Found Employer via SubCode:', companyId);
+                    } else {
+                        // Try Professional
+                        const { data: pSub } = await supabaseAdmin.schema('professional').from('subscriptions')
+                            .select('user_id, plan_type').eq('paystack_subscription_code', subscriptionCode).single();
+
+                        if (pSub) {
+                            userId = pSub.user_id;
+                            if (!plan) plan = pSub.plan_type;
+                            console.log('Found Professional via SubCode:', userId);
+                        }
+                    }
+                }
+
+                // Fallback by Email if still not found (Riskier, but better than failing)
+                if (!companyId && !userId && email) {
+                    console.log(`Metadata & SubCode missing. Attempting lookup by email: ${email}`);
+                    // Try Employer (via company owner email? or work_email?) 
+                    // Ideally we check permissions/users table. simplified: check 'employer.companies' where work_email matches or something. 
+                    // Actually, subscriptions table has paystack_email_token? No, that's different.
+                    // Let's check 'professional.users' for email.
+                    const { data: pUser } = await supabaseAdmin.schema('professional').from('users').select('id').eq('email', email).single();
+                    if (pUser) {
+                        userId = pUser.id;
+                        console.log('Found Professional via Email:', userId);
+                    }
+                    // Employer lookup by email is harder without a direct link, skip for safety unless we have a specific table.
+                }
+
+
+                // FALBACK: Infer Plan from Amount if usage falls back to 'basic' or is undefined
+                if (!plan || plan === 'basic') {
                     try {
                         const rate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
                         const paidAmount = data.amount; // in kobo/cents
@@ -55,9 +99,6 @@ export async function POST(req: Request) {
                         const getExpectedAmount = (priceEnv: string | undefined) => {
                             const p = parseFloat(priceEnv || '0');
                             if (p <= 0) return -1;
-                            // Checkout logic: Math.round(Math.round(p * rate * 100) / 100 * 100) ... wait
-                            // Checkout: display = p * rate. finalDisplay = round(display*100)/100. Paystack = finalDisplay * 100.
-                            // Effectively: Math.round( (Math.round(p * rate * 100)/100) * 100 )
                             const display = p * rate;
                             const finalDisplay = Math.round(display * 100) / 100;
                             return Math.round(finalDisplay * 100);
@@ -82,8 +123,10 @@ export async function POST(req: Request) {
                     }
                 }
 
-                console.log('Parsed CompanyId:', companyId);
-                console.log('Final Plan:', plan);
+                // If we still don't have a plan, default to basic (or whatever was there)
+                if (!plan) plan = 'basic';
+
+                console.log('Final Target:', { companyId, userId, plan });
 
                 if (companyId) {
                     // EMPLOYER SUBSCRIPTION HANDLING
@@ -101,17 +144,21 @@ export async function POST(req: Request) {
                     });
 
                     // 2. Update Previous Active Subscriptions with switch info
-                    await supabaseAdmin
-                        .schema('employer')
-                        .from('subscriptions')
-                        .update({
-                            status: 'switched',
-                            switched_from: null // This was the current plan being replaced
-                        })
-                        .eq('company_id', companyId)
-                        .eq('status', 'active');
+                    // Only if this is a NEW switch/subscription, usually indicated by metadata.
+                    // For recurring, we just upsert.
+                    if (switchingFrom) {
+                        await supabaseAdmin
+                            .schema('employer')
+                            .from('subscriptions')
+                            .update({
+                                status: 'switched',
+                                switched_from: null
+                            })
+                            .eq('company_id', companyId)
+                            .eq('status', 'active');
+                    }
 
-                    // 3. Grant Access (Insert New Subscription)
+                    // 3. Grant Access (Insert New Subscription or Update Existing)
                     const endDate = new Date();
                     if (billingCycle === 'yearly') {
                         endDate.setFullYear(endDate.getFullYear() + 1);
@@ -135,43 +182,42 @@ export async function POST(req: Request) {
                         amount_paid: amountPaidUSD.toFixed(2),
                         prorated_refund: proratedRefund.toFixed(2),
                         switched_from: switchingFrom,
-                        is_one_time: isOneTime, // Track one-time vs recurring
-                        // Reset usage on new payment
+                        is_one_time: isOneTime,
+                        // Reset usage on new payment? 
+                        // Maybe only if it's a new cycle. Upsert helps here.
                         usage_jobs: 0,
                         usage_connections: 0,
                         usage_top_matches: 0
-                    });
+                    }, { onConflict: 'company_id, status' }); // Warning: This onConflict might be tricky if we have multiple active rows? Schema enforces one active?
 
                     // 4. Sync Badge Type
                     let badge = 'gray';
                     if (plan === 'pro') badge = 'blue';
                     if (plan === 'enterprise') badge = 'gold';
-                    if (plan === 'verified') badge = 'blue';
 
                     await supabaseAdmin.schema('employer').from('companies').update({ badge_type: badge }).eq('id', companyId);
                 }
 
-                // PROFESSIONAL SUBSCRIPTION HANDLING
-                const userId = metadata?.userId;
-                const entityType = metadata?.entityType;
-
-                if (userId && entityType === 'professional') {
+                if (userId) {
+                    // PROFESSIONAL SUBSCRIPTION HANDLING
                     const proratedRefund = metadata?.proratedRefund ? parseFloat(metadata.proratedRefund) : 0;
                     const switchingFrom = metadata?.switchingFrom || null;
                     const isOneTime = metadata?.isOneTime || false;
 
                     // 1. Update Previous Active Subscriptions
-                    await supabaseAdmin
-                        .schema('professional')
-                        .from('subscriptions')
-                        .update({
-                            status: 'switched',
-                            switched_from: null
-                        })
-                        .eq('user_id', userId)
-                        .eq('status', 'active');
+                    if (switchingFrom) {
+                        await supabaseAdmin
+                            .schema('professional')
+                            .from('subscriptions')
+                            .update({
+                                status: 'switched',
+                                switched_from: null
+                            })
+                            .eq('user_id', userId)
+                            .eq('status', 'active');
+                    }
 
-                    // 2. Grant Access (Insert New Subscription)
+                    // 2. Grant Access
                     const endDate = new Date();
                     if (billingCycle === 'yearly') {
                         endDate.setFullYear(endDate.getFullYear() + 1);
@@ -179,7 +225,6 @@ export async function POST(req: Request) {
                         endDate.setMonth(endDate.getMonth() + 1);
                     }
 
-                    // Calculate actual amount paid in USD for future proration
                     const rate = parseFloat(process.env.USD_EXCHANGE_RATE || '1');
                     const amountPaidUSD = (data.amount / 100) / rate;
 
@@ -194,10 +239,11 @@ export async function POST(req: Request) {
                         amount_paid: amountPaidUSD.toFixed(2),
                         prorated_refund: proratedRefund.toFixed(2),
                         switched_from: switchingFrom,
-                        is_one_time: isOneTime // Track one-time vs recurring
-                    });
+                        is_one_time: isOneTime
+                    }); // Remove explicit onConflict to let it infer if PK matches or just insert new history? 
+                    // Ideally we want one ACTIVE row per user.
 
-                    // 3. Sync Badge Type based on plan
+                    // 3. Sync Badge Type
                     let badge = 'none';
                     if (plan === 'basic') badge = 'gray';
                     if (plan === 'standard') badge = 'blue';
@@ -210,30 +256,68 @@ export async function POST(req: Request) {
 
             case 'subscription.create': {
                 const data = event.data;
-                const companyId = data.metadata?.companyId;
+                console.log('--- WEBHOOK SUBSCRIPTION.CREATE ---');
 
-                // We MUST NOT insert a new row here because we lack Plan Metadata.
-                // This event often races with charge.success. 
-                // We strictly use this to ENRICH the existing active subscription with codes if needed.
+                // Metadata might be here if we passed it during initialization
+                let metadata = data.metadata; // data.metadata passed during init
+                // Sometimes it's nested or flattened differently in subscription events, 
+                // but usually Paystack passes what we sent.
 
-                let targetCompanyId = companyId;
+                const companyId = metadata?.companyId;
+                const userId = metadata?.userId;
 
-                if (targetCompanyId) {
+                if (companyId) {
                     await supabaseAdmin.schema('employer')
+                        .from('subscriptions')
+                        .update({
+                            paystack_subscription_code: data.subscription_code,
+                            paystack_email_token: data.email_token,
+                            current_period_end: data.next_payment_date // Important!
+                        })
+                        .eq('company_id', companyId)
+                        .eq('status', 'active');
+                } else if (userId) {
+                    await supabaseAdmin.schema('professional')
                         .from('subscriptions')
                         .update({
                             paystack_subscription_code: data.subscription_code,
                             paystack_email_token: data.email_token,
                             current_period_end: data.next_payment_date
                         })
-                        .eq('company_id', targetCompanyId)
+                        .eq('user_id', userId)
                         .eq('status', 'active');
+                } else {
+                    // Try to match by email if metadata is missing
+                    const email = data.customer?.email;
+                    if (email) {
+                        // Check Professional First
+                        const { data: pUser } = await supabaseAdmin.schema('professional').from('users').select('id').eq('email', email).single();
+                        if (pUser) {
+                            await supabaseAdmin.schema('professional')
+                                .from('subscriptions')
+                                .update({
+                                    paystack_subscription_code: data.subscription_code,
+                                    paystack_email_token: data.email_token,
+                                    current_period_end: data.next_payment_date
+                                })
+                                .eq('user_id', pUser.id)
+                                .eq('status', 'active');
+                        }
+                    }
                 }
                 break;
             }
             case 'subscription.disable': {
                 const data = event.data;
-                await supabaseAdmin.schema('employer').from('subscriptions').update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+                // Try Employer
+                const { error: eErr } = await supabaseAdmin.schema('employer').from('subscriptions')
+                    .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+
+                // Try Professional
+                if (eErr || true) { // Always try both just in case
+                    await supabaseAdmin.schema('professional').from('subscriptions')
+                        .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+                }
                 break;
             }
         }

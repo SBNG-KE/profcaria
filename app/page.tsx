@@ -5,13 +5,18 @@ import { jwtVerify } from 'jose';
 import LandingPageClient from '@/app/components/LandingPageClient';
 
 // Server Component (Default)
-export default async function LandingPage() {
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string }>;
+}) {
   // Server-side auth check for instant redirect
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('profcaria_session')?.value;
+    const { mode } = await searchParams;
 
-    if (token) {
+    if (token && !mode) {
       const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
       const { payload } = await jwtVerify(token, secretKey);
       
@@ -21,6 +26,10 @@ export default async function LandingPage() {
         redirect('/employer/feed');
       }
     }
+  } catch (e) {
+    // If token is invalid or verification fails, just render the landing page
+    // No action needed, flow continues below
+  }
   } catch (e) {
     // If token is invalid or verification fails, just render the landing page
     // No action needed, flow continues below
