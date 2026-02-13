@@ -57,40 +57,73 @@ export default function JourneyAnimation() {
                 </defs>
 
                 {/* Connection Path (Vertical Zig Zag) */}
-                {/* Connection Path (Vertical Zig Zag) */}
-                <motion.path
-                    d="M 50,300 L 150,100 L 300,500 L 450,100 L 550,300"
-                    fill="none"
-                    stroke={isDark ? '#3b82f6' : '#2563eb'} // Solid Blue instead of Gradient
-                    strokeWidth="6" // Thicker stroke
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeDasharray="15 15"
-                    variants={pathVariants}
-                    initial="hidden"
-                    animate="visible"
-                    style={{ opacity: 0.6 }} // Base opacity
-                />
+                {/* DESKTOP ANIMATION (Zig Zag) - Hidden on mobile */}
+                <g className="hidden md:block">
+                    <motion.path
+                        d="M 50,300 L 150,100 L 300,500 L 450,100 L 550,300"
+                        fill="none"
+                        stroke="url(#lineGradient)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeDasharray="15 15"
+                        variants={pathVariants}
+                        initial="hidden"
+                        animate="visible"
+                    />
+                    <motion.circle
+                        r="8"
+                        fill={isDark ? '#ffffff' : '#000000'}
+                        initial={{ offsetDistance: "0%" }}
+                        animate={{
+                            offsetDistance: "100%",
+                            opacity: [0, 1, 1, 1, 0]
+                        }}
+                        transition={{
+                            duration: 3,
+                            ease: "linear",
+                            repeat: Infinity,
+                            repeatDelay: 1
+                        }}
+                        style={{
+                            offsetPath: "path('M 50,300 L 150,100 L 300,500 L 450,100 L 550,300')",
+                        }}
+                    />
+                </g>
 
-                {/* Moving Dot */}
-                <motion.circle
-                    r="10" // Larger ball
-                    fill={isDark ? '#eab308' : '#ca8a04'} // Yellow/Amber
-                    initial={{ offsetDistance: "0%", opacity: 0 }}
-                    animate={{
-                        offsetDistance: "100%",
-                        opacity: [0, 1, 1, 1, 0]
-                    }}
-                    transition={{
-                        duration: 4, // Slower for visibility
-                        ease: "linear",
-                        repeat: Infinity,
-                        repeatDelay: 0.5
-                    }}
-                    style={{
-                        offsetPath: "path('M 50,300 L 150,100 L 300,500 L 450,100 L 550,300')",
-                    }}
-                />
+                {/* MOBILE ANIMATION (Straight Line) - Visible only on mobile */}
+                <g className="block md:hidden">
+                    <motion.path
+                        d="M 50,300 L 550,300"
+                        fill="none"
+                        stroke="url(#lineGradient)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeDasharray="15 15"
+                        variants={pathVariants}
+                        initial="hidden"
+                        animate="visible"
+                    />
+                    <motion.circle
+                        r="8"
+                        fill={isDark ? '#ffffff' : '#000000'}
+                        initial={{ offsetDistance: "0%" }}
+                        animate={{
+                            offsetDistance: "100%",
+                            opacity: [0, 1, 1, 1, 0]
+                        }}
+                        transition={{
+                            duration: 3,
+                            ease: "linear",
+                            repeat: Infinity,
+                            repeatDelay: 1
+                        }}
+                        style={{
+                            offsetPath: "path('M 50,300 L 550,300')",
+                        }}
+                    />
+                </g>
 
             </svg>
 
