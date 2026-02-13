@@ -48,24 +48,14 @@ export default function JourneyAnimation() {
             >
                 {/* Defs for gradient */}
                 <defs>
-                    {/* Desktop Gradient (Subtle) */}
                     <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.1" />
                         <stop offset="40%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.4" />
                         <stop offset="60%" stopColor={isDark ? '#eab308' : '#ca8a04'} stopOpacity="0.4" />
                         <stop offset="100%" stopColor={isDark ? '#eab308' : '#ca8a04'} stopOpacity="0.1" />
                     </linearGradient>
-
-                    {/* Mobile Gradient (High Contrast) */}
-                    <linearGradient id="lineGradientMobile" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.3" />
-                        <stop offset="30%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.8" />
-                        <stop offset="70%" stopColor={isDark ? '#eab308' : '#ca8a04'} stopOpacity="0.8" />
-                        <stop offset="100%" stopColor={isDark ? '#eab308' : '#ca8a04'} stopOpacity="0.3" />
-                    </linearGradient>
                 </defs>
 
-                {/* Connection Path (Vertical Zig Zag) */}
                 {/* DESKTOP ANIMATION (Zig Zag) - Hidden on mobile */}
                 <g className="hidden md:block">
                     <motion.path
@@ -105,17 +95,25 @@ export default function JourneyAnimation() {
                     <motion.path
                         d="M 50,300 L 550,300"
                         fill="none"
-                        stroke="url(#lineGradientMobile)"
-                        strokeWidth="8"
+                        stroke="url(#lineGradient)" // Using same gradient as requested
+                        strokeWidth="6"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeDasharray="15 15"
-                        variants={pathVariants}
-                        initial="hidden"
-                        animate="visible"
+                        initial={{ pathLength: 0, opacity: 1 }} // Force opacity 1
+                        animate={{
+                            pathLength: 1,
+                            transition: {
+                                duration: 3,
+                                ease: "linear",
+                                repeat: Infinity,
+                                repeatType: "loop",
+                                repeatDelay: 1
+                            }
+                        }}
                     />
                     <motion.circle
-                        r="12"
+                        r="8"
                         fill={isDark ? '#ffffff' : '#000000'}
                         initial={{ offsetDistance: "0%" }}
                         animate={{
