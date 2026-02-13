@@ -57,33 +57,35 @@ export default function JourneyAnimation() {
                 </defs>
 
                 {/* Connection Path (Vertical Zig Zag) */}
+                {/* Connection Path (Vertical Zig Zag) */}
                 <motion.path
                     d="M 50,300 L 150,100 L 300,500 L 450,100 L 550,300"
                     fill="none"
-                    stroke="url(#lineGradient)"
-                    strokeWidth="4"
+                    stroke={isDark ? '#3b82f6' : '#2563eb'} // Solid Blue instead of Gradient
+                    strokeWidth="6" // Thicker stroke
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeDasharray="15 15"
                     variants={pathVariants}
                     initial="hidden"
                     animate="visible"
+                    style={{ opacity: 0.6 }} // Base opacity
                 />
 
                 {/* Moving Dot */}
                 <motion.circle
-                    r="8"
-                    fill={isDark ? '#ffffff' : '#000000'}
-                    initial={{ offsetDistance: "0%" }}
+                    r="10" // Larger ball
+                    fill={isDark ? '#eab308' : '#ca8a04'} // Yellow/Amber
+                    initial={{ offsetDistance: "0%", opacity: 0 }}
                     animate={{
                         offsetDistance: "100%",
                         opacity: [0, 1, 1, 1, 0]
                     }}
                     transition={{
-                        duration: 3,
+                        duration: 4, // Slower for visibility
                         ease: "linear",
                         repeat: Infinity,
-                        repeatDelay: 1
+                        repeatDelay: 0.5
                     }}
                     style={{
                         offsetPath: "path('M 50,300 L 150,100 L 300,500 L 450,100 L 550,300')",
