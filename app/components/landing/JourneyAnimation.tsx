@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { NotebookPen, Monitor, User } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -13,7 +13,7 @@ export default function JourneyAnimation() {
     // M = Move to (x, y)
     // L = Line to (x, y)
     // We'll use percentage-based coordinates for responsiveness if possible, or SVG viewBox
-    const pathVariants = {
+    const pathVariants: Variants = {
         hidden: { pathLength: 0, opacity: 0 },
         visible: {
             pathLength: 1,
@@ -22,13 +22,13 @@ export default function JourneyAnimation() {
                 duration: 3,
                 ease: "linear",
                 repeat: Infinity,
-                repeatType: "loop" as const,
+                repeatType: "loop",
                 repeatDelay: 1
             }
         }
     };
 
-    const iconVariants = {
+    const iconVariants: Variants = {
         hidden: { scale: 0, opacity: 0 },
         visible: {
             scale: 1,
