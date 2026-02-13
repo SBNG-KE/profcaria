@@ -207,7 +207,8 @@ export default function LandingPageClient() {
                     </div>
 
                     {/* RIGHT: SPACER (Animation is now background) */}
-                    <div className="hidden lg:block flex-1 h-[400px] md:h-[600px] relative">
+                    {/* RIGHT: SPACER (Animation is now background) */}
+                    <div className="flex-1 w-full h-[300px] md:h-[600px] relative mt-8 lg:mt-0">
                         <div className="absolute inset-0 z-0">
                             <JourneyAnimation />
                         </div>
