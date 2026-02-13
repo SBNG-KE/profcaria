@@ -41,12 +41,16 @@ export default function JourneyAnimation() {
 
     return (
         <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
+
+            {/* =========================================
+               UNIFIED ANIMATION (Zig Zag)
+               Visible on ALL devices, scales down via SVG
+               ========================================= */}
             <svg
                 viewBox="0 0 600 600"
                 className="w-full h-full absolute inset-0"
                 preserveAspectRatio="xMidYMid meet"
             >
-                {/* Defs for gradient */}
                 <defs>
                     <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.1" />
@@ -56,82 +60,36 @@ export default function JourneyAnimation() {
                     </linearGradient>
                 </defs>
 
-                {/* DESKTOP ANIMATION (Zig Zag) - Hidden on mobile */}
-                <g className="hidden md:block">
-                    <motion.path
-                        d="M 50,300 L 150,100 L 300,500 L 450,100 L 550,300"
-                        fill="none"
-                        stroke="url(#lineGradient)"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray="15 15"
-                        variants={pathVariants}
-                        initial="hidden"
-                        animate="visible"
-                    />
-                    <motion.circle
-                        r="8"
-                        fill={isDark ? '#ffffff' : '#000000'}
-                        initial={{ offsetDistance: "0%" }}
-                        animate={{
-                            offsetDistance: "100%",
-                            opacity: [0, 1, 1, 1, 0]
-                        }}
-                        transition={{
-                            duration: 3,
-                            ease: "linear",
-                            repeat: Infinity,
-                            repeatDelay: 1
-                        }}
-                        style={{
-                            offsetPath: "path('M 50,300 L 150,100 L 300,500 L 450,100 L 550,300')",
-                        }}
-                    />
-                </g>
-
-                {/* MOBILE ANIMATION (Straight Line) - Visible only on mobile */}
-                <g className="block md:hidden">
-                    <motion.path
-                        d="M 50,300 L 550,300"
-                        fill="none"
-                        stroke="url(#lineGradient)" // Using same gradient as requested
-                        strokeWidth="6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeDasharray="15 15"
-                        initial={{ pathLength: 0, opacity: 1 }} // Force opacity 1
-                        animate={{
-                            pathLength: 1,
-                            transition: {
-                                duration: 3,
-                                ease: "linear",
-                                repeat: Infinity,
-                                repeatType: "loop",
-                                repeatDelay: 1
-                            }
-                        }}
-                    />
-                    <motion.circle
-                        r="8"
-                        fill={isDark ? '#ffffff' : '#000000'}
-                        initial={{ offsetDistance: "0%" }}
-                        animate={{
-                            offsetDistance: "100%",
-                            opacity: [0, 1, 1, 1, 0]
-                        }}
-                        transition={{
-                            duration: 3,
-                            ease: "linear",
-                            repeat: Infinity,
-                            repeatDelay: 1
-                        }}
-                        style={{
-                            offsetPath: "path('M 50,300 L 550,300')",
-                        }}
-                    />
-                </g>
-
+                <motion.path
+                    d="M 50,300 L 150,100 L 300,500 L 450,100 L 550,300"
+                    fill="none"
+                    stroke="url(#lineGradient)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeDasharray="15 15"
+                    variants={pathVariants}
+                    initial="hidden"
+                    animate="visible"
+                />
+                <motion.circle
+                    r="8"
+                    fill={isDark ? '#ffffff' : '#000000'}
+                    initial={{ offsetDistance: "0%" }}
+                    animate={{
+                        offsetDistance: "100%",
+                        opacity: [0, 1, 1, 1, 0]
+                    }}
+                    transition={{
+                        duration: 3,
+                        ease: "linear",
+                        repeat: Infinity,
+                        repeatDelay: 1
+                    }}
+                    style={{
+                        offsetPath: "path('M 50,300 L 150,100 L 300,500 L 450,100 L 550,300')",
+                    }}
+                />
             </svg>
 
             {/* Start Icon: Notepad & Pen */}
