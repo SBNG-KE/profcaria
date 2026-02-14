@@ -212,10 +212,10 @@ export default function LandingPageClient() {
 
                     {/* RIGHT: SPACER (Animation is now background) */}
                     {/* RIGHT: SPACER (Animation is now background) */}
-                    <div className="w-full lg:flex-1 relative -mt-12 lg:mt-0 -mb-16 lg:mb-0 flex justify-center lg:block h-[220px] lg:h-[600px] overflow-hidden">
+                    <div className="w-full lg:flex-1 relative -mt-12 lg:mt-0 -mb-8 lg:mb-0 flex justify-center lg:justify-center lg:items-center h-[220px] lg:h-[600px] overflow-hidden">
                         {/* Mobile: Scale down significantly (0.5). Desktop: Full scale (1). */}
                         {/* We force the inner container to be 600x600 so SVG renders perfectly, then shrink it. */}
-                        <div className="w-[600px] h-[600px] origin-top scale-[0.5] md:scale-100 md:origin-top-left">
+                        <div className="w-[600px] h-[600px] origin-top scale-[0.5] lg:scale-100 lg:origin-center">
                             <JourneyAnimation />
                         </div>
                     </div>
