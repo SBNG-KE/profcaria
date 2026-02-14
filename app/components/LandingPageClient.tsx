@@ -146,7 +146,11 @@ export default function LandingPageClient() {
           HERO SECTION - Minimalist & Bold
           Shows peek of next section at bottom
           ============================================ */}
-            <section className="relative min-h-[75vh] flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10 py-12 md:py-0">
+            {/* ============================================
+          HERO SECTION - Minimalist & Bold
+          Shows peek of next section at bottom
+          ============================================ */}
+            <section className="relative min-h-auto lg:min-h-[75vh] flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10 py-12 md:py-0">
                 {/* Full Width Background Animation REMOVED */}
 
                 <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-24 w-full relative z-10">
@@ -208,8 +212,10 @@ export default function LandingPageClient() {
 
                     {/* RIGHT: SPACER (Animation is now background) */}
                     {/* RIGHT: SPACER (Animation is now background) */}
-                    <div className="flex-1 w-full h-[300px] md:h-[600px] relative mt-8 lg:mt-0">
-                        <div className="absolute inset-0 z-0">
+                    <div className="w-full lg:flex-1 relative -mt-12 lg:mt-0 -mb-16 lg:mb-0 flex justify-center lg:block h-[220px] lg:h-[600px] overflow-hidden">
+                        {/* Mobile: Scale down significantly (0.5). Desktop: Full scale (1). */}
+                        {/* We force the inner container to be 600x600 so SVG renders perfectly, then shrink it. */}
+                        <div className="w-[600px] h-[600px] origin-top scale-[0.5] md:scale-100 md:origin-top-left">
                             <JourneyAnimation />
                         </div>
                     </div>

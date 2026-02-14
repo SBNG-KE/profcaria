@@ -48,7 +48,7 @@ export default function PlatformTour() {
     });
 
     return (
-        <section ref={containerRef} className={`relative py-32 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
+        <section ref={containerRef} className={`relative py-12 md:py-32 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
 
             {/* BACKGROUND CONSTELLATION ANIMATION (The "Profcaria Universe") */}
             <div className="absolute inset-0 pointer-events-none z-0">
@@ -57,7 +57,7 @@ export default function PlatformTour() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
-                <div className="mb-20 text-left">
+                <div className="mb-4 md:mb-8 text-left">
                     <div className={`text-xs font-bold uppercase tracking-[0.3em] pl-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                         See how Profcaria redefines professional networking.
                     </div>

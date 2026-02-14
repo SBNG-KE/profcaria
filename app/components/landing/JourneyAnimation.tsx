@@ -12,7 +12,6 @@ export default function JourneyAnimation() {
     // Path configuration for zigzag
     // M = Move to (x, y)
     // L = Line to (x, y)
-    // We'll use percentage-based coordinates for responsiveness if possible, or SVG viewBox
     const pathVariants: Variants = {
         hidden: { pathLength: 0, opacity: 0 },
         visible: {
@@ -37,15 +36,8 @@ export default function JourneyAnimation() {
         }
     };
 
-    // popupVariants removed in favor of direct keyframe animation for tighter sync
-
     return (
         <div className="w-full h-full relative flex items-center justify-center pointer-events-none">
-
-            {/* =========================================
-               UNIFIED ANIMATION (Zig Zag)
-               Visible on ALL devices, scales down via SVG
-               ========================================= */}
             <svg
                 viewBox="0 0 600 600"
                 className="w-full h-full absolute inset-0"
@@ -131,8 +123,8 @@ export default function JourneyAnimation() {
                             opacity: [0, 0, 1, 1, 0]
                         }}
                         transition={{
-                            duration: 4, // Matches total ball time (3s move + 1s delay)
-                            times: [0, 0.72, 0.75, 0.9, 1], // Appear exactly at 3s (0.75 * 4), vanish by end
+                            duration: 4,
+                            times: [0, 0.72, 0.75, 0.9, 1],
                             ease: "linear",
                             repeat: Infinity,
                         }}
