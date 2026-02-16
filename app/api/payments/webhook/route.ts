@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { decryptData } from '@/lib/security';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
@@ -51,42 +52,86 @@ export async function POST(req: Request) {
                 // --- FALLBACK LOOKUP FOR RECURRING PAYMENTS ---
                 // If metadata is missing (common on auto-renewals), try to find the owner via subscription_code or email
                 if (!companyId && !userId && subscriptionCode) {
-                    console.log(`Metadata missing. Attempting lookup by subscription_code: ${subscriptionCode}`);
+                    console.log(`[WEBHOOK] Metadata missing. Attempting lookup by subscription_code: ${subscriptionCode}`);
 
-                    // Try Employer First
+                    // Try Employer First (exact match)
                     const { data: bSub } = await supabaseAdmin.schema('employer').from('subscriptions')
                         .select('company_id, plan_type').eq('paystack_subscription_code', subscriptionCode).single();
 
                     if (bSub) {
                         companyId = bSub.company_id;
                         if (!plan) plan = bSub.plan_type;
-                        console.log('Found Employer via SubCode:', companyId);
+                        console.log('[WEBHOOK] Found Employer via SubCode:', companyId);
                     } else {
-                        // Try Professional
+                        // Try Professional (exact match)
                         const { data: pSub } = await supabaseAdmin.schema('professional').from('subscriptions')
                             .select('user_id, plan_type').eq('paystack_subscription_code', subscriptionCode).single();
 
                         if (pSub) {
                             userId = pSub.user_id;
                             if (!plan) plan = pSub.plan_type;
-                            console.log('Found Professional via SubCode:', userId);
+                            console.log('[WEBHOOK] Found Professional via SubCode:', userId);
                         }
                     }
                 }
 
-                // Fallback by Email if still not found (Riskier, but better than failing)
+                // Fallback by Email if still not found
                 if (!companyId && !userId && email) {
-                    console.log(`Metadata & SubCode missing. Attempting lookup by email: ${email}`);
-                    // Try Employer (via company owner email? or work_email?) 
-                    // Ideally we check permissions/users table. simplified: check 'employer.companies' where work_email matches or something. 
-                    // Actually, subscriptions table has paystack_email_token? No, that's different.
-                    // Let's check 'professional.users' for email.
-                    const { data: pUser } = await supabaseAdmin.schema('professional').from('users').select('id').eq('email', email).single();
-                    if (pUser) {
-                        userId = pUser.id;
-                        console.log('Found Professional via Email:', userId);
+                    console.log(`[WEBHOOK] SubCode lookup failed. Attempting lookup by email: ${email}`);
+
+                    // Try Employer: scan companies for matching encrypted work email
+                    const { data: companies } = await supabaseAdmin.schema('employer').from('companies')
+                        .select('id, enc_work_email');
+                    if (companies) {
+                        for (const company of companies) {
+                            try {
+                                const decryptedEmail = decryptData(company.enc_work_email);
+                                if (decryptedEmail && decryptedEmail.toLowerCase() === email.toLowerCase()) {
+                                    // Verify they have an active subscription
+                                    const { data: activeSub } = await supabaseAdmin.schema('employer').from('subscriptions')
+                                        .select('plan_type').eq('company_id', company.id).eq('status', 'active').single();
+                                    if (activeSub) {
+                                        companyId = company.id;
+                                        if (!plan) plan = activeSub.plan_type;
+                                        console.log('[WEBHOOK] Found Employer via Email match:', companyId);
+
+                                        // BONUS: Update the subscription_code so future lookups are instant
+                                        if (subscriptionCode) {
+                                            await supabaseAdmin.schema('employer').from('subscriptions')
+                                                .update({ paystack_subscription_code: subscriptionCode })
+                                                .eq('company_id', companyId)
+                                                .eq('status', 'active');
+                                            console.log('[WEBHOOK] Updated employer subscription_code to real code:', subscriptionCode);
+                                        }
+                                        break;
+                                    }
+                                }
+                            } catch { /* skip decryption errors */ }
+                        }
                     }
-                    // Employer lookup by email is harder without a direct link, skip for safety unless we have a specific table.
+
+                    // Try Professional
+                    if (!companyId && !userId) {
+                        const { data: pUser } = await supabaseAdmin.schema('professional').from('users')
+                            .select('id').eq('email', email).single();
+                        if (pUser) {
+                            userId = pUser.id;
+                            console.log('[WEBHOOK] Found Professional via Email:', userId);
+
+                            // Update subscription_code so future lookups are instant
+                            if (subscriptionCode) {
+                                await supabaseAdmin.schema('professional').from('subscriptions')
+                                    .update({ paystack_subscription_code: subscriptionCode })
+                                    .eq('user_id', userId)
+                                    .eq('status', 'active');
+                                console.log('[WEBHOOK] Updated professional subscription_code to real code:', subscriptionCode);
+                            }
+                        }
+                    }
+                }
+
+                if (!companyId && !userId) {
+                    console.error('[WEBHOOK] CRITICAL: Could not identify subscription owner.', { email, subscriptionCode, reference: data.reference });
                 }
 
 
@@ -126,7 +171,7 @@ export async function POST(req: Request) {
                 // If we still don't have a plan, default to basic (or whatever was there)
                 if (!plan) plan = 'basic';
 
-                console.log('Final Target:', { companyId, userId, plan });
+                console.log('[WEBHOOK] Final Target:', { companyId, userId, plan, subscriptionCode });
 
                 if (companyId) {
                     // EMPLOYER SUBSCRIPTION HANDLING
@@ -256,28 +301,33 @@ export async function POST(req: Request) {
 
             case 'subscription.create': {
                 const data = event.data;
-                console.log('--- WEBHOOK SUBSCRIPTION.CREATE ---');
+                console.log('[WEBHOOK] --- SUBSCRIPTION.CREATE ---');
+                console.log('[WEBHOOK] SubCode:', data.subscription_code, 'Email:', data.customer?.email);
 
-                // Metadata might be here if we passed it during initialization
-                let metadata = data.metadata; // data.metadata passed during init
-                // Sometimes it's nested or flattened differently in subscription events, 
-                // but usually Paystack passes what we sent.
+                let metadata = data.metadata;
+                if (typeof metadata === 'string') {
+                    try { metadata = JSON.parse(metadata); } catch { }
+                }
 
-                const companyId = metadata?.companyId;
-                const userId = metadata?.userId;
+                let companyId = metadata?.companyId;
+                let userId = metadata?.userId;
+                const email = data.customer?.email;
 
+                // If metadata has IDs, update directly
                 if (companyId) {
-                    await supabaseAdmin.schema('employer')
+                    const { error } = await supabaseAdmin.schema('employer')
                         .from('subscriptions')
                         .update({
                             paystack_subscription_code: data.subscription_code,
                             paystack_email_token: data.email_token,
-                            current_period_end: data.next_payment_date // Important!
+                            current_period_end: data.next_payment_date
                         })
                         .eq('company_id', companyId)
                         .eq('status', 'active');
+                    if (error) console.error('[WEBHOOK] Employer sub.create update failed:', error);
+                    else console.log('[WEBHOOK] Updated employer subscription via metadata:', companyId);
                 } else if (userId) {
-                    await supabaseAdmin.schema('professional')
+                    const { error } = await supabaseAdmin.schema('professional')
                         .from('subscriptions')
                         .update({
                             paystack_subscription_code: data.subscription_code,
@@ -286,14 +336,46 @@ export async function POST(req: Request) {
                         })
                         .eq('user_id', userId)
                         .eq('status', 'active');
-                } else {
-                    // Try to match by email if metadata is missing
-                    const email = data.customer?.email;
-                    if (email) {
-                        // Check Professional First
-                        const { data: pUser } = await supabaseAdmin.schema('professional').from('users').select('id').eq('email', email).single();
+                    if (error) console.error('[WEBHOOK] Professional sub.create update failed:', error);
+                    else console.log('[WEBHOOK] Updated professional subscription via metadata:', userId);
+                } else if (email) {
+                    // No metadata — find owner by email
+                    console.log('[WEBHOOK] sub.create: No metadata IDs, searching by email:', email);
+                    let found = false;
+
+                    // Try Employer: match encrypted work email
+                    const { data: companies } = await supabaseAdmin.schema('employer').from('companies')
+                        .select('id, enc_work_email');
+                    if (companies) {
+                        for (const company of companies) {
+                            try {
+                                const decryptedEmail = decryptData(company.enc_work_email);
+                                if (decryptedEmail && decryptedEmail.toLowerCase() === email.toLowerCase()) {
+                                    const { error } = await supabaseAdmin.schema('employer')
+                                        .from('subscriptions')
+                                        .update({
+                                            paystack_subscription_code: data.subscription_code,
+                                            paystack_email_token: data.email_token,
+                                            current_period_end: data.next_payment_date
+                                        })
+                                        .eq('company_id', company.id)
+                                        .eq('status', 'active');
+                                    if (!error) {
+                                        console.log('[WEBHOOK] Updated employer sub via email match:', company.id);
+                                        found = true;
+                                    }
+                                    break;
+                                }
+                            } catch { /* skip */ }
+                        }
+                    }
+
+                    // Try Professional
+                    if (!found) {
+                        const { data: pUser } = await supabaseAdmin.schema('professional').from('users')
+                            .select('id').eq('email', email).single();
                         if (pUser) {
-                            await supabaseAdmin.schema('professional')
+                            const { error } = await supabaseAdmin.schema('professional')
                                 .from('subscriptions')
                                 .update({
                                     paystack_subscription_code: data.subscription_code,
@@ -302,22 +384,44 @@ export async function POST(req: Request) {
                                 })
                                 .eq('user_id', pUser.id)
                                 .eq('status', 'active');
+                            if (!error) console.log('[WEBHOOK] Updated professional sub via email match:', pUser.id);
                         }
                     }
+                } else {
+                    console.error('[WEBHOOK] sub.create: No metadata and no email — cannot update subscription.');
                 }
                 break;
             }
             case 'subscription.disable': {
                 const data = event.data;
-                // Try Employer
-                const { error: eErr } = await supabaseAdmin.schema('employer').from('subscriptions')
+                console.log('[WEBHOOK] --- SUBSCRIPTION.DISABLE ---', data.subscription_code);
+                // Try both schemas
+                await supabaseAdmin.schema('employer').from('subscriptions')
                     .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+                await supabaseAdmin.schema('professional').from('subscriptions')
+                    .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+                break;
+            }
 
-                // Try Professional
-                if (eErr || true) { // Always try both just in case
-                    await supabaseAdmin.schema('professional').from('subscriptions')
-                        .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
-                }
+            case 'subscription.not_renew': {
+                const data = event.data;
+                console.log('[WEBHOOK] --- SUBSCRIPTION.NOT_RENEW ---', data.subscription_code);
+                // Mark as not renewing but still active until period end
+                await supabaseAdmin.schema('employer').from('subscriptions')
+                    .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+                await supabaseAdmin.schema('professional').from('subscriptions')
+                    .update({ status: 'cancelled' }).eq('paystack_subscription_code', data.subscription_code);
+                break;
+            }
+
+            case 'invoice.payment_failed': {
+                const data = event.data;
+                console.error('[WEBHOOK] --- INVOICE.PAYMENT_FAILED ---', {
+                    subscriptionCode: data.subscription?.subscription_code,
+                    email: data.customer?.email,
+                    amount: data.amount
+                });
+                // Don't cancel yet — Paystack will retry. Just log for monitoring.
                 break;
             }
         }
