@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
-    // Paths to protect from all crawlers (authenticated/sensitive areas)
+    // 1. Paths to protect from ALL crawlers (authenticated/sensitive areas)
+    // These contain PII or paid content and should never be indexed.
     const protectedPaths = [
         '/api/',
         '/employer/',
@@ -10,50 +11,66 @@ export default function robots(): MetadataRoute.Robots {
         '/share/',
     ]
 
-    // Legacy routes that are now modals/components within main layout
-    // These pages exist but should not be crawled as separate pages
+    // 2. Legacy/Deactivated routes (Components/Modals)
+    // Prevent these from showing up in search results as standalone pages.
     const deactivatedRoutes = [
-        '/auth',
-        '/auth/',
-        '/documentation',
-        '/documentation/',
-        '/contact',
-        '/contact/',
-        '/pricing',
-        '/pricing/',
-        '/security/setup',
-        '/security/setup/',
-        '/security/verify',
-        '/security/verify/',
+        '/auth', '/auth/',
+        '/documentation', '/documentation/',
+        '/contact', '/contact/',
+        '/pricing', '/pricing/',
+        '/security/setup', '/security/setup/',
+        '/security/verify', '/security/verify/',
     ]
 
-    // AI crawlers to explicitly allow for public content
+    // Combine all disallowed paths for cleaner usage below
+    const allDisallowed = [...protectedPaths, ...deactivatedRoutes];
+
+    // 3. AI Crawlers to explicitly ALLOW
+    // We list these explicitly so they are not accidentally blocked if you 
+    // restrict generic bots in the future.
     const aiCrawlers = [
-        'GPTBot',           // OpenAI's ChatGPT crawler
-        'ChatGPT-User',     // ChatGPT browse feature
-        'Google-Extended',  // Google AI (Gemini/Bard)
-        'ClaudeBot',        // Anthropic's Claude
-        'anthropic-ai',     // Anthropic general crawler
-        'PerplexityBot',    // Perplexity AI
-        'Cohere-ai',        // Cohere
-        'Bytespider',       // ByteDance AI
-        'CCBot',            // Common Crawl (used by many AI models)
+        // --- OpenAI ---
+        'GPTBot',               // GPT model training
+        'ChatGPT-User',         // ChatGPT live browsing
+        'OAI-SearchBot',        // OpenAI Search (SearchGPT)
+
+        // --- Google ---
+        'Google-Extended',      // Gemini & Vertex AI training
+
+        // --- Anthropic (Claude) ---
+        'ClaudeBot',            // Claude model training
+        'Claude-Web',           // Claude live browsing
+
+        // --- Apple ---
+        'Applebot-Extended',    // Apple Intelligence training
+
+        // --- Meta (Facebook) ---
+        'Meta-ExternalAgent',   // Llama model training
+
+        // --- Perplexity ---
+        'PerplexityBot',        // Perplexity Search
+
+        // --- Others ---
+        'Cohere-ai',            // Cohere
+        'Bytespider',           // ByteDance (TikTok/Doubao)
+        'CCBot',                // Common Crawl (Base data for many models)
     ]
 
     return {
         rules: [
-            // Default rule for all crawlers
+            // Rule A: General rule for all other bots (Googlebot, Bingbot, etc.)
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: [...protectedPaths, ...deactivatedRoutes],
+                disallow: allDisallowed,
             },
-            // Specific rules for AI crawlers - allow public content (homepage only)
-            ...aiCrawlers.map(bot => ({
-                userAgent: bot,
-                allow: ['/'],
-                disallow: [...protectedPaths, ...deactivatedRoutes],
-            })),
+            // Rule B: Explicit whitelist for AI Bots
+            // (Grouped together to keep robots.txt file size efficient)
+            {
+                userAgent: aiCrawlers,
+                allow: '/',
+                disallow: allDisallowed,
+            },
         ],
         sitemap: 'https://www.profcaria.com/sitemap.xml',
     }

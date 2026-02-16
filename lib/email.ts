@@ -188,17 +188,17 @@ export async function sendEmail({ to, subject, html }: { to: string, subject: st
     }
 }
 
-// NEW: Pre-Qualified Notification
-export async function sendPreQualifiedNotification(to: string, jobTitle: string, companyName: string) {
+// NEW: Shortlisted Notification
+export async function sendShortlistedNotification(to: string, jobTitle: string, companyName: string) {
     if (!resend) {
-        console.log(`[MOCK EMAIL] Pre-Qualified to ${to} for ${jobTitle}`);
+        console.log(`[MOCK EMAIL] Shortlisted to ${to} for ${jobTitle}`);
         return { success: true };
     }
 
     const content = `
         <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Great News! 🎯</h1>
         <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
-            You've been <strong>pre-qualified</strong> for a position at <strong>${companyName}</strong>!
+            You've been <strong>shortlisted</strong> for a position at <strong>${companyName}</strong>!
         </p>
         <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
             <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
@@ -221,7 +221,7 @@ export async function sendPreQualifiedNotification(to: string, jobTitle: string,
         await resend.emails.send({
             from: 'Profcaria Talent <talent@profcaria.com>',
             to,
-            subject: `🎯 Pre-Qualified: ${jobTitle} at ${companyName}`,
+            subject: `🎯 Shortlisted: ${jobTitle} at ${companyName}`,
             html: EmailWrapper(content)
         });
         return { success: true };

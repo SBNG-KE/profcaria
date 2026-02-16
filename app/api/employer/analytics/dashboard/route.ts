@@ -169,11 +169,11 @@ export async function GET(req: Request) {
         });
 
         // 3. Process Pipeline Funnel (Complete Application Journey)
-        // Tracks all stages: Applied -> Rejected/Pending -> Pre-Qualified -> Declined/Employed
+        // Tracks all stages: Applied -> Rejected/Pending -> Shortlisted -> Declined/Employed
 
         const rejected = applications.filter((a: any) => a.status === 'rejected').length;
         const pending = applications.filter((a: any) => a.status === 'pending').length;
-        const preQualified = applications.filter((a: any) => a.status === 'pre_qualified').length;
+        const shortlisted = applications.filter((a: any) => a.status === 'shortlisted').length;
         const declined = applications.filter((a: any) => a.status === 'declined').length;
         const employed = applications.filter((a: any) => ['hired', 'accepted', 'employed'].includes(a.status)).length;
 
@@ -181,7 +181,7 @@ export async function GET(req: Request) {
             { name: 'Applied', value: applications.length },
             { name: 'Rejected', value: rejected },
             { name: 'Pending', value: pending },
-            { name: 'Pre-Qualified', value: preQualified },
+            { name: 'Shortlisted', value: shortlisted },
             { name: 'Declined', value: declined },
             { name: 'Employed', value: employed }
         ];

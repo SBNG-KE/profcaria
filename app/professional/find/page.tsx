@@ -40,7 +40,7 @@ export default function FindJobsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'find' | 'applied' | 'invited' | 'saved'>('find');
-    const [appliedFilter, setAppliedFilter] = useState<'all' | 'waiting' | 'rejected' | 'pre_qualified' | 'declined' | 'employed'>('all');
+    const [appliedFilter, setAppliedFilter] = useState<'all' | 'waiting' | 'rejected' | 'shortlisted' | 'declined' | 'employed'>('all');
     const [searchType, setSearchType] = useState<'job' | 'company'>('job');
     const [linkedJobId, setLinkedJobId] = useState<string | null>(null);
     const [savingJobId, setSavingJobId] = useState<string | null>(null);
@@ -314,7 +314,7 @@ export default function FindJobsPage() {
                 const status = job.applicationStatus?.toLowerCase() || '';
                 if (appliedFilter === 'waiting') matchesMode = status === 'pending' || status === 'waiting';
                 else if (appliedFilter === 'rejected') matchesMode = status === 'rejected';
-                else if (appliedFilter === 'pre_qualified') matchesMode = status === 'pre_qualified';
+                else if (appliedFilter === 'shortlisted') matchesMode = status === 'shortlisted';
                 else if (appliedFilter === 'declined') matchesMode = status === 'declined';
                 else if (appliedFilter === 'employed') matchesMode = ['employed', 'hired', 'accepted'].includes(status);
             }
@@ -332,7 +332,7 @@ export default function FindJobsPage() {
         all: appliedJobs.length,
         waiting: appliedJobs.filter(j => ['pending', 'waiting'].includes(j.applicationStatus?.toLowerCase() || '')).length,
         rejected: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'rejected').length,
-        pre_qualified: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'pre_qualified').length,
+        shortlisted: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'shortlisted').length,
         declined: appliedJobs.filter(j => j.applicationStatus?.toLowerCase() === 'declined').length,
         employed: appliedJobs.filter(j => ['employed', 'hired', 'accepted'].includes(j.applicationStatus?.toLowerCase() || '')).length,
     };
@@ -459,7 +459,7 @@ export default function FindJobsPage() {
                     <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2">
                         <button onClick={() => setAppliedFilter('all')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'all' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>All ({appliedCounts.all})</button>
                         <button onClick={() => setAppliedFilter('waiting')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'waiting' ? 'bg-amber-600 text-white border-amber-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Waiting ({appliedCounts.waiting})</button>
-                        <button onClick={() => setAppliedFilter('pre_qualified')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'pre_qualified' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Pre-qualified ({appliedCounts.pre_qualified})</button>
+                        <button onClick={() => setAppliedFilter('shortlisted')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'shortlisted' ? (isDark ? 'bg-white text-black border-white' : 'bg-black text-white border-black') : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Shortlisted ({appliedCounts.shortlisted})</button>
                         <button onClick={() => setAppliedFilter('employed')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'employed' ? 'bg-emerald-600 text-white border-emerald-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Employed ({appliedCounts.employed})</button>
                         <button onClick={() => setAppliedFilter('rejected')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'rejected' ? 'bg-red-600 text-white border-red-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Rejected ({appliedCounts.rejected})</button>
                         <button onClick={() => setAppliedFilter('declined')} className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border ${appliedFilter === 'declined' ? 'bg-neutral-600 text-white border-neutral-500' : isDark ? 'bg-neutral-800/50 text-neutral-400 border-neutral-700 hover:text-white' : 'bg-neutral-100 text-neutral-500 border-neutral-200 hover:text-black'}`}>Declined ({appliedCounts.declined})</button>
@@ -534,7 +534,7 @@ export default function FindJobsPage() {
                                         </div>
                                     </div>
                                     {job.applicationStatus && (
-                                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : job.applicationStatus === 'pre_qualified' ? (isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/10 text-black border-black/20') : ['employed', 'hired', 'accepted'].includes(job.applicationStatus) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : job.applicationStatus === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' : isDark ? 'bg-neutral-800 text-neutral-500 border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
+                                        <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border flex items-center gap-2 w-fit ${job.applicationStatus === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : job.applicationStatus === 'shortlisted' ? (isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/10 text-black border-black/20') : ['employed', 'hired', 'accepted'].includes(job.applicationStatus) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : job.applicationStatus === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' : isDark ? 'bg-neutral-800 text-neutral-500 border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
                                             <CheckCircle2 size={10} /> {job.applicationStatus.replace('_', ' ')}
                                         </div>
                                     )}

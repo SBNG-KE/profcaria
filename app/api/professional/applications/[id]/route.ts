@@ -40,8 +40,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        // Allow retraction only if pending (user said "if still not pre-qualified")
-        // Actually, user said "retract the first one if still not pre-qualified".
+        // Allow retraction only if pending (user said "if still not shortlisted")
+        // Actually, user said "retract the first one if still not shortlisted".
         if (app.status !== 'pending') {
             return NextResponse.json({ error: 'Cannot retract processed application' }, { status: 400 });
         }

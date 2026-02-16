@@ -373,14 +373,14 @@ export default function AnalyticsDashboard({ employerData, isDark }: { employerD
                                 stage.name === 'Applied' ? 'bg-neutral-500' :
                                     stage.name === 'Rejected' ? 'bg-neutral-600' :
                                         stage.name === 'Pending' ? 'bg-neutral-400' :
-                                            stage.name === 'Pre-Qualified' ? 'bg-neutral-500' :
+                                            stage.name === 'Shortlisted' ? 'bg-neutral-500' :
                                                 stage.name === 'Declined' ? 'bg-neutral-600' :
                                                     stage.name === 'Employed' ? 'bg-white' : 'bg-neutral-500'
                             ) : (
                                 stage.name === 'Applied' ? 'bg-neutral-400' :
                                     stage.name === 'Rejected' ? 'bg-neutral-300' :
                                         stage.name === 'Pending' ? 'bg-neutral-500' :
-                                            stage.name === 'Pre-Qualified' ? 'bg-neutral-400' :
+                                            stage.name === 'Shortlisted' ? 'bg-neutral-400' :
                                                 stage.name === 'Declined' ? 'bg-neutral-300' :
                                                     stage.name === 'Employed' ? 'bg-black' : 'bg-neutral-400'
                             );

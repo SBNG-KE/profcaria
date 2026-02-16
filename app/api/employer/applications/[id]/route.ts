@@ -186,7 +186,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         const { status } = await req.json();
 
-        if (!status || !['accepted', 'rejected', 'pending', 'terminated', 'pre_qualified', 'employed', 'declined'].includes(status)) {
+        if (!status || !['accepted', 'rejected', 'pending', 'terminated', 'shortlisted', 'employed', 'declined'].includes(status)) {
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
@@ -260,13 +260,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         // Send email notifications for key status changes
         if (professionalEmail) {
-            const { sendPreQualifiedNotification, sendEmployedNotification } = await import('@/lib/email');
+            const { sendShortlistedNotification, sendEmployedNotification } = await import('@/lib/email');
             const safeJobTitle = jobTitle || 'Position';
             const safeCompanyName = companyName || 'Employer';
 
-            if (status === 'pre_qualified') {
+            if (status === 'shortlisted') {
                 // Non-blocking email
-                sendPreQualifiedNotification(professionalEmail, safeJobTitle, safeCompanyName).catch(console.error);
+                sendShortlistedNotification(professionalEmail, safeJobTitle, safeCompanyName).catch(console.error);
             } else if (status === 'employed') {
                 // Critical email - send immediately
                 try {
@@ -280,8 +280,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         // Notify the professional in-app
         let message = '';
-        if (status === 'pre_qualified') {
-            message = 'Great news! You have been pre-qualified for the position. The employer is reviewing your profile for the next steps.';
+        if (status === 'shortlisted') {
+            message = 'Great news! You have been shortlisted for the position. The employer is reviewing your profile for the next steps.';
         } else if (status === 'employed') {
             message = 'Big congratulations! You have been officially employed. Check your contracts for details.';
         } else if (status === 'rejected') {

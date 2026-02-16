@@ -39,7 +39,7 @@ function ApplicationsPageContent() {
     const jobIdFilter = searchParams.get('jobId');
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'pre_qualified' | 'employed'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'shortlisted' | 'employed'>('all');
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
@@ -191,7 +191,7 @@ function ApplicationsPageContent() {
                             />
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {(['all', 'pending', 'pre_qualified', 'employed'] as const).map((s) => (
+                            {(['all', 'pending', 'shortlisted', 'employed'] as const).map((s) => (
                                 <button
                                     key={s}
                                     onClick={() => setStatusFilter(s)}
@@ -240,7 +240,7 @@ function ApplicationsPageContent() {
                                         </div>
                                         <div className="shrink-0 flex flex-col items-end gap-1">
                                             <span className={`w-2 h-2 rounded-full ${app.status === 'pending' ? 'bg-amber-500' :
-                                                app.status === 'pre_qualified' ? 'bg-blue-500' :
+                                                app.status === 'shortlisted' ? 'bg-blue-500' :
                                                     app.status === 'employed' ? 'bg-emerald-500' : (isDark ? 'bg-neutral-500' : 'bg-neutral-300')
                                                 }`} />
                                         </div>
@@ -280,7 +280,7 @@ function ApplicationsPageContent() {
                                                 <Briefcase size={12} /> {selectedApp.job.title}
                                             </span>
                                             <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${selectedApp.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
-                                                selectedApp.status === 'pre_qualified' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                                selectedApp.status === 'shortlisted' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
                                                     selectedApp.status === 'employed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
                                                         (isDark ? 'bg-neutral-800 text-neutral-500 border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200')
                                                 }`}>
@@ -380,10 +380,10 @@ function ApplicationsPageContent() {
                                                 {selectedApp.status === 'pending' && (
                                                     <>
                                                         <button
-                                                            onClick={() => updateStatus(selectedApp.id, 'pre_qualified')}
+                                                            onClick={() => updateStatus(selectedApp.id, 'shortlisted')}
                                                             className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-600/20 active:scale-95 flex items-center gap-2"
                                                         >
-                                                            <CheckCircle2 size={16} /> Accept (Pre-qualify)
+                                                            <CheckCircle2 size={16} /> Shortlist
                                                         </button>
                                                         <button
                                                             onClick={() => handleRejectOrDecline(selectedApp.id, 'reject')}
@@ -393,7 +393,7 @@ function ApplicationsPageContent() {
                                                         </button>
                                                     </>
                                                 )}
-                                                {selectedApp.status === 'pre_qualified' && (
+                                                {selectedApp.status === 'shortlisted' && (
                                                     <>
                                                         <button
                                                             onClick={() => updateStatus(selectedApp.id, 'employed')}
