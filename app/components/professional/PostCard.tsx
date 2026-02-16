@@ -540,6 +540,24 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                 })
                             )}
                         </div>
+                        {/* Comment Input */}
+                        <div className={`p-3 border-t flex items-center gap-2 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                            <input
+                                type="text"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(); } }}
+                                placeholder="Write a comment..."
+                                className={`flex-1 text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-1 transition-all ${isDark ? 'bg-neutral-800 text-white placeholder-neutral-500 focus:ring-neutral-600' : 'bg-white border border-neutral-200 text-black placeholder-neutral-400 focus:ring-neutral-300'}`}
+                            />
+                            <button
+                                onClick={handleSubmitComment}
+                                disabled={!newComment.trim() || isSending}
+                                className={`p-2 rounded-lg transition-all disabled:opacity-40 ${isDark ? 'text-white hover:bg-neutral-800' : 'text-black hover:bg-neutral-100'}`}
+                            >
+                                <Send size={16} />
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
