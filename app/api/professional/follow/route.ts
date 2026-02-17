@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
                     const { data: u } = await supabaseAdmin
                         .schema('professional')
                         .from('users')
-                        .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, primary_role, badge_type')
+                        .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
                         .eq('id', f.user_id)
                         .single();
 
@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
 
                     const fName = u.enc_first_name ? decryptData(u.enc_first_name) : '';
                     const lName = u.enc_last_name ? decryptData(u.enc_last_name) : '';
-                    const role = u.primary_role || (u.enc_current_role ? decryptData(u.enc_current_role) : null);
+                    const role = (u.enc_current_role ? decryptData(u.enc_current_role) : null);
 
                     return {
                         id: u.id,
@@ -284,7 +284,7 @@ export async function GET(request: NextRequest) {
                     const { data: profUser } = await supabaseAdmin
                         .schema('professional')
                         .from('users')
-                        .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, primary_role, badge_type')
+                        .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
                         .eq('id', followerId)
                         .single();
 
@@ -315,7 +315,7 @@ export async function GET(request: NextRequest) {
                         const fName = u.enc_first_name ? decryptData(u.enc_first_name) : '';
                         const lName = u.enc_last_name ? decryptData(u.enc_last_name) : '';
                         name = `${fName} ${lName}`.trim() || 'Professional';
-                        role = u.primary_role || (u.enc_current_role ? decryptData(u.enc_current_role) : null) || 'Professional';
+                        role = (u.enc_current_role ? decryptData(u.enc_current_role) : null) || 'Professional';
                         image = u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null;
                     } else {
                         name = u.enc_company_name ? (decryptData(u.enc_company_name) || 'Company') : 'Company';
@@ -453,7 +453,7 @@ export async function GET(request: NextRequest) {
                 const { data: u } = await supabaseAdmin
                     .schema('professional')
                     .from('users')
-                    .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role, badge_type')
+                    .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, badge_type')
                     .eq('id', f.following_id)
                     .single();
 
@@ -464,7 +464,7 @@ export async function GET(request: NextRequest) {
                     id: u?.id,
                     name: `${fName} ${lName}`.trim(),
                     profileImage: u?.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
-                    role: u?.primary_role,
+                    role: u?.enc_current_role ? decryptData(u.enc_current_role) : null,
                     type: 'user',
                     badgeType: u?.badge_type || 'none'
                 };
