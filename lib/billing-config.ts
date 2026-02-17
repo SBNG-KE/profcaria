@@ -84,8 +84,7 @@ export const BILLING_PLANS = {
             'Unlimited Job Posts',
             'Unlimited Analytics',
             'Unlimited AI Top Matches',
-            'Location-Restricted Jobs',
-            'Personal Account Manager'
+            'Location-Restricted Jobs'
         ]
     }
 } as const;

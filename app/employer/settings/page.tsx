@@ -703,9 +703,6 @@ function SettingsContent() {
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
                                             <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Location-Restricted Jobs
                                         </div>
-                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-200' : 'text-neutral-700'}`}>
-                                            <CheckCircle size={14} className={isDark ? "text-white" : "text-black"} shrink-0 /> Personal Account Manager
-                                        </div>
                                     </div>
                                 </div>
                                 <div className={`mt-8 pt-6 border-t ${isDark ? 'border-neutral-700/50' : 'border-neutral-100'}`}>
