@@ -276,6 +276,9 @@ export async function GET(request: NextRequest) {
                     }
                 }
 
+                // Filter out self (User cannot follow back themselves)
+                allFollowerIds = allFollowerIds.filter((id: string) => id !== targetUserId);
+
                 const formattedFollowers = (await Promise.all(allFollowerIds.map(async (followerId: string) => {
                     let u: any = null;
                     let type = 'user';

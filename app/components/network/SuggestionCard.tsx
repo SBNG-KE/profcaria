@@ -17,6 +17,7 @@ interface SuggestionCardProps {
     companyName?: string; // Current employer for professionals
     isFollowing?: boolean;
     onFollow: (id: string, type: 'user' | 'company') => Promise<void>;
+    isFollowBack?: boolean;
 }
 
 export default function SuggestionCard({
@@ -28,7 +29,8 @@ export default function SuggestionCard({
     badgeType,
     companyName,
     isFollowing = false,
-    onFollow
+    onFollow,
+    isFollowBack = false
 }: SuggestionCardProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -103,7 +105,7 @@ export default function SuggestionCard({
                         }}
                         className="w-full"
                         size="sm"
-                        isFollowBack={true}
+                        isFollowBack={isFollowBack}
                     />
                 </div>
             </div>
