@@ -138,6 +138,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ section
     try {
         const { section } = await params;
         const userId = await checkAuth(req);
+        // ... (existing config check) ...
         const config = SECTION_CONFIG[section];
         if (!config) return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
 
@@ -162,6 +163,19 @@ export async function POST(req: Request, { params }: { params: Promise<{ section
 
         if (error) throw error;
 
+        // NEW: Sync Search Index if relevant section
+        if (['skills', 'employment', 'education', 'about'].includes(section)) {
+            // Import dynamically or at top? Let's use dynamic import or top level.
+            // But this file is strict. I'll add import at top.
+            // For now, assume top-level import added.
+            try {
+                const { syncUserSearchIndex } = await import('@/lib/search-index');
+                await syncUserSearchIndex(userId);
+            } catch (err) {
+                console.error("Background sync failed", err);
+            }
+        }
+
         return NextResponse.json({ success: true, id: data.id });
     } catch (e: any) {
         return NextResponse.json({ error: e.message || 'Error saving' }, { status: 500 });
@@ -173,6 +187,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ section:
     try {
         const { section } = await params;
         const userId = await checkAuth(req);
+        // ... (existing config check) ...
         const config = SECTION_CONFIG[section];
         if (!config) return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
 
@@ -189,7 +204,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ section:
             }
         }
 
-        dbData.updated_at = new Date().toISOString(); // Auto update timestamp if column exists (skills doesn't but others do)
+        dbData.updated_at = new Date().toISOString();
 
         const { error } = await supabaseAdmin
             .schema('professional')
@@ -199,6 +214,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ section:
             .eq('user_id', userId);
 
         if (error) throw error;
+
+        // NEW: Sync Search Index
+        if (['skills', 'employment', 'education'].includes(section)) {
+            try {
+                const { syncUserSearchIndex } = await import('@/lib/search-index');
+                await syncUserSearchIndex(userId);
+            } catch (err) { console.error("Background sync failed", err); }
+        }
 
         return NextResponse.json({ success: true });
     } catch (e: any) {
@@ -211,6 +234,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ secti
     try {
         const { section } = await params;
         const userId = await checkAuth(req);
+        // ... (existing config check) ...
         const config = SECTION_CONFIG[section];
         if (!config) return NextResponse.json({ error: 'Invalid section' }, { status: 400 });
 
@@ -226,6 +250,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ secti
             .eq('user_id', userId);
 
         if (error) throw error;
+
+        // NEW: Sync Search Index
+        if (['skills', 'employment'].includes(section)) {
+            try {
+                const { syncUserSearchIndex } = await import('@/lib/search-index');
+                await syncUserSearchIndex(userId);
+            } catch (err) { console.error("Background sync failed", err); }
+        }
 
         return NextResponse.json({ success: true });
     } catch (e: any) {
