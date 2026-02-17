@@ -12,6 +12,7 @@ interface FollowButtonProps {
     className?: string;
     variant?: 'primary' | 'outline' | 'ghost';
     size?: 'sm' | 'md' | 'lg';
+    isFollowBack?: boolean;
 }
 
 export default function FollowButton({
@@ -21,7 +22,8 @@ export default function FollowButton({
     onToggle,
     className = '',
     variant = 'primary',
-    size = 'md'
+    size = 'md',
+    isFollowBack = false
 }: FollowButtonProps) {
     const [isFollowing, setIsFollowing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -118,6 +120,7 @@ export default function FollowButton({
             return isFollowing ? 'Subscribed' : 'Subscribe';
         }
         if (isLoading) return isFollowing ? 'Unfollowing...' : 'Following...';
+        if (!isFollowing && isFollowBack) return 'Follow Back';
         return isFollowing ? 'Following' : 'Follow';
     };
 

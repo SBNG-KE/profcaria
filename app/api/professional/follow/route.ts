@@ -186,35 +186,81 @@ export async function GET(request: NextRequest) {
                 if (error) throw error;
 
                 const formattedFollowers = (await Promise.all((followers || []).map(async (f: any) => {
-                    const { data: u } = await supabaseAdmin
-                        .schema('professional') /* Fetching follower (user) info */
+                    let u: any = null;
+                    let type = 'user';
+
+                    // 1. Try Professional User
+                    const { data: profUser } = await supabaseAdmin
+                        .schema('professional')
                         .from('users')
                         .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, primary_role, badge_type')
                         .eq('id', f.follower_id)
                         .single();
 
-                    if (!u) return null; // Skip if user not found
+                    if (profUser) {
+                        u = profUser;
+                    } else {
+                        // 2. Try Employer Company
+                        const { data: company } = await supabaseAdmin
+                            .schema('employer')
+                            .from('companies')
+                            .select('id, enc_company_name, enc_logo_url, badge_type')
+                            .eq('id', f.follower_id)
+                            .single();
 
-                    const fName = u.enc_first_name ? decryptData(u.enc_first_name) : '';
-                    const lName = u.enc_last_name ? decryptData(u.enc_last_name) : '';
-                    const role = u.primary_role || (u.enc_current_role ? decryptData(u.enc_current_role) : null);
+                        if (company) {
+                            u = company;
+                            type = 'company';
+                        }
+                    }
+
+                    if (!u) return null; // Skip if neither found
+
+                    let name = 'Professional';
+                    let role = 'Professional';
+                    let image = null;
+
+                    if (type === 'user') {
+                        const fName = u.enc_first_name ? decryptData(u.enc_first_name) : '';
+                        const lName = u.enc_last_name ? decryptData(u.enc_last_name) : '';
+                        name = `${fName} ${lName}`.trim() || 'Professional';
+                        role = u.primary_role || (u.enc_current_role ? decryptData(u.enc_current_role) : null) || 'Professional';
+                        image = u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null;
+                    } else {
+                        name = u.enc_company_name ? (decryptData(u.enc_company_name) || 'Company') : 'Company';
+                        role = 'Company';
+                        image = u.enc_logo_url ? decryptData(u.enc_logo_url) : null;
+                    }
 
                     // Check if I follow them back
-                    const { data: amIFollowing } = await supabaseAdmin
-                        .schema('professional')
-                        .from('user_follows')
-                        .select('id')
-                        .eq('follower_id', user.id)
-                        .eq('following_id', f.follower_id)
-                        .single();
+                    let isFollowingBack = false;
+                    if (type === 'user') {
+                        const { data: amIFollowing } = await supabaseAdmin
+                            .schema('professional')
+                            .from('user_follows')
+                            .select('id')
+                            .eq('follower_id', user.id)
+                            .eq('following_id', f.follower_id)
+                            .single();
+                        isFollowingBack = !!amIFollowing;
+                    } else {
+                        const { data: amIFollowingCompany } = await supabaseAdmin
+                            .schema('professional')
+                            .from('company_follows')
+                            .select('id')
+                            .eq('user_id', user.id) // Me
+                            .eq('company_id', f.follower_id) // The Company
+                            .single();
+                        isFollowingBack = !!amIFollowingCompany;
+                    }
 
                     return {
                         id: u.id,
-                        name: `${fName} ${lName}`.trim() || 'Professional',
-                        profileImage: u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
-                        role: role || 'Professional',
-                        type: 'user',
-                        isFollowing: !!amIFollowing,
+                        name: name,
+                        profileImage: image,
+                        role: role,
+                        type: type,
+                        isFollowing: isFollowingBack,
                         badgeType: u.badge_type || 'none'
                     };
                 }))).filter(Boolean); // Remove null entries

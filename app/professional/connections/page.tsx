@@ -75,6 +75,13 @@ export default function ConnectionsPage() {
         } else {
             fetchData();
         }
+
+        // If viewing followers tab, mark as viewed (clear badge)
+        if (activeTab === 'followers') {
+            fetch('/api/professional/follow/viewed', {
+                method: 'POST'
+            }).catch(err => console.error("Error marking followers viewed", err));
+        }
     }, [activeTab]);
 
     const handleFollow = async (id: string, type: 'user' | 'company') => {
@@ -329,6 +336,7 @@ export default function ConnectionsPage() {
                             isFollowing={activeTab === 'subscriptions' ? true : !!item.isFollowing}
                             badgeType={item.badgeType}
                             onToggle={() => handleUnfollow(item.id)}
+                            isFollowBack={activeTab === 'followers'}
                         />
                     ))}
                 </div>

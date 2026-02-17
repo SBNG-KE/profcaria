@@ -16,6 +16,7 @@ interface NetworkCardProps {
     isFollowing: boolean;
     badgeType?: string;
     onToggle?: () => void; // Parent callback to remove from list if needed
+    isFollowBack?: boolean;
 }
 
 export default function NetworkCard({
@@ -26,7 +27,8 @@ export default function NetworkCard({
     type,
     isFollowing,
     badgeType,
-    onToggle
+    onToggle,
+    isFollowBack = false
 }: NetworkCardProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -91,6 +93,7 @@ export default function NetworkCard({
                     onToggle={onToggle}
                     className="w-full"
                     variant={isFollowing ? "outline" : "primary"}
+                    isFollowBack={isFollowBack}
                 />
             </div>
         </div>

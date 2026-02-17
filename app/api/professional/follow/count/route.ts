@@ -13,36 +13,27 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Get everyone who follows me
-        const { data: myFollowers, error: followersError } = await supabaseAdmin
+        // 1. Get Last Viewed Time
+        const { data: prefs } = await supabaseAdmin
+            .schema('professional')
+            .from('preferences')
+            .select('last_viewed_followers_at')
+            .eq('user_id', user.id)
+            .single();
+
+        const lastViewed = prefs?.last_viewed_followers_at || '1970-01-01T00:00:00Z';
+
+        // 2. Count new followers since last view
+        const { count, error } = await supabaseAdmin
             .schema('professional')
             .from('user_follows')
-            .select('follower_id')
-            .eq('following_id', user.id);
+            .select('*', { count: 'exact', head: true })
+            .eq('following_id', user.id)
+            .gt('created_at', lastViewed);
 
-        if (followersError) throw followersError;
+        if (error) throw error;
 
-        if (!myFollowers || myFollowers.length === 0) {
-            return NextResponse.json({ count: 0 });
-        }
-
-        const followerIds = myFollowers.map((f: any) => f.follower_id);
-
-        // Get everyone I follow
-        const { data: myFollowing, error: followingError } = await supabaseAdmin
-            .schema('professional')
-            .from('user_follows')
-            .select('following_id')
-            .eq('follower_id', user.id);
-
-        if (followingError) throw followingError;
-
-        const followingIds = new Set((myFollowing || []).map((f: any) => f.following_id));
-
-        // Count followers I haven't followed back
-        const followBackCount = followerIds.filter((id: string) => !followingIds.has(id)).length;
-
-        return NextResponse.json({ count: followBackCount });
+        return NextResponse.json({ count: count || 0 });
     } catch (error: any) {
         console.error('Error fetching follow-back count:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
