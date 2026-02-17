@@ -100,6 +100,14 @@ export async function POST(req: Request) {
       throw error;
     }
 
+    // Send Welcome Email (non-blocking)
+    try {
+      const { sendWelcomeEmail } = await import('@/lib/email');
+      sendWelcomeEmail(workEmail, companyName, 'employer');
+    } catch (emailErr) {
+      console.error('Welcome email failed (non-fatal):', emailErr);
+    }
+
     // 7. Generate Session Token (30 Days)
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const token = await new SignJWT({ uid: data.id, schema: 'employer' })

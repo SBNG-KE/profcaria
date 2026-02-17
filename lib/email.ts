@@ -428,6 +428,95 @@ export async function sendJobRecommendationEmail(to: string, recipientName: stri
 }
 
 // NEW: Promo Welcome Email (for Early Adopters)
+// Welcome Email for New Users (Plain text style, no icons)
+export async function sendWelcomeEmail(
+    to: string,
+    recipientName: string,
+    entityType: 'professional' | 'employer'
+) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] Welcome to ${to}: ${recipientName}`);
+        return { success: true };
+    }
+
+    const dashboardUrl = entityType === 'employer'
+        ? 'https://www.profcaria.com/employer/feed'
+        : 'https://www.profcaria.com/professional/feed';
+
+    const content = entityType === 'professional'
+        ? `
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Welcome to Profcaria, ${recipientName}</h1>
+        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            Thank you for joining Profcaria. We are glad to have you here.
+        </p>
+        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            Profcaria is built to help professionals like you find the right opportunities, connect with employers, and grow your career. Everything on the platform is designed with your success in mind.
+        </p>
+        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            Here is what you can do to get started:
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <p style="margin: 0 0 12px 0; color: #ffffff; font-size: 14px; line-height: 1.8;">
+                1. Complete your profile so employers can find you.<br/>
+                2. Browse open jobs that match your skills.<br/>
+                3. Set up your security settings to protect your account.
+            </p>
+        </div>
+        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            If you ever need help with anything, feel free to reach out through our support page. We are always happy to assist.
+        </p>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Feed</a>
+        </div>
+        <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: left; line-height: 1.6;">
+            Welcome aboard,<br/>
+            The Profcaria Team
+        </p>
+    `
+        : `
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Welcome to Profcaria, ${recipientName}</h1>
+        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            Thank you for creating your company account on Profcaria. We are glad to have you here.
+        </p>
+        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            Profcaria helps employers like you find the right talent, manage applications, and hire faster. Our platform is built to make your recruitment process simple and effective.
+        </p>
+        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            Here is what you can do to get started:
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <p style="margin: 0 0 12px 0; color: #ffffff; font-size: 14px; line-height: 1.8;">
+                1. Set up your company profile so candidates can learn about you.<br/>
+                2. Post your first job to start receiving applications.<br/>
+                3. Use AI Top Matches to discover the best candidates for your roles.
+            </p>
+        </div>
+        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+            If you ever need help with anything, feel free to reach out through our support page. We are always happy to assist.
+        </p>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
+        </div>
+        <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: left; line-height: 1.6;">
+            Welcome aboard,<br/>
+            The Profcaria Team
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria <hello@profcaria.com>',
+            to,
+            subject: `Welcome to Profcaria, ${recipientName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Welcome Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}
+
 export async function sendPromoWelcomeEmail(
     to: string,
     recipientName: string,

@@ -130,6 +130,14 @@ export async function POST(req: Request) {
                 console.error('OAuth Promo Error (Non-Fatal):', promoError);
             }
 
+            // Send Welcome Email (non-blocking)
+            try {
+                const { sendWelcomeEmail } = await import('@/lib/email');
+                sendWelcomeEmail(email, firstName, 'professional');
+            } catch (emailErr) {
+                console.error('Welcome email failed (non-fatal):', emailErr);
+            }
+
             const token = await issueToken(newUser.id, 'professional', false);
             // New user needs security setup
             const response = NextResponse.json({ success: true, redirect: '/?mode=setup' });
@@ -230,6 +238,14 @@ export async function POST(req: Request) {
             if (error || !newCompany) {
                 console.error('OAuth Employer Signup Error:', error);
                 return NextResponse.json({ error: 'Failed to create company account' }, { status: 500 });
+            }
+
+            // Send Welcome Email (non-blocking)
+            try {
+                const { sendWelcomeEmail } = await import('@/lib/email');
+                sendWelcomeEmail(email, companyName, 'employer');
+            } catch (emailErr) {
+                console.error('Welcome email failed (non-fatal):', emailErr);
             }
 
             const token = await issueToken(newCompany.id, 'employer', false);
