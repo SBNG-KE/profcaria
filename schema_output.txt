@@ -1,5 +1,0 @@
-
---- employer.company_users --- Error: {"code":"PGRST205","details":null,"hint":"Perhaps you meant the table 'employer.companies'","message":"Could not find the table 'employer.company_users' in the schema cache"}
---- employer.users --- Error: {"code":"PGRST205","details":null,"hint":null,"message":"Could not find the table 'employer.users' in the schema cache"}
---- employer.members --- Error: {"code":"PGRST205","details":null,"hint":"Perhaps you meant the table 'employer.messages'","message":"Could not find the table 'employer.members' in the schema cache"}
---- employer.employees --- Error: {"code":"PGRST205","details":null,"hint":"Perhaps you meant the table 'employer.other_profiles'","message":"Could not find the table 'employer.employees' in the schema cache"}
