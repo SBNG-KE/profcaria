@@ -273,7 +273,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                             <VerificationBadge tier={post.author.badgeType} size={24} />
                         </Link>
                         {!isOwnPost && !post.author.isFollowing && post.currentUserType !== 'employer' && (
-                            <><span className={`${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>•</span><button onClick={onFollow} className={`text-xs font-semibold ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black'}`}>{post.author.type === 'employer' ? 'Subscribe' : 'Follow'}</button></>
+                            <><span className={`${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>•</span><button onClick={onFollow} className={`text-xs font-semibold ${post.author.isFollowerOfMe ? (isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700') : (isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-600 hover:text-black')}`}>{post.author.type === 'employer' ? 'Subscribe' : (post.author.isFollowerOfMe ? 'Follow Back' : 'Follow')}</button></>
                         )}
                     </div>
                     <div className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>

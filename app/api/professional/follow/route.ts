@@ -70,19 +70,25 @@ export async function POST(request: NextRequest) {
             // Send Email Notification (Async - non-blocking)
             (async () => {
                 try {
-                    // 1. Get Target Email
-                    // If following a User
+                    // 1. Get Target Email from custom schema (not Supabase Auth)
                     let targetEmail = null;
                     if (type === 'user') {
-                        const { data: targetUser, error: uErr } = await supabaseAdmin.auth.admin.getUserById(targetId);
-                        if (!uErr && targetUser?.user) targetEmail = targetUser.user.email;
+                        const { data: targetUser } = await supabaseAdmin
+                            .schema('professional')
+                            .from('users')
+                            .select('enc_email')
+                            .eq('id', targetId)
+                            .single();
+                        if (targetUser?.enc_email) targetEmail = decryptData(targetUser.enc_email);
                     } else {
-                        // Following a Company - Get Company Owner's Email
-                        const { data: company } = await supabaseAdmin.schema('employer').from('companies').select('user_id').eq('id', targetId).single();
-                        if (company) {
-                            const { data: owner } = await supabaseAdmin.auth.admin.getUserById(company.user_id);
-                            if (owner?.user) targetEmail = owner.user.email;
-                        }
+                        // Following a Company - Get Company Email
+                        const { data: company } = await supabaseAdmin
+                            .schema('employer')
+                            .from('companies')
+                            .select('enc_work_email')
+                            .eq('id', targetId)
+                            .single();
+                        if (company?.enc_work_email) targetEmail = decryptData(company.enc_work_email);
                     }
 
                     if (targetEmail) {
@@ -99,7 +105,6 @@ export async function POST(request: NextRequest) {
                         }
 
                         // 3. Send Email
-                        // Determine profile link for follower
                         const followerLink = user.schema === 'employer'
                             ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/professional/companies/${user.id}`
                             : `${process.env.NEXT_PUBLIC_APP_URL || 'https://profcaria.com'}/professional/people/${user.id}`;
@@ -144,27 +149,30 @@ export async function GET(request: NextRequest) {
 
                 if (error) throw error;
 
-                const formattedFollowers = await Promise.all((followers || []).map(async (f: any) => {
+                const formattedFollowers = (await Promise.all((followers || []).map(async (f: any) => {
                     const { data: u } = await supabaseAdmin
                         .schema('professional')
                         .from('users')
-                        .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role, badge_type')
+                        .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, primary_role, badge_type')
                         .eq('id', f.user_id)
                         .single();
 
-                    const fName = u?.enc_first_name ? decryptData(u.enc_first_name) : '';
-                    const lName = u?.enc_last_name ? decryptData(u.enc_last_name) : '';
+                    if (!u) return null;
+
+                    const fName = u.enc_first_name ? decryptData(u.enc_first_name) : '';
+                    const lName = u.enc_last_name ? decryptData(u.enc_last_name) : '';
+                    const role = u.primary_role || (u.enc_current_role ? decryptData(u.enc_current_role) : null);
 
                     return {
-                        id: u?.id,
-                        name: `${fName} ${lName}`.trim(),
-                        profileImage: u?.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
-                        role: u?.primary_role,
+                        id: u.id,
+                        name: `${fName} ${lName}`.trim() || 'Professional',
+                        profileImage: u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
+                        role: role || 'Professional',
                         type: 'user',
                         isFollowing: false,
-                        badgeType: u?.badge_type || 'none'
+                        badgeType: u.badge_type || 'none'
                     };
-                }));
+                }))).filter(Boolean); // Remove null entries
                 return NextResponse.json({ followers: formattedFollowers });
 
             } else {
@@ -177,16 +185,19 @@ export async function GET(request: NextRequest) {
 
                 if (error) throw error;
 
-                const formattedFollowers = await Promise.all((followers || []).map(async (f: any) => {
+                const formattedFollowers = (await Promise.all((followers || []).map(async (f: any) => {
                     const { data: u } = await supabaseAdmin
                         .schema('professional') /* Fetching follower (user) info */
                         .from('users')
-                        .select('id, enc_first_name, enc_last_name, enc_profile_image_url, primary_role, badge_type')
+                        .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, primary_role, badge_type')
                         .eq('id', f.follower_id)
                         .single();
 
-                    const fName = u?.enc_first_name ? decryptData(u.enc_first_name) : '';
-                    const lName = u?.enc_last_name ? decryptData(u.enc_last_name) : '';
+                    if (!u) return null; // Skip if user not found
+
+                    const fName = u.enc_first_name ? decryptData(u.enc_first_name) : '';
+                    const lName = u.enc_last_name ? decryptData(u.enc_last_name) : '';
+                    const role = u.primary_role || (u.enc_current_role ? decryptData(u.enc_current_role) : null);
 
                     // Check if I follow them back
                     const { data: amIFollowing } = await supabaseAdmin
@@ -198,15 +209,15 @@ export async function GET(request: NextRequest) {
                         .single();
 
                     return {
-                        id: u?.id,
-                        name: `${fName} ${lName}`.trim(),
-                        profileImage: u?.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
-                        role: u?.primary_role,
+                        id: u.id,
+                        name: `${fName} ${lName}`.trim() || 'Professional',
+                        profileImage: u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
+                        role: role || 'Professional',
                         type: 'user',
                         isFollowing: !!amIFollowing,
-                        badgeType: u?.badge_type || 'none'
+                        badgeType: u.badge_type || 'none'
                     };
-                }));
+                }))).filter(Boolean); // Remove null entries
 
                 return NextResponse.json({ followers: formattedFollowers });
             }

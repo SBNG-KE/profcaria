@@ -20,6 +20,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [jobStats, setJobStats] = useState({ totalJobs: 0, currentJob: 'None' });
+    const [followBackCount, setFollowBackCount] = useState(0);
     const pathname = usePathname();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,8 +58,9 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     useEffect(() => {
         const fetchJobStats = async () => {
             try {
-                const [connectionsRes] = await Promise.all([
+                const [connectionsRes, followBackRes] = await Promise.all([
                     fetch('/api/professional/connections'),
+                    fetch('/api/professional/follow/count'),
                 ]);
 
                 let totalJobs = 0;
@@ -69,6 +71,11 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     totalJobs = connections.length;
                 }
                 setJobStats({ totalJobs, currentJob: 'None' });
+
+                if (followBackRes.ok) {
+                    const fbData = await followBackRes.json();
+                    setFollowBackCount(fbData.count || 0);
+                }
             } catch (error) {
                 console.error("Error fetching job stats", error);
             }
@@ -273,7 +280,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />
                     <NavItem id="roles-jobs" href="/professional/roles-jobs" icon={Briefcase} label="My Jobs" />
                     <NavItem id="employment" href="/professional/employment" icon={Cable} label="Employment" />
-                    <NavItem id="connections" href="/professional/connections" icon={Users} label="Connections" />
+                    <NavItem id="connections" href="/professional/connections" icon={Users} label="Connections" badgeCount={followBackCount} />
                     <NavItem id="communities" href="#" icon={MessageCircle} label="Communities" comingSoon={true} />
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Account</div>

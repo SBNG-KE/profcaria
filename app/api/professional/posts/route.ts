@@ -360,6 +360,7 @@ async function processPosts(posts: any[], user: any) {
 
         // Is Following Author?
         let isFollowing = false;
+        let isFollowerOfMe = false;
         if (authorData.id !== user.id) {
             if (authorType === 'employer') {
                 const { data } = await supabaseAdmin
@@ -371,6 +372,7 @@ async function processPosts(posts: any[], user: any) {
                     .single();
                 isFollowing = !!data;
             } else {
+                // Check if I follow them
                 const { data } = await supabaseAdmin
                     .schema('professional')
                     .from('user_follows')
@@ -379,6 +381,18 @@ async function processPosts(posts: any[], user: any) {
                     .eq('following_id', authorData.id)
                     .single();
                 isFollowing = !!data;
+
+                // Check if they follow me (for "Follow Back" display)
+                if (!isFollowing && user.schema === 'professional') {
+                    const { data: reverseFollow } = await supabaseAdmin
+                        .schema('professional')
+                        .from('user_follows')
+                        .select('id')
+                        .eq('follower_id', authorData.id)
+                        .eq('following_id', user.id)
+                        .single();
+                    isFollowerOfMe = !!reverseFollow;
+                }
             }
         }
 
@@ -393,7 +407,7 @@ async function processPosts(posts: any[], user: any) {
 
 
         // Enrich Author Data with dynamic 'isFollowing'
-        authorData = { ...authorData, isFollowing };
+        authorData = { ...authorData, isFollowing, isFollowerOfMe };
 
         // Construct Repost Context if applicable
         // Construct Repost Context if applicable
