@@ -53,8 +53,7 @@ export default function SuggestionCard({
         : `/professional/people/${id}`;
 
     return (
-        <Link
-            href={profileLink}
+        <div
             className={`
                 group flex flex-col rounded-2xl border overflow-hidden transition-all duration-300
                 hover:scale-[1.02] hover:shadow-lg
@@ -64,8 +63,8 @@ export default function SuggestionCard({
             `}
         >
             {/* Image - Squared with curved corners */}
-            <div className={`
-                relative w-full aspect-square overflow-hidden
+            <Link href={profileLink} className={`
+                relative w-full aspect-square overflow-hidden block
                 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}
             `}>
                 {image ? (
@@ -83,17 +82,17 @@ export default function SuggestionCard({
                         )}
                     </div>
                 )}
-            </div>
+            </Link>
 
             {/* Content */}
             <div className="p-4 flex flex-col gap-2">
                 {/* Name with Badge */}
-                <div className="flex items-center gap-1.5">
+                <Link href={profileLink} className="flex items-center gap-1.5 hover:underline decoration-1 underline-offset-2">
                     <h3 className={`font-bold text-sm truncate ${isDark ? 'text-white' : 'text-black'}`}>
                         {name}
                     </h3>
                     <VerificationBadge tier={badgeType} size={18} />
-                </div>
+                </Link>
 
                 {/* Role */}
                 <p className={`text-xs truncate ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
@@ -139,6 +138,6 @@ export default function SuggestionCard({
                     )}
                 </button>
             </div>
-        </Link>
+        </div>
     );
 }
