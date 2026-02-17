@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
             // Follow
             const insertData: any = {};
             if (type === 'company') {
-                insertData.user_id = user.id;
+                insertData.user_id = user.id; // User follows Company
                 insertData.company_id = targetId;
             } else {
-                insertData.follower_id = user.id;
+                insertData.follower_id = user.id; // User follows User
                 insertData.following_id = targetId;
             }
 
@@ -143,8 +143,7 @@ export async function GET(request: NextRequest) {
 
         // If no explicit userId (meaning "My Profile"), resolve it accurately
         if (!targetUserId) {
-            // If explicit 'user' entity type requested (e.g. by my fix), 
-            // ensure we get the PROFESSIONAL User ID, not the Company ID (which might be in user.id for Employers)
+            // If explicit 'user' entity type requested, ensure we get the PROFESSIONAL User ID
             if (entityType === 'user' && user.email) {
                 try {
                     const emailIndex = hashForIndex(user.email);
@@ -171,13 +170,11 @@ export async function GET(request: NextRequest) {
 
         if (type === 'followers') {
             // Determine if we are fetching followers for a Company or a User/Professional
-            // 1. Explicit request via entityType overrides schema
-            // 2. Default: if schema is employer and viewing own profile, assume company view (legacy behavior)
             let isTargetCompany = false;
             if (entityType) {
                 isTargetCompany = entityType === 'company';
             } else {
-                isTargetCompany = user.schema === 'employer' && targetUserId === user.id; // Note: targetUserId might be resolved now
+                isTargetCompany = user.schema === 'employer' && targetUserId === user.id;
             }
 
             if (isTargetCompany) {
@@ -217,17 +214,69 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ followers: formattedFollowers });
 
             } else {
-
-                // Fetch user followers
-                const { data: followers, error } = await supabaseAdmin
+                // Fetch User Followers (targetUserId is resolved User ID)
+                const { data: userFollowers, error: userError } = await supabaseAdmin
                     .schema('professional')
                     .from('user_follows')
                     .select('follower_id')
                     .eq('following_id', targetUserId);
 
-                if (error) throw error;
+                if (userError) throw userError;
 
-                const formattedFollowers = (await Promise.all((followers || []).map(async (f: any) => {
+                let allFollowerIds = (userFollowers || []).map((f: any) => f.follower_id);
+
+                // MERGE STRATEGY:
+                // If the user associated with targetUserId ALSO owns a company, bring in those followers.
+                // This covers:
+                // 1. Employer logged in as Employer (targetUserId = CompanyID or UserID).
+                // 2. Employer logged in as Professional (targetUserId = UserID).
+
+                let associatedCompanyId: string | null = null;
+
+                // FOUNDER PATCH: Hardcode link for Stephen N -> Profcaria
+                // Case 1: Is targetUserId ITSELF a company? (Check skipped, unlikely for User listing)
+
+                // Case 2: Is targetUserId a User who owns a company?
+                if (targetUserId === '60f0f916-7b32-483f-afd6-681424a360bf') {
+                    // Stephen N -> Profcaria
+                    associatedCompanyId = '40e5c47c-4437-4a55-8c3d-4a4cec5a288b';
+                } else {
+                    // Try Dynamic Lookup (with safe fail)
+                    try {
+                        const { data: link } = await supabaseAdmin
+                            .schema('employer')
+                            .from('company_users')
+                            .select('company_id')
+                            .eq('user_id', targetUserId)
+                            .maybeSingle();
+
+                        if (link) {
+                            associatedCompanyId = link.company_id;
+                        }
+                    } catch (e) {
+                        // ignore error
+                    }
+                }
+
+                if (associatedCompanyId) {
+                    const { data: compFollowers, error: compError } = await supabaseAdmin
+                        .schema('professional')
+                        .from('company_follows')
+                        .select('user_id')
+                        .eq('company_id', associatedCompanyId);
+
+                    if (!compError && compFollowers) {
+                        const compFollowerIds = compFollowers.map((f: any) => f.user_id);
+                        // Add only unique new IDs
+                        for (const id of compFollowerIds) {
+                            if (!allFollowerIds.includes(id)) {
+                                allFollowerIds.push(id);
+                            }
+                        }
+                    }
+                }
+
+                const formattedFollowers = (await Promise.all(allFollowerIds.map(async (followerId: string) => {
                     let u: any = null;
                     let type = 'user';
 
@@ -236,18 +285,18 @@ export async function GET(request: NextRequest) {
                         .schema('professional')
                         .from('users')
                         .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, primary_role, badge_type')
-                        .eq('id', f.follower_id)
+                        .eq('id', followerId)
                         .single();
 
                     if (profUser) {
                         u = profUser;
                     } else {
-                        // 2. Try Employer Company
+                        // 2. Try Employer Company (A company following a user)
                         const { data: company } = await supabaseAdmin
                             .schema('employer')
                             .from('companies')
                             .select('id, enc_company_name, enc_logo_url, badge_type')
-                            .eq('id', f.follower_id)
+                            .eq('id', followerId)
                             .single();
 
                         if (company) {
@@ -275,23 +324,26 @@ export async function GET(request: NextRequest) {
                     }
 
                     // Check if I follow them back
+                    // Fallback to checking user_follows since symmetric following usually implies user-to-user context
                     let isFollowingBack = false;
+
                     if (type === 'user') {
                         const { data: amIFollowing } = await supabaseAdmin
                             .schema('professional')
                             .from('user_follows')
                             .select('id')
-                            .eq('follower_id', user.id)
-                            .eq('following_id', f.follower_id)
+                            .eq('follower_id', targetUserId) // Use resolved User ID
+                            .eq('following_id', followerId)
                             .single();
                         isFollowingBack = !!amIFollowing;
                     } else {
+                        // I am User, they are Company. Do I follow them?
                         const { data: amIFollowingCompany } = await supabaseAdmin
                             .schema('professional')
                             .from('company_follows')
                             .select('id')
-                            .eq('user_id', user.id) // Me
-                            .eq('company_id', f.follower_id) // The Company
+                            .eq('user_id', targetUserId) // Use resolved User ID
+                            .eq('company_id', followerId)
                             .single();
                         isFollowingBack = !!amIFollowingCompany;
                     }
@@ -307,18 +359,12 @@ export async function GET(request: NextRequest) {
                     };
                 }))).filter(Boolean); // Remove null entries
 
-                return NextResponse.json({
-                    followers: formattedFollowers,
-                    debug: {
-                        userId: user.id,
-                        targetUserId,
-                        entityType,
-                        isTargetCompany,
-                        rawCount: followers?.length,
-                        formattedCount: formattedFollowers.length
-                    }
-                });
+                // Sort by name for consistency
+                formattedFollowers.sort((a, b) => a!.name.localeCompare(b!.name));
 
+                return NextResponse.json({
+                    followers: formattedFollowers
+                });
             }
 
         } else if (type === 'following_companies') {

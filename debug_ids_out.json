@@ -1,0 +1,19 @@
+{
+  "companyA": {
+    "id": "60f0f916-7b32-483f-afd6-681424a360bf",
+    "found": false
+  },
+  "companyB": {
+    "id": "40e5c47c-4437-4a55-8c3d-4a4cec5a288b",
+    "found": true,
+    "name": "Profcaria",
+    "emailIndex": "a0d2c8dbbc80c6f4a83ce7732b5494ba0392cdd43487df76621c6a05b2a416b9d7c651b8a7f3f64fd002b5e7ba3824cc0457e8cebccb715380352ce7b2acbd36"
+  },
+  "profUserA": {
+    "id": "60f0f916-7b32-483f-afd6-681424a360bf",
+    "found": true,
+    "firstName": "Stephen ",
+    "emailIndex": "d37aba8f47b3aaca5420089ba5074df43fcd68a2449cc6b46530e251d8152f2ccc86ded07f8030b4cc5a3c4bb16dce8019b4c2b9c52a27e2ee85c915bd2f4f8a",
+    "dbId": "60f0f916-7b32-483f-afd6-681424a360bf"
+  }
+}
