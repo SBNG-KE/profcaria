@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
 import MatchCard from '@/app/components/employer/MatchCard';
-import { Zap, Search, Users, CheckCircle2 } from 'lucide-react';
+import { Zap, Search, Users, CheckCircle2, ChevronRight, Loader2 } from 'lucide-react';
 
 interface Candidate {
     id: string;
@@ -37,27 +37,46 @@ export default function JobMatchesPage() {
     const [isLimitReached, setIsLimitReached] = useState(false);
     const [limitCount, setLimitCount] = useState(0);
 
+    // Pagination (Enterprise)
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [totalFound, setTotalFound] = useState(0);
+    const [loadingMore, setLoadingMore] = useState(false);
+
     const jobId = params.id as string;
 
-    useEffect(() => {
-        const fetchMatches = async () => {
-            try {
-                const res = await fetch(`/api/employer/jobs/${jobId}/matches`);
-                if (res.ok) {
-                    const data = await res.json();
+    const fetchMatches = async (page: number = 1, append: boolean = false) => {
+        try {
+            if (page > 1) setLoadingMore(true);
+            const res = await fetch(`/api/employer/jobs/${jobId}/matches?page=${page}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (append) {
+                    setCandidates(prev => [...prev, ...(data.candidates || [])]);
+                } else {
                     setCandidates(data.candidates || []);
-                    setIsLimitReached(data.isLimitReached || false);
-                    setLimitCount(data.limit || 0);
                 }
-            } catch (e) {
-                console.error("Fetch matches error", e);
-            } finally {
-                setIsLoading(false);
+                setIsLimitReached(data.isLimitReached || false);
+                setLimitCount(data.limit || 0);
+                setCurrentPage(data.currentPage || page);
+                setHasMore(data.hasMore || false);
+                setTotalFound(data.totalFound || 0);
             }
-        };
+        } catch (e) {
+            console.error("Fetch matches error", e);
+        } finally {
+            setIsLoading(false);
+            setLoadingMore(false);
+        }
+    };
 
-        if (jobId) fetchMatches();
+    useEffect(() => {
+        if (jobId) fetchMatches(1);
     }, [jobId]);
+
+    const handleLoadMore = () => {
+        fetchMatches(currentPage + 1, true);
+    };
 
     const handleInvite = async (candidateId: string, isReminder = false) => {
         setInvitingId(candidateId);
@@ -155,17 +174,39 @@ export default function JobMatchesPage() {
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    {displayedCandidates.map((candidate) => (
-                        <MatchCard
-                            key={candidate.id}
-                            {...candidate}
-                            isLoading={invitingId === candidate.id}
-                            onInvite={() => handleInvite(candidate.id, false)}
-                            onRemind={() => handleInvite(candidate.id, true)}
-                        />
-                    ))}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                        {displayedCandidates.map((candidate) => (
+                            <MatchCard
+                                key={candidate.id}
+                                {...candidate}
+                                isLoading={invitingId === candidate.id}
+                                onInvite={() => handleInvite(candidate.id, false)}
+                                onRemind={() => handleInvite(candidate.id, true)}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Enterprise Pagination: Load Next 100 */}
+                    {hasMore && activeTab === 'suggestions' && (
+                        <div className="mt-10 flex flex-col items-center gap-3">
+                            <button
+                                onClick={handleLoadMore}
+                                disabled={loadingMore}
+                                className={`px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95 flex items-center gap-2 disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                            >
+                                {loadingMore ? (
+                                    <><Loader2 className="animate-spin" size={14} /> Loading...</>
+                                ) : (
+                                    <><ChevronRight size={14} /> Load Next 100</>
+                                )}
+                            </button>
+                            <p className={`text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                Showing {candidates.length} of {totalFound} matches
+                            </p>
+                        </div>
+                    )}
+                </>
             )}
 
             {!isLoading && isLimitReached && activeTab === 'suggestions' && candidates.length > 0 && (
@@ -177,8 +218,8 @@ export default function JobMatchesPage() {
                         Unlock More Matches
                     </h3>
                     <p className={`max-w-lg mb-8 text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                        You've reached the limit of {limitCount} top matches for your current plan.
-                        Upgrade to Enterprise to access the full talent pool.
+                        You've used all {limitCount} top match credits for this job.
+                        Upgrade your plan to get more credits per job.
                     </p>
                     <button
                         onClick={() => router.push('/employer/settings')}

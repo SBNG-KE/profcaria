@@ -16,15 +16,15 @@ export const BILLING_PLANS = {
             jobs: 1, // per month
             connections: 1, // per month
             analyticsHistoryYears: 1,
-            topMatches: 0, // Access denied
-            maxProfileViewPerJob: 0,
+            topMatchesPerJob: 2, // 2 credits for the single job
+            maxProfileViewPerJob: 2,
             restrictedLocations: false,
             maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
             '1 Job Post per month',
             '1 Year Analytics History',
-            'Basic Candidate Search'
+            '2 AI Top Match Credits'
         ]
     },
     basic: {
@@ -32,19 +32,18 @@ export const BILLING_PLANS = {
         priceMonthly: BASIC_MO,
         priceMonthlyOffer: BASIC_OFFER > 0 ? BASIC_OFFER : null,
         limits: {
-            jobs: 5,
+            jobs: 3,
             connections: 9999,
             analyticsHistoryYears: 3,
-            topMatches: 5, // 5 Total Credits
-            maxProfileViewPerJob: 1, // Show 1 at a time
+            topMatchesPerJob: 5, // 5 credits per job post
+            maxProfileViewPerJob: 5,
             restrictedLocations: false,
             maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
-            '5 Job Posts per month',
+            '3 Job Posts per month',
             '3 Years Analytics History',
-            '5 AI Top Match Credits',
-            'Preview 1 Top Candidate/Job'
+            '5 AI Top Match Credits/job'
         ]
     },
     pro: {
@@ -52,19 +51,18 @@ export const BILLING_PLANS = {
         priceMonthly: PRO_MO,
         priceMonthlyOffer: PRO_OFFER > 0 ? PRO_OFFER : null,
         limits: {
-            jobs: 30,
+            jobs: 15,
             connections: 9999,
             analyticsHistoryYears: 999,
-            topMatches: 15, // 15 Total Credits
-            maxProfileViewPerJob: 2, // 2 per job view
+            topMatchesPerJob: 30, // 30 credits per job post
+            maxProfileViewPerJob: 30,
             restrictedLocations: true,
             maxApplicationsPerJob: 9999, // Unlimited applications
         },
         features: [
-            '30 Job Posts per month',
+            '15 Job Posts per month',
             'Unlimited Analytics History',
-            '15 AI Top Match Credits (3/job)',
-            'Preview 2 Top Candidates/Job',
+            '30 AI Top Match Credits/job',
             'Location-Restricted Jobs',
             'Priority Support'
         ]
@@ -77,8 +75,8 @@ export const BILLING_PLANS = {
             jobs: 9999,
             connections: 9999,
             analyticsHistoryYears: 999,
-            topMatches: 9999, // Unlimited
-            maxProfileViewPerJob: 100, // Show 100 at a time
+            topMatchesPerJob: 9999, // Unlimited
+            maxProfileViewPerJob: 100, // Show 100 at a time (paginated)
             restrictedLocations: true,
             maxApplicationsPerJob: 9999, // Unlimited applications
         },
@@ -86,7 +84,6 @@ export const BILLING_PLANS = {
             'Unlimited Job Posts',
             'Unlimited Analytics',
             'Unlimited AI Top Matches',
-            'Preview 100 Candidates/Job',
             'Location-Restricted Jobs',
             'Personal Account Manager'
         ]

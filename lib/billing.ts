@@ -49,7 +49,6 @@ export async function getCompanyPlan(companyId: string) {
             .update({
                 usage_jobs: 0,
                 usage_connections: 0,
-                usage_top_matches: 0,
                 last_usage_reset: new Date().toISOString()
             })
             .eq('id', subscription.id);
@@ -57,7 +56,6 @@ export async function getCompanyPlan(companyId: string) {
         // Return reset values locally
         subscription.usage_jobs = 0;
         subscription.usage_connections = 0;
-        subscription.usage_top_matches = 0;
     }
 
     const planType = (subscription.plan_type as PlanType) || 'free';
@@ -66,7 +64,7 @@ export async function getCompanyPlan(companyId: string) {
     return { plan: planConfig, subscription };
 }
 
-export async function checkLimit(companyId: string, feature: 'jobs' | 'connections' | 'topMatches') {
+export async function checkLimit(companyId: string, feature: 'jobs' | 'connections') {
     const { plan, subscription } = await getCompanyPlan(companyId);
 
     // Free plan always verify usage if subscription exists (or if virtual free tracking is implemented)
@@ -110,7 +108,7 @@ export async function checkLimit(companyId: string, feature: 'jobs' | 'connectio
     return currentUsage < limit;
 }
 
-export async function incrementUsage(companyId: string, feature: 'jobs' | 'connections' | 'topMatches', amount: number = 1) {
+export async function incrementUsage(companyId: string, feature: 'jobs' | 'connections', amount: number = 1) {
     const column = `usage_${feature}`;
 
     // Try to find existing subscription
@@ -136,6 +134,54 @@ export async function incrementUsage(companyId: string, feature: 'jobs' | 'conne
             .schema('employer')
             .from('subscriptions')
             .insert([{ company_id: companyId, plan_type: 'free', [column]: amount }]);
+    }
+}
+
+// --- PER-JOB TOP MATCH CREDITS ---
+
+export async function checkJobTopMatchLimit(companyId: string, jobId: string) {
+    const { plan } = await getCompanyPlan(companyId);
+    const limitPerJob = plan.limits.topMatchesPerJob || 0;
+
+    if (limitPerJob >= 9999) return { allowed: true, remaining: 9999, limit: limitPerJob, used: 0 };
+    if (limitPerJob <= 0) return { allowed: false, remaining: 0, limit: 0, used: 0 };
+
+    // Fetch current usage for this specific job
+    const { data: usage } = await supabaseAdmin
+        .schema('employer')
+        .from('job_top_match_usage')
+        .select('usage_count')
+        .eq('company_id', companyId)
+        .eq('job_id', jobId)
+        .single();
+
+    const used = usage?.usage_count || 0;
+    const remaining = Math.max(0, limitPerJob - used);
+
+    return { allowed: used < limitPerJob, remaining, limit: limitPerJob, used };
+}
+
+export async function incrementJobTopMatchUsage(companyId: string, jobId: string, amount: number = 1) {
+    // Upsert: insert or increment
+    const { data: existing } = await supabaseAdmin
+        .schema('employer')
+        .from('job_top_match_usage')
+        .select('id, usage_count')
+        .eq('company_id', companyId)
+        .eq('job_id', jobId)
+        .single();
+
+    if (existing) {
+        await supabaseAdmin
+            .schema('employer')
+            .from('job_top_match_usage')
+            .update({ usage_count: (existing.usage_count || 0) + amount })
+            .eq('id', existing.id);
+    } else {
+        await supabaseAdmin
+            .schema('employer')
+            .from('job_top_match_usage')
+            .insert([{ company_id: companyId, job_id: jobId, usage_count: amount }]);
     }
 }
 

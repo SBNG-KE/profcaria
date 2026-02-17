@@ -136,7 +136,7 @@ export default function PricingPage() {
                                         <CheckCircle size={14} className="text-slate-500 shrink-0" /> 1 Year Analytics
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-300 font-medium">
-                                        <CheckCircle size={14} className="text-slate-500 shrink-0" /> Standard Candidates
+                                        <CheckCircle size={14} className="text-slate-500 shrink-0" /> 2 AI Top Match Credits
                                     </div>
                                 </div>
                             </div>
@@ -176,13 +176,13 @@ export default function PricingPage() {
                                 <p className="text-xs text-slate-500 pb-2">For small teams</p>
                                 <div className="pt-4 space-y-3 border-t border-blue-500/20">
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-blue-500 shrink-0" /> 5 Job Posts/mo
+                                        <CheckCircle size={14} className="text-blue-500 shrink-0" /> 3 Job Posts/mo
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
                                         <CheckCircle size={14} className="text-blue-500 shrink-0" /> 3 Years Analytics
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-blue-500 shrink-0" /> Top Match Access (Limited)
+                                        <CheckCircle size={14} className="text-blue-500 shrink-0" /> 5 AI Top Match Credits/job
                                     </div>
                                 </div>
                             </div>
@@ -223,16 +223,16 @@ export default function PricingPage() {
                                 <p className="text-xs text-slate-500 pb-2">For growing companies</p>
                                 <div className="pt-4 space-y-3 border-t border-emerald-500/20">
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">30 Job Postings/mo</span>
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> <span className="text-white font-bold">15 Job Posts/mo</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
                                         <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Unlimited Analytics History
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Top Matches (Increased Limit)
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> 30 AI Top Match Credits/job
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Access to Restricted Location Feature
+                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" /> Location-Restricted Jobs
                                     </div>
                                 </div>
                             </div>
@@ -278,10 +278,10 @@ export default function PricingPage() {
                                         <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Analytics History
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited Top Matches (capped at 100)/job
+                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Unlimited AI Top Matches (100/page)
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-200 font-medium">
-                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Access to Restricted Location Feature
+                                        <CheckCircle size={14} className="text-purple-500 shrink-0" /> Location-Restricted Jobs
                                     </div>
                                 </div>
                             </div>

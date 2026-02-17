@@ -263,47 +263,61 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             .filter((c: any) => c.score > 40) // Only return decent matches
             .sort((a: any, b: any) => b.score - a.score);
 
-        // 5. Enforce Plan Limits
-        const { getCompanyPlan, checkLimit, incrementUsage } = await import('@/lib/billing');
+        // 5. Enforce Per-Job Plan Limits
+        const { getCompanyPlan, checkJobTopMatchLimit, incrementJobTopMatchUsage } = await import('@/lib/billing');
         const { plan } = await getCompanyPlan(auth.uid as string);
 
-        // A. Check Global "Credit" Limit (Total top matches allowed)
-        // If checking 'topMatches', checkLimit checks if usage < limit.
-        const canViewMore = await checkLimit(auth.uid as string, 'topMatches');
+        // Parse page param for enterprise pagination
+        const url = new URL(req.url);
+        const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
 
-        // B. Get Per-View Limit (How many to show right now)
+        // A. Check Per-Job Credit Limit
+        const creditCheck = await checkJobTopMatchLimit(auth.uid as string, jobId);
+
+        // B. Get Per-View Limit (How many to show per page)
         const perViewLimit = plan.limits.maxProfileViewPerJob || 0;
-        const totalCreditsLimit = plan.limits.topMatches || 0;
 
-        if (!canViewMore || perViewLimit === 0) {
-            // Access Denied or Limit Reached
+        if (!creditCheck.allowed || perViewLimit <= 0) {
+            // Access Denied or Limit Reached for this job
             return NextResponse.json({
                 candidates: [],
                 limit: perViewLimit,
                 totalFound: candidates.length,
                 isLimitReached: true,
-                message: "Top Matches limit reached or feature not available."
+                remainingCredits: creditCheck.remaining,
+                creditsPerJob: creditCheck.limit,
+                creditsUsed: creditCheck.used,
+                message: "Top Matches credit limit reached for this job."
             });
         }
 
-        // C. Slice Logic
-        // We show `perViewLimit` candidates.
-        const finalCandidates = candidates.slice(0, perViewLimit);
+        // C. Pagination Logic
+        // For enterprise (perViewLimit=100): paginate in pages of 100
+        // For others: show up to perViewLimit candidates (remaining credits)
+        const isEnterprise = perViewLimit >= 100;
+        const effectiveLimit = isEnterprise ? perViewLimit : Math.min(perViewLimit, creditCheck.remaining);
+        const startIndex = isEnterprise ? (page - 1) * perViewLimit : 0;
+        const endIndex = startIndex + effectiveLimit;
+        const finalCandidates = candidates.slice(startIndex, endIndex);
+        const totalPages = isEnterprise ? Math.ceil(candidates.length / perViewLimit) : 1;
+        const hasMore = isEnterprise ? endIndex < candidates.length : false;
 
-        // D. Increment Usage (Cost = number of profiles revealed)
-        // Only increment if we actually found candidates
-        if (finalCandidates.length > 0) {
-            // We await this to ensure it counts, or we can fire-and-forget if performance is critical.
-            // For accuracy, we await.
-            await incrementUsage(auth.uid as string, 'topMatches', finalCandidates.length);
+        // D. Increment Per-Job Usage (Cost = number of NEW profiles revealed)
+        if (finalCandidates.length > 0 && !isEnterprise) {
+            await incrementJobTopMatchUsage(auth.uid as string, jobId, finalCandidates.length);
         }
 
         return NextResponse.json({
             candidates: finalCandidates,
             limit: perViewLimit,
-            remainingCredits: totalCreditsLimit >= 9999 ? 'Unlimited' : (totalCreditsLimit - (await getCompanyPlan(auth.uid as string)).subscription?.usage_top_matches),
+            remainingCredits: creditCheck.limit >= 9999 ? 'Unlimited' : Math.max(0, creditCheck.remaining - finalCandidates.length),
+            creditsPerJob: creditCheck.limit >= 9999 ? 'Unlimited' : creditCheck.limit,
+            creditsUsed: creditCheck.used,
             totalFound: candidates.length,
-            isLimitReached: candidates.length > perViewLimit // Just indicates there are more hidden ones
+            isLimitReached: !isEnterprise && finalCandidates.length >= creditCheck.remaining,
+            currentPage: page,
+            totalPages,
+            hasMore
         });
 
     } catch (error) {

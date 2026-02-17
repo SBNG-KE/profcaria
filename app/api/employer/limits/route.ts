@@ -23,8 +23,7 @@ export async function GET(req: Request) {
 
         const usage = {
             jobs: subscription?.usage_jobs || 0,
-            connections: subscription?.usage_connections || 0,
-            topMatches: subscription?.usage_top_matches || 0
+            connections: subscription?.usage_connections || 0
         };
 
         return NextResponse.json({
