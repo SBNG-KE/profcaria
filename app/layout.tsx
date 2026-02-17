@@ -103,7 +103,7 @@ const structuredData = {
       "description": "Premium professional networking platform with AI-powered smart matching and instant work history verification.",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://www.profcaria.com/auth?search={search_term_string}",
+        "target": "https://www.profcaria.com?search={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     },
