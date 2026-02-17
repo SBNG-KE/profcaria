@@ -1,0 +1,55 @@
+
+--- Debugging Follower Issue ---
+Found 15 users.
+Found 16 follow records.
+
+--- Verifying Integrity ---
+Follow Record f98b40ad-f4ed-4541-94b5-4b52ac3b4444:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Vivian Ndukwu (vivian.g.c.ndukwu@gmail.com) (f3d3ddf3-9055-4a95-9839-656ce2b98a99)
+Follow Record c1dbcab8-ecd1-46e3-87d4-7a5436ae41e1:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Steve Bern (sbshome.ix@gmail.com) (573e7ba9-16bd-4ac2-b646-e58a72ec7097)
+Follow Record 5c051f5f-ec1f-4fa3-b052-567a7d7d40c7:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Bernard S (stevebern.ix@gmail.com) (6ec815df-1721-40cf-b9e0-e7b0f2e0c4a0)
+Follow Record ff2c71db-674c-4108-b68c-1a4a40cdd36e:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Ivan Markov (ivan.markov.vse@gmail.com) (f61ac1c8-4654-4c4b-a357-211a48e1a5b1)
+Follow Record f890e713-156f-4dad-9bed-7a322787febb:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: LILIAN OBI (obililian.n@gmail.com) (abc02c84-711b-4ae7-90dd-c47ae9df6db9)
+Follow Record 79e90e9b-7dfd-4961-bbf3-75128de2798a:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: OLANIYI SOETAN (olaniyisoetan@gmail.com) (188a2f2a-fcf9-4719-a5d5-e56df0afdd0a)
+Follow Record 008af131-b488-47e4-89da-7bf62e38873f:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Alfar Najeeb (najeebalfar34@gmail.com) (b599135e-e725-4c43-bb7a-473bc0b48c2b)
+Follow Record ab3ba638-7954-42f7-bc9d-08b99d58cce3:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Madalitso Mwale (madalitsomwale7@gmail.com) (8f23a1a1-42c2-4caa-ad1d-0c7a931f99ad)
+Follow Record 6d46463e-789d-4bf3-959d-b236f55ef948:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Abdishukri Hassan (abdishukridaud@gmail.com) (dcf5aeac-12ed-4256-856f-533a744fb62a)
+Follow Record 0157114a-86c3-43f7-87bb-e0eddde4bdb1:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: adnan abdullah (adnanabdullah22@gmail.com) (dc50be01-b358-4b39-9726-dcf56522ffdc)
+Follow Record d2106a9a-bc57-4d75-8c86-89cb1095d83f:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Mbali Tshabalala (mbalitshabalala04@gmail.com) (d6bd276d-3ab3-4544-afa8-568a14ff0b35)
+Follow Record 051ed53c-2862-4b14-9ce4-41f8f6b09c86:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: BEATRICE KABUITU (bwkabuitu@gmail.com) (65510c2d-2467-4214-a3a7-22f4978d8268)
+Follow Record a8eea7ae-38d3-4272-90f3-f255c5daa407:
+  - Follower: Jojo K (jojostevey.ke@gmail.com) (77d7c5d7-02d4-4bf5-8a9b-ee2b30a6aa6b)
+  - Following: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+Follow Record 4333c1cd-354f-442e-bb6b-cc0286843cf8:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: B N (bernngare.ix@gmail.com) (fa16665f-4998-4afe-b9bf-07f9b79aa428)
+Follow Record a6cde512-6b01-4d1c-946f-5cf8501a99a8:
+  - Follower: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+  - Following: Jojo K (jojostevey.ke@gmail.com) (77d7c5d7-02d4-4bf5-8a9b-ee2b30a6aa6b)
+Follow Record 18793d8a-3ed4-4a26-afb0-b9abe6353a8b:
+  - Follower: Bernard S (stevebern.ix@gmail.com) (6ec815df-1721-40cf-b9e0-e7b0f2e0c4a0)
+  - Following: Stephen  N (sgakungo@gmail.com) (60f0f916-7b32-483f-afd6-681424a360bf)
+    

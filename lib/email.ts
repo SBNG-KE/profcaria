@@ -147,7 +147,7 @@ export async function sendUnreadMessageNotification(to: string, senderName: stri
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Messages</a>
+            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Messages</a>
         </div>
         <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
             We sent this because you haven't been active recently.
@@ -196,7 +196,7 @@ export async function sendShortlistedNotification(to: string, jobTitle: string, 
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Great News! 🎯</h1>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Great News!</h1>
         <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
             You've been <strong>shortlisted</strong> for a position at <strong>${companyName}</strong>!
         </p>
@@ -205,12 +205,12 @@ export async function sendShortlistedNotification(to: string, jobTitle: string, 
         </div>
         <div style="background-color: #ffffff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
             <p style="margin: 0; color: #000000; font-size: 14px; text-align: center;">
-                <strong>🔔 Stay Alert!</strong><br>
+                <strong>Stay Alert!</strong><br>
                 The employer may reach out with messages soon. Please check your inbox and notifications regularly.
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #e5e5e5;">Check Your Dashboard</a>
+            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #e5e5e5;">Check Your Dashboard</a>
         </div>
         <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
             This is an important step forward. Keep your profile updated and be ready to respond promptly!
@@ -240,7 +240,7 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
 
     const content = `
         <div style="text-align: center; margin-bottom: 24px;">
-            <span style="font-size: 48px;">🎉</span>
+            <span style="font-size: 48px;"></span>
         </div>
         <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #ffffff; text-align: center; letter-spacing: -1px;">Congratulations!</h1>
         <p style="margin: 0 0 8px 0; color: #10b981; font-size: 18px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
@@ -264,12 +264,12 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         </div>
         
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/auth" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
+            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
         </div>
         
         <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.6;">
             Your journey with <strong>${companyName}</strong> begins now.<br>
-            We wish you all the best in your new role! 🚀
+            We wish you all the best in your new role!
         </p>
     `;
 
@@ -277,7 +277,7 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         await resend.emails.send({
             from: 'Profcaria Careers <careers@profcaria.com>',
             to,
-            subject: `🎉 Congratulations! You've been hired at ${companyName}!`,
+            subject: `Congratulations! You've been hired at ${companyName}!`,
             html: EmailWrapper(content)
         });
         return { success: true };
@@ -298,7 +298,7 @@ export async function sendNewFollowerNotification(to: string, followerName: stri
     const actionText = followerType === 'company' ? 'subscribed to' : 'started following';
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">${title} 🚀</h1>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">${title}</h1>
         <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${followerName}</strong> has ${actionText} your profile!
         </p>
@@ -340,7 +340,7 @@ export async function sendApplicationReceivedEmail(to: string, applicantName: st
     const link = `https://www.profcaria.com/employer/jobs/${jobId}/applications`;
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Application 📩</h1>
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Application</h1>
         <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
             Someone has applied to your open position!
         </p>
@@ -542,7 +542,7 @@ export async function sendPromoWelcomeEmail(
 
     const content = `
         <div style="text-align: center; margin-bottom: 24px;">
-            <span style="font-size: 48px;">🎁</span>
+            <span style="font-size: 48px;"></span>
         </div>
         <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #ffffff; text-align: center; letter-spacing: -1px;">Welcome, Early Adopter!</h1>
         <p style="margin: 0 0 8px 0; color: #a855f7; font-size: 16px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
@@ -572,7 +572,7 @@ export async function sendPromoWelcomeEmail(
         
         <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.6;">
             We're thrilled to have you as part of our founding community.<br/>
-            Your feedback helps shape the future of Profcaria! 🚀
+            Your feedback helps shape the future of Profcaria!
         </p>
     `;
 
@@ -580,7 +580,7 @@ export async function sendPromoWelcomeEmail(
         await resend.emails.send({
             from: 'Profcaria Premium <premium@profcaria.com>',
             to,
-            subject: `🎁 Welcome! Your Free ${planName} Premium Access is Active`,
+            subject: `Welcome! Your Free ${planName} Premium Access is Active`,
             html: EmailWrapper(content)
         });
         return { success: true };

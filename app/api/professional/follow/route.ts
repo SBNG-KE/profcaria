@@ -132,12 +132,22 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type') || 'following_users';
         const targetUserId = searchParams.get('userId') || user.id;
+        const entityType = searchParams.get('entityType'); // 'user' | 'company' | undefined
 
         if (type === 'followers') {
-            const isTargetCompany = user.schema === 'employer' && targetUserId === user.id;
+            // Determine if we are fetching followers for a Company or a User/Professional
+            // 1. Explicit request via entityType overrides schema
+            // 2. Default: if schema is employer and viewing own profile, assume company view (legacy behavior)
+            let isTargetCompany = false;
+            if (entityType) {
+                isTargetCompany = entityType === 'company';
+            } else {
+                isTargetCompany = user.schema === 'employer' && targetUserId === user.id;
+            }
 
             if (isTargetCompany) {
                 // Fetch company subscribers

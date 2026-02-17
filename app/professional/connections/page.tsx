@@ -24,6 +24,7 @@ export default function ConnectionsPage() {
     });
     const [suggestionsLoading, setSuggestionsLoading] = useState(true);
 
+
     // Fetch Subscriptions/Followers data
     const fetchData = async () => {
         if (activeTab === 'suggestions') return;
@@ -31,7 +32,8 @@ export default function ConnectionsPage() {
         setLoading(true);
         try {
             const typeParam = activeTab === 'subscriptions' ? 'following_companies' : 'followers';
-            const res = await fetch(`/api/professional/follow?type=${typeParam}`);
+            const entityTypeParam = activeTab === 'followers' ? '&entityType=user' : '';
+            const res = await fetch(`/api/professional/follow?type=${typeParam}${entityTypeParam}`);
             if (res.ok) {
                 const json = await res.json();
                 let list = json.following || json.followers || [];
@@ -53,7 +55,7 @@ export default function ConnectionsPage() {
             const recData = recRes.ok ? await recRes.json() : { companies: [], professionals: [] };
 
             // Fetch followers who I haven't followed back
-            const followRes = await fetch('/api/professional/follow?type=followers');
+            const followRes = await fetch('/api/professional/follow?type=followers&entityType=user');
             const followData = followRes.ok ? await followRes.json() : { followers: [] };
             const followBacks = (followData.followers || []).filter((f: any) => !f.isFollowing);
 
