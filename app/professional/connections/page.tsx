@@ -87,23 +87,14 @@ export default function ConnectionsPage() {
     }, [activeTab]);
 
     const handleFollow = async (id: string, type: 'user' | 'company') => {
-        const res = await fetch('/api/professional/follow', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: id, type })
-        });
-
-        if (res.ok) {
-            // Remove from suggestions
-            setSuggestions(prev => ({
-                ...prev,
-                companies: type === 'company' ? prev.companies.filter(c => c.id !== id) : prev.companies,
-                professionals: type === 'user' ? prev.professionals.filter(p => p.id !== id) : prev.professionals,
-                followBacks: type === 'user' ? prev.followBacks.filter(p => p.id !== id) : prev.followBacks
-            }));
-        } else {
-            throw new Error('Follow failed');
-        }
+        // API call is handled by FollowButton component
+        // This function simply updates the local state to remove the item from suggestions
+        setSuggestions(prev => ({
+            ...prev,
+            companies: type === 'company' ? prev.companies.filter(c => c.id !== id) : prev.companies,
+            professionals: type === 'user' ? prev.professionals.filter(p => p.id !== id) : prev.professionals,
+            followBacks: type === 'user' ? prev.followBacks.filter(p => p.id !== id) : prev.followBacks
+        }));
     };
 
     const handleUnfollow = (id: string) => {

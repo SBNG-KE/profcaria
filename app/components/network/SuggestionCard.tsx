@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTheme } from '@/app/context/ThemeContext';
 import { UserPlus, Building2, Briefcase, Check, Loader2 } from 'lucide-react';
 import VerificationBadge from '../VerificationBadge';
+import FollowButton from './FollowButton';
 
 interface SuggestionCardProps {
     id: string;
@@ -31,22 +32,6 @@ export default function SuggestionCard({
 }: SuggestionCardProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const [loading, setLoading] = useState(false);
-    const [followed, setFollowed] = useState(isFollowing);
-
-    const handleFollow = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setLoading(true);
-        try {
-            await onFollow(id, type);
-            setFollowed(true);
-        } catch (err) {
-            console.error('Follow failed:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const profileLink = type === 'company'
         ? `/professional/companies/${id}`
@@ -107,36 +92,20 @@ export default function SuggestionCard({
                     </div>
                 )}
 
-                {/* Action Button */}
-                <button
-                    onClick={handleFollow}
-                    disabled={loading || followed}
-                    className={`
-                        mt-2 w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest
-                        flex items-center justify-center gap-2 transition-all
-                        disabled:opacity-70
-                        ${followed
-                            ? (isDark ? 'bg-neutral-800 text-neutral-400 border border-neutral-700' : 'bg-neutral-100 text-neutral-500 border border-neutral-200')
-                            : type === 'company'
-                                ? (isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800')
-                                : (isDark ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-blue-600 text-white hover:bg-blue-500')
-                        }
-                    `}
-                >
-                    {loading ? (
-                        <Loader2 size={14} className="animate-spin" />
-                    ) : followed ? (
-                        <>
-                            <Check size={14} />
-                            {type === 'company' ? 'Subscribed' : 'Following'}
-                        </>
-                    ) : (
-                        <>
-                            <UserPlus size={14} />
-                            {type === 'company' ? 'Subscribe' : 'Follow'}
-                        </>
-                    )}
-                </button>
+                {/* Action Button - Uses Shared Component */}
+                <div className="mt-2">
+                    <FollowButton
+                        targetId={id}
+                        type={type}
+                        initialIsFollowing={isFollowing}
+                        onToggle={(newState) => {
+                            if (newState) onFollow(id, type);
+                        }}
+                        className="w-full"
+                        size="sm"
+                        isFollowBack={true}
+                    />
+                </div>
             </div>
         </div>
     );

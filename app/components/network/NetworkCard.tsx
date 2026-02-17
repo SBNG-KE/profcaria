@@ -33,7 +33,7 @@ export default function NetworkCard({
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
-    const messageLink = `/professional/notifications?recipientId=${id}&recipientType=${type === 'company' ? 'employer' : 'professional'}`;
+    const messageLink = `/professional/notifications?recipientId=${id}&recipientType=${type === 'company' ? 'employer' : 'professional'}&recipientName=${encodeURIComponent(name)}&recipientImage=${encodeURIComponent(image || '')}`;
 
     return (
         <div className={`
