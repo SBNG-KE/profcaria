@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
-import { decryptData } from '@/lib/security';
+
+import { decryptData, hashForIndex } from '@/lib/security';
 import { sendNewFollowerNotification } from '@/lib/email';
 
 export const runtime = 'nodejs';
@@ -135,8 +136,38 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type') || 'following_users';
-        const targetUserId = searchParams.get('userId') || user.id;
         const entityType = searchParams.get('entityType'); // 'user' | 'company' | undefined
+
+        // Resolve Target User ID
+        let targetUserId = searchParams.get('userId');
+
+        // If no explicit userId (meaning "My Profile"), resolve it accurately
+        if (!targetUserId) {
+            // If explicit 'user' entity type requested (e.g. by my fix), 
+            // ensure we get the PROFESSIONAL User ID, not the Company ID (which might be in user.id for Employers)
+            if (entityType === 'user' && user.email) {
+                try {
+                    const emailIndex = hashForIndex(user.email);
+                    const { data: profUser } = await supabaseAdmin
+                        .schema('professional')
+                        .from('users')
+                        .select('id')
+                        .eq('email_index', emailIndex)
+                        .single();
+
+                    if (profUser) {
+                        targetUserId = profUser.id;
+                    } else {
+                        targetUserId = user.id;
+                    }
+                } catch (err) {
+                    console.error("Error resolving user via email", err);
+                    targetUserId = user.id;
+                }
+            } else {
+                targetUserId = user.id;
+            }
+        }
 
         if (type === 'followers') {
             // Determine if we are fetching followers for a Company or a User/Professional
@@ -146,7 +177,7 @@ export async function GET(request: NextRequest) {
             if (entityType) {
                 isTargetCompany = entityType === 'company';
             } else {
-                isTargetCompany = user.schema === 'employer' && targetUserId === user.id;
+                isTargetCompany = user.schema === 'employer' && targetUserId === user.id; // Note: targetUserId might be resolved now
             }
 
             if (isTargetCompany) {
@@ -186,6 +217,7 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ followers: formattedFollowers });
 
             } else {
+
                 // Fetch user followers
                 const { data: followers, error } = await supabaseAdmin
                     .schema('professional')
@@ -275,7 +307,18 @@ export async function GET(request: NextRequest) {
                     };
                 }))).filter(Boolean); // Remove null entries
 
-                return NextResponse.json({ followers: formattedFollowers });
+                return NextResponse.json({
+                    followers: formattedFollowers,
+                    debug: {
+                        userId: user.id,
+                        targetUserId,
+                        entityType,
+                        isTargetCompany,
+                        rawCount: followers?.length,
+                        formattedCount: formattedFollowers.length
+                    }
+                });
+
             }
 
         } else if (type === 'following_companies') {
