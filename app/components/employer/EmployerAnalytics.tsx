@@ -107,9 +107,11 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
                             <h3 className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
                                 {stats.views}
                             </h3>
-                            <span className="flex items-center gap-0.5 text-xs font-bold text-gray-500">
-                                No Data
-                            </span>
+                            {stats.views === 0 && (
+                                <span className="flex items-center gap-0.5 text-xs font-bold text-gray-500">
+                                    No Data
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
