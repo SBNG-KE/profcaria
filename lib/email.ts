@@ -590,3 +590,43 @@ export async function sendPromoWelcomeEmail(
     }
 }
 
+// NEW: Video KYC Required Notification
+export async function sendKYCRequiredNotification(to: string, jobTitle: string, companyName: string, verifyLink: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] KYC Required to ${to} for ${jobTitle}. Link: ${verifyLink}`);
+        return { success: true };
+    }
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Action Required: Identity Verification</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            <strong>${companyName}</strong> wants to shortlist you for the <strong>${jobTitle}</strong> position!
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #eab308; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 12px 0; color: #eab308; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">⚠️ Verification Pending</p>
+            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; font-weight: 500;">
+                Before you can be officially shortlisted, you must complete a quick Video Identity Verification (KYC). This helps keep our platform secure and trusted.
+            </p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${verifyLink}" style="display: inline-block; background-color: #eab308; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">Start Verification</a>
+        </div>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+            Click the button above to securely record a 15-second video to verify your identity. This link is private and unique to your application.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Security <security@profcaria.com>',
+            to,
+            subject: `Action Required: Verify Identity for ${companyName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}
+

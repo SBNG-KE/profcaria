@@ -47,6 +47,10 @@ interface ProfileData {
         certifications: any[];
         awards: any[];
         otherProfiles: any[];
+    };
+    kycData?: {
+        imageUrl: string | null;
+        videoUrl: string | null;
     }
 }
 
@@ -353,6 +357,33 @@ export default function EmployerProfileViewModal({
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* KYC Verification Section */}
+                                {data.kycData && (data.kycData.imageUrl || data.kycData.videoUrl) && (
+                                    <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] border-2 ${isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200 shadow-sm'}`}>
+                                        <h3 className={`text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isDark ? 'text-amber-500' : 'text-amber-600'}`}>
+                                            <BadgeCheck size={14} /> Identity Successfully Verified
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {data.kycData.imageUrl && (
+                                                <div className="space-y-2">
+                                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>ID Snapshot</p>
+                                                    <div className="rounded-2xl overflow-hidden border border-amber-500/30 aspect-[4/3] bg-black">
+                                                        <img src={data.kycData.imageUrl} alt="KYC Snapshot" className="w-full h-full object-contain" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {data.kycData.videoUrl && (
+                                                <div className="space-y-2">
+                                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Liveness Video</p>
+                                                    <div className="rounded-2xl overflow-hidden border border-amber-500/30 aspect-[4/3] bg-black">
+                                                        <video src={data.kycData.videoUrl} controls className="w-full h-full object-contain" />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* About Section */}
                                 <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>

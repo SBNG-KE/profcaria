@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
+import crypto from 'crypto';
 
 export const runtime = 'nodejs';
 
@@ -151,6 +152,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                     profileImageUrl: user?.enc_profile_image_url ? decryptData(user.enc_profile_image_url) : null,
                     badgeType: user?.badge_type || 'none'
                 },
+                kycData: {
+                    imageUrl: application.kyc_image_url || null,
+                    videoUrl: application.kyc_video_url || null
+                },
                 artifacts
             }
         });
@@ -186,7 +191,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         const { status } = await req.json();
 
-        if (!status || !['accepted', 'rejected', 'pending', 'terminated', 'shortlisted', 'employed', 'declined'].includes(status)) {
+        if (!status || !['accepted', 'rejected', 'pending', 'terminated', 'shortlisted', 'employed', 'declined', 'pending_verification'].includes(status)) {
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
@@ -194,7 +199,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const { data: application, error: appError } = await supabaseAdmin
             .schema('employer')
             .from('applications')
-            .select('id, user_id, status, job_id, jobs(company_id, enc_title)')
+            .select('id, user_id, status, job_id, jobs(company_id, enc_title), kyc_video_url')
             .eq('id', applicationId)
             .single();
 
@@ -218,10 +223,21 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             }
         }
 
-        // Build update data - set reviewed_at if transitioning from pending
+        // Build update data
         const updateData: any = { status };
+        let kycToken = null;
+
+        // INTERCEPT SHORTLISTING FOR KYC
+        if (status === 'shortlisted' && !application.kyc_video_url) {
+            updateData.status = 'pending_verification';
+            const rawToken = crypto.randomBytes(32).toString('hex');
+            // Token format: base64(appId:rawToken)
+            kycToken = Buffer.from(`${applicationId}:${rawToken}`).toString('base64');
+            updateData.enc_kyc_token = encryptData(rawToken); // Store just the random part encrypted
+        }
+
         const currentStatus = application.status;
-        if (currentStatus === 'pending' && status !== 'pending') {
+        if (currentStatus === 'pending' && updateData.status !== 'pending') {
             updateData.reviewed_at = new Date().toISOString();
         }
 
@@ -260,11 +276,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         // Send email notifications for key status changes
         if (professionalEmail) {
-            const { sendShortlistedNotification, sendEmployedNotification } = await import('@/lib/email');
+            const { sendShortlistedNotification, sendEmployedNotification, sendKYCRequiredNotification } = await import('@/lib/email');
             const safeJobTitle = jobTitle || 'Position';
             const safeCompanyName = companyName || 'Employer';
 
-            if (status === 'shortlisted') {
+            if (updateData.status === 'pending_verification' && kycToken) {
+                // Send the magic link video KYC email to the professional
+                const kycLink = `${process.env.NEXT_PUBLIC_APP_URL}/verify-identity?token=${kycToken}`;
+                if (sendKYCRequiredNotification) {
+                    sendKYCRequiredNotification(professionalEmail, safeJobTitle, safeCompanyName, kycLink).catch(console.error);
+                }
+            } else if (updateData.status === 'shortlisted') {
                 // Non-blocking email
                 sendShortlistedNotification(professionalEmail, safeJobTitle, safeCompanyName).catch(console.error);
             } else if (status === 'employed') {
@@ -280,13 +302,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         // Notify the professional in-app
         let message = '';
-        if (status === 'shortlisted') {
-            message = 'Great news! You have been shortlisted for the position. The employer is reviewing your profile for the next steps.';
-        } else if (status === 'employed') {
+        if (updateData.status === 'pending_verification') {
+            message = 'Action Required: You have been shortlisted! However, you must complete your Video Identity Verification (KYC) before the employer can proceed. Check your email for the secure link.';
+        } else if (updateData.status === 'shortlisted') {
+            message = 'Great news! You have been officially shortlisted for the position. The employer is reviewing your profile for the next steps.';
+        } else if (updateData.status === 'employed') {
             message = 'Big congratulations! You have been officially employed. Check your contracts for details.';
-        } else if (status === 'rejected') {
+        } else if (updateData.status === 'rejected') {
             message = 'Your application status has been updated. Unfortunately, you were not selected for this role.';
-        } else if (status === 'declined') {
+        } else if (updateData.status === 'declined') {
             message = 'Your application has been declined by the employer.';
         }
 
