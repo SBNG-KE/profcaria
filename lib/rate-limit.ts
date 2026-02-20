@@ -1,12 +1,11 @@
 /**
  * Rate Limiting Service
  * Protects API routes without affecting normal user experience
- * Uses in-memory store (for MVP) - upgrade to Redis for production at scale
+ * Uses Upstash Redis for persistent rate limiting across serverless instances
  */
 
-// In-memory store for rate limiting
-// Note: This resets on serverless cold starts, which is actually fine for our generous limits
-const rateLimitStore: Map<string, { count: number; resetTime: number }> = new Map();
+import { Ratelimit } from '@upstash/ratelimit';
+import { redis } from './redis';
 
 export interface RateLimitConfig {
     windowMs: number;      // Time window in milliseconds
@@ -37,66 +36,54 @@ export const RATE_LIMITS = {
 
 export type RateLimitType = keyof typeof RATE_LIMITS;
 
-/**
- * Check if a request should be allowed
- * Returns { allowed: boolean, remaining: number, resetIn: number }
- */
-export function checkRateLimit(
-    identifier: string,  // Usually IP or user ID
-    type: RateLimitType
-): { allowed: boolean; remaining: number; resetIn: number } {
-    const config = RATE_LIMITS[type];
-    const key = `${type}:${identifier}`;
-    const now = Date.now();
+// Convert ms sliding window to the format Upstash expects (e.g. '60 s')
+function msToUpstashWindow(ms: number): `${number} ms` | `${number} s` | `${number} m` | `${number} h` | `${number} d` {
+    return `${ms} ms`;
+}
 
-    // Clean up expired entries occasionally
-    if (Math.random() < 0.01) { // 1% chance per request
-        cleanupExpired();
-    }
+// Generate ratelimit instances dynamically based on RATE_LIMITS config
+const ratelimiters = new Map<RateLimitType, Ratelimit>();
 
-    const existing = rateLimitStore.get(key);
+function getRatelimiter(type: RateLimitType): Ratelimit {
+    if (!ratelimiters.has(type)) {
+        const config = RATE_LIMITS[type];
 
-    if (!existing || existing.resetTime < now) {
-        // New window
-        rateLimitStore.set(key, {
-            count: 1,
-            resetTime: now + config.windowMs,
+        // Safety against Vercel Edge limitations where some advanced algorithms might be restricted
+        // slidingWindow ensures if someone gets 10 requests per minute, they don't get 20 around the minute mark boundary.
+        const ratelimit = new Ratelimit({
+            redis: redis,
+            limiter: Ratelimit.slidingWindow(config.maxRequests, msToUpstashWindow(config.windowMs)),
+            analytics: true,
+            // Prefix to separate rate limits belonging to profcaria
+            prefix: '@profcaria/ratelimit',
         });
-        return {
-            allowed: true,
-            remaining: config.maxRequests - 1,
-            resetIn: config.windowMs,
-        };
-    }
 
-    if (existing.count >= config.maxRequests) {
-        // Rate limited
-        return {
-            allowed: false,
-            remaining: 0,
-            resetIn: existing.resetTime - now,
-        };
+        ratelimiters.set(type, ratelimit);
     }
-
-    // Increment counter
-    existing.count++;
-    return {
-        allowed: true,
-        remaining: config.maxRequests - existing.count,
-        resetIn: existing.resetTime - now,
-    };
+    return ratelimiters.get(type)!;
 }
 
 /**
- * Clean up expired rate limit entries
+ * Check if a request should be allowed (Upstash Redis version)
+ * Returns { allowed: boolean, remaining: number, resetIn: number }
  */
-function cleanupExpired(): void {
-    const now = Date.now();
-    for (const [key, value] of rateLimitStore.entries()) {
-        if (value.resetTime < now) {
-            rateLimitStore.delete(key);
-        }
-    }
+export async function checkRateLimit(
+    identifier: string,  // Usually IP or user ID
+    type: RateLimitType
+): Promise<{ allowed: boolean; remaining: number; resetIn: number }> {
+    const ratelimit = getRatelimiter(type);
+
+    // Check against upstash
+    const { success, limit, remaining, reset } = await ratelimit.limit(identifier);
+
+    // Upstash returns `reset` as a raw timestamp in milliseconds since Unix Epoch.
+    const resetIn = Math.max(0, reset - Date.now());
+
+    return {
+        allowed: success,
+        remaining: remaining,
+        resetIn: resetIn,
+    };
 }
 
 /**

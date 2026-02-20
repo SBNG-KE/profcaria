@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, hashForIndex } from '@/lib/security';
 import { SignJWT } from 'jose';
+import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
@@ -13,14 +14,35 @@ export async function POST(req: Request) {
     try {
         const body = await req.json();
         const {
-            email,
             fullName,
-            provider,     // 'google' | 'azure' | 'apple'
-            providerId,   // Provider's unique user ID
-            role          // 'professional' | 'employer'
+            role,         // 'professional' | 'employer'
+            companyName,
+            industry
         } = body;
 
-        if (!email || !provider || !providerId || !role) {
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'Missing or invalid Authorization header' }, { status: 401 });
+        }
+        const token = authHeader.split(' ')[1];
+
+        // Initialize a Supabase client to verify the token
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY! || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user || !user.email) {
+            console.error('Token verification failed:', authError);
+            return NextResponse.json({ error: 'Unauthorized token' }, { status: 401 });
+        }
+
+        const email = user.email;
+        const provider = user.app_metadata?.provider || 'unknown';
+        const providerId = user.id;
+
+        if (!role) {
             return NextResponse.json({ error: 'Missing required OAuth data' }, { status: 400 });
         }
 
@@ -190,7 +212,6 @@ export async function POST(req: Request) {
             }
 
             // SIGNUP: New employer — need company name + industry
-            const { companyName, industry } = body;
 
             if (!companyName) {
                 // Signal to callback page: need more info

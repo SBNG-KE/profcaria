@@ -44,6 +44,7 @@ export default function AuthCallbackPage() {
         provider: string;
         providerId: string;
         role: string;
+        token: string;
     } | null>(null);
 
     // Close dropdown on outside click
@@ -98,7 +99,10 @@ export default function AuthCallbackPage() {
                 // Call our custom social auth API
                 const res = await fetch('/api/auth/social', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
                     body: JSON.stringify(payload),
                 });
 
@@ -111,7 +115,8 @@ export default function AuthCallbackPage() {
                         fullName,
                         provider,
                         providerId,
-                        role: pendingRole
+                        role: pendingRole,
+                        token: session.access_token
                     });
 
                     // Fetch industries for the dropdown
@@ -156,7 +161,10 @@ export default function AuthCallbackPage() {
         try {
             const res = await fetch('/api/auth/social', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${oauthData.token}`
+                },
                 body: JSON.stringify({
                     ...oauthData,
                     companyName,
