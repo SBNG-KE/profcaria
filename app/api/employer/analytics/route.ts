@@ -92,40 +92,69 @@ export async function GET(req: Request) {
         let repostsCount = 0;
 
         if (postIds.length > 0) {
-            // Aggregate Likes
+            // Aggregate Likes (All-time)
             const { count: likes } = await supabaseAdmin
                 .schema('employer')
                 .from('post_likes')
                 .select('*', { count: 'exact', head: true })
-                .in('post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('post_id', postIds);
             likesCount = likes || 0;
 
-            // Aggregate Comments
+            // Aggregate Comments (All-time)
             const { count: comments } = await supabaseAdmin
                 .schema('employer')
                 .from('post_comments')
                 .select('*', { count: 'exact', head: true })
-                .in('post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('post_id', postIds);
             commentsCount = comments || 0;
 
-            // Aggregate Reposts
+            // Aggregate Reposts (All-time)
             const { count: profReposts } = await supabaseAdmin
                 .schema('professional')
                 .from('post_reposts')
                 .select('*', { count: 'exact', head: true })
-                .in('original_post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('original_post_id', postIds);
 
             const { count: empReposts } = await supabaseAdmin
                 .schema('employer')
                 .from('post_reposts')
                 .select('*', { count: 'exact', head: true })
-                .in('original_post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('original_post_id', postIds);
 
             repostsCount = (profReposts || 0) + (empReposts || 0);
+        }
+
+        // 4. Fetch Recent Subscribers
+        const { data: recentSubs } = await supabaseAdmin
+            .schema('professional')
+            .from('company_follows')
+            .select('user_id, created_at')
+            .eq('company_id', employerId)
+            .gte('created_at', startDate.toISOString())
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        const recentSubscribers = [];
+        if (recentSubs && recentSubs.length > 0) {
+            for (const sub of recentSubs) {
+                const { data: u } = await supabaseAdmin
+                    .schema('professional')
+                    .from('users')
+                    .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+                    .eq('id', sub.user_id)
+                    .maybeSingle();
+
+                if (u) {
+                    recentSubscribers.push({
+                        id: u.id,
+                        name: `${u.enc_first_name ? decryptData(u.enc_first_name) : ''} ${u.enc_last_name ? decryptData(u.enc_last_name) : ''}`.trim() || 'Professional',
+                        role: u.enc_current_role ? decryptData(u.enc_current_role) : 'Professional',
+                        image: u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
+                        time: sub.created_at,
+                        type: 'user'
+                    });
+                }
+            }
         }
 
         return NextResponse.json({
@@ -134,8 +163,8 @@ export async function GET(req: Request) {
             comments: commentsCount,
             reposts: repostsCount,
             views: 0,
-            dwell: 0,
-            industryActivity
+            industryActivity,
+            recentSubscribers
         });
 
     } catch (error: any) {

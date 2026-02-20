@@ -10,7 +10,7 @@ interface AnalyticsProps {
 
 const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
     const [timeRange, setTimeRange] = useState('7d');
-    const [stats, setStats] = useState({ followers: 0, likes: 0, comments: 0, reposts: 0, views: 0, dwell: 0 });
+    const [stats, setStats] = useState<any>({ followers: 0, likes: 0, comments: 0, reposts: 0, views: 0, recentFollowers: [] });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -146,13 +146,41 @@ const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
             </div>
 
             {/* Interaction Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard icon={Users} label="Followers" value={stats.followers} colorClass="text-purple-500" />
                 <StatCard icon={Heart} label="Likes" value={stats.likes} colorClass="text-red-500" />
                 <StatCard icon={MessageCircle} label="Comments" value={stats.comments} colorClass="text-blue-500" />
-                <StatCard icon={Clock} label="Dwell > 3s" value={stats.dwell} colorClass="text-orange-500" />
                 <StatCard icon={Repeat2} label="Reposts" value={stats.reposts} colorClass="text-green-500" />
             </div>
+
+            {/* Recent Followers */}
+            {stats.recentFollowers && stats.recentFollowers.length > 0 && (
+                <div className={`p-6 rounded-[2rem] border mt-6 ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <h3 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>New Followers ({timeRange})</h3>
+                    <div className="space-y-4">
+                        {stats.recentFollowers.map((follower: any) => (
+                            <div key={`${follower.id}-${follower.time}`} className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-neutral-200 overflow-hidden flex-shrink-0">
+                                    {follower.image ? (
+                                        <img src={follower.image} alt={follower.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className={`w-full h-full flex items-center justify-center text-lg font-bold ${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'}`}>
+                                            {follower.name.charAt(0)}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex-grow">
+                                    <p className={`font-bold text-sm ${isDark ? 'text-white' : 'text-black'}`}>{follower.name}</p>
+                                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{follower.role}</p>
+                                </div>
+                                <div className={`text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    {new Date(follower.time).toLocaleDateString()}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

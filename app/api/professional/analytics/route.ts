@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
+import { decryptData } from '@/lib/security';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,44 +51,93 @@ export async function GET(request: NextRequest) {
         let repostsCount = 0;
 
         if (postIds.length > 0) {
-            // Aggregate Likes
+            // Aggregate Likes (All-time)
             const { count: likes } = await supabaseAdmin
                 .schema('professional')
                 .from('post_likes')
                 .select('*', { count: 'exact', head: true })
-                .in('post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('post_id', postIds);
             likesCount = likes || 0;
 
-            // Aggregate Comments
+            // Aggregate Comments (All-time)
             const { count: comments } = await supabaseAdmin
                 .schema('professional')
                 .from('post_comments')
                 .select('*', { count: 'exact', head: true })
-                .in('post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('post_id', postIds);
             commentsCount = comments || 0;
 
-            // Reposts by Professionals
+            // Reposts by Professionals (All-time)
             const { count: profReposts } = await supabaseAdmin
                 .schema('professional')
                 .from('post_reposts')
                 .select('*', { count: 'exact', head: true })
-                .in('original_post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('original_post_id', postIds);
 
-            // Reposts by Employers
+            // Reposts by Employers (All-time)
             const { count: empReposts } = await supabaseAdmin
                 .schema('employer')
                 .from('post_reposts')
                 .select('*', { count: 'exact', head: true })
-                .in('original_post_id', postIds)
-                .gte('created_at', startDate.toISOString());
+                .in('original_post_id', postIds);
 
             repostsCount = (profReposts || 0) + (empReposts || 0);
         }
 
-        // 3. Profile Views (Placeholder / 0)
+        // 3. Fetch Recent Followers based on range
+        const { data: recentFollows } = await supabaseAdmin
+            .schema('professional')
+            .from('user_follows')
+            .select('follower_id, created_at')
+            .eq('following_id', userId)
+            .gte('created_at', startDate.toISOString())
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        const recentFollowers = [];
+        if (recentFollows && recentFollows.length > 0) {
+            for (const f of recentFollows) {
+                // Try professional user first
+                const { data: u } = await supabaseAdmin
+                    .schema('professional')
+                    .from('users')
+                    .select('id, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url')
+                    .eq('id', f.follower_id)
+                    .maybeSingle();
+
+                if (u) {
+                    recentFollowers.push({
+                        id: u.id,
+                        name: `${u.enc_first_name ? decryptData(u.enc_first_name) : ''} ${u.enc_last_name ? decryptData(u.enc_last_name) : ''}`.trim() || 'Professional',
+                        role: u.enc_current_role ? decryptData(u.enc_current_role) : 'Professional',
+                        image: u.enc_profile_image_url ? decryptData(u.enc_profile_image_url) : null,
+                        time: f.created_at,
+                        type: 'user'
+                    });
+                } else {
+                    // Try employer
+                    const { data: c } = await supabaseAdmin
+                        .schema('employer')
+                        .from('companies')
+                        .select('id, enc_company_name, enc_logo_url')
+                        .eq('id', f.follower_id)
+                        .maybeSingle();
+                    
+                    if (c) {
+                        recentFollowers.push({
+                            id: c.id,
+                            name: c.enc_company_name ? decryptData(c.enc_company_name) : 'Company',
+                            role: 'Company',
+                            image: c.enc_logo_url ? decryptData(c.enc_logo_url) : null,
+                            time: f.created_at,
+                            type: 'company'
+                        });
+                    }
+                }
+            }
+        }
+
+        // 4. Profile Views (Placeholder / 0)
         // Since we don't track this yet, we return 0.
         // If we want to simulate "Dwell > 3s", we also return 0.
 
@@ -97,7 +147,7 @@ export async function GET(request: NextRequest) {
             comments: commentsCount,
             reposts: repostsCount,
             views: 0,
-            dwell: 0
+            recentFollowers
         });
 
     } catch (error: any) {
