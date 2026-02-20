@@ -219,7 +219,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                             body: JSON.stringify({ type: 'dwell' }),
                             headers: { 'Content-Type': 'application/json' }
                         }).catch(() => { });
-                    }, 10000); // 10 seconds
+                    }, 3000); // 3 seconds
                 }
             } else {
                 // User scrolled away, cancel dwell timer if not yet finished

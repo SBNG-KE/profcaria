@@ -138,7 +138,7 @@ export default function PostAnalyticsModal({ postId, isOpen, onClose, isDark }: 
                                         </div>
                                         <h4 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>Meaningful Views</h4>
                                         <p className={`text-sm font-medium mr-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                                            The number of times this post was read or focused on for more than 10 seconds.
+                                            The number of times this post was read or focused on for more than 3 seconds.
                                         </p>
                                     </div>
                                     <div className="text-right flex-shrink-0">
