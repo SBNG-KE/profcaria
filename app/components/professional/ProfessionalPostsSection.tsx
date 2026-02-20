@@ -11,9 +11,10 @@ import { useRouter } from 'next/navigation';
 interface ProfessionalPostsSectionProps {
     userId: string;
     initialPosts: any[]; // List of initial posts passed from server
+    currentUserId?: string;
 }
 
-export default function ProfessionalPostsSection({ userId, initialPosts }: ProfessionalPostsSectionProps) {
+export default function ProfessionalPostsSection({ userId, initialPosts, currentUserId = "" }: ProfessionalPostsSectionProps) {
     const { theme } = useTheme();
     const router = useRouter();
     const isDark = theme === 'dark';
@@ -77,6 +78,7 @@ export default function ProfessionalPostsSection({ userId, initialPosts }: Profe
                 title="Activity"
                 userId={userId}
                 userType="professional"
+                currentUserId={currentUserId}
             />
 
             <SlideOverPanel

@@ -11,9 +11,10 @@ import { useRouter } from 'next/navigation';
 interface CompanyPostsSectionProps {
     companyId: string;
     latestPost: any; // Initial latest post passed from server
+    currentUserId?: string;
 }
 
-export default function CompanyPostsSection({ companyId, latestPost }: CompanyPostsSectionProps) {
+export default function CompanyPostsSection({ companyId, latestPost, currentUserId = "" }: CompanyPostsSectionProps) {
     const { theme } = useTheme();
     const router = useRouter();
     const isDark = theme === 'dark';
@@ -115,6 +116,7 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                 title="Posts"
                 userId={companyId}
                 userType="employer"
+                currentUserId={currentUserId}
             />
 
             <SlideOverPanel
@@ -152,7 +154,7 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                                     key={post.id}
                                     post={{ ...post, author: { ...post.author, type: 'employer' } }}
                                     isDark={isDark}
-                                    currentUserId=""
+                                    currentUserId={currentUserId}
                                     onLike={() => handleLike(post)}
                                     onRepost={() => handleRepost(post)}
                                     onShare={() => { }}
@@ -174,7 +176,7 @@ export default function CompanyPostsSection({ companyId, latestPost }: CompanyPo
                                     key={post.repostId || post.id}
                                     post={post}
                                     isDark={isDark}
-                                    currentUserId=""
+                                    currentUserId={currentUserId}
                                     onLike={() => handleLike(post)}
                                     onRepost={() => handleRepost(post)}
                                     onFollow={() => { }}

@@ -11,9 +11,10 @@ interface PostsPreviewProps {
     userId?: string;
     userType?: 'professional' | 'employer';
     title?: string;
+    currentUserId?: string;
 }
 
-const PostsPreview = ({ isDark, latestPost: initialPost, onViewAll, userId, userType, title = "Latest Update" }: PostsPreviewProps) => {
+const PostsPreview = ({ isDark, latestPost: initialPost, onViewAll, userId, userType, title = "Latest Update", currentUserId = "" }: PostsPreviewProps) => {
     const [fetchedPost, setFetchedPost] = React.useState<any>(null);
     const [loading, setLoading] = React.useState(false);
 
@@ -59,7 +60,7 @@ const PostsPreview = ({ isDark, latestPost: initialPost, onViewAll, userId, user
                     <PostCard
                         post={displayPost}
                         isDark={isDark}
-                        currentUserId=""
+                        currentUserId={currentUserId}
                         readOnly={true}
                         forceVertical={true}
                     // Disable actions since it's a preview

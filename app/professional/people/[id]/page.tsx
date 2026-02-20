@@ -50,9 +50,11 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     // We can parse the JWT payload part (base64) to get the schema.
 
     let isViewerProfessional = false;
+    let viewerId = '';
     if (session) {
         try {
             const payload = JSON.parse(atob(session.split('.')[1]));
+            viewerId = payload.uid;
             if (payload.schema === 'professional' && payload.uid !== id) {
                 isViewerProfessional = true;
             }
@@ -255,6 +257,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     <ProfessionalPostsSection
                         userId={profile.user_id || profile.id}
                         initialPosts={formattedPosts}
+                        currentUserId={viewerId}
                     />
                 </div>
 

@@ -30,10 +30,11 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
     const cookieStore = await cookies();
     const session = cookieStore.get('profcaria_session')?.value;
 
+    let viewerId = '';
     if (session) {
         try {
             const payload = JSON.parse(atob(session.split('.')[1]));
-            const viewerId = payload.schema === 'professional' ? payload.uid : null;
+            viewerId = payload.uid;
 
             // Only record if not the company viewing itself
             if (payload.uid !== id) {
@@ -235,6 +236,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                     <CompanyPostsSection
                         companyId={id}
                         latestPost={formattedPosts[0] || null}
+                        currentUserId={viewerId}
                     />
                 </div>
 

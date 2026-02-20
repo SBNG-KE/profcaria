@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
     Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark, Link2, UserCircle, Search, Zap, Building2, CheckCheck, Plus, ChevronLeft, ChevronRight, Activity
@@ -186,6 +186,58 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
+    // View Tracking (Dwell Time)
+    const postRef = useRef<HTMLDivElement>(null);
+    const dwellTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const hasRecordedImpression = useRef(false);
+    const hasRecordedDwell = useRef(false);
+
+    useEffect(() => {
+        if (!postRef.current) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            const entry = entries[0];
+
+            if (entry.isIntersecting) {
+                // Record Impression once
+                if (!hasRecordedImpression.current) {
+                    hasRecordedImpression.current = true;
+                    // Fire-and-forget impression
+                    fetch(`/api/professional/posts/${post.id}/view`, {
+                        method: 'POST',
+                        body: JSON.stringify({ type: 'impression' }),
+                        headers: { 'Content-Type': 'application/json' }
+                    }).catch(() => { });
+                }
+
+                // Start Dwell Timer
+                if (!hasRecordedDwell.current && !dwellTimerRef.current) {
+                    dwellTimerRef.current = setTimeout(() => {
+                        hasRecordedDwell.current = true;
+                        fetch(`/api/professional/posts/${post.id}/view`, {
+                            method: 'POST',
+                            body: JSON.stringify({ type: 'dwell' }),
+                            headers: { 'Content-Type': 'application/json' }
+                        }).catch(() => { });
+                    }, 3000); // 3 seconds
+                }
+            } else {
+                // User scrolled away, cancel dwell timer if not yet finished
+                if (dwellTimerRef.current) {
+                    clearTimeout(dwellTimerRef.current);
+                    dwellTimerRef.current = null;
+                }
+            }
+        }, { threshold: 0.5 }); // Require 50% visibility
+
+        observer.observe(postRef.current);
+
+        return () => {
+            observer.disconnect();
+            if (dwellTimerRef.current) clearTimeout(dwellTimerRef.current);
+        };
+    }, [post.id]);
+
     // Carousel State
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -308,7 +360,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     );
 
     return (
-        <div className={`rounded-xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+        <div ref={postRef} className={`rounded-xl border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
             {/* Repost Header Context (if in profile list) */}
             {post.repostContext && (
                 <div className={`px-4 py-2 flex items-center gap-2 text-xs font-bold border-b ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-500'}`}>

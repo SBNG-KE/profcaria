@@ -39,7 +39,11 @@ export async function GET(req: Request) {
 
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        const newSubscribersThisWeek = (follows || []).filter((f: any) => new Date(f.created_at) > oneWeekAgo).length;
+        const newSubscribersThisWeek = Array.from(new Set(
+            (follows || [])
+                .filter((f: any) => new Date(f.created_at) > oneWeekAgo)
+                .map((f: any) => f.user_id)
+        )).length;
 
         // 2. Fetch Industry Activity (Posts from OTHER companies)
         // We'll fetch the last 3 posts from anyone NOT this company.
