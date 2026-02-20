@@ -10,6 +10,7 @@ import ProfessionalPostsSection from '@/app/components/professional/Professional
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
+import { getFollowerCount } from '@/lib/followers';
 import { Briefcase, MapPin, Link2 } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
@@ -125,6 +126,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const { data: awards } = await supabaseAdmin.schema('professional').from('awards').select('*').eq('user_id', profile.user_id);
     const { data: otherProfiles } = await supabaseAdmin.schema('professional').from('other_profiles').select('*').eq('user_id', profile.user_id);
 
+    // Fetch Accurate Aggregated Follower Count
+    const accurateFollowerCount = await getFollowerCount(profile.user_id || profile.id, 'professional');
+
     // Fetch Latest Post
     // This requires a similar query to `api/professional/profile/posts` but for a specific user.
     const { data: latestPosts } = await supabaseAdmin
@@ -213,7 +217,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 {/* Followers Card */}
                 <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
                     <div className="flex flex-col items-center justify-center space-y-1">
-                        <div className="text-4xl font-black text-black dark:text-white">{profile.follower_count || 0}</div>
+                        <div className="text-4xl font-black text-black dark:text-white">{accurateFollowerCount || 0}</div>
                         <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Connections</div>
                     </div>
                 </div>

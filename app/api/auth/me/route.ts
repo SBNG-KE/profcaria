@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
+import { getFollowerCount } from '@/lib/followers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -66,7 +67,7 @@ export async function GET(req: Request) {
                 email: decryptData(user.enc_email) || payload.email || '',
                 phone: decryptData(user.enc_phone_number) || '',
                 about: decryptData(user.enc_about) || '',
-                followerCount: user.follower_count || 0
+                followerCount: await getFollowerCount(uid, 'professional')
             };
 
             // Fetch Latest Location from Activity Logs
@@ -125,7 +126,7 @@ export async function GET(req: Request) {
                 email: decryptData(user.enc_work_email) || payload.email || '',
                 about: decryptData(user.enc_about) || '',
                 foundedYear: decryptData(user.enc_founded_year) || '',
-                followerCount: user.follower_count || 0,
+                followerCount: await getFollowerCount(uid, 'employer'),
                 industry: user.industry || ''
             };
 

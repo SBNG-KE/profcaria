@@ -3,6 +3,7 @@ import ProfessionalPostsSection from '@/app/components/professional/Professional
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
+import { getFollowerCount } from '@/lib/followers';
 import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail, MessageSquare } from 'lucide-react';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import CopyableText from '@/app/components/ui/CopyableText';
@@ -35,6 +36,9 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
     const location = decryptData(user.enc_location as string) || decryptData(user.enc_city as string);
     const email = decryptData(user.enc_email as string);
     const phone = decryptData(user.enc_phone_number as string);
+
+    // Fetch aggregated follower count
+    const followerCount = await getFollowerCount(id, 'professional');
 
     // Fetch Sections
     const { data: employment } = await supabaseAdmin
@@ -173,7 +177,7 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
             {/* Followers Card */}
             <div className="p-8 rounded-[40px] border bg-white border-neutral-200 shadow-sm">
                 <div className="flex flex-col items-center justify-center space-y-1">
-                    <div className="text-4xl font-black text-black">{user.follower_count || 0}</div>
+                    <div className="text-4xl font-black text-black">{followerCount || 0}</div>
                     <div className="text-xs font-bold uppercase tracking-widest text-neutral-400">Followers</div>
                 </div>
             </div>

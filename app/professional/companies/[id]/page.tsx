@@ -2,6 +2,7 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
+import { getFollowerCount } from '@/lib/followers';
 import { Building2, Globe, MapPin, Mail, Link2, Copy, MessageSquare } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
@@ -84,7 +85,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
     const industry = profile.industry;
     const address = profile.enc_address ? decryptData(profile.enc_address) : '';
 
-    const followerCount = profile.follower_count || 0;
+    const followerCount = await getFollowerCount(id, 'employer');
 
     // Fetch Latest Posts
     const { data: latestPosts } = await supabaseAdmin

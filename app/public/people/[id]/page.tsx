@@ -2,6 +2,7 @@ import ProfessionalPostsSection from '@/app/components/professional/Professional
 import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
+import { getFollowerCount } from '@/lib/followers';
 import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
@@ -228,8 +229,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     enc_first_name,
                     enc_last_name,
                     enc_current_role,
-                    enc_profile_image_url,
-                    follower_count
+                    enc_profile_image_url
                 )
             `)
             .eq('user_id', id)
@@ -237,6 +237,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             .limit(5) as any;
 
         if (!postsError && latestPosts) {
+            const accurateFollowerCount = await getFollowerCount(id, 'professional');
+
             formattedPosts = latestPosts.map((p: any) => {
                 const author = p.author || {};
                 return {
@@ -249,7 +251,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     author: {
                         id: author.id || p.user_id, // Fallback if join empty
                         name: author.enc_first_name ? `${decryptData(author.enc_first_name)} ${decryptData(author.enc_last_name)}` : 'User',
-                        followerCount: author.follower_count || 0,
+                        followerCount: accurateFollowerCount || 0,
                         role: author.enc_current_role ? decryptData(author.enc_current_role) : '',
                         profileImage: decryptData(author.enc_profile_image_url) || ''
                     }

@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
 import { decryptData, encryptData } from '@/lib/security';
 import { unstable_cache } from 'next/cache';
+import { getFollowerCount } from '@/lib/followers';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,12 +68,8 @@ const getCachedAuthorProfile = unstable_cache(
                     const companyName = decryptData(comp.enc_company_name);
                     const logoUrl = comp.enc_logo_url ? decryptData(comp.enc_logo_url) : null;
 
-                    // Fetch follower count
-                    const { count: followerCount } = await supabaseAdmin
-                        .schema('professional')
-                        .from('company_follows')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('company_id', authorId);
+                    // Fetch follower count using the reliable helper function
+                    const followerCount = await getFollowerCount(authorId, 'employer');
 
                     authorData = {
                         ...authorData,
@@ -97,11 +94,7 @@ const getCachedAuthorProfile = unstable_cache(
                     const role = decryptData(profUser.enc_current_role) || '';
                     const profileImage = decryptData(profUser.enc_profile_image_url) || '/default-avatar.png';
 
-                    const { count: followerCount } = await supabaseAdmin
-                        .schema('professional')
-                        .from('user_follows')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('following_id', authorId);
+                    const followerCount = await getFollowerCount(authorId, 'professional');
 
                     authorData = {
                         ...authorData,
