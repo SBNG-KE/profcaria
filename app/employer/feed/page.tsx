@@ -362,10 +362,10 @@ function EmployerFeedContent() {
 
     const fetchCurrentUser = async () => {
         try {
-            const res = await fetch('/api/employer/profile');
+            const res = await fetch('/api/auth/me');
             if (res.ok) {
                 const data = await res.json();
-                setCurrentUserId(data.profile?.id || data.employer?.id || '');
+                setCurrentUserId(data.id || '');
             }
         } catch (err) { console.error(err); }
     };

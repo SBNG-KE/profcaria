@@ -649,6 +649,7 @@ export default function EmployerProfilePage() {
                 <CompanyPostsSection
                     companyId={profile?.id}
                     latestPost={null} // Will fetch automatically
+                    currentUserId={profile?.id}
                 />
             </div>
 

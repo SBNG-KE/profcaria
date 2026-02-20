@@ -488,10 +488,10 @@ function FeedContent() {
 
     const fetchCurrentUser = async () => {
         try {
-            const res = await fetch('/api/professional/profile');
+            const res = await fetch('/api/auth/me');
             if (res.ok) {
                 const data = await res.json();
-                setCurrentUserId(data.profile?.id || '');
+                setCurrentUserId(data.id || '');
             }
         } catch (err) { console.error(err); }
     };

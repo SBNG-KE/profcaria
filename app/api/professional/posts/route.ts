@@ -113,7 +113,7 @@ const getCachedAuthorProfile = unstable_cache(
         return authorData;
     },
     ['author-profile-v1'],
-    { revalidate: 300, tags: ['author_profiles'] } // Cache for 5 minutes
+    { revalidate: 10, tags: ['author_profiles'] } // Cache for 10 seconds to keep follower count fresh
 );
 
 // GET - Fetch posts feed

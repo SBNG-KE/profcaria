@@ -50,19 +50,23 @@ export async function GET(
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        const schema = user.schema;
-
-        // Fetch Interaction Counts
-        const repostFk = schema === 'professional' ? 'post_id' : 'original_post_id';
-        const [likesRes, commentsRes, repostsRes] = await Promise.all([
-            supabaseAdmin.schema(schema).from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', postId),
-            supabaseAdmin.schema(schema).from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', postId),
-            supabaseAdmin.schema(schema).from('post_reposts').select('*', { count: 'exact', head: true }).eq(repostFk, postId)
+        // Fetch Interaction Counts from BOTH schemas
+        const [
+            profLikesRes, empLikesRes,
+            profCommentsRes, empCommentsRes,
+            profRepostsRes, empRepostsRes
+        ] = await Promise.all([
+            supabaseAdmin.schema('professional').from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+            supabaseAdmin.schema('employer').from('post_likes').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+            supabaseAdmin.schema('professional').from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+            supabaseAdmin.schema('employer').from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+            supabaseAdmin.schema('professional').from('post_reposts').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+            supabaseAdmin.schema('employer').from('post_reposts').select('*', { count: 'exact', head: true }).eq('original_post_id', postId)
         ]);
 
-        const likes = likesRes.count || 0;
-        const comments = commentsRes.count || 0;
-        const reposts = repostsRes.count || 0;
+        const likes = (profLikesRes.count || 0) + (empLikesRes.count || 0);
+        const comments = (profCommentsRes.count || 0) + (empCommentsRes.count || 0);
+        const reposts = (profRepostsRes.count || 0) + (empRepostsRes.count || 0);
 
         const dwell = postRecord?.dwell || 0;
         const views = postRecord?.views || 0;
