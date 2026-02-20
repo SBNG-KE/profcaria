@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Users, Heart, MessageCircle, Clock, Repeat2, ArrowUpRight } from 'lucide-react';
+import { Users, Heart, MessageCircle, Clock, Repeat2, ArrowUpRight, Eye } from 'lucide-react';
 
 interface AnalyticsProps {
     isDark: boolean;
@@ -146,11 +146,17 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
             </div>
 
             {/* Interaction Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <StatCard icon={Users} label="Subscribers" value={stats.subscribers} colorClass="text-purple-500" />
-                <StatCard icon={Heart} label="Likes" value={stats.likes} colorClass="text-red-500" />
-                <StatCard icon={MessageCircle} label="Comments" value={stats.comments} colorClass="text-blue-500" />
-                <StatCard icon={Repeat2} label="Reposts" value={stats.reposts} colorClass="text-green-500" />
+                <div className={`p-6 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'} flex items-center gap-4`}>
+                    <div className={`p-3 rounded-xl bg-blue-500/10 text-blue-500`}>
+                        <Eye size={24} />
+                    </div>
+                    <div>
+                        <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Profile Views</p>
+                        <h3 className="text-2xl font-bold">{stats.views}</h3>
+                    </div>
+                </div>
             </div>
 
             {/* Recent Subscribers */}

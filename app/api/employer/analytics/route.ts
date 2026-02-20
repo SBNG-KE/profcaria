@@ -28,11 +28,14 @@ export async function GET(req: Request) {
         const employerId = auth.uid;
 
         // 1. Fetch Subscriber Count (Followers)
-        const { count: subscribersCount, data: follows } = await supabaseAdmin
+        const { data: follows } = await supabaseAdmin
             .schema('professional')
             .from('company_follows')
-            .select('created_at')
+            .select('user_id, created_at')
             .eq('company_id', employerId);
+
+        const uniqueSubscribers = new Set((follows || []).map((f: any) => f.user_id));
+        const subscribersCount = uniqueSubscribers.size;
 
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -157,12 +160,20 @@ export async function GET(req: Request) {
             }
         }
 
+        // 5. Fetch Profile Views
+        const { count: viewsCount } = await supabaseAdmin
+            .schema('professional')
+            .from('profile_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('viewed_company_id', employerId)
+            .gte('created_at', startDate.toISOString());
+
         return NextResponse.json({
             subscribers: subscribersCount || 0,
             likes: likesCount,
             comments: commentsCount,
             reposts: repostsCount,
-            views: 0,
+            views: viewsCount || 0,
             industryActivity,
             recentSubscribers
         });

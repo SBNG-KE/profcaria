@@ -25,6 +25,42 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
         return notFound();
     }
 
+    // Record Profile View (Async, fire-and-forget)
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const session = cookieStore.get('profcaria_session')?.value;
+
+    if (session) {
+        try {
+            const payload = JSON.parse(atob(session.split('.')[1]));
+            const viewerId = payload.schema === 'professional' ? payload.uid : null;
+
+            // Only record if not the company viewing itself
+            if (payload.uid !== id) {
+                // We use setTimeout to ensure it doesn't block the rendering
+                supabaseAdmin
+                    .schema('professional')
+                    .from('profile_views')
+                    .insert({
+                        viewer_id: viewerId,
+                        viewed_company_id: id
+                    })
+                    .then(() => { })
+                    .catch((e: any) => console.error("Error recording company view:", e));
+            }
+        } catch (e: any) { }
+    } else {
+        // Anonymous view
+        supabaseAdmin
+            .schema('professional')
+            .from('profile_views')
+            .insert({
+                viewed_company_id: id
+            })
+            .then(() => { })
+            .catch((e: any) => console.error("Error recording anonymous company view:", e));
+    }
+
     const { data: otherProfiles } = await supabaseAdmin
         .schema('employer')
         .from('other_profiles')

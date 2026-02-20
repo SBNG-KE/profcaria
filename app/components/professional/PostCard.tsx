@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark, Link2, UserCircle, Search, Zap, Building2, CheckCheck, Plus, ChevronLeft, ChevronRight
+    Heart, MessageCircle, Share2, MoreHorizontal, Repeat2, X, Send, Trash2, Flag, Edit2, TrendingUp, Bookmark, Link2, UserCircle, Search, Zap, Building2, CheckCheck, Plus, ChevronLeft, ChevronRight, Activity
 } from 'lucide-react';
 import ProfileImage from '../ProfileImage';
 import PromotePostModal from './PromotePostModal';
+import PostAnalyticsModal from './PostAnalyticsModal';
 import VerificationBadge from '../VerificationBadge';
 import { useCurrency } from '@/app/hooks/useCurrency';
 
@@ -179,6 +180,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     const [showMenu, setShowMenu] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [showPromoteModal, setShowPromoteModal] = useState(false);
+    const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
     const [isLoadingComments, setIsLoadingComments] = useState(false);
@@ -486,8 +488,16 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                     </button>
                                 </div>
 
-                                <div className="flex gap-1">
-
+                                <div className="flex gap-2">
+                                    {currentUserId === post.author?.id && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setShowAnalyticsModal(true); }}
+                                            className={`flex items-center gap-1.5 transition-colors group px-2 py-1 rounded-md ${isDark ? 'text-blue-400 bg-blue-500/10 hover:bg-blue-500/20' : 'text-blue-600 bg-blue-50 hover:bg-blue-100'}`}
+                                        >
+                                            <Activity size={16} className="transition-transform duration-300 group-hover:scale-110" />
+                                            <span className="font-semibold text-xs relative top-[0.5px]">Analytics</span>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onSave?.(); }}
                                         className={`p-1.5 rounded-full transition-colors ${post.isSaved ? (isDark ? 'text-yellow-400 bg-yellow-400/10' : 'text-yellow-600 bg-yellow-50') : (isDark ? 'text-neutral-400 hover:text-yellow-400' : 'text-neutral-500 hover:text-yellow-600')}`}
@@ -569,6 +579,13 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 onSuccess={() => {
                     setShowPromoteModal(false);
                 }}
+                isDark={isDark}
+            />
+
+            <PostAnalyticsModal
+                postId={post.id}
+                isOpen={showAnalyticsModal}
+                onClose={() => setShowAnalyticsModal(false)}
                 isDark={isDark}
             />
         </div>

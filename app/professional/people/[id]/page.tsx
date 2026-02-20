@@ -71,6 +71,38 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         return notFound();
     }
 
+    // Record Profile View (Async, fire-and-forget)
+    if (session) {
+        try {
+            const payload = JSON.parse(atob(session.split('.')[1]));
+            const viewerId = payload.schema === 'professional' ? payload.uid : null;
+
+            // Only record if not viewing own profile
+            if (payload.uid !== profile.user_id && payload.uid !== profile.id) {
+                // We use setTimeout to ensure it doesn't block the rendering
+                supabaseAdmin
+                    .schema('professional')
+                    .from('profile_views')
+                    .insert({
+                        viewer_id: viewerId,
+                        viewed_professional_id: profile.user_id || profile.id
+                    })
+                    .then(() => { })
+                    .catch((e: any) => console.error("Error recording profile view:", e));
+            }
+        } catch (e: any) { }
+    } else {
+        // Anonymous view
+        supabaseAdmin
+            .schema('professional')
+            .from('profile_views')
+            .insert({
+                viewed_professional_id: profile.user_id || profile.id
+            })
+            .then(() => { })
+            .catch((e: any) => console.error("Error recording anonymous profile view:", e));
+    }
+
 
 
     // Decrypt Data

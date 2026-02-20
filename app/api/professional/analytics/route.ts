@@ -15,11 +15,58 @@ export async function GET(request: NextRequest) {
         const userId = user.id;
 
         // 1. Fetch Follower Count
-        const { count: followersCount } = await supabaseAdmin
+        // Replicating the logic from follow/route.ts to avoid discrepancy
+        const { data: userFollowers } = await supabaseAdmin
             .schema('professional')
             .from('user_follows')
-            .select('*', { count: 'exact', head: true })
+            .select('follower_id')
             .eq('following_id', userId);
+
+        let allFollowerIds = (userFollowers || []).map((f: any) => f.follower_id);
+
+        // Exclude self if present incorrectly
+        allFollowerIds = allFollowerIds.filter((id: string) => id !== userId);
+
+        // Remove duplicates just in case
+        allFollowerIds = Array.from(new Set(allFollowerIds));
+
+        // Company merging logic (Employer as Professional or Founder)
+        let associatedCompanyId: string | null = null;
+        if (userId === '60f0f916-7b32-483f-afd6-681424a360bf') {
+            associatedCompanyId = '40e5c47c-4437-4a55-8c3d-4a4cec5a288b';
+        } else {
+            try {
+                const { data: link } = await supabaseAdmin
+                    .schema('employer')
+                    .from('company_users')
+                    .select('company_id')
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (link) {
+                    associatedCompanyId = link.company_id;
+                }
+            } catch (e) { }
+        }
+
+        if (associatedCompanyId) {
+            const { data: compFollowers } = await supabaseAdmin
+                .schema('professional')
+                .from('company_follows')
+                .select('user_id')
+                .eq('company_id', associatedCompanyId);
+
+            if (compFollowers) {
+                const compFollowerIds = compFollowers.map((f: any) => f.user_id);
+                for (const id of compFollowerIds) {
+                    if (!allFollowerIds.includes(id) && id !== userId) {
+                        allFollowerIds.push(id);
+                    }
+                }
+            }
+        }
+
+        const followersCount = allFollowerIds.length;
 
         // 2. Fetch User's Posts to aggregate interactions
         const { data: posts } = await supabaseAdmin
@@ -122,7 +169,7 @@ export async function GET(request: NextRequest) {
                         .select('id, enc_company_name, enc_logo_url')
                         .eq('id', f.follower_id)
                         .maybeSingle();
-                    
+
                     if (c) {
                         recentFollowers.push({
                             id: c.id,
@@ -137,16 +184,20 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // 4. Profile Views (Placeholder / 0)
-        // Since we don't track this yet, we return 0.
-        // If we want to simulate "Dwell > 3s", we also return 0.
+        // 4. Fetch Profile Views
+        const { count: viewsCount } = await supabaseAdmin
+            .schema('professional')
+            .from('profile_views')
+            .select('*', { count: 'exact', head: true })
+            .eq('viewed_professional_id', userId)
+            .gte('created_at', startDate.toISOString());
 
         return NextResponse.json({
             followers: followersCount || 0,
             likes: likesCount,
             comments: commentsCount,
             reposts: repostsCount,
-            views: 0,
+            views: viewsCount || 0,
             recentFollowers
         });
 
