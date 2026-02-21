@@ -294,7 +294,7 @@ export async function sendNewFollowerNotification(to: string, followerName: stri
         return { success: true };
     }
 
-    const title = followerType === 'company' ? 'New Subscriber' : 'New Follower';
+    const title = followerType === 'company' ? 'Subscriber' : 'Follower';
     const actionText = followerType === 'company' ? 'subscribed to' : 'started following';
 
     const content = `
