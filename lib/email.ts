@@ -221,7 +221,7 @@ export async function sendShortlistedNotification(to: string, jobTitle: string, 
         await resend.emails.send({
             from: 'Profcaria Talent <talent@profcaria.com>',
             to,
-            subject: `🎯 Shortlisted: ${jobTitle} at ${companyName}`,
+            subject: `Shortlisted: ${jobTitle} at ${companyName}`,
             html: EmailWrapper(content)
         });
         return { success: true };
