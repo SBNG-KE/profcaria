@@ -34,6 +34,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             .select(`
                 user_id,
                 enc_access_list,
+                kyc_image_url,
+                kyc_video_url,
                 jobs ( company_id )
             `)
             .eq('id', applicationId)
@@ -234,6 +236,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             sharedDocuments,
             uploadedDocuments,
             accessList,
+            kycData: {
+                imageUrl: application.kyc_image_url || null,
+                videoUrl: application.kyc_video_url || null,
+            },
             sections: {
                 employmentHistory,
                 education,

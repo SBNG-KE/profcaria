@@ -630,3 +630,41 @@ export async function sendKYCRequiredNotification(to: string, jobTitle: string, 
     }
 }
 
+export async function sendKYCCompletedNotification(to: string, candidateName: string, jobTitle: string, companyName: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] KYC Completed to employer ${to}: ${candidateName} verified for ${jobTitle}`);
+        return { success: true };
+    }
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Identity Verification Complete ✅</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            <strong>${candidateName}</strong> has successfully completed their Video Identity Verification for the <strong>${jobTitle}</strong> position.
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #10b981; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 12px 0; color: #10b981; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">✓ Verified & Shortlisted</p>
+            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; font-weight: 500;">
+                This candidate is now officially shortlisted. You can review their KYC snapshot and video recording in the applicant details on your dashboard.
+            </p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/employer/applications" style="display: inline-block; background-color: #10b981; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">View Applicant</a>
+        </div>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+            You can proceed with the next steps in your recruitment pipeline for this candidate.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Security <security@profcaria.com>',
+            to,
+            subject: `KYC Verified: ${candidateName} is now Shortlisted for ${jobTitle}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}

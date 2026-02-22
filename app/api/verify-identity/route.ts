@@ -115,6 +115,32 @@ export async function POST(req: Request) {
                     enc_message: encryptData(`KYC Complete! ${profName} has verified their identity and is now officially Shortlisted for ${safeJobTitle}.`),
                     type: 'application'
                 }]);
+
+            // Also send employer an EMAIL notification
+            try {
+                const { data: companyDetails } = await supabaseAdmin
+                    .schema('employer')
+                    .from('companies')
+                    .select('enc_email, enc_company_name')
+                    .eq('id', companyId)
+                    .single();
+
+                if (companyDetails?.enc_email) {
+                    const employerEmail = decryptData(companyDetails.enc_email);
+                    const companyName = companyDetails.enc_company_name ? decryptData(companyDetails.enc_company_name) : 'Employer';
+                    if (employerEmail) {
+                        const { sendKYCCompletedNotification } = await import('@/lib/email');
+                        sendKYCCompletedNotification(
+                            employerEmail,
+                            profName,
+                            safeJobTitle,
+                            companyName || 'Employer'
+                        ).catch(console.error);
+                    }
+                }
+            } catch (emailErr) {
+                console.error('Failed to send employer KYC completion email:', emailErr);
+            }
         }
 
         return NextResponse.json({ success: true, message: 'Identity verified successfully!' });
