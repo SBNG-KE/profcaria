@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2, Star, Users, TrendingUp } from 'lucide-react';
+import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2, Star, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { useCurrency } from '@/app/hooks/useCurrency';
 import { usePayment } from '@/app/hooks/usePayment';
@@ -75,6 +75,9 @@ function SettingsContent() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [showCurrentPw, setShowCurrentPw] = useState(false);
+    const [showNewPw, setShowNewPw] = useState(false);
+    const [showConfirmPw, setShowConfirmPw] = useState(false);
 
 
 
@@ -434,30 +437,45 @@ function SettingsContent() {
                             {/* ...fields... */}
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Current Password</label>
-                                <input
-                                    type="password"
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showCurrentPw ? 'text' : 'password'}
+                                        value={currentPassword}
+                                        onChange={(e) => setCurrentPassword(e.target.value)}
+                                        className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
+                                    />
+                                    <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}`}>
+                                        {showCurrentPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">New Password</label>
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showNewPw ? 'text' : 'password'}
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
+                                    />
+                                    <button type="button" onClick={() => setShowNewPw(!showNewPw)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}`}>
+                                        {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    value={confirmNewPassword}
-                                    onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                    className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showConfirmPw ? 'text' : 'password'}
+                                        value={confirmNewPassword}
+                                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                        className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-neutral-200'}`}
+                                    />
+                                    <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}`}>
+                                        {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div className="flex justify-end">
@@ -596,7 +614,6 @@ function SettingsContent() {
                                 <div className="space-y-4 flex-1">
                                     <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-neutral-900'}`}>
                                         Basic
-                                        <CheckCircle size={18} className="text-neutral-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.basicOffer > 0 && (
                                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider ${isDark ? 'bg-white/20 text-white' : 'bg-black/10 text-black'}`}>
                                                 -{Math.round((1 - pricing.basicOffer / pricing.basic) * 100)}%
@@ -699,7 +716,6 @@ function SettingsContent() {
                                 <div className="space-y-4 flex-1">
                                     <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-neutral-900'}`}>
                                         Pro <span className={`px-2 py-0.5 rounded text-[9px] font-bold tracking-wide ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>BEST VALUE</span>
-                                        <CheckCircle size={18} className="text-blue-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.proOffer > 0 && (
                                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>
                                                 -{Math.round((1 - pricing.proOffer / pricing.pro) * 100)}%
@@ -804,7 +820,6 @@ function SettingsContent() {
                                 <div className="space-y-4 flex-1">
                                     <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-neutral-900'}`}>
                                         Enterprise
-                                        <CheckCircle size={18} className="text-yellow-400" fill="currentColor" fillOpacity={0.2} />
                                         {pricing.enterpriseOffer > 0 && (
                                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-black tracking-wider ${isDark ? 'bg-white/20 text-white' : 'bg-black/10 text-black'}`}>
                                                 -{Math.round((1 - pricing.enterpriseOffer / pricing.enterprise) * 100)}%

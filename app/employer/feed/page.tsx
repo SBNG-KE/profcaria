@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-    Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, MapPin, Users, Send, Search, Flag, Edit2, Trash2, ChevronLeft
+    Heart, MessageCircle, Share2, MoreHorizontal, Edit3, Repeat2, X, Image, Link2, MapPin, Users, Send, Search, Flag, Edit2, Trash2, ChevronLeft, RefreshCw
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import PostCard from '@/app/components/professional/PostCard';
@@ -345,6 +345,29 @@ function EmployerFeedContent() {
     const [singlePost, setSinglePost] = useState<any | null>(null);
     const [viewMode, setViewMode] = useState<'feed' | 'single'>('feed');
 
+    // Scroll Direction & Refresh Button Logic
+    const [showRefreshButton, setShowRefreshButton] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 300) {
+                setShowRefreshButton(true);
+            } else {
+                setShowRefreshButton(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    const handleRefresh = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+            fetchPosts();
+        }, 500);
+    };
+
 
     useEffect(() => {
         fetchCurrentUser();
@@ -596,6 +619,20 @@ function EmployerFeedContent() {
 
     return (
         <div className="min-h-full pb-20 relative">
+            {/* Refresh Pill Button */}
+            <div className={`fixed top-[3.5rem] left-0 right-0 z-30 flex justify-center pointer-events-none transition-all duration-300 ${showRefreshButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                <button
+                    onClick={handleRefresh}
+                    className={`
+                        pointer-events-auto flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-xs font-bold uppercase tracking-widest backdrop-blur-md
+                        ${isDark ? 'bg-neutral-800/80 text-white border border-neutral-700' : 'bg-white/80 text-black border border-neutral-200'}
+                    `}
+                >
+                    <RefreshCw size={12} />
+                    <span>New Posts</span>
+                </button>
+            </div>
+
             <div className={`sticky top-0 z-40 py-2 px-3 flex items-center justify-end gap-2 transition-colors`}>
                 <div className="flex-1" /> {/* Spacer */}
                 <button
