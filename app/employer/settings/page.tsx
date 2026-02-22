@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2 } from 'lucide-react';
+import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2, Star, Users, TrendingUp } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { useCurrency } from '@/app/hooks/useCurrency';
 import { usePayment } from '@/app/hooks/usePayment';
+import { BADGE_TIERS } from '@/lib/billing-config';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import EarlyAdopterBanner from '@/app/components/EarlyAdopterBanner';
 
 function SettingsContent() {
@@ -57,7 +59,11 @@ function SettingsContent() {
         }
     };
 
-    const [activeTab, setActiveTab] = useState<'security' | 'billing'>('security');
+    const [activeTab, setActiveTab] = useState<'security' | 'billing' | 'badge'>('security');
+
+    // Badge State
+    const [followerCount, setFollowerCount] = useState(0);
+    const [currentBadge, setCurrentBadge] = useState('none');
 
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -97,7 +103,44 @@ function SettingsContent() {
     useEffect(() => {
         if (activeTab === 'security') fetchActivityLogs();
         if (activeTab === 'billing') fetchBilling();
+        if (activeTab === 'badge') fetchBadgeData();
     }, [activeTab]);
+
+    const fetchBadgeData = async () => {
+        try {
+            const res = await fetch('/api/employer/profile/badge-progress');
+            if (res.ok) {
+                const data = await res.json();
+                setFollowerCount(data.followerCount || 0);
+                setCurrentBadge(data.badgeType || 'none');
+            }
+        } catch (error) {
+            console.error('Failed to fetch badge data:', error);
+        }
+    };
+
+    // Badge milestone helpers
+    const badgeTiers = [
+        { key: 'gray', min: BADGE_TIERS.gray.minFollowers, label: 'Verified', color: 'neutral' },
+        { key: 'blue', min: BADGE_TIERS.blue.minFollowers, label: 'Notable', color: 'blue' },
+        { key: 'gold', min: BADGE_TIERS.gold.minFollowers, label: 'Top', color: 'yellow' },
+    ];
+
+    const getNextBadgeTier = () => {
+        for (const tier of badgeTiers) {
+            if (followerCount < tier.min) return tier;
+        }
+        return null;
+    };
+
+    const nextBadgeTier = getNextBadgeTier();
+    const badgeProgressPercent = nextBadgeTier ? Math.min((followerCount / nextBadgeTier.min) * 100, 100) : 100;
+
+    const formatFollowerNum = (n: number) => {
+        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+        if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+        return n.toString();
+    };
 
 
 
@@ -272,6 +315,12 @@ function SettingsContent() {
                 >
                     <CreditCard size={16} /> Billing
                 </button>
+                <button
+                    onClick={() => setActiveTab('badge')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'badge' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
+                >
+                    <Star size={16} /> Badge
+                </button>
             </div>
 
             {message && (
@@ -280,7 +329,101 @@ function SettingsContent() {
                 </div>
             )}
 
-            {activeTab === 'security' ? (
+            {activeTab === 'badge' ? (
+                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                    {/* Badge Progress Hero */}
+                    <div className={`border p-8 rounded-[32px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className="flex items-center gap-4 mb-6">
+                            <VerificationBadge tier={currentBadge} size={48} showTooltip={false} />
+                            <div>
+                                <h3 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
+                                    {currentBadge === 'none' ? 'Standard Account' : BADGE_TIERS[currentBadge as keyof typeof BADGE_TIERS]?.label || 'Standard Account'}
+                                </h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Users size={14} className="text-neutral-500" />
+                                    <span className={`text-sm font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                        {formatFollowerNum(followerCount)} followers
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {nextBadgeTier ? (
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                        Progress to {nextBadgeTier.label}
+                                    </span>
+                                    <span className={`text-xs font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                        {formatFollowerNum(followerCount)} / {formatFollowerNum(nextBadgeTier.min)}
+                                    </span>
+                                </div>
+                                <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-1000 ease-out ${nextBadgeTier.key === 'gold' ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : nextBadgeTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`}
+                                        style={{ width: `${badgeProgressPercent}%` }}
+                                    />
+                                </div>
+                                <p className={`mt-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    <TrendingUp size={14} className="inline mr-1" />
+                                    {formatFollowerNum(nextBadgeTier.min - followerCount)} more followers to unlock the <strong>{nextBadgeTier.label}</strong> badge
+                                </p>
+                            </div>
+                        ) : (
+                            <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-yellow-400/10 border border-yellow-400/20' : 'bg-yellow-50 border border-yellow-200'}`}>
+                                <p className="text-yellow-500 font-black text-sm">🏆 You&apos;ve reached the highest badge tier!</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Badge Tier Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {badgeTiers.map((tier) => {
+                            const isUnlocked = followerCount >= tier.min;
+                            const isCurrent = currentBadge === tier.key;
+                            const borderColor = tier.key === 'gold' ? 'border-yellow-400/30' : tier.key === 'blue' ? 'border-blue-400/30' : 'border-neutral-600/30';
+                            const activeRing = isCurrent ? (tier.key === 'gold' ? 'ring-2 ring-yellow-400/40' : tier.key === 'blue' ? 'ring-2 ring-blue-400/40' : 'ring-2 ring-neutral-400/40') : '';
+
+                            return (
+                                <div key={tier.key} className={`relative p-6 rounded-3xl border ${isDark ? `bg-neutral-900/50 ${borderColor}` : `bg-white border-neutral-200`} ${activeRing} transition-all`}>
+                                    {isCurrent && (
+                                        <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">
+                                            Current
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <VerificationBadge tier={tier.key} size={32} showTooltip={false} />
+                                        <div>
+                                            <h4 className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{tier.label}</h4>
+                                            <p className={`text-xs font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                {formatFollowerNum(tier.min)}+ followers
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
+                                        {isUnlocked ? '✓ Unlocked' : `${formatFollowerNum(tier.min - followerCount)} to go`}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Info Box */}
+                    <div className={`p-6 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className="flex items-start gap-4">
+                            <div className="p-3 bg-emerald-500/10 rounded-xl">
+                                <TrendingUp className="text-emerald-500" size={24} />
+                            </div>
+                            <div>
+                                <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-black'}`}>How Badges Work</h3>
+                                <p className={`mt-1 text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                    Badges are earned organically through your company&apos;s follower count. Post quality content, engage with professionals, and grow your network to unlock higher tiers. Badges build trust with top candidates.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : activeTab === 'security' ? (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
