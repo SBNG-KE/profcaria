@@ -60,22 +60,12 @@ function VerificationContent() {
         setCameraError('');
         setCameraReady(false);
         try {
-            // Check if the Permissions API is available (not all browsers support it)
-            if (navigator.permissions && navigator.permissions.query) {
-                try {
-                    const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
-                    if (result.state === 'denied') {
-                        setCameraError(
-                            'Camera access has been blocked. Please open your browser settings, find "Camera" permissions for this site, and change it to "Allow", then reload the page.'
-                        );
-                        return;
-                    }
-                } catch {
-                    // Permissions API query may not support 'camera' in all browsers — continue
-                }
-            }
-            // Request access — browser will prompt the user
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+            // Just call getUserMedia — the browser will natively prompt the user
+            // for camera + microphone permission. No pre-checking needed.
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user' },
+                audio: true
+            });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
@@ -84,10 +74,12 @@ function VerificationContent() {
             console.error('Camera access error:', err);
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                 setCameraError(
-                    'Camera permission was denied. To fix this:\n1. Click the lock/camera icon in your browser address bar.\n2. Set "Camera" to "Allow".\n3. Reload this page and try again.'
+                    'You denied camera access. Please tap the lock or camera icon in your address bar, allow camera and microphone, then tap "Retry" below.'
                 );
             } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                 setCameraError('No camera found on this device. Please use a device with a working camera.');
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                setCameraError('Your camera is being used by another app. Close other apps using the camera and try again.');
             } else {
                 setCameraError('Could not access the camera. Please check your device settings and try again.');
             }
@@ -329,7 +321,7 @@ function VerificationContent() {
                                         <label className="cursor-pointer flex flex-col items-center justify-center w-48 h-48 mx-auto rounded-full border-2 border-dashed border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800 transition-colors">
                                             <FileImage className="w-10 h-10 text-neutral-500 mb-2" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Select Image</span>
-                                            <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleImageUpload} />
+                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                                         </label>
                                     )}
                                 </div>
