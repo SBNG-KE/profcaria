@@ -122,35 +122,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Failed to create account' }, { status: 500 });
             }
 
-            // Early Adopter Promo (same logic as normal signup)
-            try {
-                const { count } = await supabaseAdmin
-                    .schema('professional')
-                    .from('users')
-                    .select('*', { count: 'exact', head: true });
-
-                if (count !== null && count <= 500) {
-                    await supabaseAdmin
-                        .schema('professional')
-                        .from('subscriptions')
-                        .insert({
-                            user_id: newUser.id,
-                            plan_type: 'premium',
-                            status: 'active',
-                            is_promo: true,
-                            current_period_start: new Date().toISOString(),
-                            current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(),
-                        });
-
-                    await supabaseAdmin
-                        .schema('professional')
-                        .from('users')
-                        .update({ badge_type: 'gold' })
-                        .eq('id', newUser.id);
-                }
-            } catch (promoError) {
-                console.error('OAuth Promo Error (Non-Fatal):', promoError);
-            }
+            // Early adopters just join and grow naturally — badges earned via followers.
 
             // Send Welcome Email (non-blocking)
             try {

@@ -93,40 +93,7 @@ export async function POST(req: Request) {
       throw error;
     }
 
-    // --- EARLY ADOPTER PROMO (Assignments) ---
-    // Check if user is within the first 500 signups
-    try {
-      const { count } = await supabaseAdmin
-        .schema('professional')
-        .from('users')
-        .select('*', { count: 'exact', head: true });
-
-      if (count !== null && count <= 500) {
-        // Grant Premium Subscription (2 Months)
-        await supabaseAdmin
-          .schema('professional')
-          .from('subscriptions')
-          .insert({
-            user_id: data.id,
-            plan_type: 'premium',
-            status: 'active',
-            is_promo: true,
-            current_period_start: new Date().toISOString(),
-            current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).toISOString(), // 60 Days (2 Months)
-          });
-
-        // Also update the user's badge type to matches the premium plan
-        await supabaseAdmin
-          .schema('professional')
-          .from('users')
-          .update({ badge_type: 'gold' })
-          .eq('id', data.id);
-      }
-    } catch (promoError) {
-      console.error('Failed to apply promo:', promoError);
-      // Don't block signup if promo fails, but log it
-    }
-    // ------------------------------------------
+    // Early adopters just join and grow naturally — badges earned via followers.
 
     // Send Welcome Email (non-blocking)
     try {

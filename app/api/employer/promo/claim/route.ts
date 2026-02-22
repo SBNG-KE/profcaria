@@ -127,12 +127,8 @@ export async function POST(req: NextRequest) {
                 });
         }
 
-        // 4. Update company badge_type to 'blue' for Pro tier
-        await supabaseAdmin
-            .schema('employer')
-            .from('companies')
-            .update({ badge_type: 'blue' })
-            .eq('id', companyId);
+        // Badge is now follower-based — no badge_type override here.
+        // The Pro subscription gift gives job posting features, not badges.
 
         // 5. Send welcome email
         try {
