@@ -12,10 +12,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing required validation data.' }, { status: 400 });
         }
 
-        // 1. Decode generic token format: base64(appId:rawToken)
+        // 1. Decode token format: base64url(appId:rawToken)
+        //    Also supports standard base64 for backward compatibility
         let decodedToken = '';
         try {
-            decodedToken = Buffer.from(token, 'base64').toString('utf8');
+            // Try base64url first, then fall back to standard base64
+            decodedToken = Buffer.from(token, 'base64url').toString('utf8');
+            if (!decodedToken.includes(':')) {
+                decodedToken = Buffer.from(token, 'base64').toString('utf8');
+            }
         } catch (e) {
             return NextResponse.json({ error: 'Malformed verification token.' }, { status: 400 });
         }

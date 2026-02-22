@@ -231,8 +231,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         if (status === 'shortlisted' && !application.kyc_video_url) {
             updateData.status = 'pending_verification';
             const rawToken = crypto.randomBytes(32).toString('hex');
-            // Token format: base64(appId:rawToken)
-            kycToken = Buffer.from(`${applicationId}:${rawToken}`).toString('base64');
+            // Token format: base64url(appId:rawToken) — url-safe base64
+            kycToken = Buffer.from(`${applicationId}:${rawToken}`).toString('base64url');
             updateData.enc_kyc_token = encryptData(rawToken); // Store just the random part encrypted
         }
 
