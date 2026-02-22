@@ -240,8 +240,9 @@ function ApplicationsPageContent() {
                                         </div>
                                         <div className="shrink-0 flex flex-col items-end gap-1">
                                             <span className={`w-2 h-2 rounded-full ${app.status === 'pending' ? 'bg-amber-500' :
-                                                app.status === 'shortlisted' ? 'bg-blue-500' :
-                                                    app.status === 'employed' ? 'bg-emerald-500' : (isDark ? 'bg-neutral-500' : 'bg-neutral-300')
+                                                app.status === 'pending_verification' ? 'bg-amber-500 animate-pulse' :
+                                                    app.status === 'shortlisted' ? 'bg-blue-500' :
+                                                        app.status === 'employed' ? 'bg-emerald-500' : (isDark ? 'bg-neutral-500' : 'bg-neutral-300')
                                                 }`} />
                                         </div>
                                     </div>
@@ -392,6 +393,22 @@ function ApplicationsPageContent() {
                                                             <XCircle size={16} /> Reject
                                                         </button>
                                                     </>
+                                                )}
+                                                {selectedApp.status === 'pending_verification' && (
+                                                    <div className="w-full space-y-3">
+                                                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
+                                                            <div className="relative flex h-3 w-3 shrink-0">
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                                            </div>
+                                                            <div>
+                                                                <p className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>Awaiting Identity Verification</p>
+                                                                <p className={`text-[10px] font-medium mt-1 ${isDark ? 'text-amber-300/60' : 'text-amber-600/70'}`}>
+                                                                    The candidate has been sent a secure KYC link. They must verify their identity before being officially shortlisted.
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 )}
                                                 {selectedApp.status === 'shortlisted' && (
                                                     <>

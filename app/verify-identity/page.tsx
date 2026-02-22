@@ -25,6 +25,7 @@ function VerificationContent() {
     const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
     const [recordingTime, setRecordingTime] = useState(0);
     const [cameraError, setCameraError] = useState('');
+    const [cameraReady, setCameraReady] = useState(false);
 
     // Submission State
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,16 +56,41 @@ function VerificationContent() {
     };
 
     // ------------- VIDEO LOGIC -------------
-    const startCamera = async () => {
+    const requestCameraPermission = async () => {
         setCameraError('');
+        setCameraReady(false);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            // Check if the Permissions API is available (not all browsers support it)
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+                    if (result.state === 'denied') {
+                        setCameraError(
+                            'Camera access has been blocked. Please open your browser settings, find "Camera" permissions for this site, and change it to "Allow", then reload the page.'
+                        );
+                        return;
+                    }
+                } catch {
+                    // Permissions API query may not support 'camera' in all browsers — continue
+                }
+            }
+            // Request access — browser will prompt the user
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
+            setCameraReady(true);
         } catch (err: any) {
-            console.error("Camera access denied:", err);
-            setCameraError('Camera access denied or not available. Please allow permissions.');
+            console.error('Camera access error:', err);
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                setCameraError(
+                    'Camera permission was denied. To fix this:\n1. Click the lock/camera icon in your browser address bar.\n2. Set "Camera" to "Allow".\n3. Reload this page and try again.'
+                );
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                setCameraError('No camera found on this device. Please use a device with a working camera.');
+            } else {
+                setCameraError('Could not access the camera. Please check your device settings and try again.');
+            }
         }
     };
 
@@ -303,7 +329,7 @@ function VerificationContent() {
                                         <label className="cursor-pointer flex flex-col items-center justify-center w-48 h-48 mx-auto rounded-full border-2 border-dashed border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800 transition-colors">
                                             <FileImage className="w-10 h-10 text-neutral-500 mb-2" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Select Image</span>
-                                            <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                                            <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleImageUpload} />
                                         </label>
                                     )}
                                 </div>
@@ -318,7 +344,7 @@ function VerificationContent() {
                                     <button
                                         onClick={() => {
                                             setStep(3);
-                                            startCamera();
+                                            requestCameraPermission();
                                         }}
                                         disabled={!imageFile}
                                         className="flex-1 py-4 rounded-xl bg-white text-black font-black uppercase tracking-widest text-xs shadow-lg hover:bg-neutral-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -338,9 +364,19 @@ function VerificationContent() {
                                 </p>
 
                                 {cameraError && (
-                                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl text-xs font-medium">
-                                        {cameraError}
-                                        <button onClick={startCamera} className="block mt-2 underline font-bold mx-auto">Try Again</button>
+                                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm text-left space-y-3">
+                                        <p className="font-bold text-xs uppercase tracking-widest text-red-500">Camera Access Required</p>
+                                        <p className="whitespace-pre-line leading-relaxed">{cameraError}</p>
+                                        <button onClick={requestCameraPermission} className="w-full mt-2 py-3 rounded-lg bg-red-500/20 text-red-400 font-bold text-xs uppercase tracking-widest hover:bg-red-500/30 transition-all">
+                                            Retry Camera Access
+                                        </button>
+                                    </div>
+                                )}
+
+                                {!cameraReady && !cameraError && (
+                                    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                        <Loader2 className="w-8 h-8 text-neutral-500 animate-spin" />
+                                        <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest">Requesting camera access...</p>
                                     </div>
                                 )}
 
@@ -398,7 +434,7 @@ function VerificationContent() {
                                         onClick={() => {
                                             setVideoBlob(null);
                                             setVideoPreviewUrl(null);
-                                            startCamera();
+                                            requestCameraPermission();
                                         }}
                                         className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-white flex items-center justify-center gap-2 mx-auto"
                                     >

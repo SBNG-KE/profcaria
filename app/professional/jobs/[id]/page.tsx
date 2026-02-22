@@ -189,8 +189,8 @@ export default function JobApplyPage() {
             </header>
 
             <div className="flex flex-col lg:flex-row gap-12 text-left">
-                {/* APPLICATION FORM - First on mobile */}
-                <div className="lg:w-2/3 order-1">
+                {/* APPLICATION FORM - Second on mobile, first on desktop */}
+                <div className="lg:w-2/3 order-2 lg:order-1">
                     <form onSubmit={handleSubmit} className={`border rounded-[40px] p-10 space-y-8 shadow-2xl ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
                         <div className={`space-y-2 border-b pb-6 mb-8 ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
                             <h3 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Questionnaire</h3>
@@ -293,8 +293,8 @@ export default function JobApplyPage() {
                     </form>
                 </div>
 
-                {/* JOB DESCRIPTION - Second on mobile, sidebar on desktop */}
-                <div className="lg:w-1/3 space-y-6 order-2">
+                {/* JOB DESCRIPTION - First on mobile, sidebar on desktop */}
+                <div className="lg:w-1/3 space-y-6 order-1 lg:order-2">
                     <h3 className={`text-sm font-black uppercase tracking-widest flex items-center gap-3 ${isDark ? 'text-white' : 'text-black'}`}>
                         <div className={`w-1.5 h-6 rounded-full ${isDark ? 'bg-white' : 'bg-black'}`} />
                         Description
