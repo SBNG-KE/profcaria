@@ -1,25 +1,21 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Shield, Activity, Lock, AlertCircle, CheckCircle, CreditCard, Clock, Loader2 } from 'lucide-react';
+import { Shield, Activity, Lock, CheckCircle, Users, TrendingUp, Star } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
-import { useCurrency } from '@/app/hooks/useCurrency';
-import { usePayment } from '@/app/hooks/usePayment';
-import { PROFESSIONAL_PLANS } from '@/lib/billing-config';
-import EarlyAdopterBanner from '@/app/components/EarlyAdopterBanner';
+import { BADGE_TIERS } from '@/lib/billing-config';
+import VerificationBadge from '@/app/components/VerificationBadge';
 
 export default function ProfessionalSettingsPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    // Billing State
-    const [subscription, setSubscription] = useState<any | null>(null);
-    const [currentPlan, setCurrentPlan] = useState<string>('free');
 
-    // Payment Mode State
-    const [paymentModes, setPaymentModes] = useState<Record<string, 'default' | 'choose'>>({});
+    // Badge State
+    const [followerCount, setFollowerCount] = useState(0);
+    const [currentBadge, setCurrentBadge] = useState('none');
 
-    // Security & UI State (Restored)
-    const [activeTab, setActiveTab] = useState<'security' | 'billing'>('security');
+    // Security & UI State
+    const [activeTab, setActiveTab] = useState<'security' | 'badge'>('security');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [currentPassword, setCurrentPassword] = useState('');
@@ -34,7 +30,6 @@ export default function ProfessionalSettingsPage() {
         }
         setIsLoading(true);
         try {
-            // Placeholder for actual API call
             await new Promise(resolve => setTimeout(resolve, 1000));
             setMessage({ type: 'success', text: 'Password updated successfully' });
             setCurrentPassword('');
@@ -47,12 +42,8 @@ export default function ProfessionalSettingsPage() {
         }
     };
 
-    // Currency & Payment
-    const { currency: currencyCode, symbol: currencySymbol, rate: exchangeRate, loading: currencyLoading } = useCurrency();
-    const { startPayment, isLoading: paymentLoading } = usePayment();
-
     useEffect(() => {
-        if (activeTab === 'billing') fetchBilling();
+        if (activeTab === 'badge') fetchBadgeData();
         if (activeTab === 'security') fetchActivityLogs();
     }, [activeTab]);
 
@@ -68,130 +59,42 @@ export default function ProfessionalSettingsPage() {
         }
     };
 
-    const fetchBilling = async () => {
+    const fetchBadgeData = async () => {
         try {
-            const res = await fetch('/api/professional/billing');
+            const res = await fetch('/api/professional/profile/badge-progress');
             if (res.ok) {
                 const data = await res.json();
-                setSubscription(data.subscription);
-                setCurrentPlan(data.plan || 'free');
+                setFollowerCount(data.followerCount || 0);
+                setCurrentBadge(data.badgeType || 'none');
             }
         } catch (error) {
-            console.error(error);
+            console.error('Failed to fetch badge data:', error);
         }
     };
 
-    const handleSubscribe = (planName: string, isOneTime: boolean = false) => {
-        startPayment({
-            plan: planName,
-            isOneTime,
-            onSuccess: () => {
-                setMessage({ type: 'success', text: isOneTime ? `One-time payment successful! ${planName} active for 30 days.` : `Successfully subscribed to ${planName}!` });
-                setPaymentModes(prev => ({ ...prev, [planName]: 'default' })); // Reset UI
-                fetchBilling();
-            },
-            onError: (err) => setMessage({ type: 'error', text: err })
-        });
+    // Badge milestone helpers
+    const tiers = [
+        { key: 'gray', min: BADGE_TIERS.gray.minFollowers, label: 'Verified', color: 'neutral' },
+        { key: 'blue', min: BADGE_TIERS.blue.minFollowers, label: 'Notable', color: 'blue' },
+        { key: 'gold', min: BADGE_TIERS.gold.minFollowers, label: 'Top', color: 'yellow' },
+    ];
+
+    const getNextTier = () => {
+        for (const tier of tiers) {
+            if (followerCount < tier.min) return tier;
+        }
+        return null; // Already at highest
     };
 
-    // Currency Formatter
-    const formatPrice = (usd: number) => {
-        if (currencyLoading) return '...';
-        return `${currencySymbol}${new Intl.NumberFormat().format(Math.round(usd * exchangeRate))}`;
-    };
+    const nextTier = getNextTier();
+    const progressPercent = nextTier
+        ? Math.min((followerCount / nextTier.min) * 100, 100)
+        : 100;
 
-    const renderPlanCard = (id: string, name: string, price: number, badgeColor: string, features: string[]) => {
-        const isCurrent = currentPlan === id;
-        const colorClass = badgeColor === 'gold' ? 'text-yellow-400' : badgeColor === 'blue' ? 'text-blue-400' : 'text-neutral-400';
-        const bgClass = badgeColor === 'gold' ? 'bg-yellow-400/10 border-yellow-400/20' : badgeColor === 'blue' ? 'bg-blue-400/10 border-blue-400/20' : 'bg-neutral-800/50 border-neutral-700';
-
-        return (
-            <div key={id} className={`relative p-6 rounded-3xl border flex flex-col ${isCurrent ? `${isDark ? 'border-emerald-500 bg-neutral-900' : 'border-emerald-500 bg-white shadow-xl ring-2 ring-emerald-500/20'} scale-105 z-10` : `${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`} transition-all hover:border-neutral-600`}>
-                {isCurrent && (
-                    <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl">
-                        Current Plan
-                    </div>
-                )}
-
-                <div className="mb-4">
-                    <h4 className={`text-lg font-black uppercase tracking-wide flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                        {name}
-                        {badgeColor !== 'none' && (
-                            <CheckCircle size={18} className={colorClass} fill="currentColor" fillOpacity={0.2} />
-                        )}
-                    </h4>
-                    <div className={`mt-2 text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
-                        {price === 0 ? 'Free' : (
-                            <>
-                                {formatPrice(price)}<span className="text-sm text-neutral-500 font-bold">/mo</span>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                <ul className="space-y-3 mb-8 flex-1">
-                    {features.map((f, i) => (
-                        <li key={i} className="flex items-center gap-3 text-xs font-bold text-neutral-400">
-                            <CheckCircle size={14} className="text-emerald-500 shrink-0" />
-                            {f}
-                        </li>
-                    ))}
-                </ul>
-
-                <div className="mt-auto">
-                    {isCurrent && subscription ? (
-                        <div className="text-center">
-                            <div className={`w-full py-3 font-bold rounded-xl text-[10px] uppercase tracking-widest mb-1 border cursor-default ${isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/5 text-black border-black/10'}`}>
-                                Active Plan
-                            </div>
-                            {subscription.is_promo ? (
-                                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
-                                    Promo Ends: {new Date(subscription.promo_expires_at || subscription.current_period_end).toLocaleDateString()}
-                                </p>
-                            ) : (
-                                <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
-                                    {subscription.is_one_time ? 'Expires: ' : 'Renews: '} {new Date(subscription.current_period_end).toLocaleDateString()}
-                                </p>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="relative overflow-hidden">
-                            <div className={`transition-transform duration-300 ease-in-out flex w-[200%] ${paymentModes[id] === 'choose' ? '-translate-x-1/2' : 'translate-x-0'}`}>
-                                {/* Slide 1: Main Button */}
-                                <div className="w-1/2 px-1">
-                                    <button
-                                        onClick={() => setPaymentModes(prev => ({ ...prev, [id]: 'choose' }))}
-                                        disabled={isCurrent || paymentLoading}
-                                        className={`w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${isCurrent
-                                            ? `${isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'} cursor-default`
-                                            : `${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} shadow-lg hover:shadow-xl active:scale-95`
-                                            }`}
-                                    >
-                                        {paymentLoading ? <Loader2 className="animate-spin mx-auto" size={16} /> : subscription ? `Switch to ${name}` : `Get ${name}`}
-                                    </button>
-                                </div>
-
-                                {/* Slide 2: Options */}
-                                <div className="w-1/2 px-1 flex gap-2">
-                                    <button
-                                        onClick={() => handleSubscribe(id, true)}
-                                        className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-black'}`}
-                                    >
-                                        One-Time
-                                    </button>
-                                    <button
-                                        onClick={() => handleSubscribe(id, false)}
-                                        className={`flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
-                                    >
-                                        Subscribe
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
+    const formatNumber = (n: number) => {
+        if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+        if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+        return n.toString();
     };
 
     return (
@@ -199,7 +102,7 @@ export default function ProfessionalSettingsPage() {
             <header className={`flex items-center justify-between border-b pb-8 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                 <div className="text-left">
                     <h1 className={`text-4xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>Settings</h1>
-                    <p className={`mt-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Manage your security and billing.</p>
+                    <p className={`mt-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Manage your security and badge progress.</p>
                 </div>
             </header>
 
@@ -212,10 +115,10 @@ export default function ProfessionalSettingsPage() {
                     <Shield size={16} /> Security
                 </button>
                 <button
-                    onClick={() => setActiveTab('billing')}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'billing' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
+                    onClick={() => setActiveTab('badge')}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === 'badge' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') + ' shadow-lg' : isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}
                 >
-                    <CreditCard size={16} /> Billing
+                    <Star size={16} /> Badge
                 </button>
             </div>
 
@@ -227,44 +130,32 @@ export default function ProfessionalSettingsPage() {
 
             {activeTab === 'security' ? (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    {/* Security Content (Same as before) */}
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                             <Lock className="text-emerald-500" size={24} /> Change Password
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2">
-                                <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Current Password</label>
-                                <input
-                                    type="password"
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Current Password</label>
+                                <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
                                     className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-emerald-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>New Password</label>
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">New Password</label>
+                                <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
                                     className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-emerald-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Confirm Password</label>
-                                <input
-                                    type="password"
-                                    value={confirmNewPassword}
-                                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Confirm Password</label>
+                                <input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)}
                                     className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-emerald-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
                                 />
                             </div>
                         </div>
                         <div className="flex justify-end">
-                            <button
-                                onClick={handlePasswordChange}
-                                disabled={isLoading || !currentPassword || !newPassword}
+                            <button onClick={handlePasswordChange} disabled={isLoading || !currentPassword || !newPassword}
                                 className={`px-6 py-3 rounded-xl font-bold text-sm border transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200 border-white' : 'bg-black text-white hover:bg-neutral-800 border-black'}`}
                             >
                                 Update Password
@@ -277,7 +168,6 @@ export default function ProfessionalSettingsPage() {
                             <Activity className="text-emerald-500" size={24} /> Activity Log
                         </h3>
                         <div className={`overflow-hidden rounded-xl border ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                            {/* Desktop Table View */}
                             <div className="hidden md:block">
                                 <table className={`w-full text-left text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                     <thead className={`font-bold uppercase text-xs tracking-wider ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-neutral-50 text-neutral-700'}`}>
@@ -298,15 +188,11 @@ export default function ProfessionalSettingsPage() {
                                             </tr>
                                         ))}
                                         {activityLogs.length === 0 && (
-                                            <tr>
-                                                <td colSpan={4} className={`p-8 text-center italic ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>No activity logs found.</td>
-                                            </tr>
+                                            <tr><td colSpan={4} className={`p-8 text-center italic ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>No activity logs found.</td></tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Mobile Card View */}
                             <div className="md:hidden divide-y divide-neutral-800">
                                 {activityLogs.map((log, i) => (
                                     <div key={i} className={`p-4 flex flex-col gap-2 ${isDark ? 'bg-neutral-900/20' : 'bg-white'}`}>
@@ -315,8 +201,7 @@ export default function ProfessionalSettingsPage() {
                                             <span className="text-[10px] opacity-50">{new Date(log.created_at).toLocaleDateString()}</span>
                                         </div>
                                         <div className="text-xs opacity-70 flex items-center gap-2">
-                                            <span>{log.location_details}</span>
-                                            <span>•</span>
+                                            <span>{log.location_details}</span><span>•</span>
                                             <span className="font-mono">{log.ip_address}</span>
                                         </div>
                                     </div>
@@ -330,49 +215,93 @@ export default function ProfessionalSettingsPage() {
                 </div>
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    {/* Early Adopter Promotion Banner */}
-                    <EarlyAdopterBanner type="professional" isDark={isDark} />
+                    {/* Badge Progress Hero */}
+                    <div className={`border p-8 rounded-[32px] ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className="flex items-center gap-4 mb-6">
+                            <VerificationBadge tier={currentBadge} size={48} showTooltip={false} />
+                            <div>
+                                <h3 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>
+                                    {currentBadge === 'none' ? 'Standard Account' : BADGE_TIERS[currentBadge as keyof typeof BADGE_TIERS]?.label || 'Standard Account'}
+                                </h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Users size={14} className="text-neutral-500" />
+                                    <span className={`text-sm font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                        {formatNumber(followerCount)} followers
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {renderPlanCard(
-                            'free',
-                            PROFESSIONAL_PLANS.free.name,
-                            PROFESSIONAL_PLANS.free.priceMonthly,
-                            PROFESSIONAL_PLANS.free.badge,
-                            [...PROFESSIONAL_PLANS.free.features]
-                        )}
-                        {renderPlanCard(
-                            'basic',
-                            PROFESSIONAL_PLANS.basic.name,
-                            PROFESSIONAL_PLANS.basic.priceMonthly,
-                            PROFESSIONAL_PLANS.basic.badge,
-                            [...PROFESSIONAL_PLANS.basic.features]
-                        )}
-                        {renderPlanCard(
-                            'standard',
-                            PROFESSIONAL_PLANS.standard.name,
-                            PROFESSIONAL_PLANS.standard.priceMonthly,
-                            PROFESSIONAL_PLANS.standard.badge,
-                            [...PROFESSIONAL_PLANS.standard.features]
-                        )}
-                        {renderPlanCard(
-                            'premium',
-                            PROFESSIONAL_PLANS.premium.name,
-                            PROFESSIONAL_PLANS.premium.priceMonthly,
-                            PROFESSIONAL_PLANS.premium.badge,
-                            [...PROFESSIONAL_PLANS.premium.features]
+                        {nextTier ? (
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                        Progress to {nextTier.label}
+                                    </span>
+                                    <span className={`text-xs font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                        {formatNumber(followerCount)} / {formatNumber(nextTier.min)}
+                                    </span>
+                                </div>
+                                <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
+                                    <div
+                                        className={`h-full rounded-full transition-all duration-1000 ease-out ${nextTier.key === 'gold' ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : nextTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`}
+                                        style={{ width: `${progressPercent}%` }}
+                                    />
+                                </div>
+                                <p className={`mt-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    <TrendingUp size={14} className="inline mr-1" />
+                                    {formatNumber(nextTier.min - followerCount)} more followers to unlock the <strong>{nextTier.label}</strong> badge
+                                </p>
+                            </div>
+                        ) : (
+                            <div className={`p-4 rounded-xl text-center ${isDark ? 'bg-yellow-400/10 border border-yellow-400/20' : 'bg-yellow-50 border border-yellow-200'}`}>
+                                <p className="text-yellow-500 font-black text-sm">🏆 You&apos;ve reached the highest badge tier!</p>
+                            </div>
                         )}
                     </div>
 
+                    {/* Badge Tier Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {tiers.map((tier) => {
+                            const isUnlocked = followerCount >= tier.min;
+                            const isCurrent = currentBadge === tier.key;
+                            const borderColor = tier.key === 'gold' ? 'border-yellow-400/30' : tier.key === 'blue' ? 'border-blue-400/30' : 'border-neutral-600/30';
+                            const activeRing = isCurrent ? (tier.key === 'gold' ? 'ring-2 ring-yellow-400/40' : tier.key === 'blue' ? 'ring-2 ring-blue-400/40' : 'ring-2 ring-neutral-400/40') : '';
+
+                            return (
+                                <div key={tier.key} className={`relative p-6 rounded-3xl border ${isDark ? `bg-neutral-900/50 ${borderColor}` : `bg-white border-neutral-200`} ${activeRing} transition-all`}>
+                                    {isCurrent && (
+                                        <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">
+                                            Current
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <VerificationBadge tier={tier.key} size={32} showTooltip={false} />
+                                        <div>
+                                            <h4 className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{tier.label}</h4>
+                                            <p className={`text-xs font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                {formatNumber(tier.min)}+ followers
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
+                                        {isUnlocked ? '✓ Unlocked' : `${formatNumber(tier.min - followerCount)} to go`}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Info Box */}
                     <div className={`p-6 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="flex items-start gap-4">
-                            <div className="p-3 bg-blue-500/10 rounded-xl">
-                                <Activity className="text-blue-500" size={24} />
+                            <div className="p-3 bg-emerald-500/10 rounded-xl">
+                                <TrendingUp className="text-emerald-500" size={24} />
                             </div>
                             <div>
-                                <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-black'}`}>About Subscriptions</h3>
+                                <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-black'}`}>How Badges Work</h3>
                                 <p className={`mt-1 text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                    Subscriptions are billed monthly. You can cancel at any time. Higher tiers give you more visibility in the algorithm and special verification badges that build trust with employers.
+                                    Badges are earned organically through your follower count. Post quality content, engage with others, and grow your network to unlock higher tiers. Badges give you increased visibility in the feed and build trust with employers.
                                 </p>
                             </div>
                         </div>
@@ -382,4 +311,3 @@ export default function ProfessionalSettingsPage() {
         </div>
     );
 }
-

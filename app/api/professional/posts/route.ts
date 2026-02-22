@@ -254,50 +254,92 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ posts: processed });
         }
 
-        // MAIN FEED: Use AI Ranking RPC
-        // FIXME: RPC 'get_ranked_feed' definition is stale and missing 'link_preview' column.
-        // Temporarily bypassing RPC to use standard select('*') which returns all columns.
-        const { data: rankedPosts, error: rpcError } = { data: null, error: 'Standard Query Fallback' }; // await supabaseAdmin.rpc('get_ranked_feed', { 
-        /*    p_user_id: user.id,
-            p_limit: limit,
-            p_offset: offset
-        }); */
+        // MAIN FEED: AI-Powered Engagement Ranking Algorithm
+        // Score = engagement_signals + recency_bonus + social_proximity + random_discovery
 
-        if (rpcError) {
-            console.error('Feed RPC Error:', rpcError);
-            // Fallback to simple query (Combine Prof + Emp)
-            let profQuery = supabaseAdmin
-                .schema('professional')
-                .from('posts')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(limit);
+        // 1. Fetch recent posts from both schemas (larger pool to score from)
+        const feedLimit = Math.max(limit * 3, 60); // Fetch 3x more, then rank and trim
 
-            let empQuery = supabaseAdmin
-                .schema('employer')
-                .from('posts')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(limit)
-                .then((res: any) => ({ ...res, isEmployer: true }))
-                .catch(() => ({ data: [], error: null }));
+        let profQuery = supabaseAdmin
+            .schema('professional')
+            .from('posts')
+            .select('*, views, dwell')
+            .order('created_at', { ascending: false })
+            .limit(feedLimit);
 
-            const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
+        let empQuery = supabaseAdmin
+            .schema('employer')
+            .from('posts')
+            .select('*, views, dwell')
+            .order('created_at', { ascending: false })
+            .limit(feedLimit)
+            .then((res: any) => ({ ...res, isEmployer: true }))
+            .catch(() => ({ data: [], error: null }));
 
-            let allFallback: any[] = [];
-            if (profRes.data) allFallback = [...allFallback, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
-            if ((empRes as any).data) allFallback = [...allFallback, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
+        const [profRes, empRes] = await Promise.all([profQuery, empQuery]);
 
-            // Sort combined
-            allFallback.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            allFallback = allFallback.slice(0, limit);
+        let allPosts: any[] = [];
+        if (profRes.data) allPosts = [...allPosts, ...profRes.data.map((p: any) => ({ ...p, authorType: 'professional' }))];
+        if ((empRes as any).data) allPosts = [...allPosts, ...((empRes as any).data || []).map((p: any) => ({ ...p, authorType: 'employer', user_id: p.company_id }))];
 
-            const processed = await processPosts(allFallback, user);
-            return NextResponse.json({ posts: processed });
-        }
+        // 2. Get who the current user follows (for social proximity boost)
+        const [{ data: followedUsers }, { data: followedCompanies }] = await Promise.all([
+            supabaseAdmin.schema('professional').from('user_follows').select('following_id').eq('follower_id', user.id),
+            supabaseAdmin.schema('professional').from('company_follows').select('company_id').eq('user_id', user.id)
+        ]);
+        const followedIds = new Set([
+            ...(followedUsers || []).map((f: any) => f.following_id),
+            ...(followedCompanies || []).map((f: any) => f.company_id)
+        ]);
 
-        const postsWithStats = await processPosts(rankedPosts || [], user);
-        return NextResponse.json({ posts: postsWithStats });
+        // 3. Score each post
+        const now = Date.now();
+        const scoredPosts = await Promise.all(allPosts.map(async (post: any) => {
+            const authorId = post.authorType === 'employer' ? (post.company_id || post.user_id) : post.user_id;
+            const postSchema = post.authorType === 'employer' ? 'employer' : 'professional';
+
+            // Get engagement counts (cached)
+            const counts = await getCachedPostCounts(post.id, postSchema);
+
+            // --- ENGAGEMENT SCORE ---
+            const likesScore = (counts.likesCount || 0) * 3;
+            const commentsScore = (counts.commentsCount || 0) * 5;
+            const repostsScore = (counts.repostsCount || 0) * 4;
+            const viewsScore = (post.views || 0) * 0.1;
+            const dwellScore = (post.dwell || 0) * 0.5;
+            const engagementScore = likesScore + commentsScore + repostsScore + viewsScore + dwellScore;
+
+            // --- RECENCY BONUS (time-decay) ---
+            const ageMs = now - new Date(post.created_at).getTime();
+            const ageHours = ageMs / 3600000;
+            let recencyBonus = 0;
+            if (ageHours < 1) recencyBonus = 50;       // Very fresh
+            else if (ageHours < 6) recencyBonus = 35;   // Recent
+            else if (ageHours < 24) recencyBonus = 20;  // Today
+            else if (ageHours < 72) recencyBonus = 10;  // This week
+            else if (ageHours < 168) recencyBonus = 5;  // Past week
+            // Older posts: 0 recency bonus
+
+            // --- SOCIAL PROXIMITY ---
+            const socialBonus = followedIds.has(authorId) ? 30 : 0;
+
+            // --- OWN POSTS (slight demotion to avoid self-echo) ---
+            const ownPostPenalty = authorId === user.id ? -15 : 0;
+
+            // --- DISCOVERY RANDOMNESS (helps new creators get exposure) ---
+            const randomFactor = Math.random() * 15;
+
+            const totalScore = engagementScore + recencyBonus + socialBonus + ownPostPenalty + randomFactor;
+
+            return { ...post, _score: totalScore };
+        }));
+
+        // 4. Sort by score (highest first) and paginate
+        scoredPosts.sort((a, b) => b._score - a._score);
+        const paginatedPosts = scoredPosts.slice(offset, offset + limit);
+
+        const processed = await processPosts(paginatedPosts, user);
+        return NextResponse.json({ posts: processed });
 
     } catch (error: any) {
         console.error('Error fetching posts:', error);

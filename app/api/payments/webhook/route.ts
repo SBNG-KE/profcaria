@@ -235,12 +235,8 @@ export async function POST(req: Request) {
                         usage_top_matches: 0
                     }, { onConflict: 'company_id, status' }); // Warning: This onConflict might be tricky if we have multiple active rows? Schema enforces one active?
 
-                    // 4. Sync Badge Type
-                    let badge = 'gray';
-                    if (plan === 'pro') badge = 'blue';
-                    if (plan === 'enterprise') badge = 'gold';
-
-                    await supabaseAdmin.schema('employer').from('companies').update({ badge_type: badge }).eq('id', companyId);
+                    // Badge sync REMOVED — badges are now earned via follower count (see lib/badges.ts)
+                    // The recalculateBadge() function handles this on every follow/unfollow action.
                 }
 
                 if (userId) {
@@ -288,13 +284,8 @@ export async function POST(req: Request) {
                     }); // Remove explicit onConflict to let it infer if PK matches or just insert new history? 
                     // Ideally we want one ACTIVE row per user.
 
-                    // 3. Sync Badge Type
-                    let badge = 'none';
-                    if (plan === 'basic') badge = 'gray';
-                    if (plan === 'standard') badge = 'blue';
-                    if (plan === 'premium') badge = 'gold';
-
-                    await supabaseAdmin.schema('professional').from('users').update({ badge_type: badge }).eq('id', userId);
+                    // Badge sync REMOVED — badges are now earned via follower count (see lib/badges.ts)
+                    // The recalculateBadge() function handles this on every follow/unfollow action.
                 }
                 break;
             }

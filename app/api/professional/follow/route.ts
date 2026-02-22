@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/auth-helper';
 
 import { decryptData, hashForIndex } from '@/lib/security';
 import { sendNewFollowerNotification } from '@/lib/email';
+import { recalculateBadge } from '@/lib/badges';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -49,6 +50,11 @@ export async function POST(request: NextRequest) {
                 .eq('id', existingFollow.id);
 
             if (error) throw error;
+
+            // Recalculate badge for the unfollowed entity
+            const targetSchema = type === 'company' ? 'employer' : 'professional';
+            recalculateBadge(targetId, targetSchema).catch(console.error);
+
             return NextResponse.json({ following: false, message: 'Unfollowed' });
         } else {
             // Follow
@@ -67,6 +73,10 @@ export async function POST(request: NextRequest) {
                 .insert(insertData);
 
             if (error) throw error;
+
+            // Recalculate badge for the newly followed entity
+            const targetSchema = type === 'company' ? 'employer' : 'professional';
+            recalculateBadge(targetId, targetSchema).catch(console.error);
 
             // Send Email Notification (Async - non-blocking)
             (async () => {
