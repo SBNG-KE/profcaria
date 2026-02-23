@@ -12,11 +12,6 @@ export const runtime = 'nodejs';
  * Returns all active (open) jobs for a company by slug.
  * No auth required — this is a public endpoint.
  * Optional personalization if the visitor is logged in as a professional.
- * 
- * Query params:
- *   ?category=  — filter by role category
- *   ?location_type= — filter by remote/onsite/hybrid
- *   ?search= — keyword search in title/description
  */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
     try {
@@ -27,12 +22,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         }
 
         // --- 1. Find company by slug ---
-        // Company names are ENCRYPTED in the DB as enc_company_name
-        // We must fetch companies, decrypt names, and match against the slug
+        // Company names are ENCRYPTED — must fetch, decrypt, then match
         const { data: allCompanies, error: compError } = await supabaseAdmin
             .schema('employer')
             .from('companies')
-            .select('id, enc_company_name, enc_logo_url, industry, size, website, about, location')
+            .select('id, enc_company_name, enc_logo_url, enc_website, enc_about, industry, country, city, badge_type')
             .limit(500);
 
         if (compError) {
@@ -40,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
             return NextResponse.json({ error: 'Failed to fetch companies' }, { status: 500 });
         }
 
-        // Decrypt and match
+        // Decrypt and match slug
         let company: any = null;
         for (const c of (allCompanies || [])) {
             const decryptedName = decryptData(c.enc_company_name) || '';
@@ -51,11 +45,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                     id: c.id,
                     name: decryptedName,
                     logo: c.enc_logo_url ? decryptData(c.enc_logo_url) : null,
+                    website: c.enc_website ? decryptData(c.enc_website) : '',
+                    about: c.enc_about ? decryptData(c.enc_about) : '',
                     industry: c.industry || '',
-                    size: c.size || '',
-                    website: c.website || '',
-                    about: c.about || '',
-                    location: c.location || '',
+                    location: [c.city, c.country].filter(Boolean).join(', '),
+                    badge_type: c.badge_type || null,
                 };
                 break;
             }
@@ -90,7 +84,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
             createdAt: job.created_at,
         }));
 
-        // --- 4. Extract filter options from ALL jobs (before filtering) ---
+        // --- 4. Extract filter options ---
         const allCategories = new Set<string>();
         const allLocationTypes = new Set<string>();
 
@@ -127,7 +121,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
             );
         }
 
-        // --- 6. Optional: Personalization for logged-in professionals ---
+        // --- 6. Optional: Personalization ---
         let isPersonalized = false;
 
         try {
@@ -148,7 +142,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
                     if (searchIndex) {
                         isPersonalized = true;
-
                         const userSkills = (searchIndex.skills || []).map((s: string) => s.toLowerCase());
                         const userLocation = (searchIndex.location || '').toLowerCase();
 
@@ -172,7 +165,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                 }
             }
         } catch (authErr) {
-            // Not logged in or invalid — skip personalization
+            // Not logged in — skip personalization
         }
 
         // --- 7. Return response ---
