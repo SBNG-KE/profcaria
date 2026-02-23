@@ -34,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         // Try exact ilike match first
         const { data: exactMatch } = await supabaseAdmin
             .from('employer.companies')
-            .select('id, name, industry, size, website, about, logo, location, badge_type')
+            .select('id, name, industry, size, website, about, logo, location')
             .ilike('name', searchPattern)
             .single();
 
@@ -44,8 +44,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
             // Fallback: slugify all company names and find match
             const { data: companies } = await supabaseAdmin
                 .from('employer.companies')
-                .select('id, name, industry, size, website, about, logo, location, badge_type')
-                .limit(100);
+                .select('id, name, industry, size, website, about, logo, location')
+                .limit(200);
 
             company = companies?.find((c: { name: string }) => {
                 const companySlug = c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
         // --- 6. Optional: Personalization for logged-in professionals ---
         let isPersonalized = false;
-        let userPreferences: any = null;
+
 
         try {
             const cookieStore = await cookies();
@@ -142,7 +142,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
                     if (searchIndex) {
                         isPersonalized = true;
-                        userPreferences = searchIndex;
 
                         // Score jobs by relevance
                         const userSkills = (searchIndex.skills || []).map((s: string) => s.toLowerCase());
@@ -196,7 +195,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                 about: company.about,
                 logo: company.logo,
                 location: company.location,
-                badge_type: company.badge_type,
+
             },
             jobs: decryptedJobs,
             filters: {

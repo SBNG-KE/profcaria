@@ -7,7 +7,6 @@ import {
     ExternalLink, Check, X, Globe, Users, Sparkles, Copy, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
-import VerificationBadge from '@/app/components/VerificationBadge';
 
 interface Job {
     id: string;
@@ -29,7 +28,6 @@ interface CompanyInfo {
     about: string;
     logo: string;
     location: string;
-    badge_type: string;
 }
 
 interface Filters {
@@ -212,9 +210,7 @@ export default function CareersPage() {
                                 <h1 className={`text-2xl sm:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                                     {company.name}
                                 </h1>
-                                {company.badge_type && company.badge_type !== 'none' && (
-                                    <VerificationBadge tier={company.badge_type} size={22} />
-                                )}
+
                             </div>
 
                             <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
