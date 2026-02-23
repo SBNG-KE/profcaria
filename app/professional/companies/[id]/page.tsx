@@ -8,7 +8,7 @@ import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
-import { cookies, headers } from 'next/headers';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,38 +27,17 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
         return notFound();
     }
 
-    // Track View Server Side
-    const headersList = await headers();
-    const isPrefetch = headersList.get('next-router-prefetch') === '1' || headersList.get('purpose') === 'prefetch' || headersList.get('x-nextjs-data') === '1';
+    // Profile viewing is now handled client-side via ProfileViewTracker component
 
-    let viewerId = null;
-
-    if (!isPrefetch) {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    const session = cookieStore.get('profcaria_session')?.value;
+    let viewerId = '';
+    if (session) {
         try {
-            const cookieStore = await cookies();
-            const session = cookieStore.get('profcaria_session')?.value;
-            let sessionUid = null;
-
-            if (session) {
-                const base64Url = session.split('.')[1];
-                if (base64Url) {
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-                    const payload = JSON.parse(jsonPayload);
-                    sessionUid = payload.uid;
-                    if (payload.schema === 'professional') viewerId = payload.uid;
-                }
-            }
-            if (sessionUid !== id) {
-                const { error: insertError } = await supabaseAdmin
-                    .schema('professional')
-                    .from('profile_views')
-                    .insert({ viewer_id: viewerId, viewed_company_id: id });
-                if (insertError) console.error("Supabase view error:", insertError.message);
-            }
-        } catch (e: any) {
-            console.error("View tracking failed:", e.message);
-        }
+            const payload = JSON.parse(atob(session.split('.')[1]));
+            viewerId = payload.schema === 'professional' ? payload.uid : null;
+        } catch (e: any) { }
     }
 
     const { data: otherProfiles } = await supabaseAdmin
@@ -139,6 +118,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
+            <ProfileViewTracker targetId={id} targetType="company" />
             <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header Card with Logo (Matches Employer Dashboard Static View) */}

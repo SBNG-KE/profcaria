@@ -7,7 +7,7 @@ import { getFollowerCount } from '@/lib/followers';
 import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail, MessageSquare } from 'lucide-react';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import CopyableText from '@/app/components/ui/CopyableText';
-import { cookies, headers } from 'next/headers';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,39 +68,6 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
         .select('*')
         .eq('user_id', id);
 
-    // Track View Server Side
-    const headersList = await headers();
-    const isPrefetch = headersList.get('next-router-prefetch') === '1' || headersList.get('purpose') === 'prefetch' || headersList.get('x-nextjs-data') === '1';
-
-    if (!isPrefetch) {
-        try {
-            const cookieStore = await cookies();
-            const session = cookieStore.get('profcaria_session')?.value;
-            let viewerId = null;
-            let sessionUid = null;
-
-            if (session) {
-                const base64Url = session.split('.')[1];
-                if (base64Url) {
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-                    const payload = JSON.parse(jsonPayload);
-                    sessionUid = payload.uid;
-                    if (payload.schema === 'professional') viewerId = payload.uid;
-                }
-            }
-            if (sessionUid !== id) {
-                const { error: insertError } = await supabaseAdmin
-                    .schema('professional')
-                    .from('profile_views')
-                    .insert({ viewer_id: viewerId, viewed_professional_id: id });
-                if (insertError) console.error("Supabase view error:", insertError.message);
-            }
-        } catch (e: any) {
-            console.error("View tracking failed:", e.message);
-        }
-    }
-
     // Clean data for component
     const employmentHistory = employment?.map((e: any) => ({
         ...e,
@@ -121,6 +88,7 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
     return (
 
         <div className="min-h-screen bg-gray-50 pb-20">
+            <ProfileViewTracker targetId={id} targetType="professional" />
             {/* Header / Cover */}
             {/* Header / Cover */}
             <div className="h-48 bg-white relative overflow-hidden">
