@@ -11,6 +11,7 @@ import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 import { cookies } from 'next/headers';
 import React from 'react';
 import Link from 'next/link';
@@ -288,6 +289,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
+            <ProfileViewTracker targetId={id} targetType="professional" />
             <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header Card Redesign (Matching Employer/Company Static View) */}

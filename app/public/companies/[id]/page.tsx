@@ -9,6 +9,7 @@ import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import VerificationBadge from '@/app/components/VerificationBadge';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
@@ -132,6 +133,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
+            <ProfileViewTracker targetId={id} targetType="company" />
             <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header Card with Logo (Matches Employer Dashboard Static View) */}
