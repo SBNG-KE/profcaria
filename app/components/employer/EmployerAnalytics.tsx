@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { Users, Heart, MessageCircle, Clock, Repeat2, ArrowUpRight, Eye } from 'lucide-react';
 
 interface AnalyticsProps {
@@ -116,9 +116,16 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
                     </div>
                 </div>
 
-                <div className="h-[200px] w-full">
+                <div className="h-[240px] w-full mt-2 -ml-4 pr-4">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={viewData}>
+                        <AreaChart data={viewData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#262626' : '#e5e5e5'} />
                             <XAxis
                                 dataKey="name"
                                 axisLine={false}
@@ -126,23 +133,38 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
                                 tick={{ fill: isDark ? '#525252' : '#a3a3a3', fontSize: 10, fontWeight: 600 }}
                                 dy={10}
                             />
+                            <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: isDark ? '#525252' : '#a3a3a3', fontSize: 10, fontWeight: 600 }}
+                                dx={-10}
+                            />
                             <Tooltip
-                                cursor={{ fill: isDark ? '#262626' : '#f5f5f5' }}
+                                cursor={{ stroke: isDark ? '#3f3f46' : '#e4e4e7', strokeWidth: 1, strokeDasharray: '3 3' }}
                                 contentStyle={{
                                     backgroundColor: isDark ? '#171717' : '#ffffff',
                                     borderColor: isDark ? '#262626' : '#e5e5e5',
                                     borderRadius: '12px',
                                     fontSize: '12px',
                                     fontWeight: 'bold',
-                                    color: isDark ? '#ffffff' : '#000000'
+                                    color: isDark ? '#ffffff' : '#000000',
+                                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+                                }}
+                                itemStyle={{
+                                    color: isDark ? '#3b82f6' : '#2563eb',
+                                    fontWeight: '900'
                                 }}
                             />
-                            <Bar dataKey="views" radius={[4, 4, 4, 4]}>
-                                {viewData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={isDark ? '#3b82f6' : '#2563eb'} />
-                                ))}
-                            </Bar>
-                        </BarChart>
+                            <Area
+                                type="monotone"
+                                dataKey="views"
+                                stroke={isDark ? '#3b82f6' : '#2563eb'}
+                                strokeWidth={2}
+                                fillOpacity={1}
+                                fill="url(#colorViews)"
+                                activeDot={{ r: 5, fill: isDark ? '#3b82f6' : '#2563eb', stroke: isDark ? '#171717' : '#ffffff', strokeWidth: 2 }}
+                            />
+                        </AreaChart>
                     </ResponsiveContainer>
                 </div>
             </div>
