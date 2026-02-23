@@ -206,7 +206,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ section
             if (existingRoles) {
                 for (const existing of existingRoles) {
                     const compName = existing.enc_company ? decryptData(existing.enc_company) : null;
-                    if (compName && compName.toLowerCase() === body.company.toLowerCase()) {
+                    if (compName && compName.trim().toLowerCase() === String(body.company).trim().toLowerCase()) {
                         await supabaseAdmin
                             .schema('professional')
                             .from(config.table)
