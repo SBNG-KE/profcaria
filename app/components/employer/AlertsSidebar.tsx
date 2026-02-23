@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, TrendingUp, Activity, BarChart2, Bell } from 'lucide-react';
+import { Zap, Activity, BarChart2, Bell } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -13,7 +13,6 @@ export default function EmployerAlertsSidebar() {
     const { notifications } = useNotificationContext();
 
     // Real Data State
-    const [stats, setStats] = useState({ newFollowers: 0, growthPercent: 0 }); // growthPercent can be calculated or just show raw new followers for now.
     const [industryActivity, setIndustryActivity] = useState<any[]>([]);
 
     useEffect(() => {
@@ -23,16 +22,6 @@ export default function EmployerAlertsSidebar() {
                 if (res.ok) {
                     const data = await res.json();
 
-                    // Growth Calculation
-                    // If we have total `subscribers` and `newSubscribersThisWeek`.
-                    // Growth % = (new / (total - new)) * 100? Or just show the count. 
-                    // Let's explicitly show the count as requested.
-                    const newFollowers = data.newSubscribersThisWeek || 0;
-                    const total = data.subscribers || 0;
-                    const prevTotal = total - newFollowers;
-                    const percent = prevTotal > 0 ? Math.round((newFollowers / prevTotal) * 100) : (newFollowers > 0 ? 100 : 0);
-
-                    setStats({ newFollowers, growthPercent: percent });
                     setIndustryActivity(data.industryActivity || []);
                 }
             } catch (err) {
@@ -49,23 +38,7 @@ export default function EmployerAlertsSidebar() {
         <div className="flex flex-col h-full">
             <h3 className={`text-xs font-bold uppercase tracking-wider mb-6 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Insights & Alerts</h3>
 
-            {/* GROWTH CARD */}
-            <div className={`p-4 rounded-xl mb-6 relative overflow-hidden group border ${isDark ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 border-neutral-800' : 'bg-gradient-to-br from-white to-neutral-50 border-neutral-200'}`}>
-                {/* Background Glow */}
-                <div className="absolute -right-4 -top-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
 
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp size={14} className="text-emerald-500" />
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Weekly Growth</span>
-                    </div>
-                    <div className="flex items-end gap-3">
-                        <span className={`text-3xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{stats.newFollowers}</span>
-                        <span className="text-xs font-bold text-emerald-500 mb-1.5">{stats.growthPercent > 0 ? `+${stats.growthPercent}%` : '0%'}</span>
-                    </div>
-                    <p className={`text-[10px] mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Total new followers this week</p>
-                </div>
-            </div>
 
             {/* INDUSTRY ACTIVITY */}
             <h4 className={`text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
