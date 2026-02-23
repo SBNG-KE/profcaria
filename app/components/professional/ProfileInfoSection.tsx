@@ -175,8 +175,17 @@ export default function ProfileInfoSection({
 
                                 return (
                                     <>
-                                        {currentCompanyRoles.map((job, index) => {
+                                        {currentCompanyRoles.map((job, index, arr) => {
                                             const canEdit = !isVerifiedStack || (index === 0 && job.isCurrent && job.source !== 'automatic');
+                                            const newerJob = index > 0 ? arr[index - 1] : null;
+                                            let displayIsCurrent = job.isCurrent;
+                                            let displayEndDate = job.endDate;
+
+                                            if (newerJob && !job.endDate) {
+                                                displayIsCurrent = false;
+                                                displayEndDate = newerJob.startDate;
+                                            }
+
                                             return (
                                                 <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
                                                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
@@ -184,7 +193,7 @@ export default function ProfileInfoSection({
                                                         <div className="flex-1 min-w-0">
                                                             <h5 className="text-lg font-bold text-black dark:text-white">{job.title}</h5>
                                                             <p className="text-xs uppercase tracking-wider font-bold mt-1 text-neutral-400 dark:text-neutral-500">
-                                                                {formatDate(job.startDate)} — {job.isCurrent ? 'Present' : formatDate(job.endDate)}
+                                                                {formatDate(job.startDate)} — {displayIsCurrent ? 'Present' : formatDate(displayEndDate)}
                                                             </p>
                                                             {job.description && (
                                                                 <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-500 dark:text-neutral-400">{job.description}</p>
