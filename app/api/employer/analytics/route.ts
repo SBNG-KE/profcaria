@@ -25,7 +25,15 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const employerId = auth.uid;
+        // We need the ACTUAL company ID, not the Auth user ID, to query views
+        const { data: companyRecord } = await supabaseAdmin
+            .schema('employer')
+            .from('companies')
+            .select('id')
+            .eq('id', auth.uid) // Assuming 1:1 mapping where user.id == company.id
+            .maybeSingle();
+
+        const employerId = companyRecord?.id || auth.uid;
 
         // 1. Fetch Subscriber Count (Followers)
         const { data: follows } = await supabaseAdmin
