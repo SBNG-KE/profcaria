@@ -125,9 +125,12 @@ export default function CareersPage() {
     };
 
     const handleApply = (jobId: string) => {
-        // Navigate to the job detail/apply page
-        // If not logged in, the page itself will redirect to login
-        router.push(`/professional/jobs/${jobId}`);
+        // Save redirect so after login the user goes straight to this job
+        try {
+            localStorage.setItem('profcaria_job_redirect', `/professional/jobs/${jobId}`);
+        } catch (e) { /* localStorage not available */ }
+        // Navigate to landing page — the HangingAuthCard will pick up the redirect after login
+        router.push('/');
     };
 
     const handleCopyLink = () => {

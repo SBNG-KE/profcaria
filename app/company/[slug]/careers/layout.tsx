@@ -18,21 +18,7 @@ export default function CareersLayout({ children }: { children: React.ReactNode 
                         <img src="/profcaria.png" alt="Profcaria" className="w-8 h-8 rounded-xl object-contain" />
                         <span className="font-black text-sm tracking-tight hidden sm:inline">PROFCARIA</span>
                     </Link>
-                    <div className="flex items-center gap-3">
-                        <ThemeToggle theme={theme} onToggle={toggleTheme} />
-                        <Link
-                            href="/professional/login"
-                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${isDark ? 'text-neutral-400 hover:text-white hover:bg-neutral-800' : 'text-neutral-500 hover:text-black hover:bg-neutral-100'}`}
-                        >
-                            Sign In
-                        </Link>
-                        <Link
-                            href="/professional/signup"
-                            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
-                        >
-                            Join Now
-                        </Link>
-                    </div>
+                    <ThemeToggle theme={theme} onToggle={toggleTheme} />
                 </div>
             </header>
 

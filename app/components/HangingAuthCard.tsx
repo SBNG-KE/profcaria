@@ -254,19 +254,28 @@ export default function HangingAuthCard({
 
     // Handle redirect - intercept security routes
     const handleRedirect = (redirect: string | undefined | null) => {
-        if (!redirect) {
+        // Check for pending job redirect from careers page
+        let pendingJobRedirect: string | null = null;
+        try {
+            pendingJobRedirect = localStorage.getItem('profcaria_job_redirect');
+            if (pendingJobRedirect) localStorage.removeItem('profcaria_job_redirect');
+        } catch (e) { /* localStorage not available */ }
+
+        const finalRedirect = pendingJobRedirect || redirect;
+
+        if (!finalRedirect) {
             // Default redirect
             router.push(activeTab === 'professional' ? '/professional/feed' : '/employer/feed');
             onClose();
             return;
         }
 
-        if (redirect.includes('/security/setup')) {
+        if (finalRedirect.includes('/security/setup')) {
             setScreen('security_setup');
-        } else if (redirect.includes('/security/verify')) {
+        } else if (finalRedirect.includes('/security/verify')) {
             setScreen('security_verify');
         } else {
-            router.push(redirect);
+            router.push(finalRedirect);
             onClose();
         }
     };

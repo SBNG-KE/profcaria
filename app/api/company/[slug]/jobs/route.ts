@@ -27,30 +27,38 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         }
 
         // --- 1. Find company by slug ---
-        const searchPattern = slug.replace(/-/g, ' ');
+        // Company names are ENCRYPTED in the DB as enc_company_name
+        // We must fetch companies, decrypt names, and match against the slug
+        const { data: allCompanies, error: compError } = await supabaseAdmin
+            .schema('employer')
+            .from('companies')
+            .select('id, enc_company_name, enc_logo_url, industry, size, website, about, location')
+            .limit(500);
 
+        if (compError) {
+            console.error('Company fetch error:', compError);
+            return NextResponse.json({ error: 'Failed to fetch companies' }, { status: 500 });
+        }
+
+        // Decrypt and match
         let company: any = null;
+        for (const c of (allCompanies || [])) {
+            const decryptedName = decryptData(c.enc_company_name) || '';
+            const companySlug = decryptedName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-        // Try exact ilike match first
-        const { data: exactMatch } = await supabaseAdmin
-            .from('employer.companies')
-            .select('id, name, industry, size, website, about, logo, location')
-            .ilike('name', searchPattern)
-            .single();
-
-        if (exactMatch) {
-            company = exactMatch;
-        } else {
-            // Fallback: slugify all company names and find match
-            const { data: companies } = await supabaseAdmin
-                .from('employer.companies')
-                .select('id, name, industry, size, website, about, logo, location')
-                .limit(200);
-
-            company = companies?.find((c: { name: string }) => {
-                const companySlug = c.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                return companySlug === slug;
-            }) || null;
+            if (companySlug === slug || decryptedName.toLowerCase() === slug.replace(/-/g, ' ')) {
+                company = {
+                    id: c.id,
+                    name: decryptedName,
+                    logo: c.enc_logo_url ? decryptData(c.enc_logo_url) : null,
+                    industry: c.industry || '',
+                    size: c.size || '',
+                    website: c.website || '',
+                    about: c.about || '',
+                    location: c.location || '',
+                };
+                break;
+            }
         }
 
         if (!company) {
@@ -122,7 +130,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         // --- 6. Optional: Personalization for logged-in professionals ---
         let isPersonalized = false;
 
-
         try {
             const cookieStore = await cookies();
             const token = cookieStore.get('profcaria_session')?.value;
@@ -132,7 +139,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                 const { payload } = await jwtVerify(token, secretKey);
 
                 if (payload.schema === 'professional' && payload.uid) {
-                    // Fetch user preferences from search_index
                     const { data: searchIndex } = await supabaseAdmin
                         .schema('professional')
                         .from('search_index')
@@ -143,36 +149,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                     if (searchIndex) {
                         isPersonalized = true;
 
-                        // Score jobs by relevance
                         const userSkills = (searchIndex.skills || []).map((s: string) => s.toLowerCase());
                         const userLocation = (searchIndex.location || '').toLowerCase();
 
                         decryptedJobs = decryptedJobs.map((job: any) => {
                             let score = 0;
-
-                            // Category match
                             const jobCats = (job.role_categories || []).map((c: string) => c.toLowerCase());
                             userSkills.forEach((skill: string) => {
-                                if (jobCats.some((cat: string) => cat.includes(skill) || skill.includes(cat))) {
-                                    score += 3;
-                                }
-                                if (job.title.toLowerCase().includes(skill)) {
-                                    score += 2;
-                                }
-                                if (job.description.toLowerCase().includes(skill)) {
-                                    score += 1;
-                                }
+                                if (jobCats.some((cat: string) => cat.includes(skill) || skill.includes(cat))) score += 3;
+                                if (job.title.toLowerCase().includes(skill)) score += 2;
+                                if (job.description.toLowerCase().includes(skill)) score += 1;
                             });
-
-                            // Location match
-                            if (userLocation && job.location.toLowerCase().includes(userLocation)) {
-                                score += 2;
-                            }
-
+                            if (userLocation && job.location.toLowerCase().includes(userLocation)) score += 2;
                             return { ...job, relevanceScore: score };
                         });
 
-                        // Sort by relevance (highest first), then by date
                         decryptedJobs.sort((a: any, b: any) => {
                             if (b.relevanceScore !== a.relevanceScore) return b.relevanceScore - a.relevanceScore;
                             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -181,22 +172,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                 }
             }
         } catch (authErr) {
-            // Not logged in or invalid token — that's fine, just skip personalization
+            // Not logged in or invalid — skip personalization
         }
 
         // --- 7. Return response ---
         return NextResponse.json({
-            company: {
-                id: company.id,
-                name: company.name,
-                industry: company.industry,
-                size: company.size,
-                website: company.website,
-                about: company.about,
-                logo: company.logo,
-                location: company.location,
-
-            },
+            company,
             jobs: decryptedJobs,
             filters: {
                 categories: Array.from(allCategories).sort(),
