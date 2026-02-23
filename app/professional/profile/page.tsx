@@ -2229,16 +2229,16 @@ export default function ProfessionalHome() {
                   certifications={certifications}
                   awards={awards}
                   otherProfiles={otherProfiles}
-                  onAdd={(section, prefillData) => {
+                  onAdd={(section, prefillData, isVerifiedStack) => {
                     setActiveSection(section);
-                    setFormData(prefillData || {});
+                    setFormData({ ...prefillData, ...(isVerifiedStack ? { isCurrent: true, _isVerifiedStack: true } : {}) });
                     setEditingItem(null);
                     setIsSlideOverOpen(true);
                   }}
-                  onEdit={(section, item) => {
+                  onEdit={(section, item, isVerifiedStack) => {
                     setActiveSection(section);
                     setEditingItem(item);
-                    setFormData({ ...item }); // Pre-fill form
+                    setFormData({ ...item, _isVerifiedStack: !!isVerifiedStack }); // Pre-fill form
                     setIsSlideOverOpen(true);
                   }}
                   onDelete={(section, id) => handleDeleteSection(section, id)}
@@ -2681,7 +2681,7 @@ export default function ProfessionalHome() {
             <>
               <div>
                 <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Company / Organization</label>
-                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="Company Name" />
+                <input disabled={formData._isVerifiedStack} className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'} ${formData._isVerifiedStack ? 'opacity-50 cursor-not-allowed' : ''}`} value={formData.company || ''} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="Company Name" />
               </div>
               <div>
                 <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Title</label>
@@ -2694,12 +2694,12 @@ export default function ProfessionalHome() {
                 </div>
                 <div>
                   <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>End Date</label>
-                  <input type="date" disabled={formData.isCurrent} className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'} ${formData.isCurrent ? 'opacity-50' : ''}`} value={formData.endDate || ''} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
+                  <input type="date" disabled={formData.isCurrent || formData._isVerifiedStack} className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'} ${(formData.isCurrent || formData._isVerifiedStack) ? 'opacity-50 cursor-not-allowed' : ''}`} value={formData.endDate || ''} onChange={e => setFormData({ ...formData, endDate: e.target.value })} />
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="isCurrent" checked={formData.isCurrent || false} onChange={e => setFormData({ ...formData, isCurrent: e.target.checked })} />
-                <label htmlFor="isCurrent" className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'}`}>I currently work here</label>
+                <input type="checkbox" id="isCurrent" disabled={formData._isVerifiedStack} checked={formData.isCurrent || false} onChange={e => setFormData({ ...formData, isCurrent: e.target.checked })} />
+                <label htmlFor="isCurrent" className={`text-sm font-medium ${isDark ? 'text-white' : 'text-black'} ${formData._isVerifiedStack ? 'opacity-50 cursor-not-allowed' : ''}`}>I currently work here</label>
               </div>
               <div>
                 <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Description</label>

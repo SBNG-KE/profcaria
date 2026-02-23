@@ -194,6 +194,32 @@ export async function POST(req: Request, { params }: { params: Promise<{ section
             }
         }
 
+        // NEW: Automatically close previous current role at same company
+        if (section === 'employment' && body.company && body.isCurrent) {
+            const { data: existingRoles } = await supabaseAdmin
+                .schema('professional')
+                .from(config.table)
+                .select('id, enc_company, is_current')
+                .eq('user_id', userId)
+                .eq('is_current', true);
+
+            if (existingRoles) {
+                for (const existing of existingRoles) {
+                    const compName = existing.enc_company ? decryptData(existing.enc_company) : null;
+                    if (compName && compName.toLowerCase() === body.company.toLowerCase()) {
+                        await supabaseAdmin
+                            .schema('professional')
+                            .from(config.table)
+                            .update({
+                                is_current: false,
+                                enc_end_date: encryptData(body.startDate || new Date().toISOString().split('T')[0])
+                            })
+                            .eq('id', existing.id);
+                    }
+                }
+            }
+        }
+
         const { data, error } = await supabaseAdmin
             .schema('professional')
             .from(config.table)

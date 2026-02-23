@@ -6,7 +6,7 @@ import {
     Download, User, Building2, GraduationCap,
     BadgeCheck, Phone, MapPin, Award, Globe,
     BookOpen, Linkedin, Github, Copy, Check, Twitter,
-    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake, MessageSquare
+    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake, MessageSquare, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -86,6 +86,7 @@ export default function EmployerProfileViewModal({
     const [activeUploadedDocId, setActiveUploadedDocId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [copiedField, setCopiedField] = useState<string | null>(null);
+    const [activeCompanyIndex, setActiveCompanyIndex] = useState(0);
 
     // References state
     const [verifiedEmployments, setVerifiedEmployments] = useState<VerifiedEmployment[]>([]);
@@ -170,6 +171,19 @@ export default function EmployerProfileViewModal({
 
     const activeDocContent = data.sharedDocuments.find(d => d.type === activeDocumentType);
     const sections = data.sections || { employmentHistory: [], education: [], skills: [], certifications: [], awards: [], otherProfiles: [] };
+
+    const groupedExperience = sections.employmentHistory?.reduce((acc: any, job: any) => {
+        const companyName = job.company?.trim() || 'Unknown Company';
+        if (!acc[companyName]) acc[companyName] = [];
+        acc[companyName].push(job);
+        return acc;
+    }, {}) || {};
+
+    const sortedCompanies = Object.entries(groupedExperience).sort((a: any, b: any) => {
+        const aMostRecent = Math.max(...a[1].map((j: any) => new Date(j.startDate || 0).getTime()));
+        const bMostRecent = Math.max(...b[1].map((j: any) => new Date(j.startDate || 0).getTime()));
+        return bMostRecent - aMostRecent;
+    });
 
     return (
         <div className="fixed inset-0 z-[150] flex h-screen w-screen bg-black/80 backdrop-blur-sm overflow-hidden animate-in fade-in duration-300">
@@ -398,44 +412,65 @@ export default function EmployerProfileViewModal({
                                     <h3 className={`text-xs font-black uppercase tracking-widest mb-6 sm:mb-8 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                         <Briefcase size={14} /> Employment History
                                     </h3>
-                                    {sections.employmentHistory?.length > 0 ? (
-                                        <div className="space-y-10">
-                                            {sections.employmentHistory.map((job: any, i: number) => (
-                                                <div key={i} className="flex gap-6 group">
-                                                    <div className="flex flex-col items-center">
-                                                        <div className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center overflow-hidden border ${isDark ? 'bg-neutral-800 text-white border-neutral-700' : 'bg-neutral-100 text-black border-neutral-200'}`}>
-                                                            {job.companyLogo ? (
-                                                                <img src={job.companyLogo} alt={job.company} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <Building2 size={20} />
-                                                            )}
-                                                        </div>
-                                                        {i !== sections.employmentHistory.length - 1 && <div className={`w-px h-full my-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}></div>}
+                                    {sortedCompanies.length > 0 ? (
+                                        <div className="space-y-6">
+                                            {/* Carousel Header (Company Info & Nav) */}
+                                            <div className={`flex items-center justify-between pb-4 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
+                                                <h4 className={`text-xl font-black truncate lg:text-2xl pr-4 ${isDark ? 'text-white' : 'text-black'}`}>
+                                                    {sortedCompanies[activeCompanyIndex]?.[0] || ''}
+                                                </h4>
+                                                {sortedCompanies.length > 1 && (
+                                                    <div className={`flex items-center gap-2 shrink-0 rounded-full p-1 border ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}`}>
+                                                        <button
+                                                            onClick={() => setActiveCompanyIndex(prev => Math.max(0, prev - 1))}
+                                                            disabled={activeCompanyIndex === 0}
+                                                            className={`p-1.5 rounded-full transition-colors disabled:opacity-30 disabled:shadow-none pointer-events-auto ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-white text-black'}`}
+                                                        >
+                                                            <ChevronLeft size={16} />
+                                                        </button>
+                                                        <span className="text-xs font-bold text-neutral-500 min-w-[32px] text-center shrink-0">
+                                                            {activeCompanyIndex + 1} / {sortedCompanies.length}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => setActiveCompanyIndex(prev => Math.min(sortedCompanies.length - 1, prev + 1))}
+                                                            disabled={activeCompanyIndex === sortedCompanies.length - 1}
+                                                            className={`p-1.5 rounded-full transition-colors disabled:opacity-30 disabled:shadow-none pointer-events-auto ${isDark ? 'hover:bg-neutral-700 text-white' : 'hover:bg-white text-black'}`}
+                                                        >
+                                                            <ChevronRight size={16} />
+                                                        </button>
                                                     </div>
-                                                    <div className="pb-4 flex-1">
-                                                        <div className="flex items-start justify-between">
-                                                            <div>
-                                                                <h4 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h4>
-                                                                <p className={`font-medium text-sm mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.company}</p>
-                                                            </div>
+                                                )}
+                                            </div>
 
-                                                            {job.source === 'automatic' && (
-                                                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`} title="Verified via Profcaria Connection">
-                                                                    <BadgeCheck size={14} className="fill-current" />
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                                            {/* Roles List for Current Company */}
+                                            <div className="space-y-8 relative">
+                                                {((sortedCompanies[activeCompanyIndex]?.[1] as any[] || []).sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime())).map((job) => (
+                                                    <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
+                                                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
+                                                        <div className="flex justify-between items-start gap-4">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-start justify-between">
+                                                                    <div>
+                                                                        <h5 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h5>
+                                                                    </div>
+                                                                    {job.source === 'automatic' && (
+                                                                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`} title="Verified via Profcaria Connection">
+                                                                            <BadgeCheck size={14} className="fill-current" />
+                                                                            <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                                                                        </div>
+                                                                    )}
                                                                 </div>
-                                                            )}
+                                                                <p className={`text-xs uppercase tracking-wider font-bold mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                                    {job.startDate} — {job.isCurrent ? 'Present' : job.endDate}
+                                                                </p>
+                                                                {job.description && (
+                                                                    <p className={`mt-3 text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.description}</p>
+                                                                )}
+                                                            </div>
                                                         </div>
-
-                                                        <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest mt-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                                                            <span>{job.startDate}</span>
-                                                            <span>—</span>
-                                                            <span className={job.isCurrent ? 'text-emerald-500' : ''}>{job.isCurrent ? 'Present' : job.endDate}</span>
-                                                        </div>
-                                                        {job.description && <p className={`text-sm mt-4 leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.description}</p>}
                                                     </div>
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
                                     ) : (
                                         <p className={`text-sm italic ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>No employment history added.</p>

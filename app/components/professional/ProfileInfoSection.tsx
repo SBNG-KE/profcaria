@@ -19,8 +19,8 @@ interface ProfileInfoSectionProps {
     awards: any[];
     otherProfiles: any[];
     // Handlers (optional in readOnly)
-    onAdd?: (section: string, prefillData?: any) => void;
-    onEdit?: (section: string, item: any) => void;
+    onAdd?: (section: string, prefillData?: any, isVerifiedStack?: boolean) => void;
+    onEdit?: (section: string, item: any, isVerifiedStack?: boolean) => void;
     onDelete?: (section: string, id: string) => void;
 }
 
@@ -100,11 +100,11 @@ export default function ProfileInfoSection({
         </div>
     );
 
-    const EditActions = ({ section, item }: { section: string, item: any }) => {
+    const EditActions = ({ section, item, canEdit = true, isVerifiedStack = false }: { section: string, item: any, canEdit?: boolean, isVerifiedStack?: boolean }) => {
         if (readOnly) return null;
 
-        // Disable edit/delete for verified items (automatic source)
-        if (item.source === 'automatic') {
+        // Disable edit/delete for verified items or when canEdit is false
+        if (!canEdit || item.source === 'automatic') {
             return (
                 <div className="flex items-center gap-2" title="Verified entry cannot be edited">
                     <BadgeCheck size={16} className="text-blue-500" />
@@ -115,7 +115,7 @@ export default function ProfileInfoSection({
         return (
             <div className="flex items-center gap-2 transition-opacity">
                 {onEdit && (
-                    <button onClick={() => onEdit(section, item)} className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white transition-colors">
+                    <button onClick={() => onEdit(section, item, isVerifiedStack)} className="p-1.5 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white transition-colors">
                         <PenLine size={16} />
                     </button>
                 )}
@@ -168,35 +168,48 @@ export default function ProfileInfoSection({
 
                         {/* Roles List for Current Company */}
                         <div className="space-y-8 relative">
-                            {((sortedCompanies[activeCompanyIndex][1] as any[]).sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime())).map((job) => (
-                                <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
-                                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
-                                    <div className="flex justify-between items-start gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            <h5 className="text-lg font-bold text-black dark:text-white">{job.title}</h5>
-                                            <p className="text-xs uppercase tracking-wider font-bold mt-1 text-neutral-400 dark:text-neutral-500">
-                                                {formatDate(job.startDate)} — {job.isCurrent ? 'Present' : formatDate(job.endDate)}
-                                            </p>
-                                            {job.description && (
-                                                <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-500 dark:text-neutral-400">{job.description}</p>
-                                            )}
-                                        </div>
-                                        <EditActions section="employment" item={job} />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                            {(() => {
+                                const currentCompanyRoles = (sortedCompanies[activeCompanyIndex][1] as any[]).sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime());
+                                const isVerifiedStack = currentCompanyRoles.some((r: any) => r.source === 'automatic');
+                                const canAdd = !isVerifiedStack || currentCompanyRoles[0].isCurrent;
 
-                        {!readOnly && onAdd && (
-                            <div className="pt-2">
-                                <button
-                                    onClick={() => onAdd('employment', { company: sortedCompanies[activeCompanyIndex][0] })}
-                                    className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                                >
-                                    <Plus size={16} /> Add role at {sortedCompanies[activeCompanyIndex][0]}
-                                </button>
-                            </div>
-                        )}
+                                return (
+                                    <>
+                                        {currentCompanyRoles.map((job, index) => {
+                                            const canEdit = !isVerifiedStack || (index === 0 && job.isCurrent && job.source !== 'automatic');
+                                            return (
+                                                <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
+                                                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
+                                                    <div className="flex justify-between items-start gap-4">
+                                                        <div className="flex-1 min-w-0">
+                                                            <h5 className="text-lg font-bold text-black dark:text-white">{job.title}</h5>
+                                                            <p className="text-xs uppercase tracking-wider font-bold mt-1 text-neutral-400 dark:text-neutral-500">
+                                                                {formatDate(job.startDate)} — {job.isCurrent ? 'Present' : formatDate(job.endDate)}
+                                                            </p>
+                                                            {job.description && (
+                                                                <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-500 dark:text-neutral-400">{job.description}</p>
+                                                            )}
+                                                        </div>
+                                                        <EditActions section="employment" item={job} canEdit={canEdit} isVerifiedStack={isVerifiedStack} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+
+                                        {!readOnly && onAdd && canAdd && (
+                                            <div className="pt-2">
+                                                <button
+                                                    onClick={() => onAdd('employment', { company: sortedCompanies[activeCompanyIndex][0] }, isVerifiedStack)}
+                                                    className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                                >
+                                                    <Plus size={16} /> Add role at {sortedCompanies[activeCompanyIndex][0]}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </div>
                 )}
             </div>
