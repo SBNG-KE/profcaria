@@ -17,6 +17,7 @@ import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import { formatDistanceToNow } from 'date-fns';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,41 +75,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         return notFound();
     }
 
-    // Record Profile View (Async, fire-and-forget)
-    if (session) {
-        try {
-            const payload = JSON.parse(atob(session.split('.')[1]));
-            const viewerId = payload.schema === 'professional' ? payload.uid : null;
-
-            // Only record if not viewing own profile
-            if (payload.uid !== profile.user_id && payload.uid !== profile.id) {
-                const { error: insertError } = await supabaseAdmin
-                    .schema('professional')
-                    .from('profile_views')
-                    .insert({
-                        viewer_id: viewerId,
-                        viewed_professional_id: profile.user_id || profile.id
-                    });
-
-                if (insertError) {
-                    console.error("Supabase Error recording profile view:", insertError);
-                }
-            }
-        } catch (e: any) { }
-    } else {
-        // Anonymous view
-        const { error: anonInsertError } = await supabaseAdmin
-            .schema('professional')
-            .from('profile_views')
-            .insert({
-                viewed_professional_id: profile.user_id || profile.id
-            });
-
-        if (anonInsertError) {
-            console.error("Supabase Error recording anonymous profile view:", anonInsertError);
-        }
-    }
-
+    // Profile viewing is now handled client-side via ProfileViewTracker component
 
 
     // Decrypt Data
@@ -171,6 +138,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 p-6 pb-20">
+            <ProfileViewTracker targetId={profile.user_id || profile.id} targetType="professional" />
             <div className="max-w-5xl mx-auto space-y-8">
                 {/* Header Card */}
                 <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">

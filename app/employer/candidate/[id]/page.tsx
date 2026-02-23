@@ -7,6 +7,7 @@ import { getFollowerCount } from '@/lib/followers';
 import { User, MapPin, Briefcase, GraduationCap, Link2, Download, Building2, Calendar, Award, Globe, Mail, MessageSquare } from 'lucide-react';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import CopyableText from '@/app/components/ui/CopyableText';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +88,7 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
     return (
 
         <div className="min-h-screen bg-gray-50 pb-20">
+            <ProfileViewTracker targetId={id} targetType="professional" />
             {/* Header / Cover */}
             {/* Header / Cover */}
             <div className="h-48 bg-white relative overflow-hidden">

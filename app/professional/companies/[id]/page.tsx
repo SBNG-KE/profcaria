@@ -8,6 +8,7 @@ import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
 import { formatDistanceToNow } from 'date-fns';
+import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,45 +27,17 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
         return notFound();
     }
 
-    // Record Profile View (Async, fire-and-forget)
+    // Profile viewing is now handled client-side via ProfileViewTracker component
+
     const { cookies } = await import('next/headers');
     const cookieStore = await cookies();
     const session = cookieStore.get('profcaria_session')?.value;
-
     let viewerId = '';
     if (session) {
         try {
             const payload = JSON.parse(atob(session.split('.')[1]));
-            // viewer_id column requires a professional UUID. If an employer is browsing, record as anonymous.
             viewerId = payload.schema === 'professional' ? payload.uid : null;
-
-            // Only record if not the company viewing itself
-            if (payload.uid !== id) {
-                const { error: insertError } = await supabaseAdmin
-                    .schema('professional')
-                    .from('profile_views')
-                    .insert({
-                        viewer_id: viewerId,
-                        viewed_company_id: id
-                    });
-
-                if (insertError) {
-                    console.error("Supabase Error recording company view:", insertError);
-                }
-            }
         } catch (e: any) { }
-    } else {
-        // Anonymous view
-        const { error: anonInsertError } = await supabaseAdmin
-            .schema('professional')
-            .from('profile_views')
-            .insert({
-                viewed_company_id: id
-            });
-
-        if (anonInsertError) {
-            console.error("Supabase Error recording anonymous company view:", anonInsertError);
-        }
     }
 
     const { data: otherProfiles } = await supabaseAdmin
@@ -145,6 +118,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 transition-colors p-6 pb-20">
+            <ProfileViewTracker targetId={id} targetType="company" />
             <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                 {/* Header Card with Logo (Matches Employer Dashboard Static View) */}
