@@ -22,6 +22,7 @@ interface Application {
         profileImageUrl?: string;
     };
     wasInvited?: boolean;
+    progression?: any[];
 }
 
 export default function ViewApplicationsPage() {
@@ -32,8 +33,8 @@ export default function ViewApplicationsPage() {
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
     const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
 
-    // Star filter state
-    const [starFilter, setStarFilter] = useState<'all' | 'starred'>('all');
+    // Filter state
+    const [filterType, setFilterType] = useState<'all' | 'starred' | 'employed'>('all');
     const [togglingStarId, setTogglingStarId] = useState<string | null>(null);
 
     // Toggle star handler
@@ -65,7 +66,8 @@ export default function ViewApplicationsPage() {
 
     // Filter applications
     const filteredApplications = applications.filter(app => {
-        if (starFilter === 'starred') return app.is_starred;
+        if (filterType === 'starred') return app.is_starred;
+        if (filterType === 'employed') return app.status === 'employed';
         return true;
     });
 
@@ -196,8 +198,8 @@ export default function ViewApplicationsPage() {
                 <div className="flex items-center gap-3">
                     <div className="flex p-1 bg-slate-800/50 rounded-xl border border-slate-700">
                         <button
-                            onClick={() => setStarFilter('all')}
-                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${starFilter === 'all'
+                            onClick={() => setFilterType('all')}
+                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filterType === 'all'
                                 ? 'bg-white text-black'
                                 : 'text-slate-400 hover:text-white'
                                 }`}
@@ -205,14 +207,24 @@ export default function ViewApplicationsPage() {
                             All ({applications.length})
                         </button>
                         <button
-                            onClick={() => setStarFilter('starred')}
-                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${starFilter === 'starred'
+                            onClick={() => setFilterType('starred')}
+                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${filterType === 'starred'
                                 ? 'bg-amber-500 text-black'
                                 : 'text-slate-400 hover:text-amber-400'
                                 }`}
                         >
-                            <Star size={12} className={starFilter === 'starred' ? 'fill-black' : ''} />
+                            <Star size={12} className={filterType === 'starred' ? 'fill-black' : ''} />
                             Starred ({applications.filter(a => a.is_starred).length})
+                        </button>
+                        <button
+                            onClick={() => setFilterType('employed')}
+                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${filterType === 'employed'
+                                ? 'bg-emerald-500 text-black'
+                                : 'text-slate-400 hover:text-emerald-400'
+                                }`}
+                        >
+                            <CheckCircle2 size={12} className={filterType === 'employed' ? 'text-black' : ''} />
+                            Employed ({applications.filter(a => a.status === 'employed').length})
                         </button>
                     </div>
                 </div>
@@ -232,11 +244,17 @@ export default function ViewApplicationsPage() {
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
                     {/* LIST AREA */}
                     <div className="space-y-4">
-                        {filteredApplications.length === 0 && starFilter === 'starred' ? (
+                        {filteredApplications.length === 0 && filterType === 'starred' ? (
                             <div className="py-16 flex flex-col items-center justify-center text-slate-600 space-y-4">
                                 <Star size={48} className="opacity-10" />
                                 <p className="font-bold text-sm uppercase tracking-widest text-center">No starred applicants yet</p>
                                 <p className="text-xs text-slate-500 text-center">Star applicants who pass your external interviews to track them here.</p>
+                            </div>
+                        ) : filteredApplications.length === 0 && filterType === 'employed' ? (
+                            <div className="py-16 flex flex-col items-center justify-center text-slate-600 space-y-4">
+                                <Users size={48} className="opacity-10" />
+                                <p className="font-bold text-sm uppercase tracking-widest text-center">No hired applicants yet</p>
+                                <p className="text-xs text-slate-500 text-center">Applicants marked as Employed will appear here.</p>
                             </div>
                         ) : (
                             filteredApplications.map((app) => (
@@ -344,6 +362,33 @@ export default function ViewApplicationsPage() {
                                 </div>
 
                                 <div className="space-y-6 text-left">
+                                    {selectedApp.status === 'employed' && selectedApp.progression && selectedApp.progression.length > 0 && (
+                                        <div className="mb-8 space-y-4">
+                                            <h3 className="text-sm font-black text-emerald-400 uppercase tracking-widest border-b border-emerald-500/20 pb-2 flex items-center gap-2">
+                                                <CheckCircle2 size={16} />
+                                                Career Progression
+                                            </h3>
+                                            <div className="relative pl-4 space-y-6 before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-slate-800">
+                                                {selectedApp.progression.map((role: any, idx: number) => (
+                                                    <div key={role.id || idx} className="relative">
+                                                        <div className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-[#0f172a]"></div>
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-2">
+                                                                <h4 className="text-lg font-bold text-white leading-none">{role.title}</h4>
+                                                                {role.isCurrent && (
+                                                                    <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase tracking-widest rounded">Current</span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-xs font-bold text-slate-400 tracking-wider">
+                                                                {role.startDate ? new Date(role.startDate).toLocaleDateString([], { month: 'short', year: 'numeric' }) : 'N/A'} - {role.endDate ? new Date(role.endDate).toLocaleDateString([], { month: 'short', year: 'numeric' }) : (role.isCurrent ? 'Present' : 'N/A')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {Object.entries(selectedApp.formData).map(([key, value]) => (
                                         <div key={key} className="space-y-2">
                                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">

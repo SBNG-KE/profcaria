@@ -668,3 +668,41 @@ export async function sendKYCCompletedNotification(to: string, candidateName: st
         return { success: false, error: e.message };
     }
 }
+
+// NEW: New Role Added Notification (for Employers)
+export async function sendNewRoleNotification(to: string, professionalName: string, roleTitle: string, companyName: string, profileLink: string) {
+    if (!resend) {
+        console.log(`[MOCK EMAIL] New Role to ${to}: ${professionalName} added role ${roleTitle} at ${companyName}`);
+        return { success: true };
+    }
+
+    const content = `
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Team Member?</h1>
+        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+            <strong>${professionalName}</strong> has just added a new role on their profile indicating they work at your company.
+        </p>
+        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px;">Role Title</p>
+            <p style="margin: 0; font-size: 20px; font-weight: 700; color: #ffffff;">${roleTitle}</p>
+        </div>
+        <div style="text-align: center; margin-bottom: 32px;">
+            <a href="${profileLink}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">View Professional Profile</a>
+        </div>
+        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+            You can verify if this professional is indeed a part of your team.
+        </p>
+    `;
+
+    try {
+        await resend.emails.send({
+            from: 'Profcaria Updates <updates@profcaria.com>',
+            to,
+            subject: `${professionalName} added a new role at ${companyName}`,
+            html: EmailWrapper(content)
+        });
+        return { success: true };
+    } catch (e: any) {
+        console.error('Email Error:', e);
+        return { success: false, error: e.message };
+    }
+}

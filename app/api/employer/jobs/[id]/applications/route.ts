@@ -68,11 +68,53 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
         const invitedSet = new Set(invites?.map((i: { professional_id: any; }) => i.professional_id));
 
-        const decryptedApplications = applications?.map((app: { enc_form_data: string; user_id: string | number; }) => ({
+        const { data: company } = await supabaseAdmin
+            .schema('employer')
+            .from('companies')
+            .select('enc_company_name')
+            .eq('id', uid)
+            .single();
+        const employerCompanyName = company?.enc_company_name ? decryptData(company.enc_company_name) : null;
+
+        const employedIds = [...new Set(applications?.filter((app: any) => app.status === 'employed').map((app: any) => app.user_id) || [])];
+
+        // Fetch employment history only for employed applicants
+        let progressionMap: Record<string, any[]> = {};
+        if (employedIds.length > 0 && employerCompanyName) {
+            const { data: empHistory } = await supabaseAdmin
+                .schema('professional')
+                .from('employment_history')
+                .select('id, user_id, enc_title, enc_company, enc_start_date, enc_end_date, is_current')
+                .in('user_id', employedIds);
+
+            if (empHistory) {
+                empHistory.forEach((e: any) => {
+                    const compName = decryptData(e.enc_company);
+                    if (compName && compName.toLowerCase() === employerCompanyName.toLowerCase()) {
+                        if (!progressionMap[e.user_id]) progressionMap[e.user_id] = [];
+                        progressionMap[e.user_id].push({
+                            id: e.id,
+                            title: decryptData(e.enc_title),
+                            company: compName,
+                            startDate: decryptData(e.enc_start_date),
+                            endDate: decryptData(e.enc_end_date),
+                            isCurrent: e.is_current
+                        });
+                    }
+                });
+                // Sort by startDate descending (newest on top)
+                Object.values(progressionMap).forEach(arr => {
+                    arr.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+                });
+            }
+        }
+
+        const decryptedApplications = applications?.map((app: any) => ({
             ...app,
             formData: JSON.parse(decryptData(app.enc_form_data) || '{}'),
             applicant: usersMap[app.user_id] || { firstName: 'Unknown', lastName: 'User' },
-            wasInvited: invitedSet.has(app.user_id) // Add flag
+            wasInvited: invitedSet.has(app.user_id), // Add flag
+            progression: progressionMap[app.user_id] || [] // Add progression
         }));
 
         return NextResponse.json({ applications: decryptedApplications });

@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
                 } else {
                     likeQuery = likeQuery.eq('user_id', currentUser.id);
                 }
-                const { data: userLike } = await likeQuery.single();
-                isLiked = !!userLike;
+                const { data: userLikes } = await likeQuery.limit(1);
+                isLiked = !!(userLikes && userLikes.length > 0);
 
                 // Repost Status
                 let repostQuery = supabaseAdmin.schema(postSchema).from('post_reposts').select('id').eq(repostFk, post.id);

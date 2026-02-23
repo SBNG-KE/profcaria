@@ -2229,9 +2229,9 @@ export default function ProfessionalHome() {
                   certifications={certifications}
                   awards={awards}
                   otherProfiles={otherProfiles}
-                  onAdd={(section) => {
+                  onAdd={(section, prefillData) => {
                     setActiveSection(section);
-                    setFormData({});
+                    setFormData(prefillData || {});
                     setEditingItem(null);
                     setIsSlideOverOpen(true);
                   }}

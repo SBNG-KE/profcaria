@@ -239,6 +239,27 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         if (!postsError && latestPosts) {
             const accurateFollowerCount = await getFollowerCount(id, 'professional');
 
+            // Pre-fetch likes ifviewer is authenticated
+            let userLikes = new Set();
+            if (viewerId) {
+                let likeQuery = supabaseAdmin
+                    .schema('professional')
+                    .from('post_likes')
+                    .select('post_id')
+                    .in('post_id', latestPosts.map((p: any) => p.id));
+
+                if (isViewerEmployer) {
+                    likeQuery = likeQuery.eq('company_id', viewerId);
+                } else {
+                    likeQuery = likeQuery.eq('user_id', viewerId);
+                }
+
+                const { data: likesResult } = await likeQuery;
+                if (likesResult) {
+                    likesResult.forEach((l: any) => userLikes.add(l.post_id));
+                }
+            }
+
             formattedPosts = latestPosts.map((p: any) => {
                 const author = p.author || {};
                 return {
@@ -248,6 +269,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                     timestamp: formatDistanceToNow(new Date(p.created_at), { addSuffix: true }),
                     likesCount: p.post_likes?.[0]?.count || 0,
                     commentsCount: p.post_comments?.[0]?.count || 0,
+                    isLiked: userLikes.has(p.id),
                     author: {
                         id: author.id || p.user_id, // Fallback if join empty
                         name: author.enc_first_name ? `${decryptData(author.enc_first_name)} ${decryptData(author.enc_last_name)}` : 'User',

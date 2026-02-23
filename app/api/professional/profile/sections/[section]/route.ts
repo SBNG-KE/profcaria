@@ -4,6 +4,46 @@ import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
 
+// Helper to sync the default headline
+async function syncCurrentHeadline(userId: string) {
+    try {
+        const { data: employments } = await supabaseAdmin
+            .schema('professional')
+            .from('employment_history')
+            .select('enc_title, enc_start_date, is_current')
+            .eq('user_id', userId);
+
+        if (!employments || employments.length === 0) {
+            return;
+        }
+
+        const decrypted = employments.map((e: any) => ({
+            title: e.enc_title ? decryptData(e.enc_title) : null,
+            startDate: e.enc_start_date ? new Date(decryptData(e.enc_start_date) || 0).getTime() : 0,
+            isCurrent: e.is_current
+        })).filter((e: any) => e.title);
+
+        if (decrypted.length === 0) {
+            return;
+        }
+
+        const currentRoles = decrypted.filter((e: any) => e.isCurrent).sort((a: any, b: any) => b.startDate - a.startDate);
+        const allRolesSorted = decrypted.sort((a: any, b: any) => b.startDate - a.startDate);
+
+        const latestRole = currentRoles.length > 0 ? currentRoles[0] : allRolesSorted[0];
+
+        if (latestRole && latestRole.title) {
+            await supabaseAdmin
+                .schema('professional')
+                .from('users')
+                .update({ enc_current_role: encryptData(latestRole.title) })
+                .eq('id', userId);
+        }
+    } catch (e) {
+        console.error("Failed to sync current headline:", e);
+    }
+}
+
 export const runtime = 'nodejs';
 
 // --- MAPPINGS ---
@@ -176,6 +216,69 @@ export async function POST(req: Request, { params }: { params: Promise<{ section
             }
         }
 
+        // NEW: Notify Employer of Verified Role Addition
+        if (section === 'employment' && body.company && body.title) {
+            try {
+                const { data: companies } = await supabaseAdmin
+                    .schema('employer')
+                    .from('companies')
+                    .select('id, enc_company_name, enc_email, badge_type');
+
+                if (companies) {
+                    const matchedCompany = companies.find((c: any) => {
+                        const name = c.enc_company_name ? decryptData(c.enc_company_name) : null;
+                        return name && name.toLowerCase() === body.company.toLowerCase();
+                    });
+
+                    if (matchedCompany && matchedCompany.badge_type === 'verified') {
+                        const { data: professional } = await supabaseAdmin
+                            .schema('professional')
+                            .from('users')
+                            .select('enc_first_name, enc_last_name')
+                            .eq('id', userId)
+                            .single();
+
+                        const professionalName = professional
+                            ? `${decryptData(professional.enc_first_name)} ${decryptData(professional.enc_last_name)}`.trim()
+                            : 'A professional';
+
+                        const employerEmail = matchedCompany.enc_email ? decryptData(matchedCompany.enc_email) : null;
+                        if (employerEmail) {
+                            const { sendNewRoleNotification } = await import('@/lib/email');
+                            const profileLink = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.profcaria.com'}/public/people/${userId}`;
+                            sendNewRoleNotification(employerEmail, professionalName, body.title, body.company, profileLink).catch(console.error);
+                        }
+
+                        const message = `${professionalName} has added a new role on their profile indicating they work at your company: ${body.title}`;
+                        await supabaseAdmin
+                            .schema('employer')
+                            .from('notifications')
+                            .insert([{
+                                company_id: matchedCompany.id,
+                                enc_message: encryptData(message),
+                                type: 'system',
+                                sender_id: userId,
+                                sender_type: 'professional'
+                            }]);
+                    }
+                }
+            } catch (notifyErr) {
+                console.error("Failed to notify employer of new role:", notifyErr);
+            }
+        }
+
+        // NEW: Sync Search Index
+        if (['skills', 'employment', 'education'].includes(section)) {
+            try {
+                const { syncUserSearchIndex } = await import('@/lib/search-index');
+                await syncUserSearchIndex(userId);
+            } catch (err) { console.error("Background sync failed", err); }
+        }
+
+        if (section === 'employment') {
+            await syncCurrentHeadline(userId);
+        }
+
         return NextResponse.json({ success: true, id: data.id });
     } catch (e: any) {
         return NextResponse.json({ error: e.message || 'Error saving' }, { status: 500 });
@@ -223,6 +326,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ section:
             } catch (err) { console.error("Background sync failed", err); }
         }
 
+        if (section === 'employment') {
+            await syncCurrentHeadline(userId);
+        }
+
         return NextResponse.json({ success: true });
     } catch (e: any) {
         return NextResponse.json({ error: e.message || 'Error updating' }, { status: 500 });
@@ -257,6 +364,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ secti
                 const { syncUserSearchIndex } = await import('@/lib/search-index');
                 await syncUserSearchIndex(userId);
             } catch (err) { console.error("Background sync failed", err); }
+        }
+
+        if (section === 'employment') {
+            await syncCurrentHeadline(userId);
         }
 
         return NextResponse.json({ success: true });

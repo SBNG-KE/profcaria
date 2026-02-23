@@ -375,7 +375,8 @@ async function processPosts(posts: any[], user: any) {
         } else {
             likeQuery = likeQuery.eq('user_id', user.id);
         }
-        const { data: userLike } = await likeQuery.single();
+        const { data: userLikes } = await likeQuery.limit(1);
+        const isLiked = !!(userLikes && userLikes.length > 0);
 
         // Is Reposted?
         const repostFk = postSchema === 'professional' ? 'post_id' : 'original_post_id';
@@ -477,7 +478,7 @@ async function processPosts(posts: any[], user: any) {
             likesCount: counts.likesCount,
             commentsCount: counts.commentsCount,
             repostsCount: counts.repostsCount,
-            isLiked: !!userLike,
+            isLiked: isLiked,
             isSaved: !!savedPost,
             isReposted: isReposted,
             repostContext: repostContext,

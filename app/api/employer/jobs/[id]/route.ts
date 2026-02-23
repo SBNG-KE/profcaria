@@ -92,6 +92,20 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
             }, { status: 403 });
         }
 
+        const { count: employedCount } = await supabaseAdmin
+            .schema('employer')
+            .from('applications')
+            .select('id', { count: 'exact', head: true })
+            .eq('job_id', id)
+            .eq('status', 'employed');
+
+        if (employedCount && employedCount > 0) {
+            return NextResponse.json({
+                error: `Cannot delete this job. You have ${employedCount} hired applicant(s) associated with it. Please use "Close Job" instead to preserve their employment records.`,
+                employedCount
+            }, { status: 403 });
+        }
+
         const { error } = await supabaseAdmin
             .schema('employer')
             .from('jobs')

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
     Briefcase, GraduationCap, Award, BadgeCheck, Link2, Plus, PenLine, Trash2, X,
-    Linkedin, Github, Twitter, Globe
+    Linkedin, Github, Twitter, Globe, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -19,7 +19,7 @@ interface ProfileInfoSectionProps {
     awards: any[];
     otherProfiles: any[];
     // Handlers (optional in readOnly)
-    onAdd?: (section: string) => void;
+    onAdd?: (section: string, prefillData?: any) => void;
     onEdit?: (section: string, item: any) => void;
     onDelete?: (section: string, id: string) => void;
 }
@@ -39,6 +39,28 @@ export default function ProfileInfoSection({
 }: ProfileInfoSectionProps) {
     const { theme } = useTheme();
     // const isDark = propIsDark ?? (theme === 'dark'); // styling is now handled by CSS
+
+    const [activeCompanyIndex, setActiveCompanyIndex] = useState(0);
+
+    const groupedExperience = employmentHistory.reduce((acc: any, job: any) => {
+        const companyName = job.company?.trim() || 'Unknown Company';
+        if (!acc[companyName]) acc[companyName] = [];
+        acc[companyName].push(job);
+        return acc;
+    }, {});
+
+    const sortedCompanies = Object.entries(groupedExperience).sort((a: any, b: any) => {
+        const aMostRecent = Math.max(...a[1].map((j: any) => new Date(j.startDate || 0).getTime()));
+        const bMostRecent = Math.max(...b[1].map((j: any) => new Date(j.startDate || 0).getTime()));
+        return bMostRecent - aMostRecent;
+    });
+
+    // Make sure index is in bounds when data changes
+    React.useEffect(() => {
+        if (activeCompanyIndex >= sortedCompanies.length && sortedCompanies.length > 0) {
+            setActiveCompanyIndex(sortedCompanies.length - 1);
+        }
+    }, [sortedCompanies.length, activeCompanyIndex]);
 
     const formatDate = (dateString: string) => {
         if (!dateString) return 'N/A';
@@ -109,32 +131,74 @@ export default function ProfileInfoSection({
     return (
         <div className="space-y-8">
             {/* Experience */}
-            <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
+            <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors relative">
                 <SectionHeader title="Experience" icon={Briefcase} sectionKey="employment" />
-                <div className="space-y-8">
-                    {employmentHistory.length === 0 ? (
-                        <p className="text-sm italic text-neutral-400 dark:text-neutral-600">No experience added yet.</p>
-                    ) : (
-                        employmentHistory.map((job) => (
-                            <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
-                                <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className="text-lg font-bold text-black dark:text-white">{job.title}</h4>
-                                        <p className="font-medium text-neutral-600 dark:text-neutral-400">{job.company}</p>
-                                        <p className="text-xs uppercase tracking-wider font-bold mt-1 text-neutral-400 dark:text-neutral-500">
-                                            {formatDate(job.startDate)} — {job.isCurrent ? 'Present' : formatDate(job.endDate)}
-                                        </p>
-                                        {job.description && (
-                                            <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-500 dark:text-neutral-400">{job.description}</p>
-                                        )}
-                                    </div>
-                                    <EditActions section="employment" item={job} />
+
+                {sortedCompanies.length === 0 ? (
+                    <p className="text-sm italic text-neutral-400 dark:text-neutral-600">No experience added yet.</p>
+                ) : (
+                    <div className="space-y-6">
+                        {/* Carousel Header (Company Info & Nav) */}
+                        <div className="flex items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800">
+                            <h4 className="text-xl font-black text-black dark:text-white truncate lg:text-2xl pr-4">
+                                {sortedCompanies[activeCompanyIndex][0]}
+                            </h4>
+                            {sortedCompanies.length > 1 && (
+                                <div className="flex items-center gap-2 shrink-0 bg-neutral-100 dark:bg-neutral-800 rounded-full p-1 border border-neutral-200 dark:border-neutral-700">
+                                    <button
+                                        onClick={() => setActiveCompanyIndex(prev => Math.max(0, prev - 1))}
+                                        disabled={activeCompanyIndex === 0}
+                                        className="p-1.5 rounded-full hover:bg-white dark:hover:bg-neutral-700 disabled:opacity-30 transition-colors text-black dark:text-white disabled:shadow-none"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <span className="text-xs font-bold text-neutral-500 min-w-[32px] text-center shrink-0">
+                                        {activeCompanyIndex + 1} / {sortedCompanies.length}
+                                    </span>
+                                    <button
+                                        onClick={() => setActiveCompanyIndex(prev => Math.min(sortedCompanies.length - 1, prev + 1))}
+                                        disabled={activeCompanyIndex === sortedCompanies.length - 1}
+                                        className="p-1.5 rounded-full hover:bg-white dark:hover:bg-neutral-700 disabled:opacity-30 transition-colors text-black dark:text-white disabled:shadow-none"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Roles List for Current Company */}
+                        <div className="space-y-8 relative">
+                            {((sortedCompanies[activeCompanyIndex][1] as any[]).sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime())).map((job) => (
+                                <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
+                                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
+                                    <div className="flex justify-between items-start gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <h5 className="text-lg font-bold text-black dark:text-white">{job.title}</h5>
+                                            <p className="text-xs uppercase tracking-wider font-bold mt-1 text-neutral-400 dark:text-neutral-500">
+                                                {formatDate(job.startDate)} — {job.isCurrent ? 'Present' : formatDate(job.endDate)}
+                                            </p>
+                                            {job.description && (
+                                                <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap text-neutral-500 dark:text-neutral-400">{job.description}</p>
+                                            )}
+                                        </div>
+                                        <EditActions section="employment" item={job} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {!readOnly && onAdd && (
+                            <div className="pt-2">
+                                <button
+                                    onClick={() => onAdd('employment', { company: sortedCompanies[activeCompanyIndex][0] })}
+                                    className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                >
+                                    <Plus size={16} /> Add role at {sortedCompanies[activeCompanyIndex][0]}
+                                </button>
                             </div>
-                        ))
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Education */}
