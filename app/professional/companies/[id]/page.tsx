@@ -39,30 +39,30 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
             // Only record if not the company viewing itself
             if (payload.uid !== id) {
-                try {
-                    await supabaseAdmin
-                        .schema('professional')
-                        .from('profile_views')
-                        .insert({
-                            viewer_id: viewerId,
-                            viewed_company_id: id
-                        });
-                } catch (e: any) {
-                    console.error("Error recording company view:", e);
+                const { error: insertError } = await supabaseAdmin
+                    .schema('professional')
+                    .from('profile_views')
+                    .insert({
+                        viewer_id: viewerId,
+                        viewed_company_id: id
+                    });
+
+                if (insertError) {
+                    console.error("Supabase Error recording company view:", insertError);
                 }
             }
         } catch (e: any) { }
     } else {
         // Anonymous view
-        try {
-            await supabaseAdmin
-                .schema('professional')
-                .from('profile_views')
-                .insert({
-                    viewed_company_id: id
-                });
-        } catch (e: any) {
-            console.error("Error recording anonymous company view:", e);
+        const { error: anonInsertError } = await supabaseAdmin
+            .schema('professional')
+            .from('profile_views')
+            .insert({
+                viewed_company_id: id
+            });
+
+        if (anonInsertError) {
+            console.error("Supabase Error recording anonymous company view:", anonInsertError);
         }
     }
 

@@ -82,30 +82,30 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
             // Only record if not viewing own profile
             if (payload.uid !== profile.user_id && payload.uid !== profile.id) {
-                try {
-                    await supabaseAdmin
-                        .schema('professional')
-                        .from('profile_views')
-                        .insert({
-                            viewer_id: viewerId,
-                            viewed_professional_id: profile.user_id || profile.id
-                        });
-                } catch (e: any) {
-                    console.error("Error recording profile view:", e);
+                const { error: insertError } = await supabaseAdmin
+                    .schema('professional')
+                    .from('profile_views')
+                    .insert({
+                        viewer_id: viewerId,
+                        viewed_professional_id: profile.user_id || profile.id
+                    });
+
+                if (insertError) {
+                    console.error("Supabase Error recording profile view:", insertError);
                 }
             }
         } catch (e: any) { }
     } else {
         // Anonymous view
-        try {
-            await supabaseAdmin
-                .schema('professional')
-                .from('profile_views')
-                .insert({
-                    viewed_professional_id: profile.user_id || profile.id
-                });
-        } catch (e: any) {
-            console.error("Error recording anonymous profile view:", e);
+        const { error: anonInsertError } = await supabaseAdmin
+            .schema('professional')
+            .from('profile_views')
+            .insert({
+                viewed_professional_id: profile.user_id || profile.id
+            });
+
+        if (anonInsertError) {
+            console.error("Supabase Error recording anonymous profile view:", anonInsertError);
         }
     }
 
