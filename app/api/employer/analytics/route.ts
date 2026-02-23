@@ -165,12 +165,14 @@ export async function GET(req: Request) {
         }
 
         // 5. Fetch Profile Views
-        const { count: viewsCount } = await supabaseAdmin
+        const { data: viewsData, count: viewsCount } = await supabaseAdmin
             .schema('professional')
             .from('profile_views')
-            .select('*', { count: 'exact', head: true })
+            .select('created_at', { count: 'exact' })
             .eq('viewed_company_id', employerId)
             .gte('created_at', startDate.toISOString());
+
+        const viewDates = viewsData?.map((v: any) => v.created_at) || [];
 
         return NextResponse.json({
             subscribers: subscribersCount || 0,
@@ -178,6 +180,7 @@ export async function GET(req: Request) {
             comments: commentsCount,
             reposts: repostsCount,
             views: viewsCount || 0,
+            viewDates,
             industryActivity,
             recentSubscribers
         });

@@ -39,28 +39,31 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
 
             // Only record if not the company viewing itself
             if (payload.uid !== id) {
-                // We use setTimeout to ensure it doesn't block the rendering
-                supabaseAdmin
-                    .schema('professional')
-                    .from('profile_views')
-                    .insert({
-                        viewer_id: viewerId,
-                        viewed_company_id: id
-                    })
-                    .then(() => { })
-                    .catch((e: any) => console.error("Error recording company view:", e));
+                try {
+                    await supabaseAdmin
+                        .schema('professional')
+                        .from('profile_views')
+                        .insert({
+                            viewer_id: viewerId,
+                            viewed_company_id: id
+                        });
+                } catch (e: any) {
+                    console.error("Error recording company view:", e);
+                }
             }
         } catch (e: any) { }
     } else {
         // Anonymous view
-        supabaseAdmin
-            .schema('professional')
-            .from('profile_views')
-            .insert({
-                viewed_company_id: id
-            })
-            .then(() => { })
-            .catch((e: any) => console.error("Error recording anonymous company view:", e));
+        try {
+            await supabaseAdmin
+                .schema('professional')
+                .from('profile_views')
+                .insert({
+                    viewed_company_id: id
+                });
+        } catch (e: any) {
+            console.error("Error recording anonymous company view:", e);
+        }
     }
 
     const { data: otherProfiles } = await supabaseAdmin

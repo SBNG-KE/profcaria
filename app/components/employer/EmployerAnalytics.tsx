@@ -10,7 +10,7 @@ interface AnalyticsProps {
 
 const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
     const [timeRange, setTimeRange] = useState('7d');
-    const [stats, setStats] = useState<any>({ subscribers: 0, likes: 0, comments: 0, reposts: 0, views: 0, recentSubscribers: [] });
+    const [stats, setStats] = useState<any>({ subscribers: 0, likes: 0, comments: 0, reposts: 0, views: 0, viewDates: [], recentSubscribers: [] });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -31,40 +31,58 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
         fetchAnalytics();
     }, [timeRange]);
 
-    // Generate dynamic chart data based on time range
+    // Generate dynamic chart data based on time range and actual viewDates
     const viewData = React.useMemo(() => {
         const data = [];
         const now = new Date();
+        const dates = (stats.viewDates || []).map((d: string) => new Date(d));
 
         if (timeRange === '24h') {
             for (let i = 0; i < 24; i += 4) { // Every 4 hours
-                const d = new Date(now);
-                d.setHours(d.getHours() - (24 - i));
-                data.push({ name: `${d.getHours()}:00`, views: 0 });
+                const bucketStart = new Date(now);
+                bucketStart.setHours(now.getHours() - (24 - i), 0, 0, 0);
+                const bucketEnd = new Date(bucketStart);
+                bucketEnd.setHours(bucketStart.getHours() + 4);
+
+                const count = dates.filter((d: Date) => d >= bucketStart && d < bucketEnd).length;
+                data.push({ name: `${bucketStart.getHours()}:00`, views: count });
             }
         } else if (timeRange === '7d') {
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             for (let i = 6; i >= 0; i--) {
-                const d = new Date(now);
-                d.setDate(d.getDate() - i);
-                data.push({ name: days[d.getDay()], views: 0 });
+                const bucketStart = new Date(now);
+                bucketStart.setDate(now.getDate() - i);
+                bucketStart.setHours(0, 0, 0, 0);
+                const bucketEnd = new Date(bucketStart);
+                bucketEnd.setDate(bucketStart.getDate() + 1);
+
+                const count = dates.filter((d: Date) => d >= bucketStart && d < bucketEnd).length;
+                data.push({ name: days[bucketStart.getDay()], views: count });
             }
         } else if (timeRange === '1m') {
             for (let i = 4; i >= 0; i--) { // 5 weeks (approx)
-                data.push({ name: `Week ${5 - i}`, views: 0 });
+                const bucketEnd = new Date(now);
+                bucketEnd.setDate(now.getDate() - (i * 7));
+                const bucketStart = new Date(bucketEnd);
+                bucketStart.setDate(bucketEnd.getDate() - 7);
+
+                const count = dates.filter((d: Date) => d >= bucketStart && d < bucketEnd).length;
+                data.push({ name: `Week ${5 - i}`, views: count });
             }
         } else {
             // Months (3m, 6m, 12m)
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const count = timeRange === '3m' ? 3 : (timeRange === '6m' ? 6 : 12);
-            for (let i = count - 1; i >= 0; i--) {
-                const d = new Date(now);
-                d.setMonth(d.getMonth() - i);
-                data.push({ name: months[d.getMonth()], views: 0 });
+            const countMonths = timeRange === '3m' ? 3 : (timeRange === '6m' ? 6 : 12);
+            for (let i = countMonths - 1; i >= 0; i--) {
+                const bucketStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const bucketEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+
+                const count = dates.filter((d: Date) => d >= bucketStart && d < bucketEnd).length;
+                data.push({ name: months[bucketStart.getMonth()], views: count });
             }
         }
         return data;
-    }, [timeRange]);
+    }, [timeRange, stats.viewDates]);
 
     const StatCard = ({ icon: Icon, label, value, colorClass }: any) => (
         <div className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-800/50 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
