@@ -125,12 +125,9 @@ export default function CareersPage() {
     };
 
     const handleApply = (jobId: string) => {
-        // Save redirect so after login the user goes straight to this job
-        try {
-            localStorage.setItem('profcaria_job_redirect', `/professional/jobs/${jobId}`);
-        } catch (e) { /* localStorage not available */ }
-        // Navigate to landing page — the HangingAuthCard will pick up the redirect after login
-        router.push('/');
+        // Navigate directly to the job detail/apply page
+        // Same behavior as the employer's shared job link
+        router.push(`/professional/jobs/${jobId}`);
     };
 
     const handleCopyLink = () => {
