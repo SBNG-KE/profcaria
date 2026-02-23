@@ -35,7 +35,8 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
     if (session) {
         try {
             const payload = JSON.parse(atob(session.split('.')[1]));
-            viewerId = payload.uid;
+            // viewer_id column requires a professional UUID. If an employer is browsing, record as anonymous.
+            viewerId = payload.schema === 'professional' ? payload.uid : null;
 
             // Only record if not the company viewing itself
             if (payload.uid !== id) {

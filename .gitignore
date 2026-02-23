@@ -42,4 +42,3 @@ next-env.d.ts
 
 # docs with secrets
 /docs/
-test-fetch-employer-views.js
