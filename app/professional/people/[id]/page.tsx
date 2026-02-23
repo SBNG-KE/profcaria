@@ -17,11 +17,9 @@ import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import { formatDistanceToNow } from 'date-fns';
-import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
-
 export const dynamic = 'force-dynamic';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import React from 'react';
 import Link from 'next/link';
 
@@ -75,8 +73,47 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         return notFound();
     }
 
-    // Profile viewing is now handled client-side via ProfileViewTracker component
+    // Record Profile View (Server-side, guarded against Next.js prefetching)
+    const headersList = await headers();
+    const isPrefetch = headersList.get('next-router-prefetch') === '1' || headersList.get('purpose') === 'prefetch' || headersList.get('x-nextjs-data') === '1';
 
+    if (!isPrefetch) {
+        try {
+            const cookieStore = await cookies();
+            const session = cookieStore.get('profcaria_session')?.value;
+            let sessionUid = null;
+
+            if (session) {
+                // Safe base64 decoding
+                const base64Url = session.split('.')[1];
+                if (base64Url) {
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    const payload = JSON.parse(jsonPayload);
+                    sessionUid = payload.uid;
+                    if (payload.schema === 'professional') viewerId = payload.uid;
+                }
+            }
+
+            const targetId = profile.user_id || profile.id;
+
+            // Only record if not self
+            if (sessionUid !== targetId) {
+                const { error: insertError } = await supabaseAdmin
+                    .schema('professional')
+                    .from('profile_views')
+                    .insert({
+                        viewer_id: viewerId,
+                        viewed_professional_id: targetId
+                    });
+                if (insertError) console.error("Supabase Error recording profile view:", insertError.message);
+            }
+        } catch (e: any) {
+            console.error("View tracking failed:", e.message);
+        }
+    }
 
     // Decrypt Data
     const firstName = profile.first_name;
@@ -138,7 +175,6 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 p-6 pb-20">
-            <ProfileViewTracker targetId={profile.user_id || profile.id} targetType="professional" />
             <div className="max-w-5xl mx-auto space-y-8">
                 {/* Header Card */}
                 <div className="rounded-2xl border overflow-hidden bg-white border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
