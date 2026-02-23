@@ -180,11 +180,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             return newObj;
         };
 
-        const manualHistory = decryptList(empRes.data || [], ['enc_title', 'enc_company', 'enc_description'])
-            .map(item => ({
-                ...toCamelCase(item),
-                source: 'manual'
-            }));
+        const manualHistory = decryptList(empRes.data || [], ['enc_title', 'enc_company', 'enc_description', 'enc_start_date', 'enc_end_date'])
+            .map(item => {
+                const camel = toCamelCase(item);
+                return {
+                    ...camel,
+                    startDate: camel.startDate || camel.encStartDate,
+                    endDate: camel.endDate || camel.encEndDate,
+                    source: 'manual'
+                };
+            });
 
         // Merge and Sort (Latest first)
         const employmentHistory = [...manualHistory, ...verifiedHistory].sort((a, b) => {

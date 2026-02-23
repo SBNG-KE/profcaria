@@ -444,32 +444,53 @@ export default function EmployerProfileViewModal({
 
                                             {/* Roles List for Current Company */}
                                             <div className="space-y-8 relative">
-                                                {((sortedCompanies[activeCompanyIndex]?.[1] as any[] || []).sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime())).map((job) => (
-                                                    <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
-                                                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
-                                                        <div className="flex justify-between items-start gap-4">
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-start justify-between">
-                                                                    <div>
-                                                                        <h5 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h5>
-                                                                    </div>
-                                                                    {job.source === 'automatic' && (
-                                                                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`} title="Verified via Profcaria Connection">
-                                                                            <BadgeCheck size={14} className="fill-current" />
-                                                                            <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                                                {((sortedCompanies[activeCompanyIndex]?.[1] as any[] || []).sort((a, b) => new Date(b.startDate || 0).getTime() - new Date(a.startDate || 0).getTime())).map((job, index, arr) => {
+                                                    const newerJob = index > 0 ? arr[index - 1] : null;
+                                                    let displayIsCurrent = job.isCurrent;
+                                                    let displayEndDate = job.endDate;
+
+                                                    if (newerJob && !job.endDate) {
+                                                        displayIsCurrent = false;
+                                                        displayEndDate = newerJob.startDate;
+                                                    }
+
+                                                    // Format Date helper inside component since we don't have it imported
+                                                    const formatDisplayDate = (dateStr: string) => {
+                                                        if (!dateStr) return '';
+                                                        try {
+                                                            const d = new Date(dateStr);
+                                                            if (isNaN(d.getTime())) return dateStr;
+                                                            return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
+                                                        } catch (e) { return dateStr; }
+                                                    };
+
+                                                    return (
+                                                        <div key={job.id} className="group relative pl-8 border-l-2 border-neutral-200 dark:border-neutral-800 last:border-0 pb-8 last:pb-0">
+                                                            <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"></div>
+                                                            <div className="flex justify-between items-start gap-4">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-start justify-between">
+                                                                        <div>
+                                                                            <h5 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h5>
                                                                         </div>
+                                                                        {job.source === 'automatic' && (
+                                                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-emerald-50 border-emerald-200 text-emerald-600'}`} title="Verified via Profcaria Connection">
+                                                                                <BadgeCheck size={14} className="fill-current" />
+                                                                                <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <p className={`text-xs uppercase tracking-wider font-bold mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                                                        {formatDisplayDate(job.startDate)} — {displayIsCurrent ? 'Present' : formatDisplayDate(displayEndDate)}
+                                                                    </p>
+                                                                    {job.description && (
+                                                                        <p className={`mt-3 text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.description}</p>
                                                                     )}
                                                                 </div>
-                                                                <p className={`text-xs uppercase tracking-wider font-bold mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                                                    {job.startDate} — {job.isCurrent ? 'Present' : job.endDate}
-                                                                </p>
-                                                                {job.description && (
-                                                                    <p className={`mt-3 text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.description}</p>
-                                                                )}
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     ) : (
