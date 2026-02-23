@@ -1,14 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+'use server';
+
 import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
-export async function POST(req: NextRequest) {
+export async function recordProfileView(targetId: string, targetType: 'professional' | 'company') {
     try {
-        const body = await req.json();
-        const { targetId, targetType } = body;
+        console.log(`[ProfileViewTracker] Attempting to record view. Target: ${targetId} (${targetType})`);
 
         if (!targetId || !targetType || !['professional', 'company'].includes(targetType)) {
-            return NextResponse.json({ error: 'Missing or invalid target parameters' }, { status: 400 });
+            console.error('[ProfileViewTracker] Invalid parameters');
+            return { error: 'Invalid parameters' };
         }
 
         const cookieStore = await cookies();
@@ -29,24 +30,27 @@ export async function POST(req: NextRequest) {
 
                     const payload = JSON.parse(jsonPayload);
                     sessionUid = payload.uid;
-                    // viewer_id references professional.users so only professionals count as viewers in that column.
+
                     if (payload.schema === 'professional') {
                         viewerId = payload.uid;
                     }
                 }
             } catch (e) {
-                console.error("Failed to parse session JWT:", e);
+                console.error("[ProfileViewTracker] Failed to parse session JWT:", e);
             }
         }
 
+        console.log(`[ProfileViewTracker] sessionUid: ${sessionUid}, viewerId: ${viewerId}`);
+
         // Prevent self-views
         if (sessionUid === targetId) {
-            return NextResponse.json({ success: true, message: 'Self view ignored' });
+            console.log('[ProfileViewTracker] Ignored: Self view');
+            return { success: true, message: 'Self view ignored' };
         }
 
         // Construct the insert payload
         const insertData: any = {
-            viewer_id: viewerId
+            viewer_id: viewerId // can be null
         };
 
         if (targetType === 'professional') {
@@ -55,21 +59,24 @@ export async function POST(req: NextRequest) {
             insertData.viewed_company_id = targetId;
         }
 
-        const { error } = await supabaseAdmin
+        console.log('[ProfileViewTracker] Insert Payload:', insertData);
+
+        const { data, error } = await supabaseAdmin
             .schema('professional')
             .from('profile_views')
-            .insert(insertData);
+            .insert(insertData)
+            .select();
 
         if (error) {
-            console.error('Error inserting profile view:', error);
-            // Return error details for debugging
-            return NextResponse.json({ error: 'Failed to record view', details: error }, { status: 500 });
+            console.error('[ProfileViewTracker] Supabase Insert Error:', error);
+            return { error: 'Failed to record view', details: error.message };
         }
 
-        return NextResponse.json({ success: true });
+        console.log('[ProfileViewTracker] Successfully recorded view!', data);
+        return { success: true };
 
     } catch (err: any) {
-        console.error('Exception in profile view tracking:', err);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        console.error('[ProfileViewTracker] Exception:', err);
+        return { error: 'Internal server error', details: err.message };
     }
 }

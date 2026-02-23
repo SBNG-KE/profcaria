@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { recordProfileView } from '@/app/actions/profile';
 
 interface ProfileViewTrackerProps {
     targetId: string;
@@ -8,19 +9,14 @@ interface ProfileViewTrackerProps {
 }
 
 export default function ProfileViewTracker({ targetId, targetType }: ProfileViewTrackerProps) {
-    const tracked = useRef(false);
+    const trackedId = useRef('');
 
     useEffect(() => {
-        if (tracked.current) return;
-        tracked.current = true;
+        if (!targetId || trackedId.current === targetId) return;
+        trackedId.current = targetId;
 
-        fetch('/api/profile/view', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ targetId, targetType }),
-        }).catch(err => console.error('Error tracking profile view:', err));
+        // We are deliberately catching errors quietly so it doesn't break the UI
+        recordProfileView(targetId, targetType).catch(() => { });
     }, [targetId, targetType]);
 
     return null;
