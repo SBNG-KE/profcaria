@@ -373,9 +373,7 @@ export default function HangingPricingCard({
                                                     <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                                         <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> Unlimited AI Top Matches
                                                     </div>
-                                                    <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                                        <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> Priority Support
-                                                    </div>
+
                                                 </div>
                                             </div>
                                             <div className="mt-8 pt-6">

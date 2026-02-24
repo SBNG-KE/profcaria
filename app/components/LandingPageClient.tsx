@@ -364,7 +364,7 @@ export default function LandingPageClient() {
           MOBILE/TABLET NAV PILL (Fixed)
           ============================================ */}
             <div className={`
-                lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
+                lg:hidden fixed bottom-20 md:bottom-24 left-1/2 -translate-x-1/2 z-50 
                 flex justify-center items-center gap-6 px-6 py-3 rounded-full
                 backdrop-blur-xl border shadow-2xl
                 ${isDark ? 'bg-black/80 border-neutral-800/50 text-white' : 'bg-white/80 border-neutral-200/50 text-black'}

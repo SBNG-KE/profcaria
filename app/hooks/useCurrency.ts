@@ -53,10 +53,18 @@ export const useCurrency = () => {
             // Fallback to IP if still USD (or if profile fetch failed/didn't have location)
             if (userCurrency === 'USD') {
                 try {
-                    const ipRes = await fetch('/api/location');
+                    // Fetch from client to avoid Vercel server-side rate limits
+                    const ipRes = await fetch('https://ipapi.co/json/');
                     if (ipRes.ok) {
                         const ipData = await ipRes.json();
                         userCurrency = ipData.currency || 'USD';
+                    } else {
+                        // Fallback API if ipapi is blocked/rate-limited for the user
+                        const backupRes = await fetch('https://ipwho.is/');
+                        if (backupRes.ok) {
+                            const backupData = await backupRes.json();
+                            userCurrency = backupData.currency?.code || 'USD';
+                        }
                     }
                 } catch (e) {
                     console.warn('Location detection failed, defaulting to USD');
