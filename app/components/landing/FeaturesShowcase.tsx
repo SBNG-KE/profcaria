@@ -64,7 +64,7 @@ export default function FeaturesShowcase() {
 
                         {/* Vertical Roles Stack (Static Text, Fits in Circle) */}
                         <div className="relative z-10 flex flex-col items-center justify-center h-full space-y-6">
-                            {["Designers", "Engineers", "Founders", "Architects"].map((role, i) => (
+                            {["Designers", "Engineers", "Founders", "Innovators"].map((role, i) => (
                                 <div key={i} className={`
                                     text-2xl md:text-3xl font-light tracking-[0.2em] uppercase transition-all duration-500 cursor-default font-pixel
                                     ${isDark ? 'text-white' : 'text-black'}

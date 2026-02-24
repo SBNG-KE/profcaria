@@ -169,7 +169,7 @@ export default function LandingPageClient() {
             />
 
             {/* LEFT HEADER BUTTONS */}
-            <div className="fixed top-8 left-8 z-50 flex items-center gap-8">
+            <div className="hidden lg:flex fixed top-8 left-8 z-50 items-center gap-8">
                 <button
                     onClick={() => setIsWhyUsOpen(true)}
                     className={`
@@ -338,7 +338,7 @@ export default function LandingPageClient() {
             {/* ============================================
           FLOATING FOOTER ELEMENT (No Container)
           ============================================ */}
-            <div className="fixed bottom-8 left-0 right-0 z-40 px-8 flex justify-between items-end pointer-events-none">
+            <div className="fixed bottom-8 left-0 right-0 z-40 px-6 md:px-8 flex justify-between items-end pointer-events-none">
                 <div className="pointer-events-auto">
                     {/* Copyright Restored */}
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`}>
@@ -358,6 +358,24 @@ export default function LandingPageClient() {
                         Contact Us
                     </button>
                 </div>
+            </div>
+
+            {/* ============================================
+          MOBILE/TABLET NAV PILL (Fixed)
+          ============================================ */}
+            <div className={`
+                lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 
+                flex justify-center items-center gap-6 px-6 py-3 rounded-full
+                backdrop-blur-xl border shadow-2xl
+                ${isDark ? 'bg-black/80 border-neutral-800/50 text-white' : 'bg-white/80 border-neutral-200/50 text-black'}
+            `}>
+                <button onClick={() => setIsWhyUsOpen(true)} className="text-[11px] font-black uppercase tracking-widest hover:text-amber-500 transition-colors pointer-events-auto">
+                    Why Us
+                </button>
+                <div className={`w-px h-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-300'}`}></div>
+                <button onClick={() => setIsPricingOpen(true)} className="text-[11px] font-black uppercase tracking-widest hover:text-amber-500 transition-colors pointer-events-auto">
+                    Pricing
+                </button>
             </div>
 
             <Analytics />

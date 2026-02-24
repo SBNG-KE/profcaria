@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     default: "Profcaria | Network & Find Work",
     template: "%s | Profcaria"
   },
-  description: "The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching. No ghosting, just results.",
+  description: "The exclusive AI career ecosystem tailored for your growth. Connect with top employers through verified smart matching. No ghosting, just results.",
   keywords: ["Jobs", "Career", "Smart Matching", "Executive Search", "Growth", "Professional Network", "Exclusive Platform"],
   icons: {
     icon: '/favicon.ico',
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     url: 'https://www.profcaria.com',
     siteName: 'Profcaria',
     title: 'Profcaria | Network & Find Work',
-    description: 'The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.',
+    description: 'The exclusive AI career ecosystem tailored for your growth. Connect with top employers through verified smart matching.',
     images: [
       {
         url: 'https://www.profcaria.com/profcaria.png',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Profcaria | Network & Find Work',
-    description: 'The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.',
+    description: 'The exclusive AI career ecosystem tailored for your growth. Connect with top employers through verified smart matching.',
     creator: '@profcaria',
   },
   robots: {
@@ -87,7 +87,7 @@ const structuredData = {
         "width": 1200,
         "height": 630
       },
-      "description": "The exclusive professional network tailored for your growth. Connect with top employers through verified smart matching.",
+      "description": "The exclusive AI career ecosystem tailored for your growth. Connect with top employers through verified smart matching.",
       "sameAs": [
         "https://twitter.com/profcaria"
       ]
@@ -100,7 +100,7 @@ const structuredData = {
       "publisher": {
         "@id": "https://www.profcaria.com/#organization"
       },
-      "description": "Premium professional networking platform with AI-powered smart matching and instant work history verification.",
+      "description": "Premium networking platform with AI-powered smart matching and instant work history verification.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": "https://www.profcaria.com?search={search_term_string}",
