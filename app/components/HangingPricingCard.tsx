@@ -215,7 +215,44 @@ export default function HangingPricingCard({
                             {activeTab === 'employer' && (
                                 <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500">
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6">
+
+                                        {/* Free Tier */}
+                                        <div className={`border p-6 rounded-[24px] flex flex-col relative overflow-hidden transition-all duration-300 ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 hover:shadow-md'}`}>
+                                            <div className="space-y-4 flex-1">
+                                                <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-neutral-900'}`}>
+                                                    Free
+                                                </h4>
+
+                                                <div className="flex flex-col">
+                                                    <div className={`text-4xl font-black ${isDark ? 'text-white' : 'text-neutral-900'}`}>
+                                                        <span className="text-sm text-neutral-400 font-bold mr-0.5">{currencyCode}</span>
+                                                        0
+                                                        <span className={`text-xs font-bold ml-1 ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>/mo</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-2 space-y-3">
+                                                    <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                                        <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> 1 Job Post/mo
+                                                    </div>
+                                                    <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                                        <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> 1 Year Analytics History
+                                                    </div>
+                                                    <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                                        <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> 2 AI Top Match Credits
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-8 pt-6">
+                                                <div
+                                                    className={`w-full py-3 font-black rounded-xl text-xs uppercase tracking-widest text-center transition-all ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}
+                                                >
+                                                    INCLUDED
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         {/* Basic Tier */}
                                         <div className={`border p-6 rounded-[24px] flex flex-col relative overflow-hidden transition-all duration-300 ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200 hover:shadow-md'}`}>
                                             <div className="space-y-4 flex-1">
@@ -373,6 +410,10 @@ export default function HangingPricingCard({
                                                     <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                                                         <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> Unlimited AI Top Matches
                                                     </div>
+                                                    <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                                                        <CheckCircle size={14} className={`${isDark ? "text-white" : "text-black"} shrink-0`} /> Location-Restricted Jobs
+                                                    </div>
+
 
                                                 </div>
                                             </div>
