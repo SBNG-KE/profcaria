@@ -403,6 +403,7 @@ export default function HangingAuthCard({
                 style={{
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
+                data-lenis-prevent="true"
             >
 
                 {/* --- CONTENT --- */}
@@ -560,7 +561,7 @@ export default function HangingAuthCard({
                                                     </div>
 
                                                     {/* List */}
-                                                    <div className="max-h-[200px] overflow-y-auto p-1 custom-scrollbar">
+                                                    <div className="max-h-[200px] overflow-y-auto p-1 custom-scrollbar" data-lenis-prevent="true">
                                                         {industries.filter(ind => ind.name.toLowerCase().includes(industrySearch.toLowerCase())).length === 0 ? (
                                                             <div className={`p-4 text-center text-xs font-medium uppercase tracking-widest ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                                                                 No industries found

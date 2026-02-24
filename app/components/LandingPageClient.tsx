@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import {
     Users,
@@ -15,6 +16,8 @@ import { useTheme } from '@/app/context/ThemeContext';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import HangingAuthCard from '@/app/components/HangingAuthCard';
 import HangingContactCard from '@/app/components/HangingContactCard';
+import HangingWhyUsCard from '@/app/components/HangingWhyUsCard';
+import HangingPricingCard from '@/app/components/HangingPricingCard';
 import BusinessSolutions from '@/app/components/landing/BusinessSolutions';
 import FeaturesShowcase from '@/app/components/landing/FeaturesShowcase';
 import PlatformTour from '@/app/components/landing/PlatformTour';
@@ -27,8 +30,12 @@ export default function LandingPageClient() {
     const { theme, toggleTheme } = useTheme();
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isContactOpen, setIsContactOpen] = useState(false);
+    const [isWhyUsOpen, setIsWhyUsOpen] = useState(false);
+    const [isPricingOpen, setIsPricingOpen] = useState(false);
     const [initialAuthScreen, setInitialAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>('auth');
     const [initialAuthTab, setInitialAuthTab] = useState<'professional' | 'employer'>('professional');
+
+    const lenisRef = useRef<Lenis | null>(null);
 
     // Initialize Smooth Scrolling (Lenis)
     useEffect(() => {
@@ -42,17 +49,34 @@ export default function LandingPageClient() {
             touchMultiplier: 2,
         });
 
+        lenisRef.current = lenis;
+
         function raf(time: number) {
-            lenis.raf(time);
+            lenisRef.current?.raf(time);
             requestAnimationFrame(raf);
         }
 
         requestAnimationFrame(raf);
 
         return () => {
-            lenis.destroy();
+            lenisRef.current?.destroy();
+            lenisRef.current = null;
         };
     }, []);
+
+    // Stop background scrolling when any card is open
+    const isAnyCardOpen = isAuthOpen || isContactOpen || isWhyUsOpen || isPricingOpen;
+    useEffect(() => {
+        if (isAnyCardOpen) {
+            lenisRef.current?.stop();
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            lenisRef.current?.start();
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+    }, [isAnyCardOpen]);
 
     // Handle URL Query Params
     useEffect(() => {
@@ -126,6 +150,48 @@ export default function LandingPageClient() {
                 onClose={() => setIsContactOpen(false)}
             />
 
+            {/* WHY US PANEL */}
+            <HangingWhyUsCard
+                isOpen={isWhyUsOpen}
+                onClose={() => setIsWhyUsOpen(false)}
+            />
+
+            {/* PRICING CARD */}
+            <HangingPricingCard
+                isOpen={isPricingOpen}
+                onClose={() => setIsPricingOpen(false)}
+                onGetStarted={(role) => {
+                    setInitialAuthScreen('auth');
+                    setInitialAuthTab(role);
+                    setIsPricingOpen(false);
+                    setIsAuthOpen(true);
+                }}
+            />
+
+            {/* LEFT HEADER BUTTONS */}
+            <div className="fixed top-8 left-8 z-50 flex items-center gap-8">
+                <button
+                    onClick={() => setIsWhyUsOpen(true)}
+                    className={`
+            text-sm font-black uppercase tracking-[0.2em] relative group
+            ${isDark ? 'text-white' : 'text-black'}
+          `}
+                >
+                    Why Us
+                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-black'}`} />
+                </button>
+                <button
+                    onClick={() => setIsPricingOpen(true)}
+                    className={`
+            text-sm font-black uppercase tracking-[0.2em] relative group
+            ${isDark ? 'text-white' : 'text-black'}
+          `}
+                >
+                    Pricing
+                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-black'}`} />
+                </button>
+            </div>
+
             {/* HEADER BUTTONS */}
             <div className="fixed top-8 right-8 z-50 flex items-center gap-8">
                 <ThemeToggle theme={theme} onToggle={toggleTheme} />
@@ -197,13 +263,13 @@ export default function LandingPageClient() {
                                     text-xs font-bold uppercase tracking-widest
                                     ${isDark ? 'text-neutral-400' : 'text-neutral-600'}
                                 `}>
-                                    Where ambition finds its home.
+                                    Where Careers Are Built and Authentic Jobs Are Found.
                                 </h2>
                                 <p className={`
                                     text-[10px] uppercase tracking-widest font-pixel
                                     ${isDark ? 'text-neutral-600' : 'text-neutral-400'}
                                 `}>
-                                    The professional network for the modern era.
+                                    The AI Career Ecosystem For The Modern Era.
                                 </p>
                             </div>
                         </div>

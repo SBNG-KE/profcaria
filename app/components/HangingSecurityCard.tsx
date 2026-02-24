@@ -440,6 +440,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                     boxShadow: isDark ? '0 20px 60px -10px rgba(0,0,0,0.8)' : '0 20px 60px -10px rgba(0,0,0,0.2)',
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
+                data-lenis-prevent="true"
             >
                 {/* CLOSE BUTTON */}
                 <button
