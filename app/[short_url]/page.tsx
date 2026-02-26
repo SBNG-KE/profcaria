@@ -1,4 +1,6 @@
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
+import PublicProfilePage from '@/app/public/people/[id]/page';
+import PublicCompanyPage from '@/app/public/companies/[id]/page';
 import { supabaseAdmin } from '@/lib/supabase';
 import { Metadata } from 'next';
 import { decryptData } from '@/lib/security';
@@ -66,7 +68,7 @@ export default async function ShortUrlPublicProfile({ params }: Props) {
         .maybeSingle();
 
     if (profUser && profUser.id && !profError) {
-        redirect(`/public/people/${profUser.id}?source=short`);
+        return <PublicProfilePage params={Promise.resolve({ id: profUser.id })} />;
     }
 
     // ======== 2. Check if it's an Employer ========
@@ -78,7 +80,7 @@ export default async function ShortUrlPublicProfile({ params }: Props) {
         .maybeSingle();
 
     if (compUser && compUser.id && !compError) {
-        redirect(`/public/companies/${compUser.id}?source=short`);
+        return <PublicCompanyPage params={Promise.resolve({ id: compUser.id })} />;
     }
 
     // Default Not Found

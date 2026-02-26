@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { getFollowerCount } from '@/lib/followers';
-import { Building2, Globe, MapPin, Mail, Link2, Copy, MessageSquare } from 'lucide-react';
+import { Building2, Globe, MapPin, Mail, Link2, Copy, MessageSquare, Briefcase } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import CompanyPostsSection from '@/app/components/company/CompanyPostsSection';
 import VerificationBadge from '@/app/components/VerificationBadge';
@@ -61,6 +61,7 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
     const foundedYear = profile.enc_founded_year ? decryptData(profile.enc_founded_year) : '';
     const industry = profile.industry;
     const address = profile.enc_address ? decryptData(profile.enc_address) : '';
+    const shortUrl = profile.short_url || (companyName || 'company').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
     const followerCount = await getFollowerCount(id, 'employer');
 
@@ -161,11 +162,11 @@ export default async function PublicCompanyPage({ params }: { params: Promise<{ 
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap justify-end w-full md:w-auto">
                                     <a
-                                        href={`/professional/notifications?recipientId=${id}&recipientType=employer&recipientName=${encodeURIComponent(companyName || 'Company')}&recipientImage=${encodeURIComponent(logoUrl || '')}`}
-                                        className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                                        href={`/company/${shortUrl}/careers`}
+                                        className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 transition-all shadow-sm"
                                     >
-                                        <MessageSquare size={14} />
-                                        <span>Message</span>
+                                        <Briefcase size={14} />
+                                        <span>Careers</span>
                                     </a>
                                     {viewerId !== id && (
                                         <FollowButton targetId={id} type="company" />
