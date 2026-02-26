@@ -249,6 +249,7 @@ export default function ProfessionalHome() {
   const [about, setAbout] = useState('');
   const [country, setCountry] = useState('');
   const [city, setCity] = useState('');
+  const [shortUrl, setShortUrl] = useState('');
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
   const [isAvailableForHire, setIsAvailableForHire] = useState<boolean>(true);
@@ -466,6 +467,7 @@ export default function ProfessionalHome() {
           setAbout(userData.profile.about || '');
           setCountry(userData.profile.country || 'Auto-detected');
           setCity(userData.profile.city || 'Auto-detected');
+          setShortUrl(userData.profile.shortUrl || '');
           setProfileImageUrl(userData.profile.profileImageUrl || '');
           setImagePosition(userData.profile.imagePosition || 'center');
           setBadgeType(userData.profile.badgeType || 'none');
@@ -2128,7 +2130,7 @@ export default function ProfessionalHome() {
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Profile Link</label>
                             <div className={`grid grid-cols-[1fr_auto] items-center p-1.5 rounded-xl border w-full max-w-full overflow-hidden ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                               <div className={`px-3 text-sm truncate min-w-0 ${isDark ? 'text-neutral-400' : 'text-black'}`}>
-                                {typeof window !== 'undefined' ? `${window.location.origin}/public/people/${userId}` : '...'}
+                                {typeof window !== 'undefined' ? `${window.location.origin}/${shortUrl || `${firstName}-${lastName}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}` : '...'}
                               </div>
                               <button
                                 onClick={handleCopyLink}
