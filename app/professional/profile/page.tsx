@@ -358,14 +358,14 @@ export default function ProfessionalHome() {
         await navigator.clipboard.writeText(link);
         setProfileMessage({ type: 'success', text: 'Profile link copied!' });
       } else {
-        // Fallback to direct link
-        const fallbackLink = `${window.location.origin}/p/${firstName}-${lastName}`.toLowerCase();
+        // Fallback to direct link if API fails
+        const fallbackLink = `${window.location.origin}/${firstName}-${lastName}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         await navigator.clipboard.writeText(fallbackLink);
         setProfileMessage({ type: 'success', text: 'Profile link copied!' });
       }
     } catch (err) {
       console.error(err);
-      const fallbackLink = `${window.location.origin}/p/${firstName}-${lastName}`.toLowerCase();
+      const fallbackLink = `${window.location.origin}/${firstName}-${lastName}`.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       navigator.clipboard.writeText(fallbackLink);
       setProfileMessage({ type: 'success', text: 'Profile link copied!' });
     }

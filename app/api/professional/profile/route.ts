@@ -112,7 +112,9 @@ export async function GET(request: NextRequest) {
             isAvailableForHire: profUser.is_available_for_hire !== false // Default true
         };
 
-        return NextResponse.json({ profile });
+        const res = NextResponse.json({ profile });
+        res.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+        return res;
 
     } catch (error: any) {
         console.error('Profile API Error:', error);

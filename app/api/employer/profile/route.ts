@@ -81,7 +81,9 @@ export async function GET(request: NextRequest) {
         };
 
         // Return as 'profile' to match frontend checks
-        return NextResponse.json({ profile });
+        const res = NextResponse.json({ profile });
+        res.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+        return res;
 
     } catch (error: any) {
         console.error('Employer Profile API Error:', error);

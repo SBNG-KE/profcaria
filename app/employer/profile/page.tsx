@@ -616,13 +616,23 @@ export default function EmployerProfilePage() {
                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-600'}`}>Profile Link</label>
                             <div className={`grid grid-cols-[1fr_auto] items-center p-1.5 rounded-xl border w-full max-w-full overflow-hidden ${isDark ? 'bg-neutral-950 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                                 <div className={`px-3 text-sm truncate min-w-0 ${isDark ? 'text-neutral-400' : 'text-black'}`}>
-                                    {typeof window !== 'undefined' ? `${window.location.origin}/public/companies/${profile?.id}` : '...'}
+                                    {typeof window !== 'undefined' ? `${window.location.origin}/${profile?.shortUrl || (companyName || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}` : '...'}
                                 </div>
                                 <button
-                                    onClick={() => {
-                                        const link = `${window.location.origin}/public/companies/${profile?.id}`;
-                                        navigator.clipboard.writeText(link);
-                                        setMessage({ type: 'success', text: 'Profile link copied!' });
+                                    onClick={async () => {
+                                        try {
+                                            const res = await fetch(`/api/share?type=profile&userType=employer&id=${profile?.id}`);
+                                            let link = `${window.location.origin}/${profile?.shortUrl || (companyName || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`;
+                                            if (res.ok) {
+                                                const data = await res.json();
+                                                link = data.link;
+                                            }
+                                            await navigator.clipboard.writeText(link);
+                                            setMessage({ type: 'success', text: 'Profile link copied!' });
+                                        } catch (e) {
+                                            navigator.clipboard.writeText(`${window.location.origin}/${profile?.shortUrl || (companyName || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`);
+                                            setMessage({ type: 'success', text: 'Profile link copied!' });
+                                        }
                                         setTimeout(() => setMessage(null), 3000);
                                     }}
                                     className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
