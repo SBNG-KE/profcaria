@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
+import RadarSkillChart from './RadarSkillChart';
 
 interface ProfileInfoSectionProps {
     isDark?: boolean;
@@ -247,23 +248,44 @@ export default function ProfileInfoSection({
             </div>
 
             {/* Skills */}
-            <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
-                <SectionHeader title="Skills" icon={BadgeCheck} sectionKey="skills" />
-                <div className="flex flex-wrap gap-2">
-                    {skills.length === 0 ? (
-                        <p className="text-sm italic text-neutral-400 dark:text-neutral-600">No skills added yet.</p>
-                    ) : (
-                        skills.map((skill) => (
-                            <div key={skill.id} className="group flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-black dark:text-white">
-                                <span>{skill.name}</span>
-                                {!readOnly && onDelete && (
-                                    <button onClick={() => onDelete('skills', skill.id)} className="hidden group-hover:block ml-1 text-neutral-400 hover:text-black dark:hover:text-white">
-                                        <X size={12} />
-                                    </button>
-                                )}
-                            </div>
-                        ))
-                    )}
+            <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors relative overflow-hidden">
+                {/* Decorative background gradients for the "modern/premium" feel */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <SectionHeader title="AI Skill Analysis & Proficiencies" icon={BadgeCheck} sectionKey="skills" />
+
+                <div className="flex flex-col md:flex-row gap-8 items-center relative z-10">
+                    <div className="w-full md:w-1/2 flex-shrink-0 bg-neutral-50/50 dark:bg-black/20 rounded-[32px] p-2 border border-neutral-100 dark:border-neutral-800/50 shadow-inner">
+                        <RadarSkillChart isDark={theme === 'dark' || (propIsDark ?? false)} />
+                    </div>
+
+                    <div className="w-full md:w-1/2 space-y-6">
+                        <div className="space-y-2">
+                            <h4 className="text-xl font-black text-black dark:text-white">Core Proficiencies</h4>
+                            <p className="text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                                Dynamic AI-driven insights mapping your execution rhythm and strategic depth across key technologies.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            {skills.length === 0 ? (
+                                <p className="text-sm italic text-neutral-400 dark:text-neutral-600">No skills added yet.</p>
+                            ) : (
+                                skills.map((skill) => (
+                                    <div key={skill.id} className="group relative flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-black dark:text-white hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5">
+                                        <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 rounded-2xl transition-colors pointer-events-none"></div>
+                                        <span className="relative z-10">{skill.name}</span>
+                                        {!readOnly && onDelete && (
+                                            <button onClick={() => onDelete('skills', skill.id)} className="relative z-20 ml-1 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded-full transition-all">
+                                                <X size={14} />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
