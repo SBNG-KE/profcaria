@@ -7,95 +7,141 @@ import { Info } from 'lucide-react';
 interface RadarSkillChartProps {
     isDark: boolean;
     skills?: any[];
+    employmentHistory?: any[];
+    otherProfiles?: any[];
 }
 
 // Data structures for the label explanations
 const METRIC_DEFINITIONS: Record<string, { desc: string, logic: string }> = {
     'Depth': {
         desc: 'Measures your technical understanding and mastery of core languages, frameworks, and tools.',
-        logic: 'AI Score derived from the frequency of robust, backend or deep-tech skills in your profile (e.g., Python, SQL, Rust, C++).'
+        logic: 'AI Score derived from the frequency of robust tech skills and overall average tenure at past roles.'
     },
     'Execution Speed': {
         desc: 'Estimates how rapidly you can prototype, build, and deploy high-quality solutions.',
-        logic: 'AI Score derived from your combination of agile methodologies, frontend frameworks, and overall skill volume.'
+        logic: 'AI Score derived from the velocity of role changes, total skill volume, and agile frontend frameworks.'
     },
     'Collaboration Index': {
         desc: 'Evaluates your ability to work within teams, across disciplines, and lead projects.',
-        logic: 'AI Score boosted by the presence of management tools, agile ceremonies, and cross-functional keywords.'
+        logic: 'AI Score boosted by average tenure, cross-functional keywords, and connected external networks.'
     },
     'Creativity': {
         desc: 'Assesses your innovative problem-solving and focus on user experience and design.',
-        logic: 'AI Score enhanced by UI/UX skills, design tools, and creative problem-solving keywords.'
+        logic: 'AI Score enhanced by UI/UX skills, external portfolios (e.g., GitHub, Behance), and design tools.'
     }
 };
 
-export default function RadarSkillChart({ isDark, skills = [] }: RadarSkillChartProps) {
+export default function RadarSkillChart({ isDark, skills = [], employmentHistory = [], otherProfiles = [] }: RadarSkillChartProps) {
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
 
-    // Generate pseudo-AI scores based on the quantity and naming of the user's actual skills
+    // Generate pseudo-AI scores based on the quantity and naming of the user's actual skills + employment
     const chartData = useMemo(() => {
-        if (!skills || skills.length === 0) {
-            // Default visually engaging state if no skills exist
+        // Industry Averages are no longer hardcoded to 100 to make the graph look realistic
+        const IND_AVG = { depth: 78, speed: 82, collab: 85, creative: 74 };
+
+        if ((!skills || skills.length === 0) && (!employmentHistory || employmentHistory.length === 0)) {
+            // Default empty state
             return [
-                { subject: 'Depth', score: 65, fullMark: 100 },
-                { subject: 'Execution Speed', score: 70, fullMark: 100 },
-                { subject: 'Collaboration Index', score: 60, fullMark: 100 },
-                { subject: 'Creativity', score: 75, fullMark: 100 },
+                { subject: 'Depth', score: 65, industry: IND_AVG.depth },
+                { subject: 'Execution Speed', score: 70, industry: IND_AVG.speed },
+                { subject: 'Collaboration Index', score: 60, industry: IND_AVG.collab },
+                { subject: 'Creativity', score: 75, industry: IND_AVG.creative },
             ];
         }
 
-        let baseScore = Math.min(60 + (skills.length * 2), 90);
+        // Employment History parsing
+        let totalMonths = 0;
+        let jobCount = employmentHistory.length;
+
+        employmentHistory.forEach(job => {
+            const start = job.startDate ? new Date(job.startDate) : new Date();
+            const end = (job.isCurrent || !job.endDate) ? new Date() : new Date(job.endDate);
+            const months = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30);
+            if (months > 0) totalMonths += months;
+        });
+
+        const avgTenureMonths = jobCount > 0 ? totalMonths / jobCount : 0;
+        const speedOfEmployment = jobCount > 2 && avgTenureMonths < 24 ? 15 : (avgTenureMonths >= 24 ? 5 : 10); // Job hoppers fast, lifers steady
+        const collabTenureBoost = avgTenureMonths > 36 ? 15 : (avgTenureMonths > 18 ? 10 : 0); // Staying longer proves collaboration
+
+        // Skills parsing
+        let skillScoreBase = Math.min(50 + (skills.length * 2), 80);
+
+        // Other profiles parsing (Github, Behance, etc indicates creativity/execution)
+        let otherProfileBoost = Math.min(otherProfiles.length * 5, 15);
+
+        // Find skills extracted from other profiles (which are saved in description field now as per new logic)
+        const extractedSkillsFromProfiles = otherProfiles.map(p => p.description || '').join(' ').toLowerCase();
 
         const techKeywords = ['react', 'node', 'python', 'java', 'sql', 'aws', 'docker', 'rust', 'c++', 'dart', 'cybersecurity'];
-        const creativeKeywords = ['design', 'ui', 'ux', 'writing', 'video', 'art', 'figma', 'animation'];
-        const collabKeywords = ['agile', 'scrum', 'management', 'leadership', 'team', 'jira', 'orchestration'];
+        const creativeKeywords = ['design', 'ui', 'ux', 'writing', 'video', 'art', 'figma', 'animation', 'creative', 'front-end'];
+        const collabKeywords = ['agile', 'scrum', 'management', 'leadership', 'team', 'jira', 'orchestration', 'lead'];
 
-        const skillStr = skills.map(s => s.name?.toLowerCase() || '').join(' ');
+        const rawSkillStr = skills.map(s => s.name?.toLowerCase() || '').join(' ');
+        const skillStr = rawSkillStr + ' ' + extractedSkillsFromProfiles;
 
-        let depthBoost = techKeywords.some(k => skillStr.includes(k)) ? 10 : 0;
-        let creativeBoost = creativeKeywords.some(k => skillStr.includes(k)) ? 15 : 0;
-        let collabBoost = collabKeywords.some(k => skillStr.includes(k)) ? 15 : 0;
+        let depthBoost = techKeywords.filter(k => skillStr.includes(k)).length * 5;
+        let creativeBoost = creativeKeywords.filter(k => skillStr.includes(k)).length * 5 + otherProfileBoost;
+        let collabBoost = collabKeywords.filter(k => skillStr.includes(k)).length * 4 + collabTenureBoost;
+
+        const calc = (base: number, boost: number, fallbackAvg: number) => {
+            let s = base + Math.min(boost, 30);
+            if (s < 50) s = fallbackAvg - Math.floor(Math.random() * 10);
+            return Math.min(s, 99);
+        };
 
         return [
             {
                 subject: 'Depth',
-                score: Math.min(baseScore + depthBoost + Math.floor(Math.random() * 5), 98),
-                fullMark: 100
+                score: calc(skillScoreBase, depthBoost, 65),
+                industry: IND_AVG.depth
             },
             {
                 subject: 'Execution Speed',
-                score: Math.min(baseScore + Math.floor(Math.random() * 8), 96),
-                fullMark: 100
+                score: calc(skillScoreBase, speedOfEmployment + (skills.length > 5 ? 10 : 0), 70),
+                industry: IND_AVG.speed
             },
             {
                 subject: 'Collaboration Index',
-                score: Math.min(baseScore + collabBoost + Math.floor(Math.random() * 6), 95),
-                fullMark: 100
+                score: calc(skillScoreBase - 5, collabBoost, 60),
+                industry: IND_AVG.collab
             },
             {
                 subject: 'Creativity',
-                score: Math.min(baseScore + creativeBoost + Math.floor(Math.random() * 10), 99),
-                fullMark: 100
+                score: calc(skillScoreBase - 10, creativeBoost, 75),
+                industry: IND_AVG.creative
             },
         ];
-    }, [skills]);
+    }, [skills, employmentHistory, otherProfiles]);
 
     // Custom tick component to handle hover events directly on the SVG text labels
     const CustomTick = (props: any) => {
         const { payload, x, y, textAnchor, stroke, radius } = props;
 
-        // Push the text slightly further out to ensure it doesn't overlap the graph
-        const isTopOrBottom = Math.abs(x - 150) < 10; // Approx check assuming center is around x=150 depending on width
+        // Add X offset to pull Execution Speed further right, and Creativity further left
+        // textAnchor is 'start' for the right side (Execution speed) and 'end' for left (Creativity)
+        let xOffset = 0;
+        if (textAnchor === 'start') xOffset = 8;
+        if (textAnchor === 'end') xOffset = -8;
+
         const yOffset = y > 150 ? 10 : (y < 150 ? -10 : 0);
 
         return (
             <g
-                className="cursor-pointer transition-opacity hover:opacity-80"
+                className="cursor-pointer"
                 onMouseEnter={() => setHoveredLabel(payload.value)}
                 onMouseLeave={() => setHoveredLabel(null)}
             >
+                {/* Transparent hitbox for much smoother hover retention */}
+                <rect
+                    x={x + xOffset - (textAnchor === 'end' ? 60 : (textAnchor === 'middle' ? 30 : 0))}
+                    y={y + yOffset - 15}
+                    width={textAnchor === 'middle' ? 80 : 100}
+                    height={30}
+                    fill="transparent"
+                />
                 <text
-                    x={x}
+                    x={x + xOffset}
                     y={y + yOffset}
                     dy={4} // Vertically center the text
                     textAnchor={textAnchor}
@@ -103,6 +149,7 @@ export default function RadarSkillChart({ isDark, skills = [] }: RadarSkillChart
                     fontSize={12}
                     fontWeight={800}
                     fontFamily="inherit"
+                    className="transition-opacity hover:opacity-80"
                 >
                     {payload.value}
                 </text>
@@ -124,7 +171,7 @@ export default function RadarSkillChart({ isDark, skills = [] }: RadarSkillChart
                         </div>
                         <div className="flex items-center gap-2 text-[13px] font-bold text-neutral-400">
                             <span>Industry Average : </span>
-                            <span>{data.fullMark}</span>
+                            <span>{data.industry}</span>
                         </div>
                     </div>
                 </div>
@@ -186,7 +233,7 @@ export default function RadarSkillChart({ isDark, skills = [] }: RadarSkillChart
                     />
                     <Radar
                         name="Industry Average"
-                        dataKey="fullMark"
+                        dataKey="industry"
                         stroke={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}
                         strokeWidth={1}
                         fill="transparent"

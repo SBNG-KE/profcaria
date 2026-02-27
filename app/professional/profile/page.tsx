@@ -2797,6 +2797,11 @@ export default function ProfessionalHome() {
                 <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>URL</label>
                 <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.url || ''} onChange={e => setFormData({ ...formData, url: e.target.value })} placeholder="https://..." />
               </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Skills Used / Gained</label>
+                <p className={`text-[10px] mb-1 leading-tight ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Any skills entered here will be silently fed into your AI Career Score without cluttering your public profile.</p>
+                <textarea className={`w-full p-3 h-24 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="E.g., React, AI Agents, Python..." />
+              </div>
             </>
           )}
 
