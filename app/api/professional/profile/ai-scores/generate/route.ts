@@ -114,14 +114,22 @@ Output nothing but valid JSON. Example:
 
         const hf = new HfInference(HF_TOKEN);
 
-        console.log('[AI Scores] Step 4: Calling HuggingFace Llama-3.2-3B-Instruct...');
-        const response = await hf.chatCompletion({
-            model: 'meta-llama/Llama-3.2-3B-Instruct',
-            messages: [{ role: 'user', content: promptContext }],
-            max_tokens: 300,
-            temperature: 0.1,
-        });
-        console.log('[AI Scores] Step 4 OK: Got response from HuggingFace');
+        // Using Qwen2.5 — universally available, no license gate
+        const MODEL = 'Qwen/Qwen2.5-3B-Instruct';
+        console.log(`[AI Scores] Step 4: Calling HuggingFace ${MODEL}...`);
+        let response;
+        try {
+            response = await hf.chatCompletion({
+                model: MODEL,
+                messages: [{ role: 'user', content: promptContext }],
+                max_tokens: 300,
+                temperature: 0.1,
+            });
+            console.log('[AI Scores] Step 4 OK: Got response from HuggingFace');
+        } catch (hfError: any) {
+            console.error('[AI Scores] Step 4 FAILED: HuggingFace API error:', hfError?.message || hfError);
+            return NextResponse.json({ error: `AI model error: ${hfError?.message || 'Unknown HuggingFace failure'}` }, { status: 500 });
+        }
 
         const rawContent = response.choices?.[0]?.message?.content || '';
         console.log('[AI Scores] Step 5: Raw AI output:', rawContent);
@@ -174,6 +182,6 @@ Output nothing but valid JSON. Example:
     } catch (error: any) {
         console.error('[AI Scores] === CRASHED === Unhandled error:', error?.message || error);
         console.error('[AI Scores] Stack:', error?.stack);
-        return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({ error: `Server error: ${error?.message || 'Internal Server Error'}` }, { status: 500 });
     }
 }
