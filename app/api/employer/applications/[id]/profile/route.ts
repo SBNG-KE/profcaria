@@ -69,7 +69,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 enc_phone_number,
                 enc_email,
                 email_index,
-                default_doc_mode
+                default_doc_mode,
+                badge_type,
+                two_factor_enabled,
+                intent_mode,
+                enc_city,
+                enc_location
             `)
             .eq('id', professionalId)
             .single();
@@ -90,6 +95,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             about: decryptData(prof.enc_about),
             phone: decryptData(prof.enc_phone_number),
             email: decryptData(prof.enc_email),
+            city: decryptData(prof.enc_city) || decryptData(prof.enc_location) || '',
+            country: '',
+            badgeType: prof.badge_type || 'none',
+            intentMode: prof.intent_mode || 'not_looking',
             docMode
         };
 
@@ -236,6 +245,60 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             createdAt: doc.created_at
         }));
 
+        // ── Verification Chain ──
+        const badge = prof.badge_type || 'none';
+        const verChecks: { label: string; status: string; detail: string }[] = [];
+
+        verChecks.push({
+            label: 'Identity',
+            status: badge === 'gold' ? 'verified' : badge === 'blue' ? 'partial' : 'unverified',
+            detail: badge === 'gold' ? 'Gold verified identity' : badge === 'blue' ? 'Blue verified' : 'Not yet verified',
+        });
+
+        const verifiedEmp = employmentHistory.filter((e: any) => e.source === 'automatic' || e.source === 'employer_verified' || e.source === 'application');
+        verChecks.push({
+            label: 'Employment Chain',
+            status: verifiedEmp.length > 0 ? (verifiedEmp.length >= employmentHistory.length ? 'verified' : 'partial') : 'unverified',
+            detail: `${verifiedEmp.length}/${employmentHistory.length} roles verified`,
+        });
+
+        const { count: refCount } = await supabaseAdmin.schema('employer').from('references').select('id', { count: 'exact', head: true }).eq('professional_id', professionalId).eq('status', 'completed');
+        verChecks.push({
+            label: 'References',
+            status: (refCount || 0) >= 2 ? 'verified' : (refCount || 0) >= 1 ? 'partial' : 'unverified',
+            detail: `${refCount || 0} verified references`,
+        });
+
+        const { data: radar } = await supabaseAdmin.from('professional_radar_stats').select('depth_score, execution_speed, collaboration_index, creativity_score').eq('user_id', professionalId).single();
+        verChecks.push({
+            label: 'Skill Endorsements',
+            status: radar ? 'verified' : 'unverified',
+            detail: radar ? 'AI-verified skill assessment' : 'No AI analysis yet',
+        });
+
+        verChecks.push({ label: 'Education', status: education.length > 0 ? 'verified' : 'unverified', detail: `${education.length} education entries` });
+
+        const docTotal = (documents || []).length + (uploadedDocs || []).length;
+        verChecks.push({ label: 'Documents', status: docTotal >= 2 ? 'verified' : docTotal >= 1 ? 'partial' : 'unverified', detail: `${docTotal} supporting documents` });
+
+        verChecks.push({ label: 'Account Security', status: prof.two_factor_enabled ? 'verified' : 'unverified', detail: prof.two_factor_enabled ? '2FA enabled' : '2FA not enabled' });
+
+        const vVerified = verChecks.filter(c => c.status === 'verified').length;
+        const vPartial = verChecks.filter(c => c.status === 'partial').length;
+        const vScore = Math.round(((vVerified * 100) + (vPartial * 50)) / verChecks.length);
+
+        // ── Career Score ──
+        const skillPower = radar ? Math.round(((radar.depth_score || 0) + (radar.execution_speed || 0) + (radar.collaboration_index || 0) + (radar.creativity_score || 0)) / 4) : 0;
+        let profileStrength = 0;
+        if (prof.enc_profile_image_url) profileStrength += 15;
+        if (prof.enc_about) profileStrength += 15;
+        if (prof.enc_current_role) profileStrength += 10;
+        if (skills.length >= 3) profileStrength += 25;
+        if (employmentHistory.length > 0) profileStrength += 25;
+        profileStrength = Math.min(profileStrength, 100);
+        const csOverall = Math.round(profileStrength * 0.2 + skillPower * 0.25 + vScore * 0.25 + profileStrength * 0.3);
+        const csTier = csOverall >= 80 ? 'legendary' : csOverall >= 60 ? 'elite' : csOverall >= 40 ? 'rising' : csOverall >= 20 ? 'emerging' : 'newcomer';
+
         return NextResponse.json({
             profile,
             sharedDocuments,
@@ -252,6 +315,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 certifications,
                 awards,
                 otherProfiles
+            },
+            verification: {
+                checks: verChecks,
+                score: vScore,
+                verified: vVerified,
+                total: verChecks.length
+            },
+            careerScore: {
+                overall: csOverall,
+                tier: csTier
             }
         });
 
