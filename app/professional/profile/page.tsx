@@ -22,6 +22,7 @@ import PostCard from '@/app/components/professional/PostCard';
 import { useTheme } from '@/app/context/ThemeContext';
 import { EXPERIENCE_YEAR_RANGES } from '@/lib/experience-level';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
+import ProfileQualityGate from '@/app/components/professional/ProfileQualityGate';
 import { SearchableDropdown } from '@/app/components/SearchableDropdown';
 import { getNames } from 'country-list';
 
@@ -1665,6 +1666,9 @@ export default function ProfessionalHome() {
       <div className="p-4 md:p-6">
         <div className="relative z-10 max-w-7xl mx-auto min-h-full">
           <div className="space-y-6">
+
+            {/* Profile Quality Gate */}
+            <ProfileQualityGate compact />
 
             {/* Profile Page Tabs */}
             <div className={`flex overflow-x-auto max-w-full space-x-2 p-1 rounded-xl border no-scrollbar ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-100 border-neutral-200'}`}>

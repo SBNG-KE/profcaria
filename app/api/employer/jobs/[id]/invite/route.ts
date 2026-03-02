@@ -6,7 +6,7 @@ import { jwtVerify } from 'jose';
 import { createShortLink } from '@/lib/shortener';
 import { sendJobInvite } from '@/lib/email';
 import { getJobShareLink } from '@/lib/sharing';
-import { decryptData } from '@/lib/security';
+import { decryptData, encryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
@@ -21,7 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const { payload } = await jwtVerify(token, secret);
         const companyId = payload.uid as string;
 
-        const { professionalId } = await req.json();
+        const { professionalId, message } = await req.json();
         console.log(`[INVITE] Request for Job ${jobId} to Professional ${professionalId}`);
 
         // 1. Get Job Details & Verify Ownership
@@ -62,7 +62,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         if (professionalEmail) {
             // 3. Generate Smart Link
-            // 3. Generate Smart Link
             const origin = new URL(req.url).origin;
             const longLink = getJobShareLink(jobId, origin);
 
@@ -82,6 +81,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
             console.warn(`[INVITE] Professional ${professionalId} has no email or not found. Data:`, professional);
         }
 
+        const encMessage = message ? encryptData(message) : null;
+
         // 5. Create Notification record (Existing logic)
         await supabaseAdmin
             .schema('employer')
@@ -90,6 +91,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 job_id: jobId,
                 professional_id: professionalId,
                 company_id: companyId,
+                enc_message: encMessage,
                 status: 'pending'
             });
 

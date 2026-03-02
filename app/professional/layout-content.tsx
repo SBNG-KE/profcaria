@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'reac
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, Search, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, UserCircle, Cable, Plus, Power, Menu, X, HelpCircle, Rss, Users, MessageCircle, Shield, BadgeCheck
+    Briefcase, UserCircle, Cable, Plus, Power, Menu, X, HelpCircle, Rss, Users, MessageCircle, Shield, BadgeCheck, Trophy, Sparkles
 } from 'lucide-react';
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
@@ -282,6 +282,8 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <NavItem id="employment" href="/professional/employment" icon={Cable} label="Employment" />
                     <NavItem id="vault" href="/professional/vault" icon={Shield} label="Career Vault" />
                     <NavItem id="verification" href="/professional/verification" icon={BadgeCheck} label="Verification" />
+                    <NavItem id="career-score" href="/professional/career-score" icon={Trophy} label="Career Score" />
+                    <NavItem id="invites" href="/professional/invites" icon={Sparkles} label="Job Invites" />
                     <NavItem id="connections" href="/professional/connections" icon={Users} label="Connections" badgeCount={followBackCount} />
                     <NavItem id="communities" href="#" icon={MessageCircle} label="Communities" comingSoon={true} />
 

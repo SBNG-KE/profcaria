@@ -3,13 +3,14 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { getFollowerCount } from '@/lib/followers';
-import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight, Eye, Rocket, Code2, Handshake, XCircle, CheckCircle2, AlertCircle, Shield, User, GraduationCap, Award, Lock, TrendingUp } from 'lucide-react';
+import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight, Eye, Rocket, Code2, Handshake, XCircle, CheckCircle2, AlertCircle, Shield, User, GraduationCap, Award, Lock, TrendingUp, Trophy } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import VerificationBadge from '@/app/components/VerificationBadge';
 import PostsPreview from '@/app/components/professional/PostsPreview';
 import PostCard from '@/app/components/professional/PostCard';
 import ContactInfoCard from '@/app/components/company/ContactInfoCard';
+import InviteButton from '@/app/components/employer/InviteButton';
 import { formatDistanceToNow } from 'date-fns';
 import ProfileViewTracker from '@/app/components/shared/ProfileViewTracker';
 import { cookies } from 'next/headers';
@@ -109,6 +110,18 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         }
     } catch (e) {
         console.error('Error fetching verification graph:', e);
+    }
+
+    // Fetch career score
+    let careerScore: any = null;
+    try {
+        const csRes = await fetch(`${baseUrl}/api/professional/career-score?userId=${id}`, { cache: 'no-store' });
+        if (csRes.ok) {
+            const csData = await csRes.json();
+            careerScore = csData.score;
+        }
+    } catch (e) {
+        console.error('Error fetching career score:', e);
     }
 
     // Fetch Sections
@@ -395,13 +408,16 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                         </Link>
                                     )}
                                     {isViewerEmployer && viewerId !== id && (
-                                        <Link
-                                            href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
-                                            className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
-                                        >
-                                            <MessageSquare size={14} />
-                                            <span>Message</span>
-                                        </Link>
+                                        <>
+                                            <InviteButton professionalId={id} professionalName={`${firstName} ${lastName}`} />
+                                            <Link
+                                                href={`/employer/messages?recipientId=${id}&recipientName=${encodeURIComponent(firstName + ' ' + lastName)}&recipientImage=${encodeURIComponent(profileImageUrl || '')}`}
+                                                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                                            >
+                                                <MessageSquare size={14} />
+                                                <span>Message</span>
+                                            </Link>
+                                        </>
                                     )}
 
                                     {/* Follow Button */}
@@ -457,6 +473,43 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                             {node.status === 'verified' ? <CheckCircle2 size={14} className="text-emerald-500" /> : node.status === 'partial' ? <AlertCircle size={14} className="text-amber-500" /> : <XCircle size={14} className="text-neutral-400 dark:text-neutral-600" />}
                                             <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 text-center leading-tight">{node.label}</span>
                                         </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Career Score Badge */}
+                {careerScore && (
+                    <div className="p-5 md:p-6 rounded-[32px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
+                        <div className="flex items-center gap-4">
+                            <div className="relative w-16 h-16 shrink-0">
+                                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                                    <circle cx="50" cy="50" r="42" fill="none" className="stroke-neutral-200 dark:stroke-neutral-800" strokeWidth="8" />
+                                    <circle cx="50" cy="50" r="42" fill="none" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${careerScore.overall * 2.64} 264`} style={{ stroke: 'url(#csGrad)' }} />
+                                    <defs><linearGradient id="csGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#8b5cf6" /></linearGradient></defs>
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-lg font-black text-black dark:text-white">{careerScore.overall}</span>
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                                    <Trophy size={16} className="text-amber-500" />
+                                    Career Score
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${careerScore.tier === 'legendary' ? 'bg-amber-500/20 text-amber-500' :
+                                        careerScore.tier === 'elite' ? 'bg-indigo-500/20 text-indigo-500' :
+                                            careerScore.tier === 'rising' ? 'bg-emerald-500/20 text-emerald-500' :
+                                                careerScore.tier === 'emerging' ? 'bg-lime-500/20 text-lime-500' :
+                                                    'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
+                                        }`}>{careerScore.tier}</span>
+                                </h3>
+                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                    {careerScore.pillars?.map((p: any) => (
+                                        <span key={p.id} className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${p.score >= 70 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : p.score >= 40 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'}`}>
+                                            {p.label} {p.score}
+                                        </span>
                                     ))}
                                 </div>
                             </div>
