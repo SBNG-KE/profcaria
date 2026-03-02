@@ -1,0 +1,1 @@
+﻿app/api/professional/profile/ai-scores/generate/route.ts(2,30): error TS2307: Cannot find module '@/lib/supabase/server' or its corresponding type declarations.

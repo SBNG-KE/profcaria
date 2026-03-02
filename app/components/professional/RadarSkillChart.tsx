@@ -9,110 +9,64 @@ interface RadarSkillChartProps {
     skills?: any[];
     employmentHistory?: any[];
     otherProfiles?: any[];
+    aiRadarStats?: any;
+    onGenerateAIScore?: () => void;
+    isGenerating?: boolean;
+    readOnly?: boolean;
 }
 
 // Data structures for the label explanations
 const METRIC_DEFINITIONS: Record<string, { desc: string, logic: string }> = {
     'Depth': {
         desc: 'Measures your technical understanding and mastery of core languages, frameworks, and tools.',
-        logic: 'AI Score derived from the frequency of robust tech skills and overall average tenure at past roles.'
+        logic: 'AI generated metric based on complex backend skills, systems architecture, and robust technical presence.'
     },
     'Execution Speed': {
         desc: 'Estimates how rapidly you can prototype, build, and deploy high-quality solutions.',
-        logic: 'AI Score derived from the velocity of role changes, total skill volume, and agile frontend frameworks.'
+        logic: 'AI generated metric based on velocity of delivery, agile frontend frameworks, and rapid transitions.'
     },
     'Collaboration Index': {
         desc: 'Evaluates your ability to work within teams, across disciplines, and lead projects.',
-        logic: 'AI Score boosted by average tenure, cross-functional keywords, and connected external networks.'
+        logic: 'AI generated metric boosted by stability/tenure, leadership roles, and teamwork tools like Jira or Slack.'
     },
     'Creativity': {
         desc: 'Assesses your innovative problem-solving and focus on user experience and design.',
-        logic: 'AI Score enhanced by UI/UX skills, external portfolios (e.g., GitHub, Behance), and design tools.'
+        logic: 'AI generated metric enhanced by UI/UX skills, external portfolios, writing, and creative problem solving.'
     }
 };
 
-export default function RadarSkillChart({ isDark, skills = [], employmentHistory = [], otherProfiles = [] }: RadarSkillChartProps) {
+export default function RadarSkillChart({
+    isDark,
+    skills = [],
+    employmentHistory = [],
+    otherProfiles = [],
+    aiRadarStats,
+    onGenerateAIScore,
+    isGenerating,
+    readOnly
+}: RadarSkillChartProps) {
     const [hoveredLabel, setHoveredLabel] = useState<string | null>(null);
 
-    // Generate pseudo-AI scores based on the quantity and naming of the user's actual skills + employment
+    // Use AI Generated stats if they exist in the DB, otherwise render a zero'd out or fallback state
     const chartData = useMemo(() => {
-        // Industry Averages are no longer hardcoded to 100 to make the graph look realistic
-        const IND_AVG = { depth: 78, speed: 82, collab: 85, creative: 74 };
-
-        if ((!skills || skills.length === 0) && (!employmentHistory || employmentHistory.length === 0)) {
-            // Default empty state
+        if (aiRadarStats) {
             return [
-                { subject: 'Depth', score: 65, industry: IND_AVG.depth },
-                { subject: 'Execution Speed', score: 70, industry: IND_AVG.speed },
-                { subject: 'Collaboration Index', score: 60, industry: IND_AVG.collab },
-                { subject: 'Creativity', score: 75, industry: IND_AVG.creative },
+                { subject: 'Depth', score: aiRadarStats.depth_score || 0 },
+                { subject: 'Execution Speed', score: aiRadarStats.execution_speed || 0 },
+                { subject: 'Collaboration Index', score: aiRadarStats.collaboration_index || 0 },
+                { subject: 'Creativity', score: aiRadarStats.creativity_score || 0 },
             ];
         }
 
-        // Employment History parsing
-        let totalMonths = 0;
-        let jobCount = employmentHistory.length;
-
-        employmentHistory.forEach(job => {
-            const start = job.startDate ? new Date(job.startDate) : new Date();
-            const end = (job.isCurrent || !job.endDate) ? new Date() : new Date(job.endDate);
-            const months = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 30);
-            if (months > 0) totalMonths += months;
-        });
-
-        const avgTenureMonths = jobCount > 0 ? totalMonths / jobCount : 0;
-        const speedOfEmployment = jobCount > 2 && avgTenureMonths < 24 ? 15 : (avgTenureMonths >= 24 ? 5 : 10); // Job hoppers fast, lifers steady
-        const collabTenureBoost = avgTenureMonths > 36 ? 15 : (avgTenureMonths > 18 ? 10 : 0); // Staying longer proves collaboration
-
-        // Skills parsing
-        let skillScoreBase = Math.min(50 + (skills.length * 2), 80);
-
-        // Other profiles parsing (Github, Behance, etc indicates creativity/execution)
-        let otherProfileBoost = Math.min(otherProfiles.length * 5, 15);
-
-        // Find skills extracted from other profiles (which are saved in description field now as per new logic)
-        const extractedSkillsFromProfiles = otherProfiles.map(p => p.description || '').join(' ').toLowerCase();
-
-        const techKeywords = ['react', 'node', 'python', 'java', 'sql', 'aws', 'docker', 'rust', 'c++', 'dart', 'cybersecurity'];
-        const creativeKeywords = ['design', 'ui', 'ux', 'writing', 'video', 'art', 'figma', 'animation', 'creative', 'front-end'];
-        const collabKeywords = ['agile', 'scrum', 'management', 'leadership', 'team', 'jira', 'orchestration', 'lead'];
-
-        const rawSkillStr = skills.map(s => s.name?.toLowerCase() || '').join(' ');
-        const skillStr = rawSkillStr + ' ' + extractedSkillsFromProfiles;
-
-        let depthBoost = techKeywords.filter(k => skillStr.includes(k)).length * 5;
-        let creativeBoost = creativeKeywords.filter(k => skillStr.includes(k)).length * 5 + otherProfileBoost;
-        let collabBoost = collabKeywords.filter(k => skillStr.includes(k)).length * 4 + collabTenureBoost;
-
-        const calc = (base: number, boost: number, fallbackAvg: number) => {
-            let s = base + Math.min(boost, 30);
-            if (s < 50) s = fallbackAvg - Math.floor(Math.random() * 10);
-            return Math.min(s, 99);
-        };
-
+        // Empty state when no AI generation has run yet
         return [
-            {
-                subject: 'Depth',
-                score: calc(skillScoreBase, depthBoost, 65),
-                industry: IND_AVG.depth
-            },
-            {
-                subject: 'Execution Speed',
-                score: calc(skillScoreBase, speedOfEmployment + (skills.length > 5 ? 10 : 0), 70),
-                industry: IND_AVG.speed
-            },
-            {
-                subject: 'Collaboration Index',
-                score: calc(skillScoreBase - 5, collabBoost, 60),
-                industry: IND_AVG.collab
-            },
-            {
-                subject: 'Creativity',
-                score: calc(skillScoreBase - 10, creativeBoost, 75),
-                industry: IND_AVG.creative
-            },
+            { subject: 'Depth', score: 0 },
+            { subject: 'Execution Speed', score: 0 },
+            { subject: 'Collaboration Index', score: 0 },
+            { subject: 'Creativity', score: 0 },
         ];
-    }, [skills, employmentHistory, otherProfiles]);
+    }, [aiRadarStats]);
+
 
     // Custom tick component to handle hover events directly on the SVG text labels
     const CustomTick = (props: any) => {
@@ -165,13 +119,9 @@ export default function RadarSkillChart({ isDark, skills = [], employmentHistory
                 <div className={`p-4 rounded-2xl shadow-xl backdrop-blur-md border ${isDark ? 'bg-slate-900/90 border-slate-700/50' : 'bg-white/95 border-neutral-200'}`}>
                     <h5 className={`font-bold text-sm mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>{data.subject}</h5>
                     <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-[13px] font-bold text-blue-500">
-                            <span>AI Career Score : </span>
-                            <span>{data.score}</span>
-                        </div>
                         <div className="flex items-center gap-2 text-[13px] font-bold text-neutral-400">
-                            <span>Industry Average : </span>
-                            <span>{data.industry}</span>
+                            <span>Score : </span>
+                            <span>{data.score}</span>
                         </div>
                     </div>
                 </div>
@@ -184,11 +134,30 @@ export default function RadarSkillChart({ isDark, skills = [], employmentHistory
         <div className="w-full relative min-h-[350px] h-[400px] md:h-[450px] flex items-center justify-center p-4">
 
             {/* Contextual UI: Explain to the user that AI is being used */}
-            <div className="absolute top-4 left-4 right-4 flex items-start gap-2 text-xs text-neutral-500 dark:text-neutral-400 z-10 pointer-events-none opacity-80 backdrop-blur-sm rounded-lg p-2">
-                <Info size={14} className="shrink-0 mt-0.5 text-blue-500" />
-                <p>
-                    <span className="font-bold text-blue-500">How this works:</span> Profcaria AI scans the skills you add to your profile, analyzes their technical depth, categorizes them, and predicts your career proficiencies compared to the industry average.
-                </p>
+            <div className={`absolute top-4 left-4 right-4 flex flex-col items-center justify-center text-center gap-2 text-xs z-10 opacity-90 rounded-2xl p-4 ${isDark ? 'bg-slate-900/60 border border-slate-700/50' : 'bg-white/60 border border-slate-200'} backdrop-blur-md`}>
+                <div className="flex items-center justify-center gap-2 w-full">
+                    <Info size={14} className="shrink-0 text-blue-500" />
+                    <p className={`font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                        <span className="font-bold text-blue-500">AI Scoring:</span> These scores are generated securely by an LLM analyzing your experience and skills.
+                    </p>
+                </div>
+
+                {!readOnly && onGenerateAIScore && (
+                    <button
+                        onClick={onGenerateAIScore}
+                        disabled={isGenerating}
+                        className={`mt-2 w-full md:w-auto px-6 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${isGenerating ? 'bg-neutral-200 dark:bg-neutral-800 text-neutral-400 cursor-not-allowed'
+                                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                            }`}
+                    >
+                        {isGenerating ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-inherit border-t-transparent rounded-full animate-spin"></div>
+                                Generating from Meta Llama 3.2...
+                            </>
+                        ) : 'Update AI Scores'}
+                    </button>
+                )}
             </div>
 
             {/* Glow effect behind the chart */}
@@ -231,15 +200,6 @@ export default function RadarSkillChart({ isDark, skills = [], employmentHistory
                         animationEasing="ease-out"
                         activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
                     />
-                    <Radar
-                        name="Industry Average"
-                        dataKey="industry"
-                        stroke={isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}
-                        strokeWidth={1}
-                        fill="transparent"
-                        strokeDasharray="4 4"
-                        isAnimationActive={false}
-                    />
 
                     <defs>
                         <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
@@ -253,7 +213,7 @@ export default function RadarSkillChart({ isDark, skills = [], employmentHistory
             {/* Absolute positioned interactive popover for Label explanations */}
             {hoveredLabel && METRIC_DEFINITIONS[hoveredLabel] && (
                 <div
-                    className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 md:w-1/2 max-w-[300px] pointer-events-none"
+                    className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] md:w-1/2 max-w-[320px] pointer-events-none"
                     style={{ animation: 'fadeIn 0.2s ease-out' }}
                 >
                     <div className={`p-5 rounded-2xl shadow-2xl backdrop-blur-xl border ${isDark ? 'bg-slate-900/95 border-slate-700/50 shadow-black/50' : 'bg-white/95 border-neutral-200 shadow-neutral-200/50'}`}>
@@ -266,12 +226,22 @@ export default function RadarSkillChart({ isDark, skills = [], employmentHistory
                         <p className={`text-sm leading-relaxed mb-4 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                             {METRIC_DEFINITIONS[hoveredLabel].desc}
                         </p>
-                        <div className={`pt-3 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-                            <p className="text-[11px] uppercase tracking-wider font-bold text-neutral-400 mb-1">AI Calculation Logic</p>
-                            <p className={`text-xs italic ${isDark ? 'text-blue-400/80' : 'text-blue-600/80'}`}>
-                                {METRIC_DEFINITIONS[hoveredLabel].logic}
-                            </p>
-                        </div>
+
+                        {(aiRadarStats && aiRadarStats.ai_reasoning) ? (
+                            <div className={`pt-3 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+                                <p className="text-[11px] uppercase tracking-wider font-bold text-blue-500 mb-1">AI Reasoning for Your Score</p>
+                                <p className={`text-xs italic leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    "{aiRadarStats.ai_reasoning}"
+                                </p>
+                            </div>
+                        ) : (
+                            <div className={`pt-3 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+                                <p className="text-[11px] uppercase tracking-wider font-bold text-neutral-400 mb-1">AI Calculation Logic</p>
+                                <p className={`text-xs italic ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                    {METRIC_DEFINITIONS[hoveredLabel].logic}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

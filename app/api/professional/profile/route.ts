@@ -97,6 +97,13 @@ export async function GET(request: NextRequest) {
             }
         }
 
+        // Fetch AI radar stats
+        const { data: radarStats } = await supabaseAdmin
+            .from('professional_radar_stats')
+            .select('depth_score, execution_speed, collaboration_index, creativity_score, ai_reasoning, updated_at')
+            .eq('professional_id', user.id)
+            .maybeSingle();
+
         // Use Profile Location if set, otherwise use latest Activity Log location
         const location = decryptData(profUser.enc_location) || decryptData(profUser.enc_city) || activityLocation || '';
 
@@ -109,7 +116,8 @@ export async function GET(request: NextRequest) {
             profileImage,
             location,
             badgeType: profUser.badge_type || 'none',
-            isAvailableForHire: profUser.is_available_for_hire !== false // Default true
+            isAvailableForHire: profUser.is_available_for_hire !== false, // Default true
+            aiRadarStats: radarStats || null
         };
 
         const res = NextResponse.json({ profile });

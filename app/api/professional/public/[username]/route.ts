@@ -85,8 +85,8 @@ export async function GET(
             return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
         }
 
-        // Fetch additional data: experience, education
-        const [experienceRes, educationRes] = await Promise.all([
+        // Fetch additional data: experience, education, skills, ai stats
+        const [experienceRes, educationRes, skillsRes, aiStatsRes] = await Promise.all([
             supabaseAdmin
                 .from('professional.employment_history')
                 .select('job_title, company_name, start_date, end_date, is_current, description')
@@ -98,7 +98,17 @@ export async function GET(
                 .select('institution, degree, field_of_study, start_year, end_year')
                 .eq('professional_id', profile.id)
                 .order('end_year', { ascending: false })
-                .limit(5)
+                .limit(5),
+            supabaseAdmin
+                .from('professional.skills')
+                .select('id, name')
+                .eq('professional_id', profile.id)
+                .order('created_at', { ascending: false }),
+            supabaseAdmin
+                .from('professional_radar_stats')
+                .select('*')
+                .eq('professional_id', profile.id)
+                .maybeSingle()
         ]);
 
         const experience = experienceRes.data?.map((exp: { job_title: string; company_name: string; start_date: string; end_date: string | null; is_current: boolean; description: string | null }) => ({
@@ -130,6 +140,11 @@ export async function GET(
                 website: profile.website,
                 experience,
                 education,
+                skills: skillsRes.data?.map((s: { id: string; name: string }) => ({
+                    id: s.id,
+                    name: s.name
+                })) || [],
+                aiRadarStats: aiStatsRes.data || null,
                 createdAt: profile.created_at,
                 badgeType: profile.badge_type
             }

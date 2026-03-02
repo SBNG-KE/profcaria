@@ -19,10 +19,14 @@ interface ProfileInfoSectionProps {
     certifications: any[];
     awards: any[];
     otherProfiles: any[];
+    aiRadarStats?: any;
+
     // Handlers (optional in readOnly)
     onAdd?: (section: string, prefillData?: any, isVerifiedStack?: boolean) => void;
     onEdit?: (section: string, item: any, isVerifiedStack?: boolean) => void;
     onDelete?: (section: string, id: string) => void;
+    onGenerateAIScore?: () => void;
+    isGeneratingAIScore?: boolean;
 }
 
 export default function ProfileInfoSection({
@@ -34,9 +38,12 @@ export default function ProfileInfoSection({
     certifications,
     awards,
     otherProfiles,
+    aiRadarStats,
     onAdd,
     onEdit,
-    onDelete
+    onDelete,
+    onGenerateAIScore,
+    isGeneratingAIScore
 }: ProfileInfoSectionProps) {
     const { theme } = useTheme();
     // const isDark = propIsDark ?? (theme === 'dark'); // styling is now handled by CSS
@@ -257,7 +264,16 @@ export default function ProfileInfoSection({
 
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center relative z-10 w-full overflow-hidden">
                     <div className="w-full lg:w-1/2 flex-shrink-0 bg-neutral-50/50 dark:bg-black/20 rounded-[32px] p-0 md:p-2 border border-neutral-100 dark:border-neutral-800/50 shadow-inner overflow-hidden">
-                        <RadarSkillChart isDark={theme === 'dark' || (propIsDark ?? false)} skills={skills} employmentHistory={employmentHistory} otherProfiles={otherProfiles} />
+                        <RadarSkillChart
+                            isDark={theme === 'dark' || (propIsDark ?? false)}
+                            skills={skills}
+                            employmentHistory={employmentHistory}
+                            otherProfiles={otherProfiles}
+                            aiRadarStats={aiRadarStats}
+                            onGenerateAIScore={onGenerateAIScore}
+                            isGenerating={isGeneratingAIScore}
+                            readOnly={readOnly}
+                        />
                     </div>
 
                     <div className="w-full lg:w-1/2 space-y-6">

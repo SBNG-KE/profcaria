@@ -256,6 +256,8 @@ export default function ProfessionalHome() {
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [badgeType, setBadgeType] = useState<string | null>(null);
+  const [aiRadarStats, setAiRadarStats] = useState<any>(null);
+  const [isGeneratingAIScore, setIsGeneratingAIScore] = useState(false);
 
   // Inline Editing State
   const [isEditingName, setIsEditingName] = useState(false);
@@ -454,7 +456,10 @@ export default function ProfessionalHome() {
   const fetchProfile = async () => {
     setProfileLoading(true);
     try {
-      const userRes = await fetch('/api/auth/me');
+      const [userRes, profileRes] = await Promise.all([
+        fetch('/api/auth/me'),
+        fetch('/api/professional/profile')
+      ]);
       if (userRes.ok) {
         const userData = await userRes.json();
         if (userData.profile) {
@@ -472,6 +477,12 @@ export default function ProfessionalHome() {
           setImagePosition(userData.profile.imagePosition || 'center');
           setBadgeType(userData.profile.badgeType || 'none');
           setIsAvailableForHire(userData.profile.isAvailableForHire ?? true);
+        }
+      }
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        if (profileData.profile?.aiRadarStats) {
+          setAiRadarStats(profileData.profile.aiRadarStats);
         }
       }
     } catch (error) {
@@ -998,16 +1009,57 @@ export default function ProfessionalHome() {
         })
       });
       if (res.ok) {
-        setProfileMessage({ type: 'success', text: 'Profile saved successfully!' });
+        setProfileMessage({ type: 'success', text: 'Profile updated!' });
       } else {
-        const data = await res.json();
-        setProfileMessage({ type: 'error', text: data.error || 'Failed to save profile.' });
+        const err = await res.json();
+        setProfileMessage({ type: 'error', text: err.error || 'Failed to update.' });
       }
     } catch (error) {
-      console.error('Error saving profile:', error);
-      setProfileMessage({ type: 'error', text: 'An error occurred while saving.' });
+      console.error("Save profile error", error);
+      setProfileMessage({ type: 'error', text: 'Failed to save.' });
     } finally {
       setProfileLoading(false);
+      setTimeout(() => setProfileMessage(null), 3000);
+    }
+  };
+
+  const handleGenerateAIScore = async () => {
+    setIsGeneratingAIScore(true);
+    setProfileMessage(null);
+    try {
+      const res = await fetch('/api/professional/profile/ai-scores/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          skills,
+          employmentHistory: employmentHistory.map((e: any) => ({
+            title: e.job_title || e.title,
+            company_name: e.company_name || e.company,
+            startDate: e.start_date || e.startDate,
+            endDate: e.end_date || e.endDate,
+            isCurrent: e.is_current || e.isCurrent
+          })),
+          otherProfiles: otherProfiles.map((p: any) => ({
+            platform: p.platform,
+            url: p.url,
+            description: p.description
+          }))
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAiRadarStats(data.data || data.scores || data);
+        setProfileMessage({ type: 'success', text: 'AI Skills Analysis completed!' });
+      } else {
+        const err = await res.json();
+        setProfileMessage({ type: 'error', text: err.error || 'Failed to generate AI score.' });
+      }
+    } catch (error) {
+      console.error("Generate AI score error", error);
+      setProfileMessage({ type: 'error', text: 'An unexpected error occurred.' });
+    } finally {
+      setIsGeneratingAIScore(false);
+      setTimeout(() => setProfileMessage(null), 3000);
     }
   };
 
@@ -2231,6 +2283,9 @@ export default function ProfessionalHome() {
                   certifications={certifications}
                   awards={awards}
                   otherProfiles={otherProfiles}
+                  aiRadarStats={aiRadarStats}
+                  onGenerateAIScore={handleGenerateAIScore}
+                  isGeneratingAIScore={isGeneratingAIScore}
                   onAdd={(section, prefillData, isVerifiedStack) => {
                     setActiveSection(section);
                     setFormData({ ...prefillData, ...(isVerifiedStack ? { isCurrent: true, _isVerifiedStack: true } : {}) });
