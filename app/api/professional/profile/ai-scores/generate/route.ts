@@ -7,181 +7,163 @@ import { HfInference } from '@huggingface/inference';
 const HF_TOKEN = process.env.HF_TOKEN;
 
 export async function POST(req: Request) {
-    console.log('[AI Scores] === START === Endpoint hit');
-    try {
-        console.log('[AI Scores] Step 1: Authenticating user...');
-        const user = await getAuthenticatedUser();
+    // Diagnostic tracking
+    let lastStep = 'init';
 
+    try {
+        // Step 1: Auth
+        lastStep = 'auth';
+        const user = await getAuthenticatedUser();
         if (!user) {
-            console.error('[AI Scores] Step 1 FAILED: No authenticated user');
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
-
         const userId = user.id;
-        console.log('[AI Scores] Step 1 OK: User ID =', userId);
 
-        // Verify HF token
-        console.log('[AI Scores] Step 2: Checking HF_TOKEN...', HF_TOKEN ? 'EXISTS' : 'MISSING');
+        // Step 2: HF Token
+        lastStep = 'hf_token_check';
         if (!HF_TOKEN) {
-            console.error('[AI Scores] Step 2 FAILED: HF_TOKEN is not set in environment');
-            return NextResponse.json({ error: 'AI Evaluation is unconfigured on the server.' }, { status: 500 });
+            return NextResponse.json({ error: 'AI service not configured. Set HF_TOKEN.', step: lastStep }, { status: 500 });
         }
 
-        // Fetch user data server-side using correct encrypted column names
-        console.log('[AI Scores] Step 3: Fetching user data from DB...');
-        const [skillsRes, employmentRes, otherProfilesRes] = await Promise.all([
-            supabaseAdmin
-                .schema('professional')
-                .from('skills')
-                .select('enc_name')
-                .eq('user_id', userId),
-            supabaseAdmin
-                .schema('professional')
-                .from('employment_history')
-                .select('enc_title, enc_company, enc_start_date, enc_end_date, is_current')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false }),
-            supabaseAdmin
-                .schema('professional')
-                .from('other_profiles')
-                .select('enc_network, enc_url, enc_description')
-                .eq('user_id', userId)
-        ]);
+        // Step 3: Fetch skills
+        lastStep = 'fetch_skills';
+        const skillsRes = await supabaseAdmin
+            .schema('professional')
+            .from('skills')
+            .select('enc_name')
+            .eq('user_id', userId);
 
-        if (skillsRes.error) console.error('[AI Scores] Step 3 DB Error (skills):', JSON.stringify(skillsRes.error));
-        if (employmentRes.error) console.error('[AI Scores] Step 3 DB Error (employment):', JSON.stringify(employmentRes.error));
-        if (otherProfilesRes.error) console.error('[AI Scores] Step 3 DB Error (otherProfiles):', JSON.stringify(otherProfilesRes.error));
+        if (skillsRes.error) {
+            return NextResponse.json({ error: 'DB error fetching skills', step: lastStep, detail: skillsRes.error.message }, { status: 500 });
+        }
 
-        // Decrypt the data
-        const skills = (skillsRes.data || []).map((s: any) => ({
-            name: s.enc_name ? decryptData(s.enc_name) : null
-        })).filter((s: any) => s.name);
-
-        const employmentHistory = (employmentRes.data || []).map((j: any) => ({
-            title: j.enc_title ? decryptData(j.enc_title) : null,
-            company: j.enc_company ? decryptData(j.enc_company) : null,
-            startDate: j.enc_start_date ? decryptData(j.enc_start_date) : null,
-            endDate: j.enc_end_date ? decryptData(j.enc_end_date) : null,
-            isCurrent: j.is_current
-        }));
-
-        const otherProfiles = (otherProfilesRes.data || []).map((p: any) => ({
-            network: p.enc_network ? decryptData(p.enc_network) : null,
-            url: p.enc_url ? decryptData(p.enc_url) : null,
-            description: p.enc_description ? decryptData(p.enc_description) : null
-        }));
-
-        console.log(`[AI Scores] Step 3 OK: ${skills.length} skills, ${employmentHistory.length} jobs, ${otherProfiles.length} profiles`);
+        // Step 4: Decrypt skills
+        lastStep = 'decrypt_skills';
+        const skills = (skillsRes.data || [])
+            .map((s: any) => {
+                try { return s.enc_name ? decryptData(s.enc_name) : null; } catch { return null; }
+            })
+            .filter(Boolean);
 
         if (skills.length === 0) {
-            console.warn('[AI Scores] Step 3 STOPPED: No skills found for user');
-            return NextResponse.json({ error: 'Please add at least one skill to your profile before generating AI scores.' }, { status: 400 });
+            return NextResponse.json({ error: 'No skills found. Add skills to your profile first.', step: lastStep, rawCount: skillsRes.data?.length || 0 }, { status: 400 });
         }
 
-        // Prepare Prompt
-        const skillList = skills.map((s: any) => s.name).join(', ');
-        const jobList = employmentHistory.map((j: any) =>
-            `${j.title || 'Unknown Role'} at ${j.company || 'Unknown Company'} (${j.startDate ? new Date(j.startDate).getFullYear() : 'Unknown'} - ${j.isCurrent ? 'Present' : (j.endDate ? new Date(j.endDate).getFullYear() : 'Unknown')})`
-        ).join('; ');
-        const extractedSkills = otherProfiles.map((p: any) => p.description).filter(Boolean).join(' | ');
+        // Step 5: Fetch employment
+        lastStep = 'fetch_employment';
+        const employmentRes = await supabaseAdmin
+            .schema('professional')
+            .from('employment_history')
+            .select('enc_title, enc_company, enc_start_date, enc_end_date, is_current')
+            .eq('user_id', userId);
 
-        console.log('[AI Scores] Step 3 Data: Skills=', skillList);
+        // Step 6: Decrypt employment
+        lastStep = 'decrypt_employment';
+        const jobs = (employmentRes.data || []).map((j: any) => {
+            try {
+                const title = j.enc_title ? decryptData(j.enc_title) : 'Unknown';
+                const company = j.enc_company ? decryptData(j.enc_company) : 'Unknown';
+                return `${title} at ${company}`;
+            } catch { return null; }
+        }).filter(Boolean);
 
-        const promptContext = `
-The user is a professional in the tech/business industry.
-Analyze their profile:
+        // Step 7: Fetch other profiles
+        lastStep = 'fetch_other_profiles';
+        const profilesRes = await supabaseAdmin
+            .schema('professional')
+            .from('other_profiles')
+            .select('enc_description')
+            .eq('user_id', userId);
+
+        // Step 8: Decrypt profiles
+        lastStep = 'decrypt_profiles';
+        const profileDescriptions = (profilesRes.data || []).map((p: any) => {
+            try { return p.enc_description ? decryptData(p.enc_description) : null; } catch { return null; }
+        }).filter(Boolean);
+
+        // Step 9: Build prompt
+        lastStep = 'build_prompt';
+        const skillList = skills.join(', ');
+        const jobList = jobs.join('; ') || 'None provided';
+        const profileContext = profileDescriptions.join(' | ') || 'None provided';
+
+        const prompt = `You are evaluating a professional's skills profile. Analyze and return ONLY valid JSON with scores from 0-100.
+
 Skills: ${skillList}
-Employment History: ${jobList || 'None provided'}
-Additional Skills/Projects Context: ${extractedSkills || 'None provided'}
+Employment: ${jobList}
+Additional context: ${profileContext}
 
-Task: Generate a JSON object scoring this professional from 0 to 100 in four specific categories based strictly on the provided data.
-Categories:
-- "depth_score": Technical understanding, complex/backend skills, system architecture presence.
-- "execution_speed": Velocity of delivery, frontend/agile tools, fast job transitions or promotions.
-- "collaboration_index": Teamwork tools (Jira, Slack, Agile), long tenures showing stability, leadership roles.
-- "creativity_score": UI/UX design, writing, problem-solving skills, creative portfolios.
-- "ai_reasoning": A 1-2 sentence explanation of why these score indexes were given based on the specific skills or jobs you see.
+Return this exact JSON structure with integer scores:
+{"depth_score": 0, "execution_speed": 0, "collaboration_index": 0, "creativity_score": 0, "ai_reasoning": "explanation"}
 
-Output nothing but valid JSON. Example:
-{
-  "depth_score": 85,
-  "execution_speed": 70,
-  "collaboration_index": 90,
-  "creativity_score": 65,
-  "ai_reasoning": "High collaboration due to 3-year tenure at Acme Corp and agile tools. Strong depth from Rust and C++."
-}
-        `;
+depth_score = technical depth and backend/system skills
+execution_speed = delivery velocity, frontend tools, agile experience
+collaboration_index = teamwork, leadership, stability in roles
+creativity_score = design, creative problem solving, unique approaches`;
 
+        // Step 10: Call HuggingFace
+        lastStep = 'hf_call';
         const hf = new HfInference(HF_TOKEN);
+        const hfResponse = await hf.chatCompletion({
+            model: 'Qwen/Qwen2.5-3B-Instruct',
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 300,
+            temperature: 0.1,
+        });
 
-        // Using Qwen2.5 — universally available, no license gate
-        const MODEL = 'Qwen/Qwen2.5-3B-Instruct';
-        console.log(`[AI Scores] Step 4: Calling HuggingFace ${MODEL}...`);
-        let response;
-        try {
-            response = await hf.chatCompletion({
-                model: MODEL,
-                messages: [{ role: 'user', content: promptContext }],
-                max_tokens: 300,
-                temperature: 0.1,
-            });
-            console.log('[AI Scores] Step 4 OK: Got response from HuggingFace');
-        } catch (hfError: any) {
-            console.error('[AI Scores] Step 4 FAILED: HuggingFace API error:', hfError?.message || hfError);
-            return NextResponse.json({ error: `AI model error: ${hfError?.message || 'Unknown HuggingFace failure'}` }, { status: 500 });
+        // Step 11: Parse response
+        lastStep = 'parse_response';
+        const rawContent = hfResponse.choices?.[0]?.message?.content || '';
+        const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            return NextResponse.json({ error: 'AI did not return JSON', step: lastStep, raw: rawContent.substring(0, 200) }, { status: 500 });
         }
 
-        const rawContent = response.choices?.[0]?.message?.content || '';
-        console.log('[AI Scores] Step 5: Raw AI output:', rawContent);
-
-        // Parse the JSON
-        let parsedResult;
+        // Step 12: Parse JSON
+        lastStep = 'parse_json';
+        let scores;
         try {
-            const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-            const jsonString = jsonMatch ? jsonMatch[0] : rawContent;
-            parsedResult = JSON.parse(jsonString);
-            console.log('[AI Scores] Step 5 OK: Parsed JSON:', JSON.stringify(parsedResult));
-        } catch (e) {
-            console.error('[AI Scores] Step 5 FAILED: JSON parse error. Raw:', rawContent);
-            return NextResponse.json({ error: 'AI generated invalid response. Please try again.' }, { status: 500 });
+            scores = JSON.parse(jsonMatch[0]);
+        } catch (e: any) {
+            return NextResponse.json({ error: 'Invalid JSON from AI', step: lastStep, raw: jsonMatch[0].substring(0, 200) }, { status: 500 });
         }
 
-        // Validate structure
-        console.log('[AI Scores] Step 6: Validating score fields...');
-        const requiredFields = ['depth_score', 'execution_speed', 'collaboration_index', 'creativity_score'];
-        for (const field of requiredFields) {
-            if (typeof parsedResult[field] !== 'number') {
-                console.error(`[AI Scores] Step 6 FAILED: Missing or invalid field: ${field}`, parsedResult);
-                return NextResponse.json({ error: 'AI generated incomplete scores. Please try again.' }, { status: 500 });
+        // Step 13: Validate
+        lastStep = 'validate';
+        const fields = ['depth_score', 'execution_speed', 'collaboration_index', 'creativity_score'];
+        for (const f of fields) {
+            if (typeof scores[f] !== 'number') {
+                return NextResponse.json({ error: `Missing field: ${f}`, step: lastStep, scores }, { status: 500 });
             }
         }
-        console.log('[AI Scores] Step 6 OK: All fields valid');
 
-        // Save to DB (Upsert)
-        console.log('[AI Scores] Step 7: Saving scores to DB...');
+        // Step 14: Save to DB
+        lastStep = 'db_save';
         const { error: dbError } = await supabaseAdmin
             .from('professional_radar_stats')
             .upsert({
                 professional_id: userId,
-                depth_score: Math.min(Math.max(Math.round(parsedResult.depth_score), 0), 100),
-                execution_speed: Math.min(Math.max(Math.round(parsedResult.execution_speed), 0), 100),
-                collaboration_index: Math.min(Math.max(Math.round(parsedResult.collaboration_index), 0), 100),
-                creativity_score: Math.min(Math.max(Math.round(parsedResult.creativity_score), 0), 100),
-                ai_reasoning: parsedResult.ai_reasoning || 'No reasoning provided.',
+                depth_score: Math.min(Math.max(Math.round(scores.depth_score), 0), 100),
+                execution_speed: Math.min(Math.max(Math.round(scores.execution_speed), 0), 100),
+                collaboration_index: Math.min(Math.max(Math.round(scores.collaboration_index), 0), 100),
+                creativity_score: Math.min(Math.max(Math.round(scores.creativity_score), 0), 100),
+                ai_reasoning: scores.ai_reasoning || '',
                 updated_at: new Date().toISOString()
             }, { onConflict: 'professional_id' });
 
         if (dbError) {
-            console.error('[AI Scores] Step 7 FAILED: DB upsert error:', JSON.stringify(dbError));
-            return NextResponse.json({ error: 'Failed to save scores.' }, { status: 500 });
+            return NextResponse.json({ error: 'Failed to save scores', step: lastStep, detail: dbError.message }, { status: 500 });
         }
 
-        console.log('[AI Scores] === DONE === Success for user:', userId, 'Scores:', JSON.stringify(parsedResult));
-        return NextResponse.json({ success: true, data: parsedResult });
+        // Done!
+        return NextResponse.json({ success: true, data: scores });
 
     } catch (error: any) {
-        console.error('[AI Scores] === CRASHED === Unhandled error:', error?.message || error);
-        console.error('[AI Scores] Stack:', error?.stack);
-        return NextResponse.json({ error: `Server error: ${error?.message || 'Internal Server Error'}` }, { status: 500 });
+        // Return the exact step and error in the response body
+        return NextResponse.json({
+            error: error?.message || 'Unknown error',
+            step: lastStep,
+            stack: error?.stack?.split('\n').slice(0, 3).join(' | ')
+        }, { status: 500 });
     }
 }

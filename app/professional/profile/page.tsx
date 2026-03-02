@@ -1036,7 +1036,8 @@ export default function ProfessionalHome() {
         setProfileMessage({ type: 'success', text: 'AI Skills Analysis completed!' });
       } else {
         const err = await res.json();
-        setProfileMessage({ type: 'error', text: err.error || 'Failed to generate AI score.' });
+        console.error('[AI Scores] Full error response:', JSON.stringify(err));
+        setProfileMessage({ type: 'error', text: `${err.error || 'Failed to generate AI score.'}${err.step ? ` (step: ${err.step})` : ''}` });
       }
     } catch (error) {
       console.error("Generate AI score error", error);
