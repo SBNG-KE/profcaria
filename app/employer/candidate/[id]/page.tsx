@@ -24,7 +24,7 @@ async function getVerificationData(userId: string) {
     const checks: { label: string; icon: string; status: 'verified' | 'partial' | 'unverified'; detail: string }[] = [];
 
     // 1. Identity — badge_type
-    const { data: user } = await supabaseAdmin.schema('professional').from('users').select('badge_type, two_factor_enabled').eq('id', userId).single();
+    const { data: user } = await supabaseAdmin.schema('professional').from('users').select('badge_type').eq('id', userId).single();
     const badge = user?.badge_type || 'none';
     checks.push({
         label: 'Identity',
@@ -85,8 +85,8 @@ async function getVerificationData(userId: string) {
     checks.push({
         label: 'Account Security',
         icon: 'lock',
-        status: user?.two_factor_enabled ? 'verified' : 'unverified',
-        detail: user?.two_factor_enabled ? '2FA enabled' : '2FA not enabled',
+        status: 'unverified',
+        detail: '2FA not enabled',
     });
 
     const verified = checks.filter(c => c.status === 'verified').length;
@@ -149,7 +149,7 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
     const bio = decryptData(user.enc_bio as string);
     const cvUrl = decryptData(user.enc_cv_url as string);
     const role = user.primary_role;
-    const location = decryptData(user.enc_location as string) || decryptData(user.enc_city as string);
+    const location = '';
     const email = decryptData(user.enc_email as string);
     const phone = decryptData(user.enc_phone_number as string);
     const intentMode = user.intent_mode;

@@ -71,10 +71,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 email_index,
                 default_doc_mode,
                 badge_type,
-                two_factor_enabled,
-                intent_mode,
-                enc_city,
-                enc_location
+                intent_mode
             `)
             .eq('id', professionalId)
             .single();
@@ -95,7 +92,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             about: decryptData(prof.enc_about),
             phone: decryptData(prof.enc_phone_number),
             email: decryptData(prof.enc_email),
-            city: decryptData(prof.enc_city) || decryptData(prof.enc_location) || '',
+            city: '',
             country: '',
             badgeType: prof.badge_type || 'none',
             intentMode: prof.intent_mode || 'not_looking',
