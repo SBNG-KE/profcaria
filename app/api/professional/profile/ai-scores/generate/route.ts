@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
+import { decryptData } from '@/lib/security';
 import { HfInference } from '@huggingface/inference';
 
 const HF_TOKEN = process.env.HF_TOKEN;
@@ -16,8 +17,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const professionalId = user.id;
-        console.log('[AI Scores] Step 1 OK: User ID =', professionalId);
+        const userId = user.id;
+        console.log('[AI Scores] Step 1 OK: User ID =', userId);
 
         // Verify HF token
         console.log('[AI Scores] Step 2: Checking HF_TOKEN...', HF_TOKEN ? 'EXISTS' : 'MISSING');
@@ -26,34 +27,49 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'AI Evaluation is unconfigured on the server.' }, { status: 500 });
         }
 
-        // Fetch user data server-side
+        // Fetch user data server-side using correct encrypted column names
         console.log('[AI Scores] Step 3: Fetching user data from DB...');
         const [skillsRes, employmentRes, otherProfilesRes] = await Promise.all([
             supabaseAdmin
                 .schema('professional')
                 .from('skills')
-                .select('name')
-                .eq('professional_id', professionalId),
+                .select('enc_name')
+                .eq('user_id', userId),
             supabaseAdmin
                 .schema('professional')
                 .from('employment_history')
-                .select('job_title, company_name, start_date, end_date, is_current')
-                .eq('professional_id', professionalId)
-                .order('start_date', { ascending: false }),
+                .select('enc_title, enc_company, enc_start_date, enc_end_date, is_current')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false }),
             supabaseAdmin
                 .schema('professional')
                 .from('other_profiles')
-                .select('platform, url, description')
-                .eq('professional_id', professionalId)
+                .select('enc_network, enc_url, enc_description')
+                .eq('user_id', userId)
         ]);
 
-        if (skillsRes.error) console.error('[AI Scores] Step 3 DB Error (skills):', skillsRes.error);
-        if (employmentRes.error) console.error('[AI Scores] Step 3 DB Error (employment):', employmentRes.error);
-        if (otherProfilesRes.error) console.error('[AI Scores] Step 3 DB Error (otherProfiles):', otherProfilesRes.error);
+        if (skillsRes.error) console.error('[AI Scores] Step 3 DB Error (skills):', JSON.stringify(skillsRes.error));
+        if (employmentRes.error) console.error('[AI Scores] Step 3 DB Error (employment):', JSON.stringify(employmentRes.error));
+        if (otherProfilesRes.error) console.error('[AI Scores] Step 3 DB Error (otherProfiles):', JSON.stringify(otherProfilesRes.error));
 
-        const skills = skillsRes.data || [];
-        const employmentHistory = employmentRes.data || [];
-        const otherProfiles = otherProfilesRes.data || [];
+        // Decrypt the data
+        const skills = (skillsRes.data || []).map((s: any) => ({
+            name: s.enc_name ? decryptData(s.enc_name) : null
+        })).filter((s: any) => s.name);
+
+        const employmentHistory = (employmentRes.data || []).map((j: any) => ({
+            title: j.enc_title ? decryptData(j.enc_title) : null,
+            company: j.enc_company ? decryptData(j.enc_company) : null,
+            startDate: j.enc_start_date ? decryptData(j.enc_start_date) : null,
+            endDate: j.enc_end_date ? decryptData(j.enc_end_date) : null,
+            isCurrent: j.is_current
+        }));
+
+        const otherProfiles = (otherProfilesRes.data || []).map((p: any) => ({
+            network: p.enc_network ? decryptData(p.enc_network) : null,
+            url: p.enc_url ? decryptData(p.enc_url) : null,
+            description: p.enc_description ? decryptData(p.enc_description) : null
+        }));
 
         console.log(`[AI Scores] Step 3 OK: ${skills.length} skills, ${employmentHistory.length} jobs, ${otherProfiles.length} profiles`);
 
@@ -65,9 +81,11 @@ export async function POST(req: Request) {
         // Prepare Prompt
         const skillList = skills.map((s: any) => s.name).join(', ');
         const jobList = employmentHistory.map((j: any) =>
-            `${j.job_title} at ${j.company_name} (${j.start_date ? new Date(j.start_date).getFullYear() : 'Unknown'} - ${j.is_current ? 'Present' : (j.end_date ? new Date(j.end_date).getFullYear() : 'Unknown')})`
+            `${j.title || 'Unknown Role'} at ${j.company || 'Unknown Company'} (${j.startDate ? new Date(j.startDate).getFullYear() : 'Unknown'} - ${j.isCurrent ? 'Present' : (j.endDate ? new Date(j.endDate).getFullYear() : 'Unknown')})`
         ).join('; ');
         const extractedSkills = otherProfiles.map((p: any) => p.description).filter(Boolean).join(' | ');
+
+        console.log('[AI Scores] Step 3 Data: Skills=', skillList);
 
         const promptContext = `
 The user is a professional in the tech/business industry.
@@ -96,7 +114,7 @@ Output nothing but valid JSON. Example:
 
         const hf = new HfInference(HF_TOKEN);
 
-        console.log('[AI Scores] Step 4: Calling HuggingFace Llama-3.2-3B-Instruct... Skills:', skillList);
+        console.log('[AI Scores] Step 4: Calling HuggingFace Llama-3.2-3B-Instruct...');
         const response = await hf.chatCompletion({
             model: 'meta-llama/Llama-3.2-3B-Instruct',
             messages: [{ role: 'user', content: promptContext }],
@@ -114,26 +132,29 @@ Output nothing but valid JSON. Example:
             const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
             const jsonString = jsonMatch ? jsonMatch[0] : rawContent;
             parsedResult = JSON.parse(jsonString);
+            console.log('[AI Scores] Step 5 OK: Parsed JSON:', JSON.stringify(parsedResult));
         } catch (e) {
-            console.error('[AI Scores] JSON parse failed. Raw:', rawContent);
+            console.error('[AI Scores] Step 5 FAILED: JSON parse error. Raw:', rawContent);
             return NextResponse.json({ error: 'AI generated invalid response. Please try again.' }, { status: 500 });
         }
 
         // Validate structure
+        console.log('[AI Scores] Step 6: Validating score fields...');
         const requiredFields = ['depth_score', 'execution_speed', 'collaboration_index', 'creativity_score'];
         for (const field of requiredFields) {
             if (typeof parsedResult[field] !== 'number') {
-                console.error(`[AI Scores] Missing or invalid field: ${field}`, parsedResult);
+                console.error(`[AI Scores] Step 6 FAILED: Missing or invalid field: ${field}`, parsedResult);
                 return NextResponse.json({ error: 'AI generated incomplete scores. Please try again.' }, { status: 500 });
             }
         }
+        console.log('[AI Scores] Step 6 OK: All fields valid');
 
         // Save to DB (Upsert)
         console.log('[AI Scores] Step 7: Saving scores to DB...');
         const { error: dbError } = await supabaseAdmin
             .from('professional_radar_stats')
             .upsert({
-                professional_id: professionalId,
+                professional_id: userId,
                 depth_score: Math.min(Math.max(Math.round(parsedResult.depth_score), 0), 100),
                 execution_speed: Math.min(Math.max(Math.round(parsedResult.execution_speed), 0), 100),
                 collaboration_index: Math.min(Math.max(Math.round(parsedResult.collaboration_index), 0), 100),
@@ -147,7 +168,7 @@ Output nothing but valid JSON. Example:
             return NextResponse.json({ error: 'Failed to save scores.' }, { status: 500 });
         }
 
-        console.log('[AI Scores] === DONE === Success for user:', professionalId, 'Scores:', JSON.stringify(parsedResult));
+        console.log('[AI Scores] === DONE === Success for user:', userId, 'Scores:', JSON.stringify(parsedResult));
         return NextResponse.json({ success: true, data: parsedResult });
 
     } catch (error: any) {
