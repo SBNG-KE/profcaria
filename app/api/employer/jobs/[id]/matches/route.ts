@@ -65,6 +65,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 enc_current_role,
                 enc_profile_image_url,
                 is_available_for_hire,
+                intent_mode,
                 preferences!inner (
                     target_roles,
                     work_modes,
@@ -110,7 +111,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
             // Filter: Not Available (unless already invited)
             const inviteStatus = inviteMap.get(pro.id);
-            if (pro.is_available_for_hire === false && !inviteStatus) return null;
+            const intent = pro.intent_mode || (pro.is_available_for_hire === false ? 'not_looking' : 'open_to_offers');
+            if (intent === 'not_looking' && !inviteStatus) return null;
 
             let score = 0;
             const prefs = pro.preferences || {};
@@ -218,6 +220,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                 else if (hoursAgo < 168) score += 5; // 1 week
                 else score += 2; // Older
             }
+
+            // F2. Intent Mode Boost (Max 10 pts)
+            if (intent === 'actively_looking') score += 10;
+            else if (intent === 'open_to_offers') score += 5;
+            else if (intent === 'open_to_freelance' && job.employment_type === 'contract') score += 8;
 
             // F. Semantic ML Match (Primary Factor ~45 pts)
             // Uses pre-computed embeddings for meaning-based matching

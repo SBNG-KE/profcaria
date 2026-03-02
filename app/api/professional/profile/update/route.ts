@@ -33,13 +33,22 @@ export async function PUT(req: Request) {
             city,
             address,
             about,
-            imagePosition, // Add this
-            isAvailableForHire // Add this
+            imagePosition,
+            isAvailableForHire,
+            intentMode
         } = body;
+
+        // Valid intent modes
+        const VALID_INTENT_MODES = ['not_looking', 'open_to_offers', 'actively_looking', 'open_to_freelance', 'open_to_cofounder'];
 
         // 3. Update User Table (Name, Role, Email, Phone)
         const userUpdates: any = {};
         if (typeof isAvailableForHire === 'boolean') userUpdates.is_available_for_hire = isAvailableForHire;
+        if (intentMode && VALID_INTENT_MODES.includes(intentMode)) {
+            userUpdates.intent_mode = intentMode;
+            // Keep is_available_for_hire in sync
+            userUpdates.is_available_for_hire = intentMode !== 'not_looking';
+        }
         if (imagePosition) userUpdates.image_position = imagePosition; // Save unencrypted
         if (firstName) userUpdates.enc_first_name = encryptData(firstName);
         if (lastName) userUpdates.enc_last_name = encryptData(lastName);

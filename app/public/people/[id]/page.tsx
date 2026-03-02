@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { getFollowerCount } from '@/lib/followers';
-import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight } from 'lucide-react';
+import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight, Eye, Rocket, Code2, Handshake, XCircle } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import VerificationBadge from '@/app/components/VerificationBadge';
@@ -87,6 +87,16 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const phone = profile.enc_phone_number ? decryptData(profile.enc_phone_number) : '';
     const profileImageUrl = profile.enc_profile_image_url ? decryptData(profile.enc_profile_image_url) : '';
     const imagePosition = profile.image_position || '50% 50%';
+    const intentMode = profile.intent_mode || 'open_to_offers';
+
+    // Fetch intent headline from preferences
+    const { data: prefsData } = await supabaseAdmin
+        .schema('professional')
+        .from('preferences')
+        .select('enc_intent_headline')
+        .eq('user_id', id)
+        .maybeSingle();
+    const intentHeadline = prefsData?.enc_intent_headline ? decryptData(prefsData.enc_intent_headline) : '';
 
     // Fetch Sections
     // Fetch Sections
@@ -331,6 +341,30 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                     <div className="flex items-center gap-2 mt-1 text-xs text-neutral-500 dark:text-neutral-500">
                                         {city && country && <span className="flex items-center gap-1"><MapPin size={12} /> {city}, {country}</span>}
                                     </div>
+                                    {/* Intent Mode Badge */}
+                                    {intentMode && intentMode !== 'not_looking' && (
+                                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${intentMode === 'actively_looking' ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400' :
+                                                    intentMode === 'open_to_freelance' ? 'border-purple-200 bg-purple-50 text-purple-600 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-400' :
+                                                        intentMode === 'open_to_cofounder' ? 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-400' :
+                                                            'border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-400'
+                                                }`}>
+                                                {intentMode === 'actively_looking' && <Rocket size={11} />}
+                                                {intentMode === 'open_to_offers' && <Eye size={11} />}
+                                                {intentMode === 'open_to_freelance' && <Code2 size={11} />}
+                                                {intentMode === 'open_to_cofounder' && <Handshake size={11} />}
+                                                {intentMode === 'actively_looking' ? 'Actively Looking' :
+                                                    intentMode === 'open_to_freelance' ? 'Open to Freelance' :
+                                                        intentMode === 'open_to_cofounder' ? 'Open to Co-found' :
+                                                            'Open to Offers'}
+                                            </span>
+                                            {intentHeadline && (
+                                                <span className="text-xs text-neutral-500 dark:text-neutral-400 italic">
+                                                    {intentHeadline}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Action Buttons Row */}

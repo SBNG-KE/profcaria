@@ -11,7 +11,7 @@ import {
   GraduationCap, Award, BadgeCheck, Briefcase, Link2, Trash2, PenLine, Move, Copy,
   Building2, Globe, MapPin, Mail, Camera, Save, Loader2, ArrowRight,
   Eye, ThumbsUp, MessageSquare, MoreHorizontal, User, Activity, Phone, Users, Repeat2,
-  Upload, FileUp, Download, Replace, File
+  Upload, FileUp, Download, Replace, File, Target, Rocket, Handshake, Code2, DollarSign, XCircle
 } from 'lucide-react';
 import VerificationBadge from '@/app/components/VerificationBadge';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -253,6 +253,8 @@ export default function ProfessionalHome() {
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
   const [isAvailableForHire, setIsAvailableForHire] = useState<boolean>(true);
+  const [intentMode, setIntentMode] = useState<string>('open_to_offers');
+  const [intentDropdownOpen, setIntentDropdownOpen] = useState(false);
   const [profileMessage, setProfileMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [badgeType, setBadgeType] = useState<string | null>(null);
@@ -277,6 +279,8 @@ export default function ProfessionalHome() {
   const [locationInput, setLocationInput] = useState('');
   const [isOpenToRelocation, setIsOpenToRelocation] = useState(false);
   const [experienceYearRanges, setExperienceYearRanges] = useState<string[]>([]);
+  const [intentHeadline, setIntentHeadline] = useState('');
+  const [minSalary, setMinSalary] = useState('');
 
   // Image Positioning State (Professional)
   const [imagePosition, setImagePosition] = useState<string>('50% 50%');
@@ -477,6 +481,7 @@ export default function ProfessionalHome() {
           setImagePosition(userData.profile.imagePosition || 'center');
           setBadgeType(userData.profile.badgeType || 'none');
           setIsAvailableForHire(userData.profile.isAvailableForHire ?? true);
+          setIntentMode(userData.profile.intentMode || 'open_to_offers');
         }
       }
       if (profileRes.ok) {
@@ -684,6 +689,8 @@ export default function ProfessionalHome() {
           setPreferredCountries(prefs.preferred_locations?.countries || []);
           setIsOpenToRelocation(prefs.is_open_to_relocation || false);
           setExperienceYearRanges(prefs.experience_years_ranges || []);
+          setIntentHeadline(prefs.intent_headline || '');
+          setMinSalary(prefs.min_salary || '');
         }
       }
     } catch (error) {
@@ -1005,7 +1012,8 @@ export default function ProfessionalHome() {
           role,
           about,
           imagePosition,
-          isAvailableForHire
+          isAvailableForHire,
+          intentMode
         })
       });
       if (res.ok) {
@@ -1074,7 +1082,9 @@ export default function ProfessionalHome() {
           work_modes: workModes,
           employment_types: employmentTypes,
           is_open_to_relocation: isOpenToRelocation,
-          experience_years_ranges: experienceYearRanges
+          experience_years_ranges: experienceYearRanges,
+          intent_headline: intentHeadline,
+          min_salary: minSalary
         })
       });
       if (res.ok) {
@@ -1138,24 +1148,40 @@ export default function ProfessionalHome() {
     }
   };
 
-  const handleToggleAvailability = async (checked: boolean) => {
-    setIsAvailableForHire(checked);
+  const INTENT_MODES = [
+    { value: 'not_looking', label: 'Not Looking', icon: XCircle, color: 'neutral', desc: 'Not open to any opportunities' },
+    { value: 'open_to_offers', label: 'Open to Offers', icon: Eye, color: 'blue', desc: 'Passively considering the right opportunity' },
+    { value: 'actively_looking', label: 'Actively Looking', icon: Rocket, color: 'emerald', desc: 'Actively seeking new roles' },
+    { value: 'open_to_freelance', label: 'Open to Freelance', icon: Code2, color: 'purple', desc: 'Available for contract & freelance work' },
+    { value: 'open_to_cofounder', label: 'Open to Co-found', icon: Handshake, color: 'amber', desc: 'Looking for co-founder opportunities' },
+  ];
+
+  const handleIntentModeChange = async (mode: string) => {
+    const prevMode = intentMode;
+    setIntentMode(mode);
+    setIsAvailableForHire(mode !== 'not_looking');
+    setIntentDropdownOpen(false);
     try {
       const res = await fetch('/api/professional/profile/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isAvailableForHire: checked })
+        body: JSON.stringify({ intentMode: mode })
       });
       if (!res.ok) {
-        setProfileMessage({ type: 'error', text: 'Failed to update availability.' });
-        // Revert on failure
-        setIsAvailableForHire(!checked);
+        setProfileMessage({ type: 'error', text: 'Failed to update intent mode.' });
+        setIntentMode(prevMode);
+        setIsAvailableForHire(prevMode !== 'not_looking');
       }
     } catch (error) {
-      console.error('Error updating availability:', error);
-      setProfileMessage({ type: 'error', text: 'Error updating availability.' });
-      setIsAvailableForHire(!checked);
+      console.error('Error updating intent mode:', error);
+      setProfileMessage({ type: 'error', text: 'Error updating intent mode.' });
+      setIntentMode(prevMode);
+      setIsAvailableForHire(prevMode !== 'not_looking');
     }
+  };
+
+  const handleToggleAvailability = async (checked: boolean) => {
+    handleIntentModeChange(checked ? 'open_to_offers' : 'not_looking');
   };
 
   // --- EDITOR COMMANDS ---
@@ -2080,21 +2106,54 @@ export default function ProfessionalHome() {
                           )}
                         </div>
 
-                        {/* Availability Toggle */}
-                        <div className="flex items-center gap-3 mt-2">
-                          <label className={`relative inline-flex items-center cursor-pointer`}>
-                            <input
-                              type="checkbox"
-                              checked={isAvailableForHire}
-                              onChange={(e) => handleToggleAvailability(e.target.checked)}
-                              className="sr-only peer"
-                            />
-                            <div className={`w-9 h-5 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 transition-colors ${isDark ? 'bg-neutral-700 peer-checked:bg-emerald-500' : 'bg-neutral-200 peer-checked:bg-emerald-500'}`}></div>
-                            <div className={`absolute top-[2px] left-[2px] bg-white border border-gray-300 border-none rounded-full h-4 w-4 transition-all peer-checked:translate-x-full`}></div>
-                          </label>
-                          <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? (isAvailableForHire ? 'text-emerald-400' : 'text-neutral-500') : (isAvailableForHire ? 'text-emerald-600' : 'text-neutral-400')}`}>
-                            {isAvailableForHire ? 'Available for Hire' : 'Not Open to Offers'}
-                          </span>
+                        {/* Intent Mode Selector */}
+                        <div className="relative mt-2">
+                          <button
+                            onClick={() => setIntentDropdownOpen(!intentDropdownOpen)}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${intentMode === 'not_looking' ? (isDark ? 'border-neutral-700 bg-neutral-800/50 text-neutral-500' : 'border-neutral-200 bg-neutral-50 text-neutral-400') :
+                              intentMode === 'actively_looking' ? (isDark ? 'border-emerald-800 bg-emerald-950/50 text-emerald-400' : 'border-emerald-200 bg-emerald-50 text-emerald-600') :
+                                intentMode === 'open_to_freelance' ? (isDark ? 'border-purple-800 bg-purple-950/50 text-purple-400' : 'border-purple-200 bg-purple-50 text-purple-600') :
+                                  intentMode === 'open_to_cofounder' ? (isDark ? 'border-amber-800 bg-amber-950/50 text-amber-400' : 'border-amber-200 bg-amber-50 text-amber-600') :
+                                    (isDark ? 'border-blue-800 bg-blue-950/50 text-blue-400' : 'border-blue-200 bg-blue-50 text-blue-600')
+                              }`}
+                          >
+                            {(() => { const mode = INTENT_MODES.find(m => m.value === intentMode); const Icon = mode?.icon || Eye; return <Icon size={14} />; })()}
+                            {INTENT_MODES.find(m => m.value === intentMode)?.label || 'Open to Offers'}
+                            <ChevronDown size={12} className={`transition-transform ${intentDropdownOpen ? 'rotate-180' : ''}`} />
+                          </button>
+                          {intentDropdownOpen && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setIntentDropdownOpen(false)}></div>
+                              <div className={`absolute top-full left-0 mt-2 w-72 border rounded-2xl shadow-2xl z-50 py-2 overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                                {INTENT_MODES.map((mode) => {
+                                  const Icon = mode.icon;
+                                  const isActive = intentMode === mode.value;
+                                  return (
+                                    <button
+                                      key={mode.value}
+                                      onClick={() => handleIntentModeChange(mode.value)}
+                                      className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-all ${isActive
+                                        ? (isDark ? 'bg-white/10' : 'bg-neutral-100')
+                                        : (isDark ? 'hover:bg-white/5' : 'hover:bg-neutral-50')
+                                        }`}
+                                    >
+                                      <Icon size={18} className={`mt-0.5 shrink-0 ${mode.color === 'neutral' ? (isDark ? 'text-neutral-500' : 'text-neutral-400') :
+                                        mode.color === 'blue' ? 'text-blue-500' :
+                                          mode.color === 'emerald' ? 'text-emerald-500' :
+                                            mode.color === 'purple' ? 'text-purple-500' :
+                                              'text-amber-500'
+                                        }`} />
+                                      <div>
+                                        <div className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{mode.label}</div>
+                                        <div className={`text-[11px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{mode.desc}</div>
+                                      </div>
+                                      {isActive && <Check size={16} className={`ml-auto mt-0.5 shrink-0 ${isDark ? 'text-white' : 'text-black'}`} />}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          )}
                         </div>
 
                       </div>
@@ -2382,6 +2441,33 @@ export default function ProfessionalHome() {
                   <div className={`border p-6 rounded-[32px] space-y-2 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                     <h3 className={`text-xl font-bold flex items-center gap-2 mb-4 ${isDark ? 'text-white' : 'text-black'}`}><Briefcase className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Employment Type</h3>
                     {['full-time', 'part-time', 'contract', 'internship'].map((type) => (<label key={type} className={`flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all group ${isDark ? 'bg-neutral-800/50 hover:bg-neutral-800' : 'bg-white border border-neutral-200 hover:bg-neutral-50'}`}><span className={`font-bold capitalize transition-colors ${isDark ? 'text-neutral-300 group-hover:text-white' : 'text-neutral-600 group-hover:text-black'}`}>{type}</span><div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${employmentTypes.includes(type) ? (isDark ? 'bg-white border-white' : 'bg-black border-black') : isDark ? 'border-neutral-600' : 'border-neutral-300'}`}>{employmentTypes.includes(type) && <Check size={14} className={isDark ? 'text-black' : 'text-white'} />}</div><input type="checkbox" checked={employmentTypes.includes(type)} onChange={(e) => { if (e.target.checked) setEmploymentTypes([...employmentTypes, type]); else setEmploymentTypes(employmentTypes.filter(t => t !== type)); }} className="hidden" /></label>))}
+                  </div>
+                </div>
+                {/* Intent Headline & Salary */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Target className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Intent Headline</h3>
+                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>Describe what you're looking for. Visible on your public profile.</p>
+                    <input
+                      type="text"
+                      value={intentHeadline}
+                      onChange={(e) => setIntentHeadline(e.target.value)}
+                      placeholder="e.g. Seeking $120k+ remote backend roles in fintech"
+                      maxLength={150}
+                      className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600 placeholder:text-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200 placeholder:text-neutral-400'}`}
+                    />
+                    <p className={`text-[10px] ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{intentHeadline.length}/150 characters</p>
+                  </div>
+                  <div className={`border p-5 md:p-6 rounded-[32px] space-y-4 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><DollarSign className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Minimum Salary</h3>
+                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>Your salary floor. <span className={`font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>🔒 Private — never shown publicly.</span></p>
+                    <input
+                      type="text"
+                      value={minSalary}
+                      onChange={(e) => setMinSalary(e.target.value)}
+                      placeholder="e.g. $80,000/year or KES 500,000/month"
+                      className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600 placeholder:text-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200 placeholder:text-neutral-400'}`}
+                    />
                   </div>
                 </div>
                 <div className="flex justify-end">

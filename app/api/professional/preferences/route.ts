@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { encryptData, decryptData } from '@/lib/security';
 
 export const runtime = 'nodejs';
 
@@ -47,8 +48,19 @@ export async function GET(req: Request) {
             work_modes: [],
             employment_types: [],
             is_open_to_relocation: false,
-            experience_years_ranges: []
+            experience_years_ranges: [],
+            intent_headline: null,
+            min_salary: null
         };
+
+        // Decrypt intent headline and min salary if they exist
+        if (data) {
+            preferences.intent_headline = decryptData(data.enc_intent_headline) || null;
+            preferences.min_salary = decryptData(data.enc_min_salary) || null;
+            // Remove encrypted fields from response
+            delete preferences.enc_intent_headline;
+            delete preferences.enc_min_salary;
+        }
 
         return NextResponse.json({ preferences });
 
@@ -72,23 +84,35 @@ export async function PUT(req: Request) {
             work_modes,
             employment_types,
             is_open_to_relocation,
-            experience_years_ranges
+            experience_years_ranges,
+            intent_headline,
+            min_salary
         } = body;
 
-        // Upsert preferences
+        // Build upsert data
+        const upsertData: any = {
+            user_id: auth.uid,
+            target_roles: target_roles || [],
+            preferred_locations: preferred_locations || { countries: [], continents: [] },
+            work_modes: work_modes || [],
+            employment_types: employment_types || [],
+            is_open_to_relocation: !!is_open_to_relocation,
+            experience_years_ranges: experience_years_ranges || [],
+            updated_at: new Date().toISOString()
+        };
+
+        // Encrypt optional intent fields
+        if (intent_headline !== undefined) {
+            upsertData.enc_intent_headline = intent_headline ? encryptData(intent_headline) : null;
+        }
+        if (min_salary !== undefined) {
+            upsertData.enc_min_salary = min_salary ? encryptData(min_salary) : null;
+        }
+
         const { error } = await supabaseAdmin
             .schema('professional')
             .from('preferences')
-            .upsert({
-                user_id: auth.uid,
-                target_roles: target_roles || [],
-                preferred_locations: preferred_locations || { countries: [], continents: [] },
-                work_modes: work_modes || [],
-                employment_types: employment_types || [],
-                is_open_to_relocation: !!is_open_to_relocation,
-                experience_years_ranges: experience_years_ranges || [],
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
+            .upsert(upsertData, { onConflict: 'user_id' });
 
         if (error) {
             console.error('Supabase Preferences Update Error:', error);
