@@ -1028,23 +1028,7 @@ export default function ProfessionalHome() {
     setProfileMessage(null);
     try {
       const res = await fetch('/api/professional/profile/ai-scores/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          skills,
-          employmentHistory: employmentHistory.map((e: any) => ({
-            title: e.job_title || e.title,
-            company_name: e.company_name || e.company,
-            startDate: e.start_date || e.startDate,
-            endDate: e.end_date || e.endDate,
-            isCurrent: e.is_current || e.isCurrent
-          })),
-          otherProfiles: otherProfiles.map((p: any) => ({
-            platform: p.platform,
-            url: p.url,
-            description: p.description
-          }))
-        })
+        method: 'POST'
       });
       if (res.ok) {
         const data = await res.json();
