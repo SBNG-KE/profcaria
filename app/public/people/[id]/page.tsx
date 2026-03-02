@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { getFollowerCount } from '@/lib/followers';
-import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight, Eye, Rocket, Code2, Handshake, XCircle } from 'lucide-react';
+import { Briefcase, MapPin, Link2, MessageSquare, Mail, Phone, ArrowRight, Eye, Rocket, Code2, Handshake, XCircle, CheckCircle2, AlertCircle, Shield, User, GraduationCap, Award, Lock, TrendingUp } from 'lucide-react';
 import FollowButton from '@/app/components/network/FollowButton';
 import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection';
 import VerificationBadge from '@/app/components/VerificationBadge';
@@ -97,6 +97,19 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         .eq('user_id', id)
         .maybeSingle();
     const intentHeadline = prefsData?.enc_intent_headline ? decryptData(prefsData.enc_intent_headline) : '';
+
+    // Fetch verification graph
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    let verificationGraph: any = null;
+    try {
+        const vRes = await fetch(`${baseUrl}/api/professional/verification?userId=${id}`, { cache: 'no-store' });
+        if (vRes.ok) {
+            const vData = await vRes.json();
+            verificationGraph = vData.graph;
+        }
+    } catch (e) {
+        console.error('Error fetching verification graph:', e);
+    }
 
     // Fetch Sections
     // Fetch Sections
@@ -345,9 +358,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                                     {intentMode && intentMode !== 'not_looking' && (
                                         <div className="flex flex-wrap items-center gap-2 mt-2">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${intentMode === 'actively_looking' ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400' :
-                                                    intentMode === 'open_to_freelance' ? 'border-purple-200 bg-purple-50 text-purple-600 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-400' :
-                                                        intentMode === 'open_to_cofounder' ? 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-400' :
-                                                            'border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-400'
+                                                intentMode === 'open_to_freelance' ? 'border-purple-200 bg-purple-50 text-purple-600 dark:border-purple-800 dark:bg-purple-950/50 dark:text-purple-400' :
+                                                    intentMode === 'open_to_cofounder' ? 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-800 dark:bg-amber-950/50 dark:text-amber-400' :
+                                                        'border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-400'
                                                 }`}>
                                                 {intentMode === 'actively_looking' && <Rocket size={11} />}
                                                 {intentMode === 'open_to_offers' && <Eye size={11} />}
@@ -417,6 +430,39 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                         />
                     </div>
                 </div>
+
+                {/* Verified Career Graph (Compact) */}
+                {verificationGraph && (
+                    <div className="p-5 md:p-6 rounded-[32px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors">
+                        <div className="flex flex-col md:flex-row items-center gap-5">
+                            {/* Score Ring */}
+                            <div className="relative w-20 h-20 shrink-0">
+                                <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+                                    <circle cx="50" cy="50" r="42" fill="none" className="stroke-neutral-200 dark:stroke-neutral-800" strokeWidth="8" />
+                                    <circle cx="50" cy="50" r="42" fill="none" stroke={verificationGraph.overallTier === 'gold' ? '#f59e0b' : verificationGraph.overallTier === 'blue' ? '#3b82f6' : '#9ca3af'} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${verificationGraph.overallScore * 2.64} 264`} />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-xl font-black text-black dark:text-white">{verificationGraph.overallScore}</span>
+                                    <span className="text-[7px] font-bold uppercase tracking-widest text-neutral-400">Score</span>
+                                </div>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
+                                    <Shield size={16} className="text-emerald-500" />
+                                    Verified Career Graph
+                                </h3>
+                                <div className="grid grid-cols-4 gap-2 mt-3">
+                                    {verificationGraph.nodes.slice(0, 8).map((node: any) => (
+                                        <div key={node.id} className="flex flex-col items-center gap-1">
+                                            {node.status === 'verified' ? <CheckCircle2 size={14} className="text-emerald-500" /> : node.status === 'partial' ? <AlertCircle size={14} className="text-amber-500" /> : <XCircle size={14} className="text-neutral-400 dark:text-neutral-600" />}
+                                            <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 text-center leading-tight">{node.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* About Section */}
                 {about && (
