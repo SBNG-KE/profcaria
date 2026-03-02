@@ -1,6 +1,6 @@
 -- Create professional_radar_stats table
 CREATE TABLE IF NOT EXISTS public.professional_radar_stats (
-    professional_id UUID PRIMARY KEY REFERENCES public.professionals(id) ON DELETE CASCADE,
+    professional_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     depth_score INTEGER NOT NULL CHECK (depth_score >= 0 AND depth_score <= 100),
     execution_speed INTEGER NOT NULL CHECK (execution_speed >= 0 AND execution_speed <= 100),
     collaboration_index INTEGER NOT NULL CHECK (collaboration_index >= 0 AND collaboration_index <= 100),
