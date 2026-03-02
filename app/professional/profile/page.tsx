@@ -1030,21 +1030,33 @@ export default function ProfessionalHome() {
       const res = await fetch('/api/professional/profile/ai-scores/generate', {
         method: 'POST'
       });
+      const rawText = await res.text();
+      console.log('[AI Scores] Status:', res.status, 'Response:', rawText.substring(0, 500));
+
       if (res.ok) {
-        const data = await res.json();
-        setAiRadarStats(data.data || data.scores || data);
-        setProfileMessage({ type: 'success', text: 'AI Skills Analysis completed!' });
+        try {
+          const data = JSON.parse(rawText);
+          setAiRadarStats(data.data || data.scores || data);
+          setProfileMessage({ type: 'success', text: 'AI Skills Analysis completed!' });
+        } catch {
+          setProfileMessage({ type: 'error', text: 'Invalid response from server.' });
+        }
       } else {
-        const err = await res.json();
-        console.error('[AI Scores] Full error response:', JSON.stringify(err));
-        setProfileMessage({ type: 'error', text: `${err.error || 'Failed to generate AI score.'}${err.step ? ` (step: ${err.step})` : ''}` });
+        try {
+          const err = JSON.parse(rawText);
+          setProfileMessage({ type: 'error', text: `${err.error || 'Failed'}${err.step ? ` [step: ${err.step}]` : ''}` });
+        } catch {
+          // Server returned non-JSON (HTML error page from Vercel)
+          console.error('[AI Scores] Non-JSON error response:', rawText.substring(0, 1000));
+          setProfileMessage({ type: 'error', text: `Server error (${res.status}). Check console for details.` });
+        }
       }
     } catch (error) {
       console.error("Generate AI score error", error);
-      setProfileMessage({ type: 'error', text: 'An unexpected error occurred.' });
+      setProfileMessage({ type: 'error', text: 'Network error. Please try again.' });
     } finally {
       setIsGeneratingAIScore(false);
-      setTimeout(() => setProfileMessage(null), 3000);
+      setTimeout(() => setProfileMessage(null), 5000);
     }
   };
 
