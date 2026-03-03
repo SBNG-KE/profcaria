@@ -212,7 +212,7 @@ export async function POST(req: Request) {
             }));
 
         // 4. Call Gemini
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.0-flash' });
 
         const chat = model.startChat({
             history: [
