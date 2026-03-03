@@ -584,7 +584,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
 
                 {/* Comments Section */}
                 {showComments && (
-                    <div className={`border-t ${isDark ? 'border-neutral-800 bg-neutral-900' : 'border-neutral-100 bg-neutral-50'}`}>
+                    <div className={`border-t min-w-0 flex-1 sm:w-1/2 ${isDark ? 'border-neutral-800 bg-neutral-900' : 'border-neutral-100 bg-neutral-50'}`}>
                         <div className="p-3 space-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar">
                             {isLoadingComments ? (
                                 <div className="flex justify-center p-4"><div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full text-neutral-400"></div></div>
