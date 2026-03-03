@@ -6,8 +6,8 @@ import { useTheme } from '@/app/context/ThemeContext';
 
 const QUALITY_LEVELS = [
     { min: 0, label: 'Starter', color: 'neutral', features: ['Basic profile visibility'] },
-    { min: 20, label: 'Verified', color: 'blue', features: ['Appear in search results', 'Receive job invites'] },
-    { min: 40, label: 'Pro', color: 'purple', features: ['Priority in smart matching', 'Access career insights'] },
+    { min: 20, label: 'Verified', color: 'emerald', features: ['Appear in search results', 'Receive job invites'] },
+    { min: 40, label: 'Pro', color: 'blue', features: ['Priority in smart matching', 'Access career insights'] },
     { min: 60, label: 'Elite', color: 'indigo', features: ['Featured in top results', 'Employer direct contact'] },
     { min: 80, label: 'Legendary', color: 'amber', features: ['VIP badge on profile', 'Exclusive opportunities'] },
 ];
@@ -39,10 +39,20 @@ export default function ProfileQualityGate({ compact = false }: { compact?: bool
     const pointsToNext = nextLevel ? nextLevel.min - score : 0;
 
     const colorMap: Record<string, string> = {
-        amber: isDark ? 'bg-neutral-600' : 'bg-neutral-400', indigo: isDark ? 'bg-neutral-700' : 'bg-neutral-300', purple: isDark ? 'bg-neutral-800' : 'bg-neutral-200', blue: isDark ? 'bg-neutral-800' : 'bg-neutral-200', neutral: isDark ? 'bg-neutral-700' : 'bg-neutral-300'
+        amber: 'bg-amber-500',
+        indigo: 'bg-indigo-500',
+        purple: 'bg-purple-500',
+        blue: 'bg-blue-500',
+        emerald: 'bg-emerald-500',
+        neutral: isDark ? 'bg-neutral-700' : 'bg-neutral-300'
     };
     const textMap: Record<string, string> = {
-        amber: isDark ? 'text-neutral-400' : 'text-neutral-500', indigo: isDark ? 'text-neutral-400' : 'text-neutral-500', purple: isDark ? 'text-neutral-400' : 'text-neutral-500', blue: isDark ? 'text-neutral-400' : 'text-neutral-500', neutral: isDark ? 'text-neutral-500' : 'text-neutral-400'
+        amber: 'text-amber-500',
+        indigo: 'text-indigo-500',
+        purple: 'text-purple-500',
+        blue: 'text-blue-500',
+        emerald: 'text-emerald-500',
+        neutral: isDark ? 'text-neutral-500' : 'text-neutral-400'
     };
 
     if (compact) {

@@ -7,6 +7,8 @@ import { decryptData, encryptData } from '@/lib/security';
 // Force Node.js runtime
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
     try {
@@ -122,7 +124,7 @@ export async function GET(request: NextRequest) {
         };
 
         const res = NextResponse.json({ profile });
-        res.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+        res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         return res;
 
     } catch (error: any) {
