@@ -460,7 +460,7 @@ export default function ProfessionalHome() {
   // --- DATA LOADING & SAVING LOGIC ---
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  const fetchProfile = async () => {
+  const fetchSettingsProfile = async () => {
     setProfileLoading(true);
     try {
       const [userRes, profileRes] = await Promise.all([
@@ -899,11 +899,13 @@ export default function ProfessionalHome() {
     }
   };
 
+
+
   useEffect(() => {
     const initData = async () => {
       setIsDataLoading(true);
       await Promise.all([
-        fetchProfile(),
+        fetchSettingsProfile(),
         fetchDocuments(),
         fetchPreferences(),
         fetchSections(),
@@ -1135,6 +1137,7 @@ export default function ProfessionalHome() {
     if (!confirm("Are you sure you want to remove your profile photo?")) return;
 
     setProfileLoading(true);
+
     setProfileMessage(null);
     try {
       const res = await fetch('/api/professional/profile/image', { method: 'DELETE' });
@@ -1172,6 +1175,7 @@ export default function ProfessionalHome() {
       });
       if (res.ok) {
         router.refresh();
+        await fetchSettingsProfile();
       } else {
         setProfileMessage({ type: 'error', text: 'Failed to update intent mode.' });
         setIntentMode(prevMode);
