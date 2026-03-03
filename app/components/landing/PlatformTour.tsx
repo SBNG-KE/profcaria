@@ -40,7 +40,7 @@ const features: Feature[] = [
     },
     {
         title: "The AI Career OS",
-        description: "The traditional CV is dead. We replaced static resumes with dynamic, specialized AI agents that work for you 24/7. From accelerating your career trajectory to discovering opportunities and preparing you for the perfect interview, our agents transform how you interface with the professional world.",
+        description: "Traditional CVs still work. We just made them smarter.Profcaria enhances your CV with dynamic, AI-powered career agents that operate 24/7, accelerating your growth, discovering aligned opportunities, and preparing you for the right interviews.Your CV becomes intelligent, adaptive, and always working for you.",
         id: "ai-agents",
         customVisual: true
     }
