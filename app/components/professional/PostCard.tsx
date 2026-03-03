@@ -625,9 +625,10 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                                         <span>{new Date(c.createdAt).toLocaleDateString()}</span>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleLikeComment(c.id); }}
-                                                            className={`hover:underline flex items-center gap-1 ${c.isLiked ? 'text-rose-500' : ''}`}
+                                                            className={`flex items-center gap-1 group transition-colors ${c.isLiked ? 'text-rose-500' : (isDark ? 'hover:text-rose-400' : 'hover:text-rose-500')}`}
                                                         >
-                                                            {c.likesCount > 0 ? `${c.likesCount} Like${c.likesCount > 1 ? 's' : ''}` : 'Like'}
+                                                            <Heart size={12} className={`transition-transform duration-300 ${c.isLiked ? 'fill-current scale-110' : 'group-hover:scale-110'}`} />
+                                                            {c.likesCount > 0 && <span>{c.likesCount}</span>}
                                                         </button>
                                                         {!isReply && (
                                                             <button

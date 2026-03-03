@@ -19,10 +19,10 @@ export async function GET(
         let schema = 'professional';
         let table = 'post_comments';
 
-        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).single();
+        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).maybeSingle();
 
         if (!profPost) {
-            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).single();
+            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).maybeSingle();
             if (empPost) {
                 schema = 'employer';
                 table = 'post_comments';
@@ -150,10 +150,10 @@ export async function POST(
         let schema = 'professional';
         let table = 'post_comments';
 
-        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).single();
+        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).maybeSingle();
 
         if (!profPost) {
-            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).single();
+            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).maybeSingle();
             if (empPost) {
                 schema = 'employer';
                 table = 'post_comments';

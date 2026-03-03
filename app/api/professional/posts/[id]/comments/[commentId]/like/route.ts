@@ -16,10 +16,10 @@ export async function POST(
 
         // Determine Post Type to find correct schema
         let schema = 'professional';
-        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).single();
+        const { data: profPost } = await supabaseAdmin.schema('professional').from('posts').select('id').eq('id', postId).maybeSingle();
 
         if (!profPost) {
-            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).single();
+            const { data: empPost } = await supabaseAdmin.schema('employer').from('posts').select('id').eq('id', postId).maybeSingle();
             if (empPost) {
                 schema = 'employer';
             } else {
@@ -40,7 +40,7 @@ export async function POST(
             query = query.eq('user_id', user.id);
         }
 
-        const { data: existingLike } = await query.single();
+        const { data: existingLike } = await query.maybeSingle();
 
         if (existingLike) {
             // Unlike
