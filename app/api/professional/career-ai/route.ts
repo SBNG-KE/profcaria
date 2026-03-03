@@ -10,9 +10,15 @@ import OpenAI from 'openai';
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY || '';
+
 const openai = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY || '',
+    apiKey: OPENROUTER_KEY,
+    defaultHeaders: {
+        "HTTP-Referer": "https://profcaria.com", // OpenRouter requires this for ranking
+        "X-Title": "Profcaria Career OS", // OpenRouter requires this for ranking
+    }
 });
 
 // ── System prompt for the Career AI ──
@@ -213,6 +219,10 @@ export async function POST(req: Request) {
                 role: m.role === 'user' ? 'user' as const : 'assistant' as const,
                 content: decryptData(m.enc_content) || '',
             }));
+
+        if (!OPENROUTER_KEY) {
+            return NextResponse.json({ error: 'System Error: OpenRouter API Key is missing in environment variables.' }, { status: 500 });
+        }
 
         // 4. Call OpenRouter
         const completion = await openai.chat.completions.create({
