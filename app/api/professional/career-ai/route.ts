@@ -5,21 +5,12 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
 
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || process.env.GEMINI_API_KEY || '';
-
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: OPENROUTER_KEY,
-    defaultHeaders: {
-        "HTTP-Referer": "https://profcaria.com", // OpenRouter requires this for ranking
-        "X-Title": "Profcaria Career OS", // OpenRouter requires this for ranking
-    }
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // ── System prompt for the Career AI ──
 const SYSTEM_PROMPT = `You are Profcaria Career AI — a personal, confidential career advisor embedded inside the Profcaria Career Operating System.
@@ -216,32 +207,29 @@ export async function POST(req: Request) {
         const conversationHistory = (recentMsgs || [])
             .reverse()
             .map((m: any) => ({
-                role: m.role === 'user' ? 'user' as const : 'assistant' as const,
-                content: decryptData(m.enc_content) || '',
+                role: m.role === 'user' ? 'user' as const : 'model' as const,
+                parts: [{ text: decryptData(m.enc_content) || '' }],
             }));
 
-        if (!OPENROUTER_KEY) {
-            return NextResponse.json({ error: 'System Error: OpenRouter API Key is missing in environment variables.' }, { status: 500 });
-        }
+        // 4. Call Gemini
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
-        // 4. Call OpenRouter
-        const completion = await openai.chat.completions.create({
-            model: "qwen/qwen3-next-80b-a3b-instruct:free", // A valid free CHAT model on OpenRouter
-            messages: [
-                {
-                    role: 'system',
-                    content: `${SYSTEM_PROMPT}\n\n--- USER PROFILE DATA ---\n${userContext}\n--- END PROFILE DATA ---`
-                },
-                ...conversationHistory,
+        const chat = model.startChat({
+            history: [
                 {
                     role: 'user',
-                    content: message.trim()
-                }
+                    parts: [{ text: `${SYSTEM_PROMPT}\n\n--- USER PROFILE DATA ---\n${userContext}\n--- END PROFILE DATA ---\n\nAcknowledge you understand and are ready to help. Say a brief one-line greeting.` }],
+                },
+                {
+                    role: 'model',
+                    parts: [{ text: 'Understood. I have your career profile loaded. How can I help you today?' }],
+                },
+                ...conversationHistory,
             ],
-            max_tokens: 1000,
         });
 
-        const aiResponse = completion.choices[0]?.message?.content || "I couldn't generate a response.";
+        const result = await chat.sendMessage(message.trim());
+        const aiResponse = result.response.text();
 
         // 5. Store AI response
         const encAiMsg = encryptData(aiResponse);
