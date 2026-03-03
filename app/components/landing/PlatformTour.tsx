@@ -40,7 +40,7 @@ const features: Feature[] = [
     },
     {
         title: "The AI Career OS",
-        description: "Traditional CVs still work. We just made them smarter.Profcaria enhances your CV with dynamic, AI-powered career agents that operate 24/7, accelerating your growth, discovering aligned opportunities, and preparing you for the right interviews.Your CV becomes intelligent, adaptive, and always working for you.",
+        description: "Traditional CVs still work. We just made them smarter. Profcaria enhances your CV with dynamic, AI-powered career agents that operate 24/7, accelerating your growth, discovering aligned opportunities, and preparing you for the right interviews. Your CV becomes intelligent, adaptive, and always working for you.",
         id: "ai-agents",
         customVisual: true
     }
@@ -138,7 +138,7 @@ function FeatureSection({ feature, index, isDark }: { feature: Feature, index: n
                             </div>
                             {/* Bottom Orbit */}
                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
-                                <div className={`p-4 rounded-full border shadow-lg animate-[spin_15s_linear_infinite_reverse] ${isDark ? 'bg-neutral-900 border-neutral-700 text-purple-400' : 'bg-white border-neutral-200 text-purple-600'}`}>
+                                <div className={`p-4 rounded-full border shadow-lg animate-[spin_15s_linear_infinite_reverse] ${isDark ? 'bg-neutral-900 border-neutral-700 text-emerald-500' : 'bg-white border-neutral-200 text-emerald-600'}`}>
                                     <GraduationCap className="w-6 h-6 md:w-8 md:h-8" />
                                 </div>
                             </div>
