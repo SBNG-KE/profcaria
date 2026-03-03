@@ -39,10 +39,10 @@ export default function ProfileQualityGate({ compact = false }: { compact?: bool
     const pointsToNext = nextLevel ? nextLevel.min - score : 0;
 
     const colorMap: Record<string, string> = {
-        amber: 'bg-amber-500', indigo: 'bg-indigo-500', purple: 'bg-purple-500', blue: 'bg-blue-500', neutral: isDark ? 'bg-neutral-700' : 'bg-neutral-300'
+        amber: isDark ? 'bg-neutral-600' : 'bg-neutral-400', indigo: isDark ? 'bg-neutral-700' : 'bg-neutral-300', purple: isDark ? 'bg-neutral-800' : 'bg-neutral-200', blue: isDark ? 'bg-neutral-800' : 'bg-neutral-200', neutral: isDark ? 'bg-neutral-700' : 'bg-neutral-300'
     };
     const textMap: Record<string, string> = {
-        amber: 'text-amber-500', indigo: 'text-indigo-500', purple: 'text-purple-500', blue: 'text-blue-500', neutral: isDark ? 'text-neutral-500' : 'text-neutral-400'
+        amber: isDark ? 'text-neutral-400' : 'text-neutral-500', indigo: isDark ? 'text-neutral-400' : 'text-neutral-500', purple: isDark ? 'text-neutral-400' : 'text-neutral-500', blue: isDark ? 'text-neutral-400' : 'text-neutral-500', neutral: isDark ? 'text-neutral-500' : 'text-neutral-400'
     };
 
     if (compact) {
@@ -98,7 +98,7 @@ export default function ProfileQualityGate({ compact = false }: { compact?: bool
                     })}
                 </div>
                 <div className={`w-full h-2 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500 transition-all duration-1000" style={{ width: `${Math.min(score, 100)}%` }} />
+                    <div className={`h-full rounded-full transition-all duration-1000 ${isDark ? 'bg-white' : 'bg-black'}`} style={{ width: `${Math.min(score, 100)}%` }} />
                 </div>
             </div>
 

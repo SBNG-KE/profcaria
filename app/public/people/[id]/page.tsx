@@ -232,6 +232,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         expirationDate: decryptData(c.enc_expiration_date),
         credentialId: decryptData(c.enc_credential_id),
         credentialUrl: decryptData(c.enc_credential_url),
+        documentUrl: c.enc_document_url ? decryptData(c.enc_document_url) : null,
     }));
 
     const awards = (awardsRaw || []).map((a: any) => ({
@@ -240,6 +241,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         issuer: decryptData(a.enc_issuer),
         date: decryptData(a.enc_date),
         description: decryptData(a.enc_description),
+        documentUrl: a.enc_document_url ? decryptData(a.enc_document_url) : null,
     }));
 
     const otherProfiles = (otherProfilesRaw || []).map((p: any) => ({

@@ -88,9 +88,10 @@ const SECTION_CONFIG: any = {
             issueDate: 'enc_issue_date',
             expirationDate: 'enc_expiration_date',
             credentialId: 'enc_credential_id',
-            credentialUrl: 'enc_credential_url'
+            credentialUrl: 'enc_credential_url',
+            documentUrl: 'enc_document_url'
         },
-        encrypted: ['name', 'issuer', 'issueDate', 'expirationDate', 'credentialId', 'credentialUrl']
+        encrypted: ['name', 'issuer', 'issueDate', 'expirationDate', 'credentialId', 'credentialUrl', 'documentUrl']
     },
     awards: {
         table: 'awards',
@@ -99,9 +100,10 @@ const SECTION_CONFIG: any = {
             title: 'enc_title',
             issuer: 'enc_issuer',
             date: 'enc_date',
-            description: 'enc_description'
+            description: 'enc_description',
+            documentUrl: 'enc_document_url'
         },
-        encrypted: ['title', 'issuer', 'date', 'description']
+        encrypted: ['title', 'issuer', 'date', 'description', 'documentUrl']
     },
     skills: {
         table: 'skills',

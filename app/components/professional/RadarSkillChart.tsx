@@ -142,6 +142,7 @@ export default function RadarSkillChart({
                     </p>
                 </div>
 
+                {/* User preference: AI Scores updating is temporarily disabled from frontend UI 
                 {!readOnly && onGenerateAIScore && (
                     <button
                         onClick={onGenerateAIScore}
@@ -158,6 +159,7 @@ export default function RadarSkillChart({
                         ) : 'Update AI Scores'}
                     </button>
                 )}
+                */}
             </div>
 
             {/* Glow effect behind the chart */}

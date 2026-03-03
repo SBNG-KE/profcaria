@@ -25,6 +25,7 @@ import ProfileInfoSection from '@/app/components/professional/ProfileInfoSection
 import ProfileQualityGate from '@/app/components/professional/ProfileQualityGate';
 import { SearchableDropdown } from '@/app/components/SearchableDropdown';
 import { getNames } from 'country-list';
+import { useRouter } from 'next/navigation';
 
 const COUNTRIES = getNames().sort();
 const CONTINENTS = [
@@ -236,6 +237,7 @@ const SystemPopup = ({ isOpen, onClose, onSave, isDark }: { isOpen: boolean, onC
 export default function ProfessionalHome() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const router = useRouter();
 
   // Profile page tab state
   const [activeProfileTab, setActiveProfileTab] = useState<'documents' | 'profile' | 'preferences'>('profile');
@@ -1151,10 +1153,10 @@ export default function ProfessionalHome() {
 
   const INTENT_MODES = [
     { value: 'not_looking', label: 'Not Looking', icon: XCircle, color: 'neutral', desc: 'Not open to any opportunities' },
-    { value: 'open_to_offers', label: 'Open to Offers', icon: Eye, color: 'blue', desc: 'Passively considering the right opportunity' },
-    { value: 'actively_looking', label: 'Actively Looking', icon: Rocket, color: 'emerald', desc: 'Actively seeking new roles' },
-    { value: 'open_to_freelance', label: 'Open to Freelance', icon: Code2, color: 'purple', desc: 'Available for contract & freelance work' },
-    { value: 'open_to_cofounder', label: 'Open to Co-found', icon: Handshake, color: 'amber', desc: 'Looking for co-founder opportunities' },
+    { value: 'open_to_offers', label: 'Open to Offers', icon: Eye, color: 'neutral', desc: 'Passively considering the right opportunity' },
+    { value: 'actively_looking', label: 'Actively Looking', icon: Rocket, color: 'neutral', desc: 'Actively seeking new roles' },
+    { value: 'open_to_freelance', label: 'Open to Freelance', icon: Code2, color: 'neutral', desc: 'Available for contract & freelance work' },
+    { value: 'open_to_cofounder', label: 'Open to Co-found', icon: Handshake, color: 'neutral', desc: 'Looking for co-founder opportunities' },
   ];
 
   const handleIntentModeChange = async (mode: string) => {
@@ -1168,7 +1170,9 @@ export default function ProfessionalHome() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ intentMode: mode })
       });
-      if (!res.ok) {
+      if (res.ok) {
+        router.refresh();
+      } else {
         setProfileMessage({ type: 'error', text: 'Failed to update intent mode.' });
         setIntentMode(prevMode);
         setIsAvailableForHire(prevMode !== 'not_looking');
@@ -1661,6 +1665,38 @@ export default function ProfessionalHome() {
     }
   };
 
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    // Check size limit: 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File is too large. Maximum size is 5MB.");
+      return;
+    }
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const res = await fetch('/api/documents/upload', {
+        method: 'POST',
+        body: uploadFormData
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      if (data.url) {
+        setFormData((prev: any) => ({ ...prev, documentUrl: data.url }));
+        setProfileMessage({ type: 'success', text: 'Document uploaded perfectly!' });
+      }
+    } catch (error) {
+      console.error("Document upload error", error);
+      alert("Failed to upload document.");
+    }
+  };
+
   return (
     <>
       <div className="p-4 md:p-6">
@@ -1712,9 +1748,9 @@ export default function ProfessionalHome() {
                 </div>
 
                 {/* Share Mode Preference */}
-                <div className={`flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-gradient-to-r from-violet-500/10 to-purple-500/10 border-violet-500/20' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200'}`}>
+                <div className={`flex items-center justify-between p-4 rounded-2xl border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${isDark ? 'bg-violet-500/20 text-violet-400' : 'bg-violet-100 text-violet-700'}`}>
+                    <div className={`p-2 rounded-lg ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-200 text-neutral-600'}`}>
                       <Share2 size={18} />
                     </div>
                     <div className="text-left">
@@ -2114,11 +2150,7 @@ export default function ProfessionalHome() {
                         <div className="relative mt-2">
                           <button
                             onClick={() => setIntentDropdownOpen(!intentDropdownOpen)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${intentMode === 'not_looking' ? (isDark ? 'border-neutral-700 bg-neutral-800/50 text-neutral-500' : 'border-neutral-200 bg-neutral-50 text-neutral-400') :
-                              intentMode === 'actively_looking' ? (isDark ? 'border-emerald-800 bg-emerald-950/50 text-emerald-400' : 'border-emerald-200 bg-emerald-50 text-emerald-600') :
-                                intentMode === 'open_to_freelance' ? (isDark ? 'border-purple-800 bg-purple-950/50 text-purple-400' : 'border-purple-200 bg-purple-50 text-purple-600') :
-                                  intentMode === 'open_to_cofounder' ? (isDark ? 'border-amber-800 bg-amber-950/50 text-amber-400' : 'border-amber-200 bg-amber-50 text-amber-600') :
-                                    (isDark ? 'border-blue-800 bg-blue-950/50 text-blue-400' : 'border-blue-200 bg-blue-50 text-blue-600')
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all border ${isDark ? 'border-neutral-700 bg-neutral-800/50 text-neutral-300' : 'border-neutral-200 bg-neutral-50 text-neutral-600'
                               }`}
                           >
                             {(() => { const mode = INTENT_MODES.find(m => m.value === intentMode); const Icon = mode?.icon || Eye; return <Icon size={14} />; })()}
@@ -2907,6 +2939,29 @@ export default function ProfessionalHome() {
                 <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Issue Date</label>
                 <input type="date" className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.issueDate || ''} onChange={e => setFormData({ ...formData, issueDate: e.target.value })} />
               </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Supporting Document (Optional)</label>
+                <div className={`w-full p-3 rounded-xl border mt-1 flex items-center gap-3 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}>
+                  {formData.documentUrl ? (
+                    <div className="flex-1 flex items-center justify-between overflow-hidden gap-2">
+                      <a href={formData.documentUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-500 text-sm font-bold truncate">
+                        <FileText size={16} className="shrink-0" />
+                        <span className="truncate">View Uploaded Document</span>
+                      </a>
+                      <button onClick={(e) => { e.preventDefault(); setFormData({ ...formData, documentUrl: null }) }} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg shrink-0 transition-colors">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={handleDocumentUpload}
+                      className="w-full text-sm font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-neutral-700 dark:file:text-white"
+                    />
+                  )}
+                </div>
+              </div>
             </>
           )}
 
@@ -2924,6 +2979,29 @@ export default function ProfessionalHome() {
               <div>
                 <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Date</label>
                 <input type="date" className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.date || ''} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Supporting Document (Optional)</label>
+                <div className={`w-full p-3 rounded-xl border mt-1 flex items-center gap-3 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`}>
+                  {formData.documentUrl ? (
+                    <div className="flex-1 flex items-center justify-between overflow-hidden gap-2">
+                      <a href={formData.documentUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-500 text-sm font-bold truncate">
+                        <FileText size={16} className="shrink-0" />
+                        <span className="truncate">View Uploaded Document</span>
+                      </a>
+                      <button onClick={(e) => { e.preventDefault(); setFormData({ ...formData, documentUrl: null }) }} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg shrink-0 transition-colors">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={handleDocumentUpload}
+                      className="w-full text-sm font-medium file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-neutral-700 dark:file:text-white"
+                    />
+                  )}
+                </div>
               </div>
             </>
           )}

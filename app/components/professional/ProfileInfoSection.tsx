@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import {
     Briefcase, GraduationCap, Award, BadgeCheck, Link2, Plus, PenLine, Trash2, X,
-    Linkedin, Github, Twitter, Globe, ChevronLeft, ChevronRight
+    Linkedin, Github, Twitter, Globe, ChevronLeft, ChevronRight, FileText
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import SlideOverPanel from '@/app/components/ui/SlideOverPanel';
@@ -319,7 +319,20 @@ export default function ProfileInfoSection({
                                     <div>
                                         <h4 className="font-bold text-sm text-black dark:text-white">{cert.name}</h4>
                                         <p className="text-xs text-neutral-600 dark:text-neutral-400">{cert.issuer}</p>
-                                        <p className="text-[10px] mt-0.5 text-neutral-400 dark:text-neutral-500">{formatYear(cert.issueDate)}</p>
+                                        <div className="flex items-center gap-3 mt-0.5">
+                                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500">{formatYear(cert.issueDate)}</p>
+                                            {cert.documentUrl && (
+                                                <a
+                                                    href={cert.documentUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                                >
+                                                    <FileText size={12} />
+                                                    View Document
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                     <EditActions section="certifications" item={cert} />
                                 </div>
@@ -340,7 +353,20 @@ export default function ProfileInfoSection({
                                     <div>
                                         <h4 className="font-bold text-sm text-black dark:text-white">{award.title}</h4>
                                         <p className="text-xs text-neutral-600 dark:text-neutral-400">{award.issuer}</p>
-                                        <p className="text-[10px] mt-0.5 text-neutral-400 dark:text-neutral-500">{formatYear(award.date)}</p>
+                                        <div className="flex items-center gap-3 mt-0.5">
+                                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500">{formatYear(award.date)}</p>
+                                            {award.documentUrl && (
+                                                <a
+                                                    href={award.documentUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                                                >
+                                                    <FileText size={12} />
+                                                    View Document
+                                                </a>
+                                            )}
+                                        </div>
                                     </div>
                                     <EditActions section="awards" item={award} />
                                 </div>

@@ -189,7 +189,7 @@ const ProfileAnalytics = ({ isDark }: AnalyticsProps) => {
 
             {/* Interaction Stats */}
             <div className="grid grid-cols-1 gap-4">
-                <StatCard icon={Users} label="Followers" value={stats.followers} colorClass="text-purple-500" />
+                <StatCard icon={Users} label="Followers" value={stats.followers} colorClass={isDark ? "text-neutral-300" : "text-neutral-600"} />
             </div>
 
             {/* Recent Followers */}
