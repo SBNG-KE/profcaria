@@ -39,7 +39,7 @@ export async function GET(req: Request) {
         let selectFields = `has_passkey, has_totp, has_email_otp, requires_2fa, default_2fa_method, created_at, ${emailField}`;
 
         if (isProfessional) {
-            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number, enc_about, follower_count, short_url`;
+            selectFields += `, enc_first_name, enc_last_name, enc_current_role, enc_profile_image_url, enc_email, enc_phone_number, enc_about, follower_count, short_url, intent_mode, is_available_for_hire`;
         } else {
             selectFields += `, enc_company_name, enc_logo_url, enc_website, enc_work_email, enc_about, enc_founded_year, follower_count, industry, short_url`; // Add employer fields
         }
@@ -68,7 +68,9 @@ export async function GET(req: Request) {
                 phone: decryptData(user.enc_phone_number) || '',
                 about: decryptData(user.enc_about) || '',
                 followerCount: await getFollowerCount(uid, 'professional'),
-                shortUrl: user.short_url || ''
+                shortUrl: user.short_url || '',
+                intentMode: user.intent_mode || 'open_to_offers',
+                isAvailableForHire: user.is_available_for_hire !== false
             };
 
             // Fetch Latest Location from Activity Logs
@@ -205,10 +207,10 @@ export async function GET(req: Request) {
                 defaultMethod: user.default_2fa_method
             }
         });
-        
+
         // Add caching headers
         res.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
-        
+
         return res;
 
     } catch (error) {
