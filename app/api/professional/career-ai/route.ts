@@ -212,7 +212,7 @@ export async function POST(req: Request) {
             }));
 
         // 4. Call Gemini
-        const model = genAI.getGenerativeModel({ model: 'gemini-3.0-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         const chat = model.startChat({
             history: [
@@ -243,12 +243,19 @@ export async function POST(req: Request) {
         });
 
     } catch (error: unknown) {
-        console.error('Career AI POST error:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        console.error('Career AI POST error:', errMsg);
 
-        if (error instanceof Error && error.message?.includes('API key')) {
+        if (errMsg.includes('API key')) {
             return NextResponse.json({ error: 'AI service not configured. Please contact support.' }, { status: 503 });
         }
+        if (errMsg.includes('quota') || errMsg.includes('429')) {
+            return NextResponse.json({ error: 'AI rate limit reached. Please wait a moment and try again.' }, { status: 429 });
+        }
+        if (errMsg.includes('not found') || errMsg.includes('model')) {
+            return NextResponse.json({ error: 'AI model unavailable. Please try again later.' }, { status: 503 });
+        }
 
-        return NextResponse.json({ error: 'AI is temporarily unavailable. Please try again.' }, { status: 500 });
+        return NextResponse.json({ error: `AI error: ${errMsg.substring(0, 150)}` }, { status: 500 });
     }
 }
