@@ -619,7 +619,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                                                 <div className="flex-1 min-w-0">
                                                     <div className={`px-2.5 py-1.5 rounded-lg inline-block w-auto ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
                                                         <Link href={authorLink} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author?.name}</Link>
-                                                        <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
+                                                        <p className={`text-xs mt-0.5 whitespace-pre-wrap break-words break-all ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
                                                     </div>
                                                     <div className={`flex items-center gap-3 mt-1 ml-1 text-[10px] font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                                                         <span>{new Date(c.createdAt).toLocaleDateString()}</span>
