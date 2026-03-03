@@ -6,8 +6,10 @@ import {
     Download, User, Building2, GraduationCap,
     BadgeCheck, Phone, MapPin, Award, Globe,
     BookOpen, Linkedin, Github, Copy, Check, Twitter,
-    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake, MessageSquare, ChevronLeft, ChevronRight
+    Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake, MessageSquare, ChevronLeft, ChevronRight,
+    ShieldCheck, CheckCircle2, Circle, Clock
 } from 'lucide-react';
+import VerificationBadge from '@/app/components/VerificationBadge';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { useTheme } from '@/app/context/ThemeContext';
 import ReferenceRequestModal from './ReferenceRequestModal';
@@ -26,6 +28,8 @@ interface ProfileData {
         country?: string;
         city?: string;
         docMode?: 'writing' | 'upload';
+        badgeType?: string;
+        intentMode?: string;
     };
     sharedDocuments: {
         type: string;
@@ -51,7 +55,17 @@ interface ProfileData {
     kycData?: {
         imageUrl: string | null;
         videoUrl: string | null;
-    }
+    };
+    verification?: {
+        checks: { label: string; status: string; detail: string }[];
+        score: number;
+        verified: number;
+        total: number;
+    };
+    careerScore?: {
+        overall: number;
+        tier: string;
+    };
 }
 
 interface VerifiedEmployment {
@@ -81,7 +95,7 @@ export default function EmployerProfileViewModal({
 
     const [data, setData] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'profile' | 'documents' | 'references'>('profile');
+    const [activeTab, setActiveTab] = useState<'proof' | 'profile' | 'documents' | 'references'>('proof');
     const [activeDocumentType, setActiveDocumentType] = useState<string | null>(null);
     const [activeUploadedDocId, setActiveUploadedDocId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -171,6 +185,19 @@ export default function EmployerProfileViewModal({
 
     const activeDocContent = data.sharedDocuments.find(d => d.type === activeDocumentType);
     const sections = data.sections || { employmentHistory: [], education: [], skills: [], certifications: [], awards: [], otherProfiles: [] };
+    const verification = data.verification;
+    const careerScore = data.careerScore;
+    const badgeType = data.profile?.badgeType;
+    const intentMode = data.profile?.intentMode;
+
+    const tierConfig: Record<string, { emoji: string; gradient: string }> = {
+        legendary: { emoji: '👑', gradient: 'from-amber-500 to-orange-500' },
+        elite: { emoji: '💎', gradient: 'from-indigo-500 to-purple-500' },
+        rising: { emoji: '🚀', gradient: 'from-emerald-500 to-teal-500' },
+        emerging: { emoji: '🌱', gradient: 'from-lime-500 to-green-500' },
+        newcomer: { emoji: '✨', gradient: 'from-neutral-400 to-neutral-500' },
+    };
+    const tier = tierConfig[careerScore?.tier || 'newcomer'] || tierConfig.newcomer;
 
     const groupedExperience = sections.employmentHistory?.reduce((acc: any, job: any) => {
         const companyName = job.company?.trim() || 'Unknown Company';
@@ -239,21 +266,90 @@ export default function EmployerProfileViewModal({
                             ) : (
                                 <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500"><UserCircle size={48} /></div>
                             )}
+                            {badgeType && badgeType !== 'none' && (
+                                <div className="absolute -bottom-1 -right-1">
+                                    <VerificationBadge tier={badgeType} size={28} />
+                                </div>
+                            )}
                         </div>
                         <div>
-                            {/* FIXED: Name on one line (or auto-wrap), no <br> */}
                             <h1 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter leading-tight break-words">{data.profile.firstName} {data.profile.lastName}</h1>
                             <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mt-2">{data.profile.role}</p>
                         </div>
                     </div>
 
-                    {/* Navigation - Only Profile Button */}
-                    <nav className="flex-1 mt-12 space-y-2">
+                    {/* Career Score Badge */}
+                    {careerScore && (
+                        <div className={`p-3 rounded-2xl border mb-2 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                            <div className="flex items-center justify-between">
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Career Score</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className={`text-xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>{careerScore.overall}</span>
+                                    <span className="text-xs">{tier.emoji}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Intent Mode */}
+                    {intentMode && intentMode !== 'not_looking' && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-2 ${intentMode === 'actively_looking' ? 'bg-emerald-500/10 border border-emerald-500/20' :
+                                'bg-blue-500/10 border border-blue-500/20'
+                            }`}>
+                            <div className="relative flex h-2 w-2">
+                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${intentMode === 'actively_looking' ? 'bg-emerald-400' : 'bg-blue-400'
+                                    }`}></span>
+                                <span className={`relative inline-flex rounded-full h-2 w-2 ${intentMode === 'actively_looking' ? 'bg-emerald-500' : 'bg-blue-500'
+                                    }`}></span>
+                            </div>
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${intentMode === 'actively_looking' ? 'text-emerald-500' : 'text-blue-500'
+                                }`}>
+                                {intentMode === 'actively_looking' ? 'Actively Looking' :
+                                    intentMode === 'open_to_freelance' ? 'Open to Freelance' :
+                                        intentMode === 'open_to_cofounder' ? 'Co-founder' : 'Open to Offers'}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Navigation */}
+                    <nav className="flex-1 mt-8 space-y-2">
                         <button
-                            className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all ${isDark ? 'bg-neutral-900 text-white' : 'bg-black text-white'}`}
+                            onClick={() => setActiveTab('proof')}
+                            className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'proof' ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20' : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
                         >
-                            <User size={20} />
-                            Profile
+                            <ShieldCheck size={18} /> Verified Proof
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('profile')}
+                            className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'profile' ? (isDark ? 'bg-neutral-800 text-white shadow-lg' : 'bg-black text-white shadow-xl') : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+                        >
+                            <User size={18} /> Profile Info
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('documents')}
+                            className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'documents' ? (isDark ? 'bg-neutral-800 text-white shadow-lg' : 'bg-black text-white shadow-xl') : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+                        >
+                            <FileText size={18} /> Documents
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('references');
+                                if (!referencesLoaded) {
+                                    setLoadingReferences(true);
+                                    fetch(`/api/employer/applications/${applicationId}/references`)
+                                        .then(res => res.json())
+                                        .then(data => setVerifiedEmployments(data.verifiedEmployments || []))
+                                        .catch(err => console.error('Failed to load references:', err));
+                                    fetch(`/api/employer/applications/${applicationId}/references/sent`)
+                                        .then(res => res.json())
+                                        .then(data => { setSentRequests(data.sentRequests || []); setReferencesLoaded(true); })
+                                        .catch(err => console.error('Failed to load sent requests:', err))
+                                        .finally(() => setLoadingReferences(false));
+                                }
+                            }}
+                            className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'references' ? (isDark ? 'bg-neutral-800 text-white shadow-lg' : 'bg-black text-white shadow-xl') : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+                        >
+                            <Users size={18} /> References
                         </button>
                     </nav>
 
@@ -274,49 +370,97 @@ export default function EmployerProfileViewModal({
                 <main className="flex-1 h-full overflow-y-auto p-4 sm:p-6 md:p-12">
                     <div className="max-w-5xl mx-auto space-y-8 pb-32">
 
-                        {/* Content Tabs - Visible at top of content area */}
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
-                            <button
-                                onClick={() => setActiveTab('profile')}
-                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
-                            >
-                                <User size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> Profile Info
+                        {/* Content Tabs - Mobile only (desktop uses sidebar nav) */}
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8 md:hidden">
+                            <button onClick={() => setActiveTab('proof')} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'proof' ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white' : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}>
+                                <ShieldCheck size={12} className="inline mr-1 -mt-0.5" /> Proof
                             </button>
-                            <button
-                                onClick={() => setActiveTab('documents')}
-                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'documents' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
-                            >
-                                <FileText size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> Documents
+                            <button onClick={() => setActiveTab('profile')} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}>
+                                <User size={12} className="inline mr-1 -mt-0.5" /> Profile
                             </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('references');
-                                    if (!referencesLoaded) {
-                                        setLoadingReferences(true);
-                                        // Fetch verified employments
-                                        fetch(`/api/employer/applications/${applicationId}/references`)
-                                            .then(res => res.json())
-                                            .then(data => {
-                                                setVerifiedEmployments(data.verifiedEmployments || []);
-                                            })
-                                            .catch(err => console.error('Failed to load references:', err));
-
-                                        // Fetch sent requests
-                                        fetch(`/api/employer/applications/${applicationId}/references/sent`)
-                                            .then(res => res.json())
-                                            .then(data => {
-                                                setSentRequests(data.sentRequests || []);
-                                                setReferencesLoaded(true);
-                                            })
-                                            .catch(err => console.error('Failed to load sent requests:', err))
-                                            .finally(() => setLoadingReferences(false));
-                                    }
-                                }}
-                                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'references' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}
-                            >
-                                <Users size={14} className="inline mr-1 sm:mr-2 -mt-0.5" /> References
+                            <button onClick={() => setActiveTab('documents')} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'documents' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}>
+                                <FileText size={12} className="inline mr-1 -mt-0.5" /> Docs
+                            </button>
+                            <button onClick={() => { setActiveTab('references'); if (!referencesLoaded) { setLoadingReferences(true); fetch(`/api/employer/applications/${applicationId}/references`).then(r => r.json()).then(d => setVerifiedEmployments(d.verifiedEmployments || [])).catch(console.error); fetch(`/api/employer/applications/${applicationId}/references/sent`).then(r => r.json()).then(d => { setSentRequests(d.sentRequests || []); setReferencesLoaded(true); }).catch(console.error).finally(() => setLoadingReferences(false)); } }} className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'references' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : (isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-500 hover:text-black')}`}>
+                                <Users size={12} className="inline mr-1 -mt-0.5" /> Refs
                             </button>
                         </div>
+
+                        {/* VIEW: VERIFIED PROOF */}
+                        {activeTab === 'proof' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                                <div className={`p-6 sm:p-8 rounded-[24px] sm:rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <ShieldCheck size={24} className="text-blue-500" />
+                                        <div>
+                                            <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Verified Career Proof</h2>
+                                            <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Every claim is verifiable. No traditional CV needed.</p>
+                                        </div>
+                                    </div>
+
+                                    {verification ? (
+                                        <div className="space-y-3">
+                                            {verification.checks.map((check, i) => (
+                                                <div key={i} className={`flex items-center gap-4 p-3 sm:p-4 rounded-2xl border transition-all ${check.status === 'verified' ? (isDark ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-emerald-300 bg-emerald-50') :
+                                                        check.status === 'partial' ? (isDark ? 'border-amber-500/30 bg-amber-500/10' : 'border-amber-300 bg-amber-50') :
+                                                            isDark ? 'border-neutral-800 bg-neutral-800/50' : 'border-neutral-200 bg-neutral-50'
+                                                    }`}>
+                                                    {check.status === 'verified' ? (
+                                                        <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
+                                                    ) : check.status === 'partial' ? (
+                                                        <Clock size={20} className="text-amber-500 shrink-0" />
+                                                    ) : (
+                                                        <Circle size={20} className={`shrink-0 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{check.label}</h4>
+                                                        <p className={`text-xs ${check.status === 'verified' ? (isDark ? 'text-emerald-400' : 'text-emerald-600') :
+                                                                check.status === 'partial' ? (isDark ? 'text-amber-400' : 'text-amber-600') :
+                                                                    isDark ? 'text-neutral-500' : 'text-neutral-400'
+                                                            }`}>{check.detail}</p>
+                                                    </div>
+                                                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${check.status === 'verified' ? 'bg-emerald-500/10 text-emerald-500' :
+                                                            check.status === 'partial' ? 'bg-amber-500/10 text-amber-500' :
+                                                                isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'
+                                                        }`}>{check.status}</span>
+                                                </div>
+                                            ))}
+
+                                            <div className={`mt-4 pt-4 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Overall Proof Score</span>
+                                                    <span className={`text-lg font-black ${isDark ? 'text-white' : 'text-black'}`}>{verification.score}/100</span>
+                                                </div>
+                                                <div className={`w-full h-2.5 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                                    <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500 transition-all duration-1000" style={{ width: `${verification.score}%` }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className={`p-8 text-center ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                            <ShieldCheck size={40} className="mx-auto mb-4 opacity-20" />
+                                            <p className="text-sm font-medium">Verification data is being calculated...</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Quick Career Score Card */}
+                                {careerScore && (
+                                    <div className={`p-6 rounded-[24px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h3 className={`text-sm font-bold uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Career Score</h3>
+                                                <p className={`text-xs mt-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Based on profile, skills, and verification</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className={`text-4xl font-black bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>{careerScore.overall}</span>
+                                                <p className="text-xs mt-1">{tier.emoji} {careerScore.tier.charAt(0).toUpperCase() + careerScore.tier.slice(1)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* VIEW: PROFILE INFO */}
                         {activeTab === 'profile' && (
