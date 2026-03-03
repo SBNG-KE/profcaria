@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/app/context/ThemeContext';
 import { useScroll, useTransform, motion } from 'framer-motion';
+import { Bot, Sparkles, GraduationCap } from 'lucide-react';
 
 interface Feature {
     title: string;
@@ -11,6 +12,7 @@ interface Feature {
     id: string;
     image?: string;
     images?: string[];
+    customVisual?: boolean;
 }
 
 const features: Feature[] = [
@@ -35,6 +37,12 @@ const features: Feature[] = [
         description: "Build a circle of trust. Connect with professionals whose careers are verified, not just stated. Filter out the noise. See exactly who is hiring, who is open to work, and who is leading the industry based on cryptographic facts, not exaggerated profiles.",
         image: "/landing/networking-preview.png",
         id: "networking"
+    },
+    {
+        title: "The AI Career OS",
+        description: "The traditional CV is dead. We replaced static resumes with dynamic, specialized AI agents that work for you 24/7. From accelerating your career trajectory to discovering opportunities and preparing you for the perfect interview, our agents transform how you interface with the professional world.",
+        id: "ai-agents",
+        customVisual: true
     }
 ];
 
@@ -106,7 +114,37 @@ function FeatureSection({ feature, index, isDark }: { feature: Feature, index: n
                 {/* Glow Effect behind image */}
                 <div className={`absolute -inset-4 rounded-3xl blur-3xl opacity-20 transition-opacity duration-500 group-hover:opacity-40 ${isDark ? 'bg-blue-500' : 'bg-blue-400'}`} />
 
-                {feature.images ? (
+                {feature.customVisual ? (
+                    <div className={`relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border transition-transform duration-500 group-hover:scale-[1.02] flex items-center justify-center ${isDark ? 'border-neutral-700 bg-neutral-900/50' : 'border-neutral-200 bg-white/50'}`}>
+                        {/* Animated Background Rings */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className={`w-64 h-64 rounded-full border border-dashed animate-[spin_20s_linear_infinite] ${isDark ? 'border-neutral-700/50' : 'border-neutral-300/50'}`} />
+                            <div className={`absolute w-80 h-80 rounded-full border md:border-dotted animate-[spin_30s_linear_infinite_reverse] ${isDark ? 'border-neutral-700/50' : 'border-neutral-300/50'}`} />
+                            <div className={`absolute w-96 h-96 rounded-full border border-dashed animate-[spin_40s_linear_infinite] ${isDark ? 'border-neutral-800/50' : 'border-neutral-200/50'}`} />
+                        </div>
+
+                        {/* Center Agent Icon */}
+                        <div className={`absolute p-6 md:p-8 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.2)] border z-10 ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                            <Bot className="w-16 h-16 md:w-20 md:h-20 text-amber-500 animate-[pulse_3s_ease-in-out_infinite]" />
+                        </div>
+
+                        {/* Orbiting Icons */}
+                        <div className="absolute w-[280px] h-[280px] md:w-[320px] md:h-[320px] animate-[spin_15s_linear_infinite]">
+                            {/* Top Orbit */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                                <div className={`p-4 rounded-full border shadow-lg animate-[spin_15s_linear_infinite_reverse] ${isDark ? 'bg-neutral-900 border-neutral-700 text-blue-400' : 'bg-white border-neutral-200 text-blue-600'}`}>
+                                    <Sparkles className="w-6 h-6 md:w-8 md:h-8" />
+                                </div>
+                            </div>
+                            {/* Bottom Orbit */}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2">
+                                <div className={`p-4 rounded-full border shadow-lg animate-[spin_15s_linear_infinite_reverse] ${isDark ? 'bg-neutral-900 border-neutral-700 text-purple-400' : 'bg-white border-neutral-200 text-purple-600'}`}>
+                                    <GraduationCap className="w-6 h-6 md:w-8 md:h-8" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : feature.images ? (
                     <div className="flex flex-col gap-4">
                         {/* Top Image (Wide) - Constrained width if it's the Verified Profile section */}
                         <div className={`
