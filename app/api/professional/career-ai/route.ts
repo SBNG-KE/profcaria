@@ -226,7 +226,7 @@ export async function POST(req: Request) {
 
         // 4. Call OpenRouter
         const completion = await openai.chat.completions.create({
-            model: "nvidia/llama-nemotron-embed-vl-1b-v2:free",
+            model: "qwen/qwen3-next-80b-a3b-instruct:free", // A valid free CHAT model on OpenRouter
             messages: [
                 {
                     role: 'system',
