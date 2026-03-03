@@ -183,6 +183,7 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
     const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
     const [comments, setComments] = useState<any[]>([]);
     const [newComment, setNewComment] = useState('');
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
     const [isSending, setIsSending] = useState(false);
 
@@ -291,10 +292,27 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
         setIsSending(true);
         try {
             const res = await fetch(`/api/professional/posts/${post.id}/comments`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: newComment.trim() })
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: newComment.trim(), parentId: replyingTo })
             });
-            if (res.ok) { setNewComment(''); fetchComments(); onCommentAdded?.(); }
+            if (res.ok) { setNewComment(''); setReplyingTo(null); fetchComments(); onCommentAdded?.(); }
         } catch (err) { console.error(err); } finally { setIsSending(false); }
+    };
+
+    const handleLikeComment = async (commentId: string) => {
+        // Optimistic update
+        setComments(currentComments => currentComments.map(c =>
+            c.id === commentId
+                ? { ...c, isLiked: !c.isLiked, likesCount: c.isLiked ? Math.max(0, (c.likesCount || 0) - 1) : (c.likesCount || 0) + 1 }
+                : c
+        ));
+
+        try {
+            const res = await fetch(`/api/professional/posts/${post.id}/comments/${commentId}/like`, { method: 'POST' });
+            if (!res.ok) fetchComments(); // revert on failure
+        } catch (error) {
+            console.error('Error toggling comment like:', error);
+            fetchComments();
+        }
     };
 
     const toggleComments = () => {
@@ -567,49 +585,85 @@ const PostCard = ({ post, isDark, currentUserId, onLike, onRepost, onShare, onSa
                 {/* Comments Section */}
                 {showComments && (
                     <div className={`border-t ${isDark ? 'border-neutral-800 bg-neutral-900' : 'border-neutral-100 bg-neutral-50'}`}>
-                        <div className="p-3 space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                        <div className="p-3 space-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar">
                             {isLoadingComments ? (
                                 <div className="flex justify-center p-4"><div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full text-neutral-400"></div></div>
                             ) : comments.length === 0 ? (
                                 <p className={`text-center py-4 text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No comments yet. Be the first!</p>
                             ) : (
-                                comments.map((c) => {
-                                    const authorType = c.author.type || 'professional';
-                                    const authorLink = authorType === 'employer'
-                                        ? `/professional/companies/${c.author.id}`
-                                        : `/professional/people/${c.author.id}`;
+                                (() => {
+                                    const topLevelComments = comments.filter(c => !c.parentId);
+                                    const repliesMap = comments.filter(c => c.parentId).reduce((acc, c) => {
+                                        if (!acc[c.parentId]) acc[c.parentId] = [];
+                                        acc[c.parentId].push(c);
+                                        return acc;
+                                    }, {} as Record<string, any[]>);
 
-                                    return (
-                                        <div key={c.id} className="flex gap-2">
-                                            <Link href={authorLink}>
-                                                <ProfileImage
-                                                    src={c.author.profileImage}
-                                                    name={c.author.name}
-                                                    type={authorType}
-                                                    size={14}
-                                                    className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
-                                                />
-                                            </Link>
-                                            <div className="flex-1 min-w-0">
-                                                <div className={`px-2.5 py-1.5 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
-                                                    <Link href={authorLink} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author.name}</Link>
-                                                    <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
+                                    const renderComment = (c: any, isReply = false) => {
+                                        const authorType = c.author?.type || 'professional';
+                                        const authorLink = authorType === 'employer'
+                                            ? `/professional/companies/${c.author?.id}`
+                                            : `/professional/people/${c.author?.id}`;
+
+                                        return (
+                                            <div key={c.id} className={`flex gap-2 ${isReply ? 'ml-8 mt-2' : ''}`}>
+                                                <Link href={authorLink}>
+                                                    <ProfileImage
+                                                        src={c.author?.profileImage}
+                                                        name={c.author?.name}
+                                                        type={authorType}
+                                                        size={14}
+                                                        className="w-7 h-7 rounded-full flex-shrink-0 hover:opacity-80 transition-opacity"
+                                                    />
+                                                </Link>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className={`px-2.5 py-1.5 rounded-lg inline-block w-auto ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200'}`}>
+                                                        <Link href={authorLink} className={`text-xs font-semibold hover:underline ${isDark ? 'text-white' : 'text-black'}`}>{c.author?.name}</Link>
+                                                        <p className={`text-xs mt-0.5 ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>{c.content}</p>
+                                                    </div>
+                                                    <div className={`flex items-center gap-3 mt-1 ml-1 text-[10px] font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
+                                                        <span>{new Date(c.createdAt).toLocaleDateString()}</span>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleLikeComment(c.id); }}
+                                                            className={`hover:underline flex items-center gap-1 ${c.isLiked ? 'text-rose-500' : ''}`}
+                                                        >
+                                                            {c.likesCount > 0 ? `${c.likesCount} Like${c.likesCount > 1 ? 's' : ''}` : 'Like'}
+                                                        </button>
+                                                        {!isReply && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setReplyingTo(c.id); }}
+                                                                className="hover:underline"
+                                                            >
+                                                                Reply
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Render Replies */}
+                                                    {!isReply && repliesMap[c.id] && repliesMap[c.id].map((reply: any) => renderComment(reply, true))}
                                                 </div>
-                                                <p className={`text-[10px] mt-0.5 ml-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>{new Date(c.createdAt).toLocaleDateString()}</p>
                                             </div>
-                                        </div>
-                                    );
-                                })
+                                        );
+                                    };
+
+                                    return topLevelComments.map(c => renderComment(c));
+                                })()
                             )}
                         </div>
                         {/* Comment Input */}
+                        {replyingTo && (
+                            <div className={`px-4 py-2 flex items-center justify-between text-xs ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
+                                <span>Replying to comment...</span>
+                                <button onClick={() => setReplyingTo(null)} className="hover:underline">Cancel</button>
+                            </div>
+                        )}
                         <div className={`p-3 border-t flex items-center gap-2 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                             <input
                                 type="text"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmitComment(); } }}
-                                placeholder="Write a comment..."
+                                placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
                                 className={`flex-1 text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-1 transition-all ${isDark ? 'bg-neutral-800 text-white placeholder-neutral-500 focus:ring-neutral-600' : 'bg-white border border-neutral-200 text-black placeholder-neutral-400 focus:ring-neutral-300'}`}
                             />
                             <button

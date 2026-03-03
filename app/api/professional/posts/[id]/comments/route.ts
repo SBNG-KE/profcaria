@@ -40,6 +40,20 @@ export async function GET(
 
         if (error) throw error;
 
+        // Fetch likes for these comments
+        const commentIds = (comments || []).map((c: any) => c.id);
+        let commentLikes: any[] = [];
+        if (commentIds.length > 0) {
+            const { data: likesDB } = await supabaseAdmin
+                .schema(schema)
+                .from('post_comment_likes')
+                .select('*')
+                .in('comment_id', commentIds);
+            commentLikes = likesDB || [];
+        }
+
+        const userField = user.schema === 'employer' ? 'company_id' : 'user_id';
+
         // Get author info for each comment
         const formattedComments = await Promise.all((comments || []).map(async (c: any) => {
             let author = null;
@@ -87,10 +101,16 @@ export async function GET(
                 }
             }
 
+            const likesForComment = commentLikes.filter(l => l.comment_id === c.id);
+            const isLiked = likesForComment.some(l => l[userField] === user.id);
+
             return {
                 id: c.id,
+                parentId: c.parent_id,
                 content: c.content,
                 createdAt: c.created_at,
+                likesCount: likesForComment.length,
+                isLiked: isLiked,
                 author: author || {
                     id: c.user_id || c.company_id || 'unknown',
                     name: 'Anonymous',
@@ -120,7 +140,7 @@ export async function POST(
         }
 
         const body = await request.json();
-        const { content } = body;
+        const { content, parentId } = body;
 
         if (!content?.trim()) {
             return NextResponse.json({ error: 'Comment content is required' }, { status: 400 });
@@ -150,7 +170,8 @@ export async function POST(
             .insert({
                 post_id: postId,
                 [userField]: user.id,
-                content: content.trim()
+                content: content.trim(),
+                parent_id: parentId || null
             })
             .select()
             .single();
