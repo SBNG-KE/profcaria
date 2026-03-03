@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'reac
 import { usePathname, useRouter } from 'next/navigation';
 import {
     Home, FileText, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, Users, Building2, Plus, Power, Menu, X, HelpCircle, Rss, MessageCircle
+    Briefcase, Users, Building2, Plus, Power, Menu, X, HelpCircle, Rss, MessageCircle, Bot
 } from 'lucide-react';
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
@@ -276,6 +276,7 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Network</div>
                     <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" badgeCount={applicationCount} />
+                    <NavItem id="recruiter-ai" href="/employer/recruiter-ai" icon={Bot} label="Recruiter AI" />
                     <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
                     <NavItem id="communities" href="#" icon={MessageCircle} label="Communities" comingSoon={true} />
 
