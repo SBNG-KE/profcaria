@@ -99,7 +99,7 @@ export default function HangingWhyUsCard({
                                         <span className="font-sans text-lg md:text-xl">AI Matches.</span>
                                     </h3>
                                     <p className={`${isDark ? 'text-neutral-400' : 'text-neutral-600'} leading-relaxed font-medium text-sm md:text-base`}>
-                                        Stop scrolling and start connecting. Our ecosystem accurately pairs talent with employers, reducing time to hire and ensuring better cultural fits. <span className="font-pixel text-[11px] uppercase tracking-widest text-[#d87a16]">Smart. Precise.</span>
+                                        Stop scrolling and let specialized agents work for you. Our ecosystem uses context-aware AI to evaluate skills gaps, prep you for interviews, and pair talent with employers. <span className="font-pixel text-[11px] uppercase tracking-widest text-[#d87a16]">Smart. Precise.</span>
                                     </p>
                                 </div>
 
@@ -111,7 +111,7 @@ export default function HangingWhyUsCard({
                                         <span className="font-sans text-lg md:text-xl">Real Talent.</span>
                                     </h3>
                                     <p className={`${isDark ? 'text-neutral-400' : 'text-neutral-600'} leading-relaxed font-medium text-sm md:text-base`}>
-                                        We verify employment history directly with employers, eliminating fake profiles and ensuring you're networking with <span className="font-pixel text-[11px] uppercase tracking-widest text-[#d87a16]">verified experts.</span>
+                                        We verify employment history directly with employers, eliminating fake profiles and ensuring our AI agents are matching you with <span className="font-pixel text-[11px] uppercase tracking-widest text-[#d87a16]">verified experts.</span>
                                     </p>
                                 </div>
 
@@ -123,7 +123,7 @@ export default function HangingWhyUsCard({
                                         <span className="font-sans text-lg md:text-xl">Ecosystem.</span>
                                     </h3>
                                     <p className={`${isDark ? 'text-neutral-400' : 'text-neutral-600'} leading-relaxed font-medium text-sm md:text-base`}>
-                                        Where careers are actually built. No timeline clutter, just pure professional networking, learning, and <span className="font-pixel text-[11px] uppercase tracking-widest text-[#d87a16]">job discovery.</span>
+                                        A complete AI Career Operating System. No timeline clutter, just specialized agents accelerating your professional networking, learning, and <span className="font-pixel text-[11px] uppercase tracking-widest text-[#d87a16]">job discovery.</span>
                                     </p>
                                 </div>
                             </div>

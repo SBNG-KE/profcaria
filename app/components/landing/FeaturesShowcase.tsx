@@ -21,16 +21,16 @@ export default function FeaturesShowcase() {
                         </div>
 
                         <h2 className={`text-4xl md:text-6xl lg:text-7xl font-serif italic tracking-tight leading-[0.9] ${isDark ? 'text-white' : 'text-black'}`}>
-                            Connect with <br />
-                            <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600 font-pixel">Visionaries.</span>
+                            Navigated by <br />
+                            <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600 font-pixel">Intelligence.</span>
                         </h2>
 
                         <div className="space-y-8 max-w-2xl">
                             <p className={`text-xl md:text-2xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                We’re building a sanctuary for the world's most dedicated professionals. A space where craft is respected, and connections are curated.
+                                The 90s gave us digital job boards. The 2000s gave us noisy professional social networks. Today demands <span className={`font-bold ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>an Operating System</span>.
                             </p>
                             <p className={`text-lg font-light leading-relaxed ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
-                                No noise. No recruiters spamming generic roles. Just a direct line to the people building the future.
+                                We replaced infinite scrolling and generic recruiter spam with highly-trained, context-aware AI agents. An ecosystem that curates, pre-screens, and connects top talent with the companies building the future—quietly and efficiently.
                             </p>
                         </div>
 

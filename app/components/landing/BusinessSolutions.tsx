@@ -28,7 +28,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                             <span className="opacity-30">LIMITS.</span>
                         </h2>
                         <p className={`text-2xl md:text-3xl font-light max-w-2xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                            The professional landscape is evolving. We provide the infrastructure for the next generation of global teams.
+                            The professional landscape has evolved beyond simple job boards. We provide the AI-powered infrastructure for the next generation of global teams.
                         </p>
                     </div>
 
@@ -84,10 +84,10 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                     <div className="space-y-12 sticky top-32">
                         <div className="space-y-4">
                             <div className="h-1 w-20 bg-current opacity-50 glow-amber" />
-                            <h3 className="text-4xl font-bold tracking-tight uppercase font-pixel">The Ecosystem</h3>
+                            <h3 className="text-4xl font-bold tracking-tight uppercase font-pixel">The OS</h3>
                         </div>
                         <p className={`text-xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                            We don't just connect you with people. We connect you with verified, intelligent professionals who are ready to make an impact. Our system handles the complexity so you can focus on the culture.
+                            We don't just connect you with people. We provide an intelligent operating system that understands career trajectories, skills gaps, and cultural alignment. Our specialized AI agents handle the heavy lifting of screening and matching.
                         </p>
 
                         <div className="flex items-center gap-4">
@@ -174,8 +174,8 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                         {[
                             {
                                 num: "01",
-                                title: "Global Intelligence",
-                                desc: "Access a live network of top-tier professionals. We evaluate career trajectory and proven impact, ensuring you connect with builders who deliver results."
+                                title: "AI-Powered Discovery",
+                                desc: "Access a live network of top-tier professionals. Our Career AI evaluates trajectory and proven impact, ensuring you connect with builders who deliver results."
                             },
                             {
                                 num: "02",
@@ -190,7 +190,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                             {
                                 num: "04",
                                 title: "Zero Friction",
-                                desc: "We handle the complexity of compliance and verification, so you can focus on what matters: the work."
+                                desc: "Dedicated Recruiter AI and Interview Prep AI handle the complexity of screening and candidate readiness, letting you focus on the final decision."
                             }
                         ].map((item, i) => (
                             <div key={i} className="group cursor-default">

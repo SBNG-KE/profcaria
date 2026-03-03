@@ -258,18 +258,18 @@ export default function LandingPageClient() {
                             </div>
 
                             {/* DETAILS TEXT (Tiny, under card) */}
-                            <div className="text-center max-w-xs space-y-2 opacity-70">
+                            <div className="text-center max-w-sm space-y-2 opacity-80">
                                 <h2 className={`
                                     text-xs font-bold uppercase tracking-widest
-                                    ${isDark ? 'text-neutral-400' : 'text-neutral-600'}
+                                    ${isDark ? 'text-neutral-300' : 'text-neutral-700'}
                                 `}>
-                                    Where Careers Are Built and Authentic Jobs Are Found.
+                                    The AI-Powered Career Operating System.
                                 </h2>
                                 <p className={`
                                     text-[10px] uppercase tracking-widest font-pixel
-                                    ${isDark ? 'text-neutral-600' : 'text-neutral-400'}
+                                    ${isDark ? 'text-neutral-500' : 'text-neutral-500'}
                                 `}>
-                                    The AI Career Ecosystem For The Modern Era.
+                                    Where Talent Meets Intelligence.
                                 </p>
                             </div>
                         </div>
