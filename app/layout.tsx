@@ -15,13 +15,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.profcaria.com'),
-  manifest: '/manifest.json',
+  metadataBase: new URL("https://www.profcaria.com"),
+  manifest: "/manifest.json",
   title: {
     default: "Profcaria | AI Career Operating System",
-    template: "%s | Profcaria Career OS"
+    template: "%s | Profcaria Career OS",
   },
-  description: "Profcaria is an AI-powered Career Operating System that manages your professional identity, verified career graph, smart matching, and long-term growth strategy in one secure ecosystem.",
+  description:
+    "Profcaria is an AI-powered Career Operating System that manages your professional identity, verified career graph, smart matching, and long-term growth strategy in one secure ecosystem.",
   keywords: [
     "Career Operating System",
     "AI Career Infrastructure",
@@ -29,36 +30,44 @@ export const metadata: Metadata = {
     "Smart Talent Engine",
     "AI Career Agent",
     "Professional Identity",
-    "Encrypted Career Vault"
+    "Encrypted Career Vault",
   ],
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://www.profcaria.com',
-    siteName: 'Profcaria Career OS',
-    title: 'Profcaria | AI Career Operating System',
-    description: 'The AI-powered Career Operating System managing verified professional identity, smart talent matching, and long-term growth.',
+    type: "website",
+    locale: "en_US",
+    url: "https://www.profcaria.com",
+    siteName: "Profcaria",
+    title: "Profcaria | AI Career Operating System",
+    description:
+      "The AI-powered Career Operating System managing verified professional identity, smart talent matching, and long-term growth.",
     images: [
       {
-        url: 'https://www.profcaria.com/profcaria.png',
+        url: "https://www.profcaria.com/profcaria.png",
         width: 1200,
         height: 630,
-        alt: 'Profcaria Career Operating System',
+        alt: "Profcaria Career Operating System",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Profcaria | AI Career Operating System',
-    description: 'Own your verified career identity. Smart AI matching. Secure career infrastructure.',
-    creator: '@profcaria',
+    card: "summary_large_image",
+    title: "Profcaria | AI Career Operating System",
+    description:
+      "Own your verified career identity. Smart AI matching. Secure career infrastructure.",
+    creator: "@profcaria",
   },
   robots: {
     index: true,
     follow: true,
   },
-  verification: { google: "6xck7xYL-QCWEu1is-U_xcQlkUjfWGxengTW-7mIrk4", other: { me: ['@profcaria'], }, },
+  verification: {
+    google: "6xck7xYL-QCWEu1is-U_xcQlkUjfWGxengTW-7mIrk4",
+    other: {
+      me: ["@profcaria"],
+    },
+  },
 };
+
 // JSON-LD Structured Data for AI crawlers and search engines
 const structuredData = {
   "@context": "https://schema.org",
@@ -66,36 +75,44 @@ const structuredData = {
     {
       "@type": "Organization",
       "@id": "https://www.profcaria.com/#organization",
-      "name": "Profcaria Career Operating System",
-      "url": "https://www.profcaria.com",
-      "logo": {
+      name: "Profcaria",
+      url: "https://www.profcaria.com",
+      logo: {
         "@type": "ImageObject",
-        "url": "https://www.profcaria.com/profcaria.png"
+        url: "https://www.profcaria.com/profcaria.png",
       },
-      "description": "Profcaria is an AI-powered Career Operating System managing verified professional identity, encrypted career records, and intelligent talent matching.",
-      "sameAs": [
-        "https://twitter.com/profcaria"
-      ]
+      description:
+        "Profcaria is an AI-powered Career Operating System managing verified professional identity, encrypted career records, and intelligent talent matching.",
+      founder: {
+        "@type": "Person",
+        name: "Steve Ngare",
+      },
+      sameAs: [
+        "https://twitter.com/profcaria",
+        "https://www.linkedin.com/company/profcaria",
+        "https://github.com/profcaria",
+      ],
     },
     {
       "@type": "WebApplication",
       "@id": "https://www.profcaria.com/#application",
-      "name": "Profcaria Career OS",
-      "url": "https://www.profcaria.com",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "featureList": [
+      name: "Profcaria",
+      url: "https://www.profcaria.com",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      featureList: [
         "Verified Career Graph",
         "AI Career Agent",
         "Encrypted Career Vault",
         "Intent-Driven Matching",
         "Zero-Application Hiring",
         "Smart Talent Engine",
-        "Immutable Employment Verification"
+        "Immutable Employment Verification",
       ],
-      "description": "An AI-native Career Operating System that replaces traditional CVs with a verified career graph and intelligent growth infrastructure."
-    }
-  ]
+      description:
+        "An AI-native Career Operating System that replaces traditional CVs with a verified career graph and intelligent growth infrastructure.",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -108,15 +125,16 @@ export default function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
         />
       </head>
+
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${GeistPixelCircle.variable} antialiased`}
       >
-        <ThemeWrapper>
-          {children}
-        </ThemeWrapper>
+        <ThemeWrapper>{children}</ThemeWrapper>
       </body>
     </html>
   );
