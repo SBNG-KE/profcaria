@@ -105,7 +105,7 @@ export default function TermsOfService({ onAccepted }: TermsOfServiceProps) {
                         <div>
                             <h1 className="text-lg sm:text-xl font-black tracking-tight">Terms of Service</h1>
                             <p className={`text-[10px] sm:text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                Version 1.0 — Effective March 10, 2026
+                                Version 1.0
                             </p>
                         </div>
                     </div>
