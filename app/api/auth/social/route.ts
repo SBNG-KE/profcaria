@@ -61,6 +61,11 @@ export async function POST(req: Request) {
                 .single();
 
             if (existingUser) {
+                // Check if user has been permanently banned (declined ToS)
+                if (existingUser.tos_status === 'rejected') {
+                    return NextResponse.json({ error: 'Your account has been permanently suspended for declining the Terms of Service.' }, { status: 403 });
+                }
+
                 // LOGIN: Existing user — update OAuth info if not set
                 if (!existingUser.oauth_provider) {
                     await supabaseAdmin
@@ -152,6 +157,11 @@ export async function POST(req: Request) {
                 .single();
 
             if (existingCompany) {
+                // Check if employer has been permanently banned (declined ToS)
+                if (existingCompany.tos_status === 'rejected') {
+                    return NextResponse.json({ error: 'Your account has been permanently suspended for declining the Terms of Service.' }, { status: 403 });
+                }
+
                 // LOGIN: Existing employer
                 if (!existingCompany.oauth_provider) {
                     await supabaseAdmin

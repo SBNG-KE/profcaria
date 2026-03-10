@@ -12,6 +12,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import AlertsSidebar from '@/app/components/professional/AlertsSidebar';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import GlobalSearch from '@/app/components/shared/GlobalSearch';
+import TermsOfService from '@/app/components/TermsOfService';
 
 export default function ProfessionalLayoutContent({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,6 +22,8 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     const [isUploading, setIsUploading] = useState(false);
     const [jobStats, setJobStats] = useState({ totalJobs: 0, currentJob: 'None' });
     const [followBackCount, setFollowBackCount] = useState(0);
+    const [tosAccepted, setTosAccepted] = useState(true);
+    const [tosChecked, setTosChecked] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,6 +35,29 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
 
     // Consume Context
     const { unreadCount } = useNotificationContext();
+
+    // Check ToS acceptance status
+    useEffect(() => {
+        const checkTos = async () => {
+            try {
+                const res = await fetch('/api/tos');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.banned) {
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                        router.push('/');
+                        return;
+                    }
+                    setTosAccepted(data.accepted);
+                }
+            } catch (e) {
+                console.error('ToS check error:', e);
+            } finally {
+                setTosChecked(true);
+            }
+        };
+        checkTos();
+    }, [router]);
 
     // Initialize sidebar state based on screen size
     useEffect(() => {
@@ -209,6 +235,11 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
             )}
         </button>
     ));
+
+    // Show ToS if not accepted
+    if (tosChecked && !tosAccepted) {
+        return <TermsOfService onAccepted={() => setTosAccepted(true)} />;
+    }
 
     return (
         <div className={`professional-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 ${isDark ? 'bg-black text-neutral-200 selection:bg-white/30' : 'bg-neutral-50 text-neutral-900 selection:bg-black/20'}`}>

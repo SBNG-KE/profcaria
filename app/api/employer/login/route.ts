@@ -48,6 +48,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
+    // 3a. Check if employer has been permanently banned (declined ToS)
+    if (company.tos_status === 'rejected') {
+      return NextResponse.json({ error: 'Your account has been permanently suspended for declining the Terms of Service.' }, { status: 403 });
+    }
+
     // 4. Update Login Timestamp
     // (Optional: You might want to log this in a separate audit table for security)
     await supabaseAdmin
