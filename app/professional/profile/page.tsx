@@ -2922,9 +2922,16 @@ export default function ProfessionalHome() {
 
           {/* SKILLS FORM */}
           {activeSection === 'skills' && (
-            <div>
-              <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Skill Name</label>
-              <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="React, Python, Design..." />
+            <div className="space-y-4">
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Skill Name</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="React, Python, Design..." />
+              </div>
+              <div>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Evidence Link (Optional)</label>
+                <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.documentUrl || ''} onChange={e => setFormData({ ...formData, documentUrl: e.target.value })} placeholder="https://..." />
+                <p className={`text-[10px] mt-1 leading-tight ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Link to a project, portfolio, or certification proving this skill.</p>
+              </div>
             </div>
           )}
 

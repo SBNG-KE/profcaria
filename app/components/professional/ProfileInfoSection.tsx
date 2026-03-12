@@ -256,51 +256,51 @@ export default function ProfileInfoSection({
 
             {/* Skills */}
             <div className="p-5 md:p-8 rounded-[32px] md:rounded-[40px] border bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors relative overflow-hidden">
-                {/* Decorative background gradients for the "modern/premium" feel */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <SectionHeader title="Verified Skills & Evidence" icon={BadgeCheck} sectionKey="skills" />
+                
+                <div className="space-y-6">
+                    <p className="text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+                        Our AI skill generation maps your actual work to verified proficiencies. Click on a skill to view the supporting evidence (portfolio, project, or certificate).
+                    </p>
 
-                <SectionHeader title="AI Skill Analysis & Proficiencies" icon={BadgeCheck} sectionKey="skills" />
+                    <div className="flex flex-wrap gap-3">
+                        {skills.length === 0 ? (
+                            <p className="text-sm italic text-neutral-400 dark:text-neutral-600">No skills added yet.</p>
+                        ) : (
+                            skills.map((skill) => (
+                                <div key={skill.id} className="group flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-800 text-black dark:text-white hover:border-neutral-300 dark:hover:border-neutral-700">
+                                    {skill.documentUrl ? (
+                                        <a 
+                                            href={skill.documentUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                            title="View Skill Evidence"
+                                        >
+                                            <span>{skill.name}</span>
+                                            <Link2 size={14} className="opacity-50" />
+                                        </a>
+                                    ) : (
+                                        <span>{skill.name}</span>
+                                    )}
 
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center relative z-10 w-full overflow-hidden">
-                    <div className="w-full lg:w-1/2 flex-shrink-0 bg-neutral-50/50 dark:bg-black/20 rounded-[32px] p-0 md:p-2 border border-neutral-100 dark:border-neutral-800/50 shadow-inner overflow-hidden">
-                        <RadarSkillChart
-                            isDark={theme === 'dark' || (propIsDark ?? false)}
-                            skills={skills}
-                            employmentHistory={employmentHistory}
-                            otherProfiles={otherProfiles}
-                            aiRadarStats={aiRadarStats}
-                            onGenerateAIScore={onGenerateAIScore}
-                            isGenerating={isGeneratingAIScore}
-                            readOnly={readOnly}
-                        />
-                    </div>
-
-                    <div className="w-full lg:w-1/2 space-y-6">
-                        <div className="space-y-2 text-center lg:text-left">
-                            <h4 className="text-xl md:text-2xl font-black text-black dark:text-white">Core Proficiencies</h4>
-                            <p className="text-sm md:text-base leading-relaxed text-neutral-500 dark:text-neutral-400">
-                                Dynamic AI-driven insights mapping your execution rhythm and strategic depth across key technologies.
-                            </p>
-                        </div>
-
-                        <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-2">
-                            {skills.length === 0 ? (
-                                <p className="text-sm italic text-neutral-400 dark:text-neutral-600">No skills added yet.</p>
-                            ) : (
-                                skills.map((skill) => (
-                                    <div key={skill.id} className="group relative flex items-center gap-2 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-black dark:text-white hover:border-blue-500 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-400 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-0.5">
-                                        <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 rounded-2xl transition-colors pointer-events-none"></div>
-                                        <span className="relative z-10">{skill.name}</span>
-                                        {!readOnly && onDelete && (
-                                            <button onClick={() => onDelete('skills', skill.id)} className="relative z-20 ml-1 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded-full transition-all">
-                                                <X size={14} />
-                                            </button>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
+                                    {!readOnly && (
+                                        <div className="flex items-center ml-2 border-l pl-2 border-neutral-300 dark:border-neutral-700">
+                                            {onEdit && (
+                                                <button onClick={() => onEdit('skills', skill)} className="p-1 text-neutral-400 hover:text-black dark:hover:text-white transition-colors" title="Edit Skill">
+                                                    <PenLine size={14} />
+                                                </button>
+                                            )}
+                                            {onDelete && (
+                                                <button onClick={() => onDelete('skills', skill.id)} className="p-1 text-neutral-400 hover:text-red-500 transition-colors" title="Remove Skill">
+                                                    <X size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

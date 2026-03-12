@@ -110,9 +110,10 @@ const SECTION_CONFIG: any = {
         fields: {
             id: 'id',
             name: 'enc_name',
+            documentUrl: 'enc_document_url',
             endorsementCount: 'endorsement_count'
         },
-        encrypted: ['name']
+        encrypted: ['name', 'documentUrl']
     },
     other_profiles: {
         table: 'other_profiles',
