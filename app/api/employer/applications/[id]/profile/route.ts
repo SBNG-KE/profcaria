@@ -208,7 +208,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         const education = decryptList(eduRes.data || [], ['enc_school', 'enc_degree', 'enc_field_of_study'])
             .map(item => toCamelCase(item));
 
-        const skills = decryptList(skillsRes.data || [], ['enc_name'])
+        const skills = decryptList(skillsRes.data || [], ['enc_name', 'enc_document_url'])
             .map(item => toCamelCase(item));
 
         const certifications = decryptList(certsRes.data || [], ['enc_name', 'enc_issuer'])
