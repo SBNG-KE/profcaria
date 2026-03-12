@@ -336,7 +336,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ section:
             }
         }
 
-        dbData.updated_at = new Date().toISOString();
+        if (config.table !== 'skills') {
+            dbData.updated_at = new Date().toISOString();
+        }
 
         const { error } = await supabaseAdmin
             .schema('professional')
