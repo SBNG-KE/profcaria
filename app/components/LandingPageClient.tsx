@@ -21,6 +21,7 @@ import HangingPricingCard from '@/app/components/HangingPricingCard';
 import BusinessSolutions from '@/app/components/landing/BusinessSolutions';
 import FeaturesShowcase from '@/app/components/landing/FeaturesShowcase';
 import PlatformTour from '@/app/components/landing/PlatformTour';
+import VerifiedEvidenceShowcase from '@/app/components/landing/VerifiedEvidenceShowcase';
 import JourneyAnimation from '@/app/components/landing/JourneyAnimation';
 
 // Main Landing Page Client Component
@@ -258,7 +259,7 @@ export default function LandingPageClient() {
                             </div>
 
                             {/* DETAILS TEXT (Tiny, under card) */}
-                            <div className="text-center max-w-sm space-y-2 opacity-80">
+                            <div className="text-center max-w-sm space-y-2 opacity-80 mt-4">
                                 <h2 className={`
                                     text-xs font-bold uppercase tracking-widest
                                     ${isDark ? 'text-neutral-300' : 'text-neutral-700'}
@@ -266,10 +267,11 @@ export default function LandingPageClient() {
                                     The AI-Powered Career Operating System.
                                 </h2>
                                 <p className={`
-                                    text-[10px] uppercase tracking-widest font-pixel
-                                    ${isDark ? 'text-neutral-500' : 'text-neutral-500'}
+                                    text-[10px] uppercase tracking-widest font-pixel mt-4 leading-relaxed
+                                    ${isDark ? 'text-amber-500' : 'text-amber-600'}
                                 `}>
-                                    Where Talent Meets Intelligence.
+                                    Don't just upload a CV.<br/>
+                                    Prove your skills with Verified Evidence directly in your profile.
                                 </p>
                             </div>
                         </div>
@@ -302,11 +304,12 @@ export default function LandingPageClient() {
             {/* ============================================
           PLATFORM TOUR (New)
           ============================================ */}
-            <PlatformTour />
+            {/* <PlatformTour /> Commented out to prioritize skill evidence over platform tour */}
 
             {/* ============================================
-          VERIFIED EMPLOYMENT SECTION REMOVED (Merged into Platform Tour)
+          VERIFIED EVIDENCE (Replaces Platform Tour)
           ============================================ */}
+            <VerifiedEvidenceShowcase />
 
 
 

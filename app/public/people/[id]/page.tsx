@@ -221,7 +221,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     const skills = (skillsRaw || []).map((s: any) => ({
         id: s.id,
         name: decryptData(s.enc_name),
-        endorsementCount: s.endorsement_count
+        endorsementCount: s.endorsement_count,
+        documentUrl: s.enc_document_url ? decryptData(s.enc_document_url) : undefined
     }));
 
     const certifications = (certificationsRaw || []).map((c: any) => ({

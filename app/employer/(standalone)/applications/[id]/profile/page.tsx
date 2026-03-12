@@ -371,13 +371,31 @@ export default function EmployerProfileViewPage() {
 
                                 {sections.skills.length > 0 && (
                                     <div className={`p-8 rounded-[40px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                                        <h3 className={`text-xl font-bold flex items-center gap-2 mb-6`}><BadgeCheck size={20} /> Skills</h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {sections.skills.map((skill: any, i: number) => (
-                                                <div key={i} className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'}`}>
-                                                    {skill.name}
-                                                </div>
-                                            ))}
+                                        <h3 className={`text-xl font-bold flex items-center gap-2 mb-6`}><BadgeCheck size={20} /> Verified Skills & Evidence</h3>
+                                        <div className="space-y-6">
+                                            <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                                Verified proficiencies with linked evidence (portfolio, project, or certificate).
+                                            </p>
+                                            <div className="flex flex-wrap gap-3">
+                                                {sections.skills.map((skill: any, i: number) => (
+                                                    <div key={i} className={`group flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-white hover:border-neutral-700' : 'bg-neutral-50 border-neutral-200 text-black hover:border-neutral-300'}`}>
+                                                        {skill.documentUrl ? (
+                                                            <a 
+                                                                href={skill.documentUrl} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer" 
+                                                                className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                                title="View Skill Evidence"
+                                                            >
+                                                                <span>{skill.name}</span>
+                                                                <Link2 size={14} className="opacity-50" />
+                                                            </a>
+                                                        ) : (
+                                                            <span>{skill.name}</span>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 )}

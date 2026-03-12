@@ -180,7 +180,7 @@ export default function BusinessSolutions({ onStart }: { onStart?: () => void })
                             {
                                 num: "02",
                                 title: "Predictive Alignment",
-                                desc: "Beyond simple resumes, our system analyzes working styles and architectural fit, ensuring every match is calibrated for long-term synergy."
+                                desc: "Beyond traditional resumes, our system analyzes verified evidence and architectural fit, ensuring every match is calibrated for long-term synergy."
                             },
                             {
                                 num: "03",

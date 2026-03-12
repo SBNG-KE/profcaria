@@ -7,7 +7,7 @@ import {
     BadgeCheck, Phone, MapPin, Award, Globe,
     BookOpen, Linkedin, Github, Copy, Check, Twitter,
     Users, ExternalLink, Send, AlertCircle, LogOut, UserX, Handshake, MessageSquare, ChevronLeft, ChevronRight,
-    ShieldCheck, CheckCircle2, Circle, Clock
+    ShieldCheck, CheckCircle2, Circle, Clock, Link2
 } from 'lucide-react';
 import VerificationBadge from '@/app/components/VerificationBadge';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -669,19 +669,38 @@ export default function EmployerProfileViewModal({
 
                                     <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] ${isDark ? 'bg-neutral-900' : 'bg-white shadow-sm border border-neutral-100'}`}>
                                         <h3 className={`text-xs font-black uppercase tracking-widest mb-6 flex items-center gap-2 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                            <BadgeCheck size={14} /> Skills
+                                            <BadgeCheck size={14} /> Verified Skills & Evidence
                                         </h3>
-                                        {sections.skills?.length > 0 ? (
-                                            <div className="flex flex-wrap gap-2">
-                                                {sections.skills.map((skill: any, i: number) => (
-                                                    <div key={i} className={`px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest border ${isDark ? 'bg-neutral-800 border-neutral-700 text-white' : 'bg-white border-neutral-200 text-black shadow-sm'}`}>
-                                                        {skill.name}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className={`text-sm italic ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>No skills added.</p>
-                                        )}
+                                        <div className="space-y-6">
+                                            <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                                Verified proficiencies with linked evidence (portfolio, project, or certificate).
+                                            </p>
+                                            
+                                            {sections.skills?.length > 0 ? (
+                                                <div className="flex flex-wrap gap-3">
+                                                    {sections.skills.map((skill: any, i: number) => (
+                                                        <div key={i} className={`group flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border text-sm font-bold transition-all ${isDark ? 'bg-neutral-800/50 border-neutral-800 text-white hover:border-neutral-700' : 'bg-neutral-50 border-neutral-200 text-black hover:border-neutral-300'}`}>
+                                                            {skill.documentUrl ? (
+                                                                <a 
+                                                                    href={skill.documentUrl} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer" 
+                                                                    className="flex items-center gap-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                                    title="View Skill Evidence"
+                                                                >
+                                                                    <span>{skill.name}</span>
+                                                                    <Link2 size={14} className="opacity-50" />
+                                                                </a>
+                                                            ) : (
+                                                                <span>{skill.name}</span>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className={`text-sm italic ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>No skills added.</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
