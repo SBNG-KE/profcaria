@@ -130,8 +130,8 @@ async function buildUserContext(userId: string): Promise<string> {
     return parts.join('\n');
 }
 
-// ── GET: Fetch chat history ──
-export async function GET() {
+// ── GET: Fetch chat history or sessions ──
+export async function GET(req: Request) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
@@ -141,13 +141,30 @@ export async function GET() {
         const { payload: auth } = await jwtVerify(token, secret);
         if (auth.schema !== 'professional') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
+        const { searchParams } = new URL(req.url);
+        const sessionId = searchParams.get('sessionId');
+
+        // If no sessionId is provided, fetch all sessions for the user
+        if (!sessionId) {
+            const { data: sessions } = await supabaseAdmin
+                .schema('professional')
+                .from('career_ai_sessions')
+                .select('id, title, updated_at')
+                .eq('user_id', auth.uid)
+                .order('updated_at', { ascending: false });
+            
+            return NextResponse.json({ sessions: sessions || [] });
+        }
+
+        // Fetch messages for a specific session
         const { data: messages } = await supabaseAdmin
             .schema('professional')
             .from('career_ai_messages')
             .select('id, role, enc_content, created_at')
             .eq('user_id', auth.uid)
+            .eq('session_id', sessionId)
             .order('created_at', { ascending: true })
-            .limit(50);
+            .limit(100);
 
         const decrypted = (messages || []).map((m: any) => ({
             id: m.id,
@@ -175,7 +192,7 @@ export async function POST(req: Request) {
         if (auth.schema !== 'professional') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const userId = auth.uid as string;
-        const { message } = await req.json();
+        const { message, sessionId: providedSessionId } = await req.json();
 
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -185,35 +202,81 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Message too long (max 2000 chars)' }, { status: 400 });
         }
 
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+        let currentSessionId = providedSessionId;
+
+        // If no session exists, create one and generate a title
+        if (!currentSessionId) {
+            // Generate title
+            try {
+                const titleResult = await model.generateContent(`Generate a short, concise title (max 4-5 words) for a career conversation starting with this message: "${message.substring(0, 100)}". Just return the title, no quotes or prefix.`);
+                let generatedTitle = titleResult.response.text().trim();
+                generatedTitle = generatedTitle.replace(/^"|"$/g, ''); // Remove quotes if any
+                if (!generatedTitle) generatedTitle = "New Chat";
+
+                const { data: newSession, error: sessionErr } = await supabaseAdmin
+                    .schema('professional')
+                    .from('career_ai_sessions')
+                    .insert({ user_id: userId, title: generatedTitle })
+                    .select('id')
+                    .single();
+                
+                if (sessionErr) throw sessionErr;
+                currentSessionId = newSession.id;
+
+            } catch (err) {
+                console.error("Error creating session", err);
+                const { data: fallbackSession } = await supabaseAdmin
+                    .schema('professional')
+                    .from('career_ai_sessions')
+                    .insert({ user_id: userId, title: "New Chat" })
+                    .select('id')
+                    .single();
+                currentSessionId = fallbackSession?.id;
+            }
+        } else {
+            // Update session updated_at
+            await supabaseAdmin
+                .schema('professional')
+                .from('career_ai_sessions')
+                .update({ updated_at: new Date().toISOString() })
+                .eq('id', currentSessionId);
+        }
+
         // 1. Store user message
         const encUserMsg = encryptData(message.trim());
         await supabaseAdmin
             .schema('professional')
             .from('career_ai_messages')
-            .insert({ user_id: userId, role: 'user', enc_content: encUserMsg });
+            .insert({ user_id: userId, session_id: currentSessionId, role: 'user', enc_content: encUserMsg });
 
         // 2. Build context
         const userContext = await buildUserContext(userId);
 
-        // 3. Fetch recent conversation history (last 10 messages for context)
-        const { data: recentMsgs } = await supabaseAdmin
-            .schema('professional')
-            .from('career_ai_messages')
-            .select('role, enc_content')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false })
-            .limit(10);
-
-        const conversationHistory = (recentMsgs || [])
-            .reverse()
-            .map((m: any) => ({
-                role: m.role === 'user' ? 'user' as const : 'model' as const,
-                parts: [{ text: decryptData(m.enc_content) || '' }],
-            }));
+        // 3. Fetch recent conversation history from this session
+        let conversationHistory: any[] = [];
+        if (currentSessionId) {
+            const { data: recentMsgs } = await supabaseAdmin
+                .schema('professional')
+                .from('career_ai_messages')
+                .select('role, enc_content')
+                .eq('user_id', userId)
+                .eq('session_id', currentSessionId)
+                .order('created_at', { ascending: false })
+                .limit(10);
+                
+            const previousMsgs = (recentMsgs || []).filter((_: any, idx: number) => idx > 0);
+            
+            conversationHistory = previousMsgs
+                .reverse()
+                .map((m: any) => ({
+                    role: m.role === 'user' ? 'user' as const : 'model' as const,
+                    parts: [{ text: decryptData(m.enc_content) || '' }],
+                }));
+        }
 
         // 4. Call Gemini
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
         const chat = model.startChat({
             history: [
                 {
@@ -236,10 +299,11 @@ export async function POST(req: Request) {
         await supabaseAdmin
             .schema('professional')
             .from('career_ai_messages')
-            .insert({ user_id: userId, role: 'assistant', enc_content: encAiMsg });
+            .insert({ user_id: userId, session_id: currentSessionId, role: 'assistant', enc_content: encAiMsg });
 
         return NextResponse.json({
             response: aiResponse,
+            sessionId: currentSessionId
         });
 
     } catch (error: unknown) {

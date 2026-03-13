@@ -12,12 +12,12 @@ interface Question {
     jobTitle: string;
 }
 
-const TYPE_CONFIG: Record<string, { icon: any; color: string; label: string }> = {
-    behavioral: { icon: Users, color: 'text-blue-400', label: 'Behavioral' },
-    technical: { icon: Brain, color: 'text-purple-400', label: 'Technical' },
-    situational: { icon: Target, color: 'text-amber-400', label: 'Situational' },
-    competency: { icon: Lightbulb, color: 'text-emerald-400', label: 'Competency' },
-    general: { icon: Sparkles, color: 'text-neutral-400', label: 'General' },
+const TYPE_CONFIG: Record<string, { icon: any; label: string }> = {
+    behavioral: { icon: Users, label: 'Behavioral' },
+    technical: { icon: Brain, label: 'Technical' },
+    situational: { icon: Target, label: 'Situational' },
+    competency: { icon: Lightbulb, label: 'Competency' },
+    general: { icon: Sparkles, label: 'General' },
 };
 
 export default function InterviewPrepPage() {
@@ -101,8 +101,8 @@ export default function InterviewPrepPage() {
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2.5 rounded-xl ${isDark ? 'bg-purple-500/10 border border-purple-500/20' : 'bg-purple-50 border border-purple-200'}`}>
-                        <GraduationCap size={24} className="text-purple-500" />
+                    <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                        <GraduationCap size={24} className={isDark ? 'text-white' : 'text-black'} />
                     </div>
                     <div>
                         <h1 className={`text-2xl md:text-3xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
@@ -131,7 +131,7 @@ export default function InterviewPrepPage() {
                         value={jobTitle}
                         onChange={(e) => setJobTitle(e.target.value)}
                         placeholder="e.g. Senior Backend Engineer"
-                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/30 ${isDark
+                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-neutral-500/30 ${isDark
                             ? 'bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-600'
                             : 'bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400'
                             }`}
@@ -148,7 +148,7 @@ export default function InterviewPrepPage() {
                         onChange={(e) => setJobDescription(e.target.value)}
                         placeholder="Paste the job description here for more targeted questions..."
                         rows={3}
-                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-purple-500/30 resize-none ${isDark
+                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-neutral-500/30 resize-none ${isDark
                             ? 'bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-600'
                             : 'bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400'
                             }`}
@@ -176,7 +176,7 @@ export default function InterviewPrepPage() {
                         className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all ${loading || !jobTitle.trim()
                             ? 'opacity-40 cursor-not-allowed'
                             : 'hover:scale-[1.02] active:scale-[0.98]'
-                            } bg-gradient-to-r from-purple-600 to-indigo-600 text-white`}
+                            } ${isDark ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-black text-white shadow-lg shadow-black/10'}`}
                     >
                         {loading ? (
                             <>
@@ -193,7 +193,7 @@ export default function InterviewPrepPage() {
                 </div>
 
                 {error && (
-                    <div className="mt-3 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                    <div className="mt-3 px-4 py-2 rounded-lg bg-neutral-500/10 border border-neutral-500/20 text-neutral-400 text-xs font-medium">
                         ⚠️ {error}
                     </div>
                 )}
@@ -225,8 +225,8 @@ export default function InterviewPrepPage() {
                                         </span>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Icon size={12} className={config.color} />
-                                                <span className={`text-[10px] font-black uppercase tracking-widest ${config.color}`}>
+                                                <Icon size={12} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
+                                                <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                                     {config.label}
                                                 </span>
                                             </div>
@@ -242,7 +242,7 @@ export default function InterviewPrepPage() {
                                     </button>
                                     {isExpanded && (
                                         <div className={`px-4 pb-4 pt-0 ml-8 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
-                                            <p className={`text-xs font-bold uppercase tracking-widest mt-3 mb-2 ${isDark ? 'text-emerald-500' : 'text-emerald-600'}`}>
+                                            <p className={`text-xs font-bold uppercase tracking-widest mt-3 mb-2 ${isDark ? 'text-white' : 'text-black'}`}>
                                                 Model Answer
                                             </p>
                                             <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>

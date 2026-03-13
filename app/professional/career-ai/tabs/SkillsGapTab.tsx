@@ -94,15 +94,13 @@ export default function SkillsGapPage() {
     };
 
     const getScoreColor = (pct: number) => {
-        if (pct >= 80) return 'text-emerald-500';
-        if (pct >= 60) return 'text-amber-500';
-        return 'text-red-500';
+        if (pct >= 80) return isDark ? 'text-white' : 'text-black';
+        if (pct >= 60) return 'text-neutral-500';
+        return 'text-neutral-500';
     };
 
     const getScoreBg = (pct: number) => {
-        if (pct >= 80) return isDark ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200';
-        if (pct >= 60) return isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200';
-        return isDark ? 'bg-red-500/10 border-red-500/20' : 'bg-red-50 border-red-200';
+        return isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200';
     };
 
     return (
@@ -110,8 +108,8 @@ export default function SkillsGapPage() {
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2.5 rounded-xl ${isDark ? 'bg-cyan-500/10 border border-cyan-500/20' : 'bg-cyan-50 border border-cyan-200'}`}>
-                        <BarChart3 size={24} className="text-cyan-500" />
+                    <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                        <BarChart3 size={24} className={isDark ? 'text-white' : 'text-black'} />
                     </div>
                     <div>
                         <h1 className={`text-2xl md:text-3xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
@@ -139,7 +137,7 @@ export default function SkillsGapPage() {
                         value={jobTitle}
                         onChange={(e) => setJobTitle(e.target.value)}
                         placeholder="e.g. Senior Full-Stack Engineer"
-                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/30 ${isDark
+                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-neutral-500/30 ${isDark
                             ? 'bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-600'
                             : 'bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400'
                             }`}
@@ -155,7 +153,7 @@ export default function SkillsGapPage() {
                         onChange={(e) => setJobDescription(e.target.value)}
                         placeholder="Paste a job description for a more precise analysis..."
                         rows={3}
-                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-cyan-500/30 resize-none ${isDark
+                        className={`w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-neutral-500/30 resize-none ${isDark
                             ? 'bg-neutral-800 border-neutral-700 text-white placeholder:text-neutral-600'
                             : 'bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400'
                             }`}
@@ -168,7 +166,7 @@ export default function SkillsGapPage() {
                     className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all ${loading || !jobTitle.trim()
                         ? 'opacity-40 cursor-not-allowed'
                         : 'hover:scale-[1.02] active:scale-[0.98]'
-                        } bg-gradient-to-r from-cyan-600 to-blue-600 text-white`}
+                        } ${isDark ? 'bg-white text-black shadow-lg shadow-white/10' : 'bg-black text-white shadow-lg shadow-black/10'}`}
                 >
                     {loading ? (
                         <><Loader2 size={16} className="animate-spin" /> Analyzing...</>
@@ -178,7 +176,7 @@ export default function SkillsGapPage() {
                 </button>
 
                 {error && (
-                    <div className="mt-3 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                    <div className="mt-3 px-4 py-2 rounded-lg bg-neutral-500/10 border border-neutral-500/20 text-neutral-400 text-xs font-medium">
                         ⚠️ {error}
                     </div>
                 )}
@@ -199,7 +197,7 @@ export default function SkillsGapPage() {
                         </div>
                         <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
                             <div
-                                className={`h-full rounded-full transition-all duration-1000 ${result.matchPercentage >= 80 ? 'bg-emerald-500' : result.matchPercentage >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}
+                                className={`h-full rounded-full transition-all duration-1000 ${isDark ? 'bg-neutral-500' : 'bg-neutral-900'}`}
                                 style={{ width: `${result.matchPercentage}%` }}
                             />
                         </div>
@@ -212,12 +210,12 @@ export default function SkillsGapPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Matched */}
                         <div className={`rounded-2xl p-5 border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                            <h3 className="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3 flex items-center gap-2">
+                            <h3 className={`text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                 <CheckCircle2 size={14} /> Skills You Have ({result.matchedSkills.length})
                             </h3>
                             <div className="flex flex-wrap gap-2">
                                 {result.matchedSkills.map((s, i) => (
-                                    <span key={i} className={`px-3 py-1 rounded-full text-xs font-bold ${isDark ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                                    <span key={i} className={`px-3 py-1 rounded-full text-xs font-bold border ${isDark ? 'bg-neutral-800 text-neutral-300 border-neutral-700' : 'bg-neutral-100 text-neutral-700 border-neutral-200'}`}>
                                         {s}
                                     </span>
                                 ))}
@@ -229,12 +227,12 @@ export default function SkillsGapPage() {
 
                         {/* Missing */}
                         <div className={`rounded-2xl p-5 border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                            <h3 className="text-xs font-black uppercase tracking-widest text-red-500 mb-3 flex items-center gap-2">
+                            <h3 className={`text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                 <XCircle size={14} /> Skills You Need ({result.missingSkills.length})
                             </h3>
                             <div className="flex flex-wrap gap-2">
                                 {result.missingSkills.map((s, i) => (
-                                    <span key={i} className={`px-3 py-1 rounded-full text-xs font-bold ${isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                                    <span key={i} className={`px-3 py-1 rounded-full text-xs font-bold border ${isDark ? 'bg-neutral-800 text-neutral-300 border-neutral-700' : 'bg-neutral-100 text-neutral-700 border-neutral-200'}`}>
                                         {s}
                                     </span>
                                 ))}
@@ -250,7 +248,7 @@ export default function SkillsGapPage() {
                         <div className={`rounded-2xl p-5 border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                             {result.topPriority && (
                                 <div className="mb-4">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-amber-500 mb-2 flex items-center gap-2">
+                                    <h3 className={`text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                                         <Zap size={14} /> #1 Priority
                                     </h3>
                                     <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
@@ -267,7 +265,7 @@ export default function SkillsGapPage() {
                                     <div className="space-y-2">
                                         {result.learningPath.map((step, i) => (
                                             <div key={i} className="flex items-start gap-3">
-                                                <div className={`mt-0.5 flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black shrink-0 ${isDark ? 'bg-cyan-500/20 text-cyan-400' : 'bg-cyan-100 text-cyan-700'}`}>
+                                                <div className={`mt-0.5 flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black shrink-0 ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-600'}`}>
                                                     {i + 1}
                                                 </div>
                                                 <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
@@ -325,7 +323,7 @@ export default function SkillsGapPage() {
                                     </div>
                                     <div className="flex gap-1 mt-1 flex-wrap">
                                         {item.missingSkills.slice(0, 4).map((s, i) => (
-                                            <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full ${isDark ? 'bg-red-500/10 text-red-400' : 'bg-red-50 text-red-600'}`}>
+                                            <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full border ${isDark ? 'bg-neutral-800 text-neutral-400 border-neutral-700' : 'bg-neutral-100 text-neutral-600 border-neutral-200'}`}>
                                                 {s}
                                             </span>
                                         ))}
