@@ -110,12 +110,21 @@ export default function AIChatTab() {
 
             if (res.ok) {
                 const data = await res.json();
-                setMessages(prev => [...prev, {
-                    id: `ai-${Date.now()}`,
-                    role: 'assistant',
-                    content: data.response,
-                    createdAt: new Date().toISOString(),
-                }]);
+                
+                // Replace temp user message and add AI response
+                setMessages(prev => {
+                    const filtered = prev.filter(m => m.id !== tempId);
+                    return [
+                        ...filtered,
+                        { id: `user-${Date.now()}`, role: 'user', content: msg, createdAt: new Date().toISOString() },
+                        {
+                            id: `ai-${Date.now()}`,
+                            role: 'assistant',
+                            content: data.response,
+                            createdAt: new Date().toISOString(),
+                        }
+                    ];
+                });
                 
                 if (data.sessionId && data.sessionId !== activeSessionId) {
                     setActiveSessionId(data.sessionId);
@@ -123,20 +132,34 @@ export default function AIChatTab() {
                 }
             } else {
                 const err = await res.json();
-                setMessages(prev => [...prev, {
-                    id: `err-${Date.now()}`,
-                    role: 'assistant',
-                    content: `⚠️ ${err.error || 'Something went wrong. Please try again.'}`,
-                    createdAt: new Date().toISOString(),
-                }]);
+                setMessages(prev => {
+                    const filtered = prev.filter(m => m.id !== tempId);
+                    return [
+                        ...filtered,
+                        { id: `user-${Date.now()}`, role: 'user', content: msg, createdAt: new Date().toISOString() },
+                        {
+                            id: `err-${Date.now()}`,
+                            role: 'assistant',
+                            content: `⚠️ ${err.error || 'Something went wrong. Please try again.'}`,
+                            createdAt: new Date().toISOString(),
+                        }
+                    ];
+                });
             }
         } catch {
-            setMessages(prev => [...prev, {
-                id: `err-${Date.now()}`,
-                role: 'assistant',
-                content: '⚠️ Network error. Please check your connection.',
-                createdAt: new Date().toISOString(),
-            }]);
+            setMessages(prev => {
+                const filtered = prev.filter(m => m.id !== tempId);
+                return [
+                    ...filtered,
+                    { id: `user-${Date.now()}`, role: 'user', content: msg, createdAt: new Date().toISOString() },
+                    {
+                        id: `err-${Date.now()}`,
+                        role: 'assistant',
+                        content: '⚠️ Network error. Please check your connection.',
+                        createdAt: new Date().toISOString(),
+                    }
+                ];
+            });
         } finally {
             setSending(false);
             inputRef.current?.focus();

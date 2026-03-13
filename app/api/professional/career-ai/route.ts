@@ -263,13 +263,13 @@ export async function POST(req: Request) {
                 .select('role, enc_content')
                 .eq('user_id', userId)
                 .eq('session_id', currentSessionId)
-                .order('created_at', { ascending: false })
+                .order('created_at', { ascending: true }) // Fetch ascending to keep order
                 .limit(10);
                 
-            const previousMsgs = (recentMsgs || []).filter((_: any, idx: number) => idx > 0);
+            // Filter out the message we JUST inserted to avoid duplicates in context
+            const previousMsgs = (recentMsgs || []).slice(0, -1);
             
             conversationHistory = previousMsgs
-                .reverse()
                 .map((m: any) => ({
                     role: m.role === 'user' ? 'user' as const : 'model' as const,
                     parts: [{ text: decryptData(m.enc_content) || '' }],
