@@ -6,6 +6,7 @@ import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import crypto from 'crypto';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -144,16 +145,55 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const sessionId = searchParams.get('sessionId');
 
-        // If no sessionId is provided, fetch all sessions for the user
+        // If no sessionId is provided, fetch distinct sessions from messages
         if (!sessionId) {
-            const { data: sessions } = await supabaseAdmin
+            const { data: messages } = await supabaseAdmin
                 .schema('professional')
-                .from('career_ai_sessions')
-                .select('id, title, updated_at')
+                .from('career_ai_messages')
+                .select('session_id, role, enc_content, created_at')
                 .eq('user_id', auth.uid)
-                .order('updated_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(500); // Look at the last 500 messages to find sessions
+                
+            if (!messages || messages.length === 0) {
+                return NextResponse.json({ sessions: [] });
+            }
+
+            // Group messages by session_id to extract title (first message) and updated_at (latest message)
+            const sessionMap = new Map<string, { title: string, updated_at: string, minTime: number }>();
             
-            return NextResponse.json({ sessions: sessions || [] });
+            for (const msg of messages) {
+                if (!msg.session_id) continue;
+                
+                const mTime = new Date(msg.created_at).getTime();
+                
+                if (!sessionMap.has(msg.session_id)) {
+                    // Initialize with the most recent message's time (since we sorted desc)
+                    sessionMap.set(msg.session_id, { title: '', updated_at: msg.created_at, minTime: Infinity });
+                }
+                
+                const session = sessionMap.get(msg.session_id)!;
+                
+                // If this is a user message and older than what we've seen, it might be the primary session title!
+                if (msg.role === 'user' && mTime <= session.minTime) {
+                    const decryptedContent = decryptData(msg.enc_content) || '';
+                    let titleStr = decryptedContent.trim().split('\n')[0].substring(0, 35);
+                    if (titleStr.length === 35) titleStr += '...';
+                    
+                    session.title = titleStr || 'New Chat';
+                    session.minTime = mTime;
+                }
+            }
+            
+            const sessionsObj = Array.from(sessionMap.entries())
+                .map(([id, s]) => ({
+                    id,
+                    title: s.title || 'New Chat', // Fallback to 'New Chat' if no user message found
+                    updated_at: s.updated_at
+                }))
+                .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+            
+            return NextResponse.json({ sessions: sessionsObj });
         }
 
         // Fetch messages for a specific session
@@ -206,42 +246,9 @@ export async function POST(req: Request) {
 
         let currentSessionId = providedSessionId;
 
-        // If no session exists, create one and generate a title
+        // If no session exists, create a simple random UUID as the linking session_id
         if (!currentSessionId) {
-            // Generate title
-            try {
-                const titleResult = await model.generateContent(`Generate a short, concise title (max 4-5 words) for a career conversation starting with this message: "${message.substring(0, 100)}". Just return the title, no quotes or prefix.`);
-                let generatedTitle = titleResult.response.text().trim();
-                generatedTitle = generatedTitle.replace(/^"|"$/g, ''); // Remove quotes if any
-                if (!generatedTitle) generatedTitle = "New Chat";
-
-                const { data: newSession, error: sessionErr } = await supabaseAdmin
-                    .schema('professional')
-                    .from('career_ai_sessions')
-                    .insert({ user_id: userId, title: generatedTitle })
-                    .select('id')
-                    .single();
-                
-                if (sessionErr) throw sessionErr;
-                currentSessionId = newSession.id;
-
-            } catch (err) {
-                console.error("Error creating session", err);
-                const { data: fallbackSession } = await supabaseAdmin
-                    .schema('professional')
-                    .from('career_ai_sessions')
-                    .insert({ user_id: userId, title: "New Chat" })
-                    .select('id')
-                    .single();
-                currentSessionId = fallbackSession?.id;
-            }
-        } else {
-            // Update session updated_at
-            await supabaseAdmin
-                .schema('professional')
-                .from('career_ai_sessions')
-                .update({ updated_at: new Date().toISOString() })
-                .eq('id', currentSessionId);
+            currentSessionId = crypto.randomUUID();
         }
 
         // 1. Store user message
@@ -256,20 +263,17 @@ export async function POST(req: Request) {
 
         // 3. Fetch recent conversation history from this session
         let conversationHistory: any[] = [];
-        if (currentSessionId) {
+        if (providedSessionId) { // Only fetch previous history if they are appending to a chat
             const { data: recentMsgs } = await supabaseAdmin
                 .schema('professional')
                 .from('career_ai_messages')
                 .select('role, enc_content')
                 .eq('user_id', userId)
-                .eq('session_id', currentSessionId)
+                .eq('session_id', providedSessionId)
                 .order('created_at', { ascending: true }) // Fetch ascending to keep order
                 .limit(10);
                 
-            // Filter out the message we JUST inserted to avoid duplicates in context
-            const previousMsgs = (recentMsgs || []).slice(0, -1);
-            
-            conversationHistory = previousMsgs
+            conversationHistory = (recentMsgs || [])
                 .map((m: any) => ({
                     role: m.role === 'user' ? 'user' as const : 'model' as const,
                     parts: [{ text: decryptData(m.enc_content) || '' }],
