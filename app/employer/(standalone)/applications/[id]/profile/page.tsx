@@ -105,11 +105,11 @@ export default function EmployerProfileViewPage() {
     const score = data.careerScore;
 
     const tierConfig: Record<string, { emoji: string; gradient: string }> = {
-        legendary: { emoji: '👑', gradient: 'from-amber-500 to-orange-500' },
-        elite: { emoji: '💎', gradient: 'from-indigo-500 to-purple-500' },
-        rising: { emoji: '🚀', gradient: 'from-emerald-500 to-teal-500' },
-        emerging: { emoji: '🌱', gradient: 'from-lime-500 to-green-500' },
-        newcomer: { emoji: '✨', gradient: 'from-neutral-400 to-neutral-500' },
+        legendary: { emoji: '', gradient: 'from-black to-black dark:from-white dark:to-white' },
+        elite: { emoji: '', gradient: 'from-black to-black dark:from-white dark:to-white' },
+        rising: { emoji: '', gradient: 'from-black to-black dark:from-white dark:to-white' },
+        emerging: { emoji: '', gradient: 'from-black to-black dark:from-white dark:to-white' },
+        newcomer: { emoji: '', gradient: 'from-black to-black dark:from-white dark:to-white' },
     };
     const tier = tierConfig[score?.tier || 'newcomer'] || tierConfig.newcomer;
 
@@ -183,7 +183,7 @@ export default function EmployerProfileViewPage() {
                 <nav className="flex-1 space-y-2">
                     <button
                         onClick={() => setActiveTab('proof')}
-                        className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'proof' ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20' : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+                        className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-sm font-bold transition-all ${activeTab === 'proof' ? (isDark ? 'bg-neutral-800 text-white shadow-lg' : 'bg-black text-white shadow-xl') : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
                     >
                         <ShieldCheck size={18} /> Verified Proof
                     </button>
@@ -257,7 +257,7 @@ export default function EmployerProfileViewPage() {
                                                 <span className="text-lg font-black">{verification.score}/100</span>
                                             </div>
                                             <div className="w-full h-2.5 rounded-full bg-neutral-100 dark:bg-neutral-800">
-                                                <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-amber-500 transition-all duration-1000" style={{ width: `${verification.score}%` }} />
+                                                <div className={`h-full rounded-full transition-all duration-1000 ${isDark ? 'bg-white' : 'bg-black'}`} style={{ width: `${verification.score}%` }} />
                                             </div>
                                         </div>
                                     </div>

@@ -458,7 +458,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             <div className="relative w-20 h-20 shrink-0">
                                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                                     <circle cx="50" cy="50" r="42" fill="none" className="stroke-neutral-200 dark:stroke-neutral-800" strokeWidth="8" />
-                                    <circle cx="50" cy="50" r="42" fill="none" stroke={verificationGraph.overallTier === 'gold' ? '#f59e0b' : verificationGraph.overallTier === 'blue' ? '#3b82f6' : '#9ca3af'} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${verificationGraph.overallScore * 2.64} 264`} />
+                                    <circle cx="50" cy="50" r="42" fill="none" className="stroke-black dark:stroke-white" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${verificationGraph.overallScore * 2.64} 264`} />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                                     <span className="text-xl font-black text-black dark:text-white">{verificationGraph.overallScore}</span>
@@ -467,13 +467,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                                    <Shield size={16} className="text-emerald-500" />
+                                    <Shield size={16} className="text-black dark:text-white" />
                                     Verified Career Graph
                                 </h3>
                                 <div className="grid grid-cols-4 gap-2 mt-3">
                                     {verificationGraph.nodes.slice(0, 8).map((node: any) => (
                                         <div key={node.id} className="flex flex-col items-center gap-1">
-                                            {node.status === 'verified' ? <CheckCircle2 size={14} className="text-emerald-500" /> : node.status === 'partial' ? <AlertCircle size={14} className="text-amber-500" /> : <XCircle size={14} className="text-neutral-400 dark:text-neutral-600" />}
+                                            {node.status === 'verified' ? <CheckCircle2 size={14} className="text-black dark:text-white" /> : node.status === 'partial' ? <AlertCircle size={14} className="text-neutral-500 dark:text-neutral-400" /> : <XCircle size={14} className="text-neutral-300 dark:text-neutral-700" />}
                                             <span className="text-[9px] font-bold text-neutral-500 dark:text-neutral-400 text-center leading-tight">{node.label}</span>
                                         </div>
                                     ))}
@@ -490,8 +490,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             <div className="relative w-16 h-16 shrink-0">
                                 <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                                     <circle cx="50" cy="50" r="42" fill="none" className="stroke-neutral-200 dark:stroke-neutral-800" strokeWidth="8" />
-                                    <circle cx="50" cy="50" r="42" fill="none" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${careerScore.overall * 2.64} 264`} style={{ stroke: 'url(#csGrad)' }} />
-                                    <defs><linearGradient id="csGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#8b5cf6" /></linearGradient></defs>
+                                    <circle cx="50" cy="50" r="42" fill="none" className="stroke-black dark:stroke-white" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${careerScore.overall * 2.64} 264`} />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                                     <span className="text-lg font-black text-black dark:text-white">{careerScore.overall}</span>
@@ -499,18 +498,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-bold text-black dark:text-white flex items-center gap-2">
-                                    <Trophy size={16} className="text-amber-500" />
+                                    <Trophy size={16} className="text-black dark:text-white" />
                                     Career Score
-                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${careerScore.tier === 'legendary' ? 'bg-amber-500/20 text-amber-500' :
-                                        careerScore.tier === 'elite' ? 'bg-indigo-500/20 text-indigo-500' :
-                                            careerScore.tier === 'rising' ? 'bg-emerald-500/20 text-emerald-500' :
-                                                careerScore.tier === 'emerging' ? 'bg-lime-500/20 text-lime-500' :
-                                                    'bg-neutral-100 dark:bg-neutral-800 text-neutral-500'
-                                        }`}>{careerScore.tier}</span>
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">
+                                        {careerScore.tier}
+                                    </span>
                                 </h3>
                                 <div className="flex flex-wrap gap-1.5 mt-2">
                                     {careerScore.pillars?.map((p: any) => (
-                                        <span key={p.id} className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${p.score >= 70 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : p.score >= 40 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'}`}>
+                                        <span key={p.id} className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-neutral-100 dark:bg-neutral-800 text-black dark:text-white">
                                             {p.label} {p.score}
                                         </span>
                                     ))}
