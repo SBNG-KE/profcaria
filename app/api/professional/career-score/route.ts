@@ -101,22 +101,6 @@ export async function GET(req: Request) {
             );
         }
 
-        // 3. VERIFICATION TRUST (0-100) — from verification data
-        const verifiedCount = verifiedEmploymentRes.data?.length || 0;
-        const has2FA = user.requires_2fa || user.has_passkey || user.has_totp;
-        const endorsedSkills = skills.filter((s: any) => s.endorsement_count > 0).length;
-
-        const trustChecks: { weight: number; score: number }[] = [
-            { weight: 25, score: badgeTier !== 'none' ? 100 : 0 },
-            { weight: 20, score: has2FA ? 100 : 0 },
-            { weight: 25, score: verifiedCount > 0 ? Math.min(verifiedCount * 50, 100) : 0 },
-            { weight: 15, score: endorsedSkills > 0 ? Math.min(endorsedSkills * 25, 100) : 0 },
-            { weight: 15, score: hasDocs ? 100 : 0 },
-        ];
-        const verificationTrust = Math.round(
-            trustChecks.reduce((sum, c) => sum + (c.weight * c.score / 100), 0)
-        );
-
         // 4. NETWORK INFLUENCE (0-100) — followers, views, connections
         const followersCount = followersRes.count || 0;
         const viewsCount = profileViewsRes.count || 0;
@@ -141,13 +125,16 @@ export async function GET(req: Request) {
         const growthChecks = [hasRecentEmployment, hasMultipleSkills, hasMultipleDocs, hasConnections, hasPosts];
         const growthTrajectory = Math.round((growthChecks.filter(Boolean).length / growthChecks.length) * 100);
 
+        // ============ STATS / OTHER METRICS ============
+        const verifiedCount = verifiedEmploymentRes.data?.length || 0;
+        const endorsedSkills = skills.filter((s: any) => s.endorsement_count > 0).length;
+
         // ============ OVERALL CAREER SCORE ============
         const pillars = [
-            { id: 'profile', label: 'Profile Strength', score: profileStrength, weight: 20, icon: 'user', description: 'Completeness of your professional profile' },
+            { id: 'profile', label: 'Profile Strength', score: profileStrength, weight: 25, icon: 'user', description: 'Completeness of your professional profile' },
             { id: 'skills', label: 'Skill Power', score: skillPower, weight: 25, icon: 'code', description: 'AI-analyzed depth, execution, collaboration, creativity' },
-            { id: 'trust', label: 'Verification Trust', score: verificationTrust, weight: 25, icon: 'shield', description: 'Badge, 2FA, verified employment, endorsements' },
-            { id: 'network', label: 'Network Influence', score: networkInfluence, weight: 15, icon: 'users', description: 'Followers, views, posts, connections' },
-            { id: 'growth', label: 'Growth Trajectory', score: growthTrajectory, weight: 15, icon: 'trending', description: 'Activity, skilling, and engagement trends' },
+            { id: 'network', label: 'Network Influence', score: networkInfluence, weight: 25, icon: 'users', description: 'Followers, views, posts, connections' },
+            { id: 'growth', label: 'Growth Trajectory', score: growthTrajectory, weight: 25, icon: 'trending', description: 'Activity, skilling, and engagement trends' },
         ];
 
         const overallScore = Math.round(
@@ -174,6 +161,7 @@ export async function GET(req: Request) {
             score: {
                 overall: overallScore,
                 tier,
+                trend: overallScore > 50 ? 'increase' : overallScore === 50 ? 'constant' : 'decrease',
                 pillars,
                 radarBreakdown,
                 stats: {

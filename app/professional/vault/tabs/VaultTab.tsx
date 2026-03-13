@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     Shield, Lock, FileText, Plus, X, Trash2, Pin, PinOff,
-    Eye, EyeOff, DollarSign, Briefcase, ChevronDown, ChevronRight,
+    Eye, EyeOff, Banknote, Briefcase, ChevronDown, ChevronRight,
     Clock, Edit3, Save, Loader2, Check, AlertTriangle, Search, StickyNote
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -231,14 +231,11 @@ export default function CareerVaultPage() {
                 <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-10" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)' }} />
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className={`p-2.5 rounded-xl ${isDark ? 'bg-purple-500/20' : 'bg-purple-50'}`}>
-                            <Shield size={24} className="text-purple-500" />
+                        <div className={`p-2.5 rounded-xl ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                            <Shield size={24} className={isDark ? 'text-neutral-300' : 'text-neutral-600'} />
                         </div>
                         <div>
                             <h1 className={`text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Career Vault</h1>
-                            <p className={`text-xs font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                                End-to-end encrypted • AES-256-GCM • Only you can read this data
-                            </p>
                         </div>
                     </div>
                 </div>
@@ -249,7 +246,7 @@ export default function CareerVaultPage() {
                 {[
                     { id: 'overview', label: 'Overview', icon: Shield },
                     { id: 'notes', label: 'Career Diary', icon: StickyNote },
-                    { id: 'salary', label: 'Salary Tracker', icon: DollarSign },
+                    { id: 'salary', label: 'Salary Tracker', icon: Banknote },
                 ].map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -275,19 +272,15 @@ export default function CareerVaultPage() {
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
-                            { label: 'Encrypted Notes', value: vault?.notesCount || 0, icon: StickyNote, color: 'purple' },
-                            { label: 'Documents', value: vault?.documentsCount || 0, icon: FileText, color: 'blue' },
-                            { label: 'Employment Records', value: vault?.employmentCount || 0, icon: Briefcase, color: 'emerald' },
-                            { label: 'Salary Records', value: salaryEntries.length, icon: DollarSign, color: 'amber' },
+                            { label: 'Encrypted Notes', value: vault?.notesCount || 0, icon: StickyNote },
+                            { label: 'Documents', value: vault?.documentsCount || 0, icon: FileText },
+                            { label: 'Employment Records', value: vault?.employmentCount || 0, icon: Briefcase },
+                            { label: 'Salary Records', value: salaryEntries.length, icon: Banknote },
                         ].map((stat) => {
                             const Icon = stat.icon;
                             return (
                                 <div key={stat.label} className={`p-4 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                                    <Icon size={18} className={`mb-2 ${stat.color === 'purple' ? 'text-purple-500' :
-                                            stat.color === 'blue' ? 'text-blue-500' :
-                                                stat.color === 'emerald' ? 'text-emerald-500' :
-                                                    'text-amber-500'
-                                        }`} />
+                                    <Icon size={18} className={`mb-2 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`} />
                                     <div className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{stat.value}</div>
                                     <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{stat.label}</div>
                                 </div>
@@ -300,7 +293,7 @@ export default function CareerVaultPage() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-xl ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                                    {isHiddenSearch ? <EyeOff size={20} className="text-purple-500" /> : <Eye size={20} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />}
+                                    {isHiddenSearch ? <EyeOff size={20} className={isDark ? 'text-neutral-300' : 'text-neutral-600'} /> : <Eye size={20} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />}
                                 </div>
                                 <div>
                                     <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Hidden Job Search</h3>
@@ -314,33 +307,22 @@ export default function CareerVaultPage() {
                             <button
                                 onClick={handleToggleHiddenSearch}
                                 disabled={hiddenSearchSaving}
-                                className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${isHiddenSearch ? 'bg-purple-500' : isDark ? 'bg-neutral-700' : 'bg-neutral-200'}`}
+                                className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${isHiddenSearch ? (isDark ? 'bg-white' : 'bg-black') : isDark ? 'bg-neutral-700' : 'bg-neutral-200'}`}
                             >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isHiddenSearch ? 'translate-x-6' : 'translate-x-1'}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${isHiddenSearch ? `translate-x-6 ${isDark ? 'bg-black' : 'bg-white'}` : `translate-x-1 bg-white`}`} />
                             </button>
                         </div>
                     </div>
 
                     {/* Security Card */}
-                    <div className={`p-5 md:p-6 rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                        <div className="flex items-center gap-3 mb-4">
-                            <Lock size={18} className="text-emerald-500" />
-                            <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Security Status</h3>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            {[
-                                { label: 'Encryption', value: 'AES-256-GCM', status: true },
-                                { label: 'Blind Indexing', value: 'HMAC-SHA256', status: true },
-                                { label: 'Key Derivation', value: 'Server-side', status: true },
-                            ].map((item) => (
-                                <div key={item.label} className={`flex items-center gap-3 p-3 rounded-xl ${isDark ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                                    <Check size={14} className="text-emerald-500" />
-                                    <div>
-                                        <div className={`text-xs font-bold ${isDark ? 'text-white' : 'text-black'}`}>{item.label}</div>
-                                        <div className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{item.value}</div>
-                                    </div>
+                    <div className={`p-5 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-xl ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                    <Lock size={16} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
                                 </div>
-                            ))}
+                                <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Your data is secured</h3>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -486,10 +468,10 @@ export default function CareerVaultPage() {
                     <div className={`p-5 md:p-6 rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-3">
-                                <DollarSign size={20} className="text-amber-500" />
+                                <Banknote size={20} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />
                                 <div>
                                     <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>Salary History</h3>
-                                    <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>🔒 Private — encrypted and never shared</p>
+                                    <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Private — encrypted and never shared</p>
                                 </div>
                             </div>
                             <button
@@ -528,7 +510,7 @@ export default function CareerVaultPage() {
                                             <div className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{entry.date || 'No date'}</div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <span className={`text-sm font-black ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`}>{entry.amount}</span>
+                                            <span className={`text-sm font-black ${isDark ? 'text-white' : 'text-black'}`}>{entry.amount}</span>
                                             <button onClick={() => handleDeleteSalary(entry.id)} className="text-neutral-500 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
                                         </div>
                                     </div>
@@ -536,7 +518,7 @@ export default function CareerVaultPage() {
                             </div>
                         ) : !showSalaryForm && (
                             <div className={`text-center py-10 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                                <DollarSign size={32} className="mx-auto mb-2 opacity-50" />
+                                <Banknote size={32} className="mx-auto mb-2 opacity-50" />
                                 <p className="text-sm font-bold">No salary records</p>
                                 <p className="text-xs mt-1">Track your compensation history privately</p>
                             </div>

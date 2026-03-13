@@ -7,12 +7,12 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 
-const TIER_CONFIG: Record<string, { label: string; emoji: string; gradient: string; description: string }> = {
-    legendary: { label: 'Legendary', emoji: '👑', gradient: 'from-amber-400 via-yellow-500 to-orange-500', description: 'Top-tier professional with exceptional career proof' },
-    elite: { label: 'Elite', emoji: '💎', gradient: 'from-blue-400 via-indigo-500 to-purple-500', description: 'Highly verified with strong skill validation' },
-    rising: { label: 'Rising', emoji: '🚀', gradient: 'from-emerald-400 via-teal-500 to-cyan-500', description: 'Growing presence with solid fundamentals' },
-    emerging: { label: 'Emerging', emoji: '🌱', gradient: 'from-lime-400 via-green-500 to-emerald-500', description: 'Building proof — every action counts' },
-    newcomer: { label: 'Newcomer', emoji: '✨', gradient: 'from-neutral-400 via-neutral-500 to-neutral-600', description: 'Just getting started — build your proof' },
+const TIER_CONFIG: Record<string, { label: string; bg: string; text: string; description: string }> = {
+    legendary: { label: 'Legendary', bg: 'bg-black dark:bg-white', text: 'text-white dark:text-black', description: 'Top-tier professional with exceptional career proof' },
+    elite: { label: 'Elite', bg: 'bg-neutral-800 dark:bg-neutral-200', text: 'text-white dark:text-black', description: 'Highly verified with strong skill validation' },
+    rising: { label: 'Rising', bg: 'bg-neutral-600 dark:bg-neutral-400', text: 'text-white dark:text-black', description: 'Growing presence with solid fundamentals' },
+    emerging: { label: 'Emerging', bg: 'bg-neutral-400 dark:bg-neutral-600', text: 'text-white dark:text-black', description: 'Building proof — every action counts' },
+    newcomer: { label: 'Newcomer', bg: 'bg-neutral-200 dark:bg-neutral-800', text: 'text-black dark:text-neutral-400', description: 'Just getting started — build your proof' },
 };
 
 const PILLAR_ICONS: Record<string, React.ElementType> = {
@@ -71,9 +71,6 @@ export default function CareerScorePage() {
 
             {/* Hero Card — Score + Tier */}
             <div className={`relative p-6 md:p-8 rounded-[32px] border overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                {/* Gradient Glow */}
-                <div className={`absolute top-0 left-0 w-full h-full opacity-[0.07] bg-gradient-to-br ${tier.gradient}`} />
-                <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-20" style={{ background: 'conic-gradient(from 180deg, #f59e0b, #3b82f6, #8b5cf6, #10b981, #f59e0b)' }} />
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
                     {/* Score Ring */}
@@ -87,20 +84,15 @@ export default function CareerScorePage() {
                                 strokeWidth="6" strokeLinecap="round"
                                 className="transition-all duration-1000"
                                 style={{
-                                    stroke: `url(#scoreGradient)`,
+                                    stroke: isDark ? '#ffffff' : '#000000',
                                     strokeDasharray: `${score.overall * 2.64} 264`,
                                 }}
                             />
-                            <defs>
-                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stopColor="#f59e0b" />
-                                    <stop offset="50%" stopColor="#3b82f6" />
-                                    <stop offset="100%" stopColor="#8b5cf6" />
-                                </linearGradient>
-                            </defs>
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className={`text-4xl font-black ${isDark ? 'text-white' : 'text-black'}`}>{score.overall}</span>
+                            <span className={`text-4xl font-black flex items-center gap-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                                {score.overall}
+                            </span>
                             <span className={`text-[9px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Career Score</span>
                         </div>
                     </div>
@@ -108,9 +100,14 @@ export default function CareerScorePage() {
                     {/* Tier Info */}
                     <div className="flex-1 text-center md:text-left">
                         <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-                            <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r ${tier.gradient} text-white shadow-lg`}>
-                                <span className="text-sm">{tier.emoji}</span> {tier.label}
+                            <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${tier.bg} ${tier.text} shadow-lg`}>
+                                {tier.label}
                             </span>
+                            {score.trend && (
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                    {score.trend === 'increase' ? '↗ Increasing' : score.trend === 'decrease' ? '↘ Decreasing' : '→ Constant'}
+                                </span>
+                            )}
                         </div>
                         <h1 className={`text-2xl md:text-3xl font-black tracking-tight mb-1 ${isDark ? 'text-white' : 'text-black'}`}>
                             Career Reputation
@@ -131,9 +128,9 @@ export default function CareerScorePage() {
                     const Icon = PILLAR_ICONS[pillar.icon] || Trophy;
                     const isExpanded = expandedPillar === pillar.id;
 
-                    // Color based on score
-                    const barColor = pillar.score >= 70 ? 'bg-emerald-500' : pillar.score >= 40 ? 'bg-amber-500' : pillar.score >= 20 ? 'bg-orange-500' : (isDark ? 'bg-neutral-700' : 'bg-neutral-300');
-                    const textColor = pillar.score >= 70 ? 'text-emerald-500' : pillar.score >= 40 ? 'text-amber-500' : pillar.score >= 20 ? 'text-orange-500' : (isDark ? 'text-neutral-600' : 'text-neutral-400');
+                    // Color based on theme
+                    const barColor = isDark ? 'bg-white' : 'bg-black';
+                    const textColor = isDark ? 'text-white' : 'text-black';
 
                     return (
                         <button
@@ -190,7 +187,6 @@ export default function CareerScorePage() {
                         { label: 'Verified Roles', value: score.stats.verifiedRoles, icon: BadgeCheck },
                         { label: 'Documents', value: score.stats.documents, icon: FileText },
                         { label: 'Connections', value: score.stats.connections, icon: Users },
-                        { label: 'Badge', value: score.stats.badgeTier === 'none' ? '—' : score.stats.badgeTier, icon: Award },
                     ].map((stat) => {
                         const Icon = stat.icon;
                         return (

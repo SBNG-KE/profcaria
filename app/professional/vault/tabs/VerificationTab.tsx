@@ -20,8 +20,8 @@ const NODE_ICONS: Record<string, React.ElementType> = {
 };
 
 const STATUS_CONFIG = {
-    verified: { color: 'emerald', icon: CheckCircle2, label: 'Verified' },
-    partial: { color: 'amber', icon: AlertCircle, label: 'Partial' },
+    verified: { color: 'primary', icon: CheckCircle2, label: 'Verified' },
+    partial: { color: 'secondary', icon: AlertCircle, label: 'Partial' },
     unverified: { color: 'neutral', icon: XCircle, label: 'Unverified' },
 };
 
@@ -32,6 +32,8 @@ export default function VerificationPage() {
     const [graph, setGraph] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [expandedNode, setExpandedNode] = useState<string | null>(null);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
     const fetchGraph = useCallback(async () => {
         try {
@@ -48,6 +50,22 @@ export default function VerificationPage() {
     }, []);
 
     useEffect(() => { fetchGraph(); }, [fetchGraph]);
+
+    const handleRunAIVerification = async () => {
+        setIsVerifying(true);
+        try {
+            const res = await fetch('/api/professional/verification', { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                setLastUpdated(data.lastUpdated);
+                await fetchGraph(); // Refresh the graph data
+            }
+        } catch (err) {
+            console.error('Error running AI verification:', err);
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -67,17 +85,17 @@ export default function VerificationPage() {
     }
 
     const tierColors: Record<string, string> = {
-        gold: 'from-amber-400 to-yellow-600',
-        blue: 'from-blue-400 to-indigo-600',
-        gray: 'from-neutral-400 to-neutral-600',
-        none: isDark ? 'from-neutral-700 to-neutral-800' : 'from-neutral-200 to-neutral-300',
+        gold: isDark ? 'bg-white text-black' : 'bg-black text-white',
+        blue: isDark ? 'bg-neutral-200 text-black' : 'bg-neutral-800 text-white',
+        gray: isDark ? 'bg-neutral-400 text-black' : 'bg-neutral-600 text-white',
+        none: isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-200 text-neutral-600',
     };
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 py-4 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Header with Score Ring */}
             <div className={`p-6 md:p-8 rounded-[32px] border relative overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-10" style={{ background: 'linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6)' }} />
+                <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-5" style={{ background: isDark ? 'linear-gradient(135deg, #404040, #171717)' : 'linear-gradient(135deg, #e5e5e5, #ffffff)' }} />
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
                     {/* Score Ring */}
                     <div className="relative w-32 h-32 shrink-0">
@@ -85,7 +103,7 @@ export default function VerificationPage() {
                             <circle cx="50" cy="50" r="42" fill="none" stroke={isDark ? '#262626' : '#e5e5e5'} strokeWidth="8" />
                             <circle
                                 cx="50" cy="50" r="42" fill="none"
-                                stroke={graph.overallTier === 'gold' ? '#f59e0b' : graph.overallTier === 'blue' ? '#3b82f6' : graph.overallTier === 'gray' ? '#9ca3af' : (isDark ? '#525252' : '#d4d4d4')}
+                                stroke={graph.overallTier === 'gold' ? (isDark ? '#fafafa' : '#171717') : graph.overallTier === 'blue' ? (isDark ? '#e5e5e5' : '#404040') : graph.overallTier === 'gray' ? (isDark ? '#a3a3a3' : '#737373') : (isDark ? '#525252' : '#d4d4d4')}
                                 strokeWidth="8" strokeLinecap="round"
                                 strokeDasharray={`${graph.overallScore * 2.64} 264`}
                                 className="transition-all duration-1000"
@@ -106,7 +124,7 @@ export default function VerificationPage() {
                             Your proof speaks. Every node below represents verifiable career evidence.
                         </p>
                         <div className="flex items-center gap-3 mt-3 justify-center md:justify-start">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gradient-to-r ${tierColors[graph.overallTier]} text-white`}>
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${tierColors[graph.overallTier]}`}>
                                 <TrendingUp size={11} />
                                 {graph.overallTier === 'none' ? 'Unranked' : `${graph.overallTier.charAt(0).toUpperCase() + graph.overallTier.slice(1)} Tier`}
                             </span>
@@ -138,15 +156,11 @@ export default function VerificationPage() {
                         >
                             <div className="flex items-center gap-3">
                                 {/* Status Icon */}
-                                <div className={`p-2 rounded-xl ${status.color === 'emerald' ? (isDark ? 'bg-emerald-500/20' : 'bg-emerald-50') :
-                                        status.color === 'amber' ? (isDark ? 'bg-amber-500/20' : 'bg-amber-50') :
-                                            (isDark ? 'bg-neutral-800' : 'bg-neutral-100')
+                                <div className={`p-2 rounded-xl flex items-center justify-center ${status.color === 'primary' ? (isDark ? 'bg-white text-black' : 'bg-black text-white') :
+                                        status.color === 'secondary' ? (isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-black') :
+                                            (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500')
                                     }`}>
-                                    <Icon size={18} className={
-                                        status.color === 'emerald' ? 'text-emerald-500' :
-                                            status.color === 'amber' ? 'text-amber-500' :
-                                                (isDark ? 'text-neutral-600' : 'text-neutral-400')
-                                    } />
+                                    <Icon size={18} />
                                 </div>
 
                                 {/* Label + Score */}
@@ -155,21 +169,20 @@ export default function VerificationPage() {
                                         <h3 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{node.label}</h3>
                                         <div className="flex items-center gap-1.5">
                                             <StatusIcon size={14} className={
-                                                status.color === 'emerald' ? 'text-emerald-500' :
-                                                    status.color === 'amber' ? 'text-amber-500' :
+                                                status.color === 'primary' ? (isDark ? 'text-white' : 'text-black') :
+                                                    status.color === 'secondary' ? (isDark ? 'text-neutral-300' : 'text-neutral-600') :
                                                         (isDark ? 'text-neutral-600' : 'text-neutral-400')
                                             } />
-                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${status.color === 'emerald' ? 'text-emerald-500' :
-                                                    status.color === 'amber' ? 'text-amber-500' :
+                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${status.color === 'primary' ? (isDark ? 'text-white' : 'text-black') :
+                                                    status.color === 'secondary' ? (isDark ? 'text-neutral-300' : 'text-neutral-600') :
                                                         (isDark ? 'text-neutral-600' : 'text-neutral-400')
                                                 }`}>{status.label}</span>
                                         </div>
                                     </div>
-                                    {/* Progress Bar */}
                                     <div className={`w-full h-1.5 rounded-full mt-2 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
                                         <div
-                                            className={`h-full rounded-full transition-all duration-700 ${status.color === 'emerald' ? 'bg-emerald-500' :
-                                                    status.color === 'amber' ? 'bg-amber-500' :
+                                            className={`h-full rounded-full transition-all duration-700 ${status.color === 'primary' ? (isDark ? 'bg-white' : 'bg-black') :
+                                                    status.color === 'secondary' ? (isDark ? 'bg-neutral-400' : 'bg-neutral-500') :
                                                         (isDark ? 'bg-neutral-700' : 'bg-neutral-300')
                                                 }`}
                                             style={{ width: `${percent}%` }}
@@ -187,7 +200,7 @@ export default function VerificationPage() {
                                         <div key={i} className={`flex items-center justify-between p-2.5 rounded-xl ${isDark ? 'bg-neutral-900' : 'bg-neutral-50'}`}>
                                             <div className="flex items-center gap-2">
                                                 {detail.verified
-                                                    ? <CheckCircle2 size={13} className="text-emerald-500" />
+                                                    ? <CheckCircle2 size={13} className={isDark ? 'text-white' : 'text-black'} />
                                                     : <XCircle size={13} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
                                                 }
                                                 <span className={`text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>{detail.label}</span>
@@ -204,37 +217,32 @@ export default function VerificationPage() {
                 })}
             </div>
 
-            {/* How to Improve */}
-            {graph.overallScore < 80 && (
-                <div className={`p-5 md:p-6 rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                    <h3 className={`text-lg font-bold mb-3 ${isDark ? 'text-white' : 'text-black'}`}>
-                        💡 Increase Your Verification Score
-                    </h3>
-                    <div className="space-y-2">
-                        {graph.nodes.filter((n: any) => n.status !== 'verified').map((node: any) => {
-                            const suggestions: Record<string, string> = {
-                                identity: 'Add a profile photo, write an about section, and enable 2FA',
-                                employment: 'Get hired through Profcaria for cryptographically verified employment',
-                                education: 'Add your education details to your profile',
-                                skills: 'Add skills and get endorsements from connections',
-                                certifications: 'Add your professional certifications',
-                                documents: 'Upload your CV, resume, or other career documents',
-                                profiles: 'Link your LinkedIn, GitHub, or other professional profiles',
-                                security: 'Enable 2FA, set up a passkey, or get badge verified',
-                            };
-                            return (
-                                <div key={node.id} className={`flex items-start gap-3 p-3 rounded-xl ${isDark ? 'bg-neutral-800/50' : 'bg-neutral-50'}`}>
-                                    <TrendingUp size={14} className={`mt-0.5 shrink-0 ${node.status === 'partial' ? 'text-amber-500' : isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
-                                    <div>
-                                        <div className={`text-xs font-bold ${isDark ? 'text-white' : 'text-black'}`}>{node.label}</div>
-                                        <div className={`text-[11px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{suggestions[node.id]}</div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+            {/* AI Verification Section */}
+            <div className={`p-5 md:p-6 rounded-[32px] border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-black'}`}>
+                            AI Career Verification
+                        </h3>
+                        <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                            Compute your authentic, non-inflated career verification score using your real career data and proofs.
+                        </p>
+                        {lastUpdated && (
+                            <p className={`text-[10px] mt-2 font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                Last verified: {new Date(lastUpdated).toLocaleString()}
+                            </p>
+                        )}
                     </div>
+                    <button
+                        onClick={handleRunAIVerification}
+                        disabled={isVerifying}
+                        className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all ${isVerifying ? 'opacity-50 cursor-not-allowed' : ''} ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                    >
+                        {isVerifying ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
+                        {isVerifying ? 'Analyzing Data...' : 'Run AI Verification'}
+                    </button>
                 </div>
-            )}
+            </div>
         </div>
     );
 }

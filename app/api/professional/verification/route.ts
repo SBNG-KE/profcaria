@@ -99,25 +99,22 @@ export async function GET(req: Request) {
         const hasProfileImage = !!user.enc_profile_image_url;
         const hasAbout = !!user.enc_about;
         const hasRole = !!user.enc_current_role;
-        const has2FA = user.requires_2fa || user.has_passkey || user.has_totp;
         const badgeTier = user.badge_type || 'none';
 
-        const identityScore = [hasProfileImage, hasAbout, hasRole, has2FA, badgeTier !== 'none']
+        const identityScore = [hasProfileImage, hasAbout, hasRole]
             .filter(Boolean).length;
 
         nodes.push({
             id: 'identity',
             label: 'Identity',
             icon: 'user',
-            status: identityScore >= 4 ? 'verified' : identityScore >= 2 ? 'partial' : 'unverified',
+            status: identityScore >= 3 ? 'verified' : identityScore >= 1 ? 'partial' : 'unverified',
             score: identityScore,
-            maxScore: 5,
+            maxScore: 3,
             details: [
                 { label: 'Profile Photo', verified: hasProfileImage },
                 { label: 'About Section', verified: hasAbout },
                 { label: 'Current Role', verified: hasRole },
-                { label: '2FA Enabled', verified: has2FA },
-                { label: 'Badge Verified', verified: badgeTier !== 'none' },
             ]
         });
 
@@ -215,24 +212,7 @@ export async function GET(req: Request) {
             ]
         });
 
-        // 8. Security Level
-        const securityChecks = [user.requires_2fa, user.has_passkey, user.has_totp, badgeTier !== 'none'];
-        const securityScore = securityChecks.filter(Boolean).length;
-
-        nodes.push({
-            id: 'security',
-            label: 'Account Security',
-            icon: 'shield',
-            status: securityScore >= 3 ? 'verified' : securityScore >= 1 ? 'partial' : 'unverified',
-            score: securityScore,
-            maxScore: 4,
-            details: [
-                { label: '2FA Required', verified: !!user.requires_2fa },
-                { label: 'Passkey Setup', verified: !!user.has_passkey },
-                { label: 'TOTP Setup', verified: !!user.has_totp },
-                { label: 'Badge Tier', verified: badgeTier !== 'none' },
-            ]
-        });
+        // Removed Security node as requested
 
         // Compute overall score
         const verifiedNodes = nodes.filter(n => n.status === 'verified').length;
@@ -259,6 +239,21 @@ export async function GET(req: Request) {
         });
     } catch (error) {
         console.error('Verification Graph API Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+export async function POST(req: Request) {
+    try {
+        const auth = await getAuth();
+        if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        
+        // Simulate AI verification processing
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        return NextResponse.json({ success: true, lastUpdated: new Date().toISOString() });
+    } catch (error) {
+        console.error('Verification POST Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
