@@ -69,10 +69,9 @@ export default function InvitesPage() {
         <div className="max-w-4xl mx-auto space-y-6 py-4 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Header */}
             <div className={`p-6 md:p-8 rounded-[32px] border relative overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-10" style={{ background: 'linear-gradient(135deg, #3b82f6, #8b5cf6, #f59e0b)' }} />
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-2">
-                        <Sparkles size={24} className="text-amber-500" />
+                        <Sparkles size={24} className={isDark ? 'text-white' : 'text-black'} />
                         <h1 className={`text-2xl md:text-3xl font-black tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                             Job Invites
                         </h1>

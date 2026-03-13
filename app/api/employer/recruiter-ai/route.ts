@@ -106,7 +106,7 @@ async function buildEmployerContext(userId: string): Promise<string> {
 }
 
 // ── GET: Fetch chat history ──
-export async function GET() {
+export async function GET(req: Request) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
@@ -117,12 +117,71 @@ export async function GET() {
         if (auth.schema !== 'employer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const userId = auth.uid as string;
+        const { searchParams } = new URL(req.url);
+        const sessionId = searchParams.get('sessionId');
 
+        // If no sessionId is provided, fetch distinct sessions from messages
+        if (!sessionId) {
+            const { data: messages } = await supabaseAdmin
+                .schema('employer')
+                .from('recruiter_ai_messages')
+                .select('session_id, role, enc_content, created_at')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+                .limit(500); // Look at the last 500 messages to find sessions
+                
+            if (!messages || messages.length === 0) {
+                return NextResponse.json({ sessions: [] });
+            }
+
+            // Group messages by session_id to extract title (first message) and updated_at (latest message)
+            const sessionMap = new Map<string, { title: string, updated_at: string, minTime: number }>();
+            
+            for (const msg of messages) {
+                if (!msg.session_id) continue;
+                
+                const mTime = new Date(msg.created_at).getTime();
+                
+                if (!sessionMap.has(msg.session_id)) {
+                    // Initialize with the most recent message's time (since we sorted desc)
+                    sessionMap.set(msg.session_id, { title: '', updated_at: msg.created_at, minTime: Infinity });
+                }
+                
+                const session = sessionMap.get(msg.session_id)!;
+                
+                // If this is a user message and older than what we've seen, it might be the primary session title
+                if (msg.role === 'user' && mTime <= session.minTime) {
+                    const decryptedContent = decryptData(msg.enc_content) || '';
+                    let titleStr = decryptedContent.trim().split('\n')[0].substring(0, 35);
+                    if (titleStr.length === 35) titleStr += '...';
+                    
+                    session.title = titleStr;
+                    session.minTime = mTime;
+                }
+            }
+
+            // Convert map to array and sort by updated_at desc
+            const sessions: any[] = [];
+            for (const [id, s] of sessionMap.entries()) {
+                sessions.push({
+                    id,
+                    title: s.title || 'New Chat',
+                    updated_at: s.updated_at
+                });
+            }
+            
+            sessions.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+            return NextResponse.json({ sessions });
+        }
+
+        // Fetch messages for a specific session
         const { data: messages } = await supabaseAdmin
             .schema('employer')
             .from('recruiter_ai_messages')
             .select('id, role, enc_content, created_at')
             .eq('user_id', userId)
+            .eq('session_id', sessionId)
             .order('created_at', { ascending: true })
             .limit(50);
 
@@ -152,32 +211,42 @@ export async function POST(req: Request) {
         if (auth.schema !== 'employer') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
         const userId = auth.uid as string;
-        const { message } = await req.json();
+        const { message, sessionId } = await req.json();
 
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+        }
+
+        if (!sessionId) {
+            return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
         }
 
         if (message.length > 2000) {
             return NextResponse.json({ error: 'Message too long (max 2000 chars)' }, { status: 400 });
         }
 
-        // 1. Store user message
+        // 1. Store user message in messages table
         const encUserMsg = encryptData(message.trim());
         await supabaseAdmin
             .schema('employer')
             .from('recruiter_ai_messages')
-            .insert({ user_id: userId, role: 'user', enc_content: encUserMsg });
+            .insert({ 
+                user_id: userId, 
+                session_id: sessionId,
+                role: 'user', 
+                enc_content: encUserMsg 
+            });
 
         // 2. Build context
         const employerContext = await buildEmployerContext(userId);
 
-        // 3. Fetch recent conversation history
+        // 3. Fetch recent conversation history for THIS session
         const { data: recentMsgs } = await supabaseAdmin
             .schema('employer')
             .from('recruiter_ai_messages')
             .select('role, enc_content')
             .eq('user_id', userId)
+            .eq('session_id', sessionId)
             .order('created_at', { ascending: false })
             .limit(10);
 
@@ -208,12 +277,17 @@ export async function POST(req: Request) {
         const result = await chat.sendMessage(message.trim());
         const aiResponse = result.response.text();
 
-        // 5. Store AI response
+        // 5. Store AI response in messages table
         const encAiMsg = encryptData(aiResponse);
         await supabaseAdmin
             .schema('employer')
             .from('recruiter_ai_messages')
-            .insert({ user_id: userId, role: 'assistant', enc_content: encAiMsg });
+            .insert({ 
+                user_id: userId, 
+                session_id: sessionId,
+                role: 'assistant', 
+                enc_content: encAiMsg 
+            });
 
         return NextResponse.json({ response: aiResponse });
 

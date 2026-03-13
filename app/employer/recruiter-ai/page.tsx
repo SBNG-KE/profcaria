@@ -2,13 +2,21 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
-import { Bot, Send, Loader2, Sparkles } from 'lucide-react';
+import { Bot, Send, Loader2, Sparkles, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
+import { isToday, isYesterday, isAfter, subDays } from 'date-fns';
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     createdAt?: string;
+}
+
+interface ChatSession {
+    id: string;
+    title: string;
+    updated_at: string;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -24,15 +32,42 @@ export default function RecruiterAIPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const [messages, setMessages] = useState<Message[]>([]);
+    const [sessions, setSessions] = useState<ChatSession[]>([]);
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+    const [loadingSessions, setLoadingSessions] = useState(true);
     const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Fetch all sessions on mount
     useEffect(() => {
-        const fetchHistory = async () => {
+        const fetchSessions = async () => {
             try {
                 const res = await fetch('/api/employer/recruiter-ai');
+                if (res.ok) {
+                    const data = await res.json();
+                    setSessions(data.sessions || []);
+                }
+            } catch { /* silent */ } finally {
+                setLoadingSessions(false);
+            }
+        };
+        fetchSessions();
+    }, []);
+
+    // Fetch messages when active session changes
+    useEffect(() => {
+        if (!activeSessionId) {
+            setMessages([]);
+            setLoading(false);
+            return;
+        }
+
+        const fetchMessages = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/employer/recruiter-ai?sessionId=${activeSessionId}`);
                 if (res.ok) {
                     const data = await res.json();
                     setMessages(data.messages || []);
@@ -41,8 +76,8 @@ export default function RecruiterAIPage() {
                 setLoading(false);
             }
         };
-        fetchHistory();
-    }, []);
+        fetchMessages();
+    }, [activeSessionId]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,16 +87,29 @@ export default function RecruiterAIPage() {
         const msg = (text || input).trim();
         if (!msg || sending) return;
 
+        const newSessionId = activeSessionId || uuidv4();
+        
+        // Optimistically add the message to UI
         const userMsg: Message = { id: `u-${Date.now()}`, role: 'user', content: msg };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setSending(true);
 
+        // If it was a new session, set the active session ID, and ideally prepend to sessions array
+        if (!activeSessionId) {
+            setActiveSessionId(newSessionId);
+            setSessions(prev => [{
+                id: newSessionId,
+                title: msg.length > 35 ? msg.substring(0, 35) + '...' : msg,
+                updated_at: new Date().toISOString()
+            }, ...prev]);
+        }
+
         try {
             const res = await fetch('/api/employer/recruiter-ai', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg }),
+                body: JSON.stringify({ message: msg, sessionId: newSessionId }),
             });
 
             const data = await res.json();
@@ -72,11 +120,32 @@ export default function RecruiterAIPage() {
             }
 
             setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: data.response }]);
+            
+            // Move session to top of the list if it already existed
+            if (activeSessionId) {
+                setSessions(prev => {
+                    const arr = [...prev];
+                    const idx = arr.findIndex(s => s.id === activeSessionId);
+                    if (idx > 0) {
+                        const [item] = arr.splice(idx, 1);
+                        item.updated_at = new Date().toISOString();
+                        arr.unshift(item);
+                    } else if (idx === 0) {
+                        arr[0].updated_at = new Date().toISOString();
+                    }
+                    return arr;
+                });
+            }
         } catch {
             setMessages(prev => [...prev, { id: `e-${Date.now()}`, role: 'assistant', content: '⚠️ Network error. Please try again.' }]);
         } finally {
             setSending(false);
         }
+    };
+
+    const startNewChat = () => {
+        setActiveSessionId(null);
+        setMessages([]);
     };
 
     const renderMarkdown = (text: string) => {
@@ -92,12 +161,88 @@ export default function RecruiterAIPage() {
             .replace(/\n/g, '<br/>');
     };
 
+    const groupSessions = () => {
+        const groups: Record<string, ChatSession[]> = {
+            'Today': [],
+            'Yesterday': [],
+            'Previous 7 Days': [],
+            'Older': []
+        };
+
+        const now = new Date();
+        const sevenDaysAgo = subDays(now, 7);
+
+        sessions.forEach(session => {
+            const date = new Date(session.updated_at);
+            if (isToday(date)) {
+                groups['Today'].push(session);
+            } else if (isYesterday(date)) {
+                groups['Yesterday'].push(session);
+            } else if (isAfter(date, sevenDaysAgo)) {
+                groups['Previous 7 Days'].push(session);
+            } else {
+                groups['Older'].push(session);
+            }
+        });
+
+        return groups;
+    };
+
+    const groupedSessions = groupSessions();
+
     return (
-        <div className="flex flex-col h-[calc(100vh-2rem)] max-w-4xl mx-auto p-4">
+        <div className="h-full flex w-full">
+            {/* Sidebar */}
+            <div className={`w-64 shrink-0 flex flex-col border-r ${isDark ? 'border-neutral-800 bg-neutral-950/50' : 'border-neutral-200 bg-neutral-50/50'}`}>
+                <div className="p-4">
+                    <button
+                        onClick={startNewChat}
+                        className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                    >
+                        <Plus size={16} /> New Chat
+                    </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {loadingSessions ? (
+                        <div className="p-4 flex justify-center"><Loader2 size={16} className="animate-spin text-neutral-500" /></div>
+                    ) : (
+                        <div className="px-3 pb-4 space-y-4">
+                            {['Today', 'Yesterday', 'Previous 7 Days', 'Older'].map(group => {
+                                const groupItems = groupedSessions[group];
+                                if (groupItems.length === 0) return null;
+                                return (
+                                    <div key={group}>
+                                        <div className={`px-2 mb-1 text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
+                                            {group}
+                                        </div>
+                                        <div className="space-y-0.5">
+                                            {groupItems.map(session => (
+                                                <button
+                                                    key={session.id}
+                                                    onClick={() => setActiveSessionId(session.id)}
+                                                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm text-left transition-all truncate ${activeSessionId === session.id 
+                                                        ? (isDark ? 'bg-neutral-800 text-white' : 'bg-neutral-200 text-black') 
+                                                        : (isDark ? 'text-neutral-400 hover:bg-neutral-900' : 'text-neutral-600 hover:bg-neutral-100')}`}
+                                                >
+                                                    <span className="truncate flex-1">{session.title}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col h-full bg-transparent max-w-4xl mx-auto w-full p-4 relative">
             {/* Header */}
             <div className="flex items-center gap-3 mb-4 shrink-0">
-                <div className={`p-2.5 rounded-xl ${isDark ? 'bg-orange-500/10 border border-orange-500/20' : 'bg-orange-50 border border-orange-200'}`}>
-                    <Bot size={24} className="text-orange-500" />
+                <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                    <Bot size={24} className={isDark ? 'text-white' : 'text-black'} />
                 </div>
                 <div>
                     <h1 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
@@ -146,8 +291,8 @@ export default function RecruiterAIPage() {
                         {messages.map((msg) => (
                             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user'
-                                    ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white'
-                                    : isDark ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-100 text-neutral-800'
+                                    ? (isDark ? 'bg-white text-black' : 'bg-black text-white')
+                                    : (isDark ? 'bg-neutral-800 text-neutral-200' : 'bg-white border border-neutral-200 shadow-sm text-neutral-800')
                                     }`}>
                                     {msg.role === 'assistant' ? (
                                         <div className="text-sm leading-relaxed prose-sm" dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
@@ -160,9 +305,9 @@ export default function RecruiterAIPage() {
 
                         {sending && (
                             <div className="flex justify-start">
-                                <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                <div className={`rounded-2xl px-4 py-3 ${isDark ? 'bg-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
                                     <div className="flex items-center gap-2">
-                                        <Sparkles size={14} className="text-orange-500 animate-pulse" />
+                                        <Sparkles size={14} className={`${isDark ? 'text-white' : 'text-black'} animate-pulse`} />
                                         <span className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Analyzing candidates...</span>
                                     </div>
                                 </div>
@@ -190,10 +335,11 @@ export default function RecruiterAIPage() {
                     className={`p-2.5 rounded-xl transition-all ${!input.trim() || sending
                         ? 'opacity-30 cursor-not-allowed'
                         : 'hover:scale-105 active:scale-95'
-                        } bg-gradient-to-r from-orange-600 to-amber-600 text-white`}
+                        } ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}
                 >
                     {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
+            </div>
             </div>
         </div>
     );
