@@ -7,7 +7,7 @@ export default function VerifiedEvidenceShowcase() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`py-24 sm:py-32 relative overflow-hidden border-y ${isDark ? 'bg-black border-neutral-900' : 'bg-[#fafbfd] border-neutral-200'}`}>
+        <section className={`py-24 sm:py-32 relative overflow-hidden ${isDark ? 'bg-black' : 'bg-[#fafbfd]'}`}>
             <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-16 md:mb-24">
                     <h2 className={`text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase mb-6 font-pixel ${isDark ? 'text-white' : 'text-black'}`}>

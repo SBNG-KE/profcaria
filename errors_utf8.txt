@@ -1,0 +1,16 @@
+﻿.next/dev/types/validator.ts(314,39): error TS2307: Cannot find module '../../../app/professional/career-score/page.js' or its corresponding type declarations.
+.next/dev/types/validator.ts(377,39): error TS2307: Cannot find module '../../../app/professional/interview-prep/page.js' or its corresponding type declarations.
+.next/dev/types/validator.ts(458,39): error TS2307: Cannot find module '../../../app/professional/skills-gap/page.js' or its corresponding type declarations.
+.next/dev/types/validator.ts(485,39): error TS2307: Cannot find module '../../../app/professional/verification/page.js' or its corresponding type declarations.
+.next/types/app/professional/career-score/page.ts(2,24): error TS2307: Cannot find module '../../../../../app/professional/career-score/page.js' or its corresponding type declarations.
+.next/types/app/professional/career-score/page.ts(7,29): error TS2307: Cannot find module '../../../../../app/professional/career-score/page.js' or its corresponding type declarations.
+.next/types/app/professional/interview-prep/page.ts(2,24): error TS2307: Cannot find module '../../../../../app/professional/interview-prep/page.js' or its corresponding type declarations.
+.next/types/app/professional/interview-prep/page.ts(7,29): error TS2307: Cannot find module '../../../../../app/professional/interview-prep/page.js' or its corresponding type declarations.
+.next/types/app/professional/skills-gap/page.ts(2,24): error TS2307: Cannot find module '../../../../../app/professional/skills-gap/page.js' or its corresponding type declarations.
+.next/types/app/professional/skills-gap/page.ts(7,29): error TS2307: Cannot find module '../../../../../app/professional/skills-gap/page.js' or its corresponding type declarations.
+.next/types/app/professional/verification/page.ts(2,24): error TS2307: Cannot find module '../../../../../app/professional/verification/page.js' or its corresponding type declarations.
+.next/types/app/professional/verification/page.ts(7,29): error TS2307: Cannot find module '../../../../../app/professional/verification/page.js' or its corresponding type declarations.
+.next/types/validator.ts(314,39): error TS2307: Cannot find module '../../app/professional/career-score/page.js' or its corresponding type declarations.
+.next/types/validator.ts(377,39): error TS2307: Cannot find module '../../app/professional/interview-prep/page.js' or its corresponding type declarations.
+.next/types/validator.ts(458,39): error TS2307: Cannot find module '../../app/professional/skills-gap/page.js' or its corresponding type declarations.
+.next/types/validator.ts(485,39): error TS2307: Cannot find module '../../app/professional/verification/page.js' or its corresponding type declarations.
