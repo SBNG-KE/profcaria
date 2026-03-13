@@ -1079,6 +1079,13 @@ export default function ProfessionalHome() {
 
   // Save Job Preferences to API
   const handleSavePreferences = async () => {
+    // Auto-append any pending target role input
+    const finalTargetRoles = targetRoleInput.trim() ? [...targetRoles, targetRoleInput.trim()] : targetRoles;
+    if (targetRoleInput.trim()) {
+      setTargetRoles(finalTargetRoles);
+      setTargetRoleInput('');
+    }
+
     setProfileLoading(true);
     setProfileMessage(null);
     try {
@@ -1086,7 +1093,7 @@ export default function ProfessionalHome() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          target_roles: targetRoles,
+          target_roles: finalTargetRoles,
           preferred_locations: { countries: preferredCountries, continents: preferredContinents },
           work_modes: workModes,
           employment_types: employmentTypes,
@@ -2419,7 +2426,8 @@ export default function ProfessionalHome() {
                     <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}><Briefcase className={isDark ? 'text-neutral-400' : 'text-neutral-600'} size={24} /> Target Roles</h3>
                     <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>Add job titles you're interested in.</p>
                     <div className="flex gap-2">
-                      <input type="text" value={targetRoleInput} onChange={(e) => setTargetRoleInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && targetRoleInput) { setTargetRoles([...targetRoles, targetRoleInput]); setTargetRoleInput(''); } }} placeholder="Type role and hit Enter..." className={`flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200'}`} />
+                      <input type="text" value={targetRoleInput} onChange={(e) => setTargetRoleInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && targetRoleInput.trim()) { setTargetRoles([...targetRoles, targetRoleInput.trim()]); setTargetRoleInput(''); } }} placeholder="Type role and hit Enter..." className={`flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200'}`} />
+                      <button onClick={() => { if (targetRoleInput.trim()) { setTargetRoles([...targetRoles, targetRoleInput.trim()]); setTargetRoleInput(''); } }} className={`px-4 py-2 rounded-xl font-bold transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}>Add</button>
                     </div>
                     <div className="flex flex-wrap gap-2">{targetRoles.map((r, i) => (<div key={i} className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${isDark ? 'bg-white/10 text-white border-white/20' : 'bg-black/5 text-black border-black/10'}`}>{r}<button onClick={() => setTargetRoles(targetRoles.filter((_, idx) => idx !== i))} className="hover:opacity-70"><X size={12} /></button></div>))}</div>
                   </div>
