@@ -26,6 +26,7 @@ import ProfileQualityGate from '@/app/components/professional/ProfileQualityGate
 import { SearchableDropdown } from '@/app/components/SearchableDropdown';
 import { getNames } from 'country-list';
 import { useRouter } from 'next/navigation';
+import { useCurrency } from '@/app/hooks/useCurrency';
 
 const COUNTRIES = getNames().sort();
 const CONTINENTS = [
@@ -241,6 +242,9 @@ export default function ProfessionalHome() {
 
   // Profile page tab state
   const [activeProfileTab, setActiveProfileTab] = useState<'documents' | 'profile' | 'preferences'>('profile');
+
+  // Currency Hook for dynamic localized pricing placeholders
+  const { currency, symbol: currencySymbol } = useCurrency();
 
   // Profile Info state (moved from Settings)
   const [userId, setUserId] = useState('');
@@ -1578,6 +1582,13 @@ export default function ProfessionalHome() {
 
   const handleSaveSection = async (formData: any) => {
     if (!activeSection) return;
+
+    // Enforce Evidence Link for new Skills
+    if (activeSection === 'skills' && !editingItem && (!formData.documentUrl || !formData.documentUrl.trim())) {
+      setProfileMessage({ type: 'error', text: 'An evidence link is required for new skills.' });
+      return;
+    }
+
     setSectionLoading(true);
 
     try {
@@ -2492,7 +2503,7 @@ export default function ProfessionalHome() {
                       type="text"
                       value={intentHeadline}
                       onChange={(e) => setIntentHeadline(e.target.value)}
-                      placeholder="e.g. Seeking $120k+ remote backend roles in fintech"
+                      placeholder={`e.g. Seeking ${currencySymbol === '$' ? '$10,000' : currencySymbol + '100,000'}+/month remote backend roles...`}
                       maxLength={150}
                       className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600 placeholder:text-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200 placeholder:text-neutral-400'}`}
                     />
@@ -2505,7 +2516,7 @@ export default function ProfessionalHome() {
                       type="text"
                       value={minSalary}
                       onChange={(e) => setMinSalary(e.target.value)}
-                      placeholder="e.g. $80,000/year or KES 500,000/month"
+                      placeholder={`e.g. ${currencySymbol === '$' ? '$8,500' : currencySymbol + '100,000'}/month`}
                       className={`w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-600 placeholder:text-neutral-600' : 'bg-white border-neutral-200 text-black focus:ring-neutral-200 placeholder:text-neutral-400'}`}
                     />
                   </div>
@@ -2928,7 +2939,7 @@ export default function ProfessionalHome() {
                 <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="React, Python, Design..." />
               </div>
               <div>
-                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Evidence Link (Optional)</label>
+                <label className={`text-xs font-bold uppercase ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Evidence Link {!editingItem && <span className="text-red-500">*</span>}</label>
                 <input className={`w-full p-3 rounded-xl border mt-1 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-50 border-neutral-200'}`} value={formData.documentUrl || ''} onChange={e => setFormData({ ...formData, documentUrl: e.target.value })} placeholder="https://..." />
                 <p className={`text-[10px] mt-1 leading-tight ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Link to a project, portfolio, or certification proving this skill.</p>
               </div>
