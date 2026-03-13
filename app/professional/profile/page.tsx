@@ -3121,6 +3121,15 @@ export default function ProfessionalHome() {
           )}
         </div>
       </SlideOverPanel>
+      {/* Global Profile Message Toast */}
+      {profileMessage && (
+        <div className={`fixed bottom-6 right-6 p-4 rounded-xl shadow-2xl flex items-center gap-3 z-[100] animate-in slide-in-from-bottom-5 w-80 max-w-[calc(100vw-3rem)] ${profileMessage.type === 'success' ? (isDark ? 'bg-emerald-900 border border-emerald-800 text-emerald-100' : 'bg-emerald-50 border border-emerald-200 text-emerald-800') : (isDark ? 'bg-red-900 border border-red-800 text-red-100' : 'bg-red-50 border border-red-200 text-red-800')} `}>
+          <div className="flex-1">
+            <p className="text-sm font-bold">{profileMessage.text}</p>
+          </div>
+          <button onClick={() => setProfileMessage(null)} className="opacity-70 hover:opacity-100 transition-opacity"><X size={16} /></button>
+        </div>
+      )}
     </>
   );
 }
