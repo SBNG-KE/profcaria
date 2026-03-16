@@ -237,20 +237,14 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
     return (
         <div className={`employer-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 ${isDark ? 'bg-black text-neutral-200 selection:bg-white/30' : 'bg-neutral-50 text-neutral-900 selection:bg-black/20'}`}>
 
-            {/* SIDEBAR BACKDROP (Mobile) */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[99] md:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
+            {/* SIDEBAR BACKDROP (Mobile) - disabled, now using bottom taskbar */}
 
             {/* SIDEBAR - COMPACT */}
             <aside className={`
-                fixed md:relative inset-y-0 left-0 h-full
-                flex flex-col border-r transition-all duration-300 ease-in-out z-[100]
+                hidden md:flex md:relative inset-y-0 left-0 h-full
+                flex-col border-r transition-all duration-300 ease-in-out z-[100]
                 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}
-                ${sidebarOpen ? 'translate-x-0 w-56' : '-translate-x-full md:translate-x-0 md:w-16'}
+                ${sidebarOpen ? 'w-56' : 'md:w-16'}
             `}>
                 {/* Toggle Button */}
                 <button
@@ -260,13 +254,7 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                     {sidebarOpen ? <ChevronLeft size={12} /> : <ChevronRight size={12} />}
                 </button>
 
-                {/* Mobile Close */}
-                <button
-                    onClick={() => setSidebarOpen(false)}
-                    className={`absolute right-3 top-3 p-1.5 rounded-full md:hidden ${isDark ? 'bg-neutral-800 text-neutral-400 hover:text-white' : 'bg-neutral-100 text-neutral-400 hover:text-black'}`}
-                >
-                    <X size={14} />
-                </button>
+                {/* Mobile Close - disabled, using bottom taskbar */}
 
                 {/* Logo Section - COMPACT */}
                 <div className="flex flex-col items-center pt-6 px-3 shrink-0">
@@ -319,15 +307,9 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                 <div className={`w-full px-4 py-3 z-50 shrink-0 flex items-center justify-between`}>
                     {/* LEFT SIDE */}
                     <div className="flex items-center gap-3">
-                        {/* Mobile Menu */}
-                        <div className={`md:hidden flex items-center gap-2 p-1 pr-3 rounded-full ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200 shadow-sm'}`}>
-                            <button
-                                onClick={() => setSidebarOpen(true)}
-                                className={`p-1.5 rounded-full ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}
-                            >
-                                <Menu size={14} />
-                            </button>
-                            <span className="font-bold text-xs">Profcaria</span>
+                        {/* Mobile Logo */}
+                        <div className={`md:hidden flex items-center gap-2`}>
+                            <span className="font-black text-sm tracking-tight">Profcaria</span>
                         </div>
 
                         {/* Desktop Back */}
@@ -349,44 +331,21 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                         <GlobalSearch />
                         <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
-                        {/* Mobile Only Alerts Icon (Triggers Dropdown) */}
-                        <div className="flex lg:hidden relative items-center">
-                            <button
-                                onClick={() => setShowAlertsMobile(!showAlertsMobile)}
-                                className={`p-2 rounded-full transition-colors ${isDark ? 'bg-neutral-800 text-white hover:bg-neutral-700' : 'bg-white text-black shadow-sm border border-neutral-200 hover:bg-neutral-50'}`}
-                            >
-                                <Bell size={16} />
-                                {unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 ring-2 ring-white dark:ring-black"></span>
-                                )}
-                            </button>
-
-                            {/* Dropdown */}
-                            {showAlertsMobile && (
-                                <>
-                                    <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setShowAlertsMobile(false)}></div>
-                                    <div className={`absolute top-12 right-0 w-80 max-h-[70vh] rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                                        <div className="flex-1 overflow-y-auto p-4 scroller">
-                                            <EmployerAlertsSidebar />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        {/* Mobile Alerts - hidden, using bottom taskbar */}
                     </div>
                 </div>
 
                 {/* Main + Right Panel Container */}
                 <div className="flex-1 flex min-h-0 overflow-hidden">
                     {/* Main Content */}
-                    <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-20 md:pb-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         {children}
                     </div>
 
-                    {/* Right Panel - Always visible on desktop */}
-                    <aside className={`hidden lg:flex flex-col w-64 shrink-0 border-l p-4 overflow-y-auto ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    {/* Right Panel - commented out */}
+                    {/* <aside className={`hidden lg:flex flex-col w-64 shrink-0 border-l p-4 overflow-y-auto ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         <EmployerAlertsSidebar />
-                    </aside>
+                    </aside> */}
                 </div>
             </main>
 
@@ -466,6 +425,54 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                     onCancel={() => setCropSource(null)}
                 />
             )}
+
+            {/* MOBILE BOTTOM TASKBAR */}
+            <nav className={`
+                fixed bottom-0 left-0 right-0 z-[100] flex md:hidden items-end justify-around
+                px-1 pt-2 pb-1 border-t backdrop-blur-xl
+                ${isDark ? 'bg-neutral-900/95 border-neutral-800' : 'bg-white/95 border-neutral-200'}
+            `}>
+                {[
+                    { id: 'notifications', href: '/employer/notifications', icon: MessageSquare, label: 'Chats' },
+                    { id: 'feed', href: '/employer/feed', icon: Rss, label: 'Feed' },
+                    { id: 'profile', href: '/employer/profile', icon: Building2, label: 'Profile' },
+                    { id: 'recruiter-ai', href: '/employer/recruiter-ai', icon: Bot, label: 'AI' },
+                    { id: 'home', href: '/employer/home', icon: Home, label: 'Home' },
+                    { id: 'jobs', href: '/employer/jobs', icon: Briefcase, label: 'Jobs' },
+                    { id: 'settings', href: '/employer/settings', icon: Settings, label: 'Settings' },
+                ].map(item => {
+                    const isActive = activeTab === item.id;
+                    const Icon = item.icon;
+                    return (
+                        <button
+                            key={item.id}
+                            onClick={() => {
+                                if (item.id === 'feed') handleFeedClick();
+                                else router.push(item.href);
+                            }}
+                            className={`flex flex-col items-center gap-0.5 py-1 px-1.5 rounded-lg transition-all min-w-0 ${
+                                isActive
+                                    ? (isDark ? 'text-white' : 'text-black')
+                                    : (isDark ? 'text-neutral-500' : 'text-neutral-400')
+                            }`}
+                        >
+                            <div className="relative">
+                                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                                {item.id === 'notifications' && unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[7px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                                )}
+                                {item.id === 'jobs' && applicationCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[7px] font-bold text-white">{applicationCount > 9 ? '9+' : applicationCount}</span>
+                                )}
+                                {item.id === 'feed' && hasNewPosts && (
+                                    <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2 rounded-full bg-blue-500" />
+                                )}
+                            </div>
+                            <span className={`text-[9px] font-bold leading-none ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
+                        </button>
+                    );
+                })}
+            </nav>
         </div>
     );
 }
