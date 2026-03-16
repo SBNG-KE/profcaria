@@ -301,34 +301,15 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
                 {/* Navigation - COMPACT */}
                 <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Main</div>
+                    <NavItem id="notifications" href="/employer/notifications" icon={MessageSquare} label="Chats" />
                     <NavItem id="feed" href="/employer/feed" icon={Rss} label="Feed" hasUpdate={hasNewPosts} onClick={handleFeedClick} />
-                    <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
                     <NavItem id="profile" href="/employer/profile" icon={Building2} label="Profile" />
-
-                    <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Network</div>
-                    <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" badgeCount={applicationCount} />
                     <NavItem id="recruiter-ai" href="/employer/recruiter-ai" icon={Bot} label="Recruiter AI" />
-                    <NavItem id="connections" href="/employer/connections" icon={Users} label="Connections" />
-                    <NavItem id="communities" href="#" icon={MessageCircle} label="Communities" comingSoon={true} />
+                    <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
+                    <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" badgeCount={applicationCount} />
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Account</div>
-                    <NavItem id="notifications" href="/employer/notifications" icon={MessageSquare} label="Chat" />
                     <NavItem id="settings" href="/employer/settings" icon={Settings} label="Settings" />
-                    <NavItem id="support" href="/employer/support" icon={HelpCircle} label="Support" />
-                </div>
-
-                {/* Logout - COMPACT */}
-                <div className={`p-3 border-t shrink-0 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                    <button
-                        onClick={async () => {
-                            await fetch('/api/auth/logout', { method: 'POST' });
-                            router.push('/');
-                        }}
-                        className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group text-red-500 hover:bg-red-500/10 ${!sidebarOpen ? 'justify-center' : ''}`}
-                    >
-                        <Power size={18} />
-                        {sidebarOpen && <span className="font-bold text-[10px] uppercase tracking-wider">Log Out</span>}
-                    </button>
                 </div>
             </aside>
 

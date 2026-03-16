@@ -306,35 +306,15 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 {/* Navigation - COMPACT */}
                 <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Menu</div>
+                    <NavItem id="notifications" href="/professional/notifications" icon={MessageSquare} label="Chats" />
                     <NavItem id="feed" href="/professional/feed" icon={Rss} label="Feed" hasUpdate={hasNewPosts} onClick={handleFeedClick} />
                     <NavItem id="home" href="/professional/profile" icon={Home} label="Profile" />
+                    <NavItem id="career-ai" href="/professional/career-ai" icon={Bot} label="Career AI" />
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />
                     <NavItem id="roles-jobs" href="/professional/roles-jobs" icon={Briefcase} label="My Jobs" />
-                    <NavItem id="employment" href="/professional/employment" icon={Cable} label="Employment" />
-                    <NavItem id="vault" href="/professional/vault" icon={Shield} label="Career Vault" />
-                    <NavItem id="career-ai" href="/professional/career-ai" icon={Bot} label="Career AI" />
-                    <NavItem id="invites" href="/professional/invites" icon={Sparkles} label="Job Invites" />
-                    <NavItem id="connections" href="/professional/connections" icon={Users} label="Connections" badgeCount={followBackCount} />
-                    <NavItem id="communities" href="#" icon={MessageCircle} label="Communities" comingSoon={true} />
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Account</div>
-                    <NavItem id="notifications" href="/professional/notifications" icon={MessageSquare} label="Chat" />
                     <NavItem id="settings" href="/professional/settings" icon={Settings} label="Settings" />
-                    <NavItem id="support" href="/professional/support" icon={HelpCircle} label="Support" />
-                </div>
-
-                {/* Logout - COMPACT */}
-                <div className={`p-3 border-t shrink-0 ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                    <button
-                        onClick={async () => {
-                            await fetch('/api/auth/logout', { method: 'POST' });
-                            router.push('/');
-                        }}
-                        className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group text-red-500 hover:bg-red-500/10 ${!sidebarOpen ? 'justify-center' : ''}`}
-                    >
-                        <Power size={18} />
-                        {sidebarOpen && <span className="font-bold text-[10px] uppercase tracking-wider">Log Out</span>}
-                    </button>
                 </div>
             </aside>
 

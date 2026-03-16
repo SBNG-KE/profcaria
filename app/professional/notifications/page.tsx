@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     MessageSquare, ChevronLeft, Send, Shield, X, Building2, UserCircle, Search,
-    CheckCheck, Plus, FileText, Users, Briefcase, MessagesSquare, Zap, Lock
+    CheckCheck, Plus, FileText, Users, Briefcase, MessagesSquare, Zap, Lock, UserPlus
 } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import LinkPreview from '@/app/components/LinkPreview';
@@ -12,7 +12,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import { useSearchParams } from 'next/navigation';
 
 // ─── Types ────────────────────────────────────────────────────
-type FilterTab = 'social' | 'groups' | 'job';
+type FilterTab = 'social' | 'groups' | 'job' | 'connections';
 type SearchResult = {
     id: string;
     name: string;
@@ -62,6 +62,11 @@ function ChatContent() {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [activeFilter, setActiveFilter] = useState<FilterTab>('social');
 
+    // Connections State
+    const [platformConnections, setPlatformConnections] = useState<any[]>([]);
+    const [connectionsSuggestions, setPlatformSuggestions] = useState<any[]>([]);
+    const [connectionsLoading, setConnectionsLoading] = useState(false);
+
     // Contact Search State
     const [contactResults, setContactResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -91,6 +96,21 @@ function ChatContent() {
             .then(data => { if (data.id) setCurrentUserId(data.id); })
             .catch(e => console.error("Error fetching user", e));
     }, []);
+
+    // ─── Fetch Connections when tab active ─────────────────────
+    useEffect(() => {
+        if (activeFilter === 'connections' && platformConnections.length === 0 && !connectionsLoading) {
+            setConnectionsLoading(true);
+            Promise.all([
+                fetch('/api/professional/connections').then(r => r.ok ? r.json() : { connections: [] }),
+                fetch('/api/professional/follow/followers').then(r => r.ok ? r.json() : { followers: [] })
+            ]).then(([connectionsData, followersData]) => {
+                setPlatformConnections(connectionsData.connections || []);
+                setPlatformSuggestions(followersData.followers || []);
+            }).catch(e => console.error('Connections fetch error:', e))
+            .finally(() => setConnectionsLoading(false));
+        }
+    }, [activeFilter]);
 
     // ─── Auto-resize textarea ─────────────────────────────────
     useEffect(() => {
@@ -623,7 +643,7 @@ function ChatContent() {
                 <header className={`p-5 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-neutral-800 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
                     <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}><MessageSquare size={20} /></div>
-                        <h2 className={`text-sm font-black uppercase tracking-wider ${isDark ? 'text-white' : 'text-black'}`}>Chat</h2>
+                        <h2 className={`text-sm font-black uppercase tracking-wider ${isDark ? 'text-white' : 'text-black'}`}>Chats</h2>
                     </div>
                     <div className="flex items-center gap-1">
                         <Lock size={14} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
@@ -698,6 +718,7 @@ function ChatContent() {
                     <FilterButton id="social" label="Social" icon={Users} count={socialUnread} />
                     <FilterButton id="groups" label="Groups" icon={MessagesSquare} />
                     <FilterButton id="job" label="Job" icon={Briefcase} count={jobUnread} />
+                    <FilterButton id="connections" label="Connections" icon={UserPlus} />
                 </div>
 
                 {/* Conversation List */}
@@ -710,6 +731,76 @@ function ChatContent() {
                             </div>
                             <h3 className={`text-lg font-black uppercase tracking-tight mb-2 ${isDark ? 'text-white' : 'text-black'}`}>Group Chats</h3>
                             <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Coming Soon — Connect with multiple professionals and employers in group conversations.</p>
+                        </div>
+                    ) : activeFilter === 'connections' ? (
+                        /* Connections Panel */
+                        <div className="py-4 px-2 space-y-4">
+                            {connectionsLoading ? (
+                                <div className="flex items-center justify-center py-16">
+                                    <div className="animate-spin w-6 h-6 border-2 border-t-transparent border-neutral-500 rounded-full" />
+                                </div>
+                            ) : (
+                                <>
+                                    {platformConnections.length > 0 && (
+                                        <div>
+                                            <h3 className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>Your Network</h3>
+                                            {platformConnections.map((conn: any) => (
+                                                <button
+                                                    key={conn.id}
+                                                    onClick={() => {
+                                                        const companyId = conn.company?.id;
+                                                        if (companyId) {
+                                                            startNewConversation({ id: companyId, name: conn.company?.name || 'Company', image: '', type: 'employer', followers: 0 });
+                                                        }
+                                                    }}
+                                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100'}`}
+                                                >
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
+                                                        <Building2 size={18} />
+                                                    </div>
+                                                    <div className="flex-1 text-left min-w-0">
+                                                        <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{conn.company?.name || 'Company'}</p>
+                                                        <p className={`text-xs truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{conn.job?.title || 'Connection'}</p>
+                                                    </div>
+                                                    <div className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase ${conn.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
+                                                        {conn.status}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {connectionsSuggestions.length > 0 && (
+                                        <div>
+                                            <h3 className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>Followers</h3>
+                                            {connectionsSuggestions.slice(0, 10).map((follower: any) => (
+                                                <button
+                                                    key={follower.id}
+                                                    onClick={() => startNewConversation({ id: follower.id, name: follower.name || 'User', image: follower.profileImageUrl || '', type: 'professional', followers: 0 })}
+                                                    className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-100'}`}
+                                                >
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
+                                                        {follower.profileImageUrl ? <img src={follower.profileImageUrl} alt="" className="w-full h-full object-cover" /> : <UserCircle size={18} />}
+                                                    </div>
+                                                    <div className="flex-1 text-left min-w-0">
+                                                        <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{follower.name || 'User'}</p>
+                                                        <p className={`text-xs truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Follower</p>
+                                                    </div>
+                                                    <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}>Chat</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {platformConnections.length === 0 && connectionsSuggestions.length === 0 && (
+                                        <div className="flex flex-col items-center justify-center py-16 text-center px-8">
+                                            <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                                                <UserPlus size={24} className={isDark ? 'text-neutral-600' : 'text-neutral-300'} />
+                                            </div>
+                                            <p className={`text-sm font-bold mb-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>No connections yet</p>
+                                            <p className={`text-xs ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Follow people and get followed back to build your network</p>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     ) : (
                         <>
