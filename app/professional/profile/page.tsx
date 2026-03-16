@@ -1698,12 +1698,9 @@ export default function ProfessionalHome() {
     }
 
     try {
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-
-      const res = await fetch('/api/documents/upload', {
+      const res = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
         method: 'POST',
-        body: uploadFormData
+        body: file
       });
 
       if (!res.ok) throw new Error("Upload failed");
