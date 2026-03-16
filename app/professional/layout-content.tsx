@@ -344,7 +344,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 {/* Main + Right Panel Container */}
                 <div className="flex-1 flex min-h-0 overflow-hidden">
                     {/* Main Content */}
-                    <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-20 md:pb-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <div className={`flex-1 overflow-y-auto pb-20 md:pb-6 ${pathname === '/professional/notifications' ? 'px-0' : 'px-4 md:px-6'}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         {children}
                     </div>
 
