@@ -21,7 +21,7 @@ export default async function LandingPage({
       const { payload } = await jwtVerify(token, secretKey);
 
       if (payload?.schema === 'professional') {
-        redirect('/professional/feed');
+        redirect('/professional/notifications');
       } else if (payload?.schema === 'employer') {
         redirect('/employer/feed');
       }

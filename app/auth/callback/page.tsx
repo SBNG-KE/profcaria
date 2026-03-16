@@ -141,7 +141,7 @@ export default function AuthCallbackPage() {
                 }
 
                 // Success — redirect
-                router.push(data.redirect || '/professional/feed');
+                router.push(data.redirect || '/professional/notifications');
 
             } catch (err) {
                 console.error('OAuth Callback Error:', err);

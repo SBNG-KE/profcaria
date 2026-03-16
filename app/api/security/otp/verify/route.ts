@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         // Clear OTP cookie and set new Session cookie
         // Use provided redirect, or fall back to schema default
         const { redirect } = body;
-        const defaultPath = schema === 'professional' ? '/professional/feed' : schema === 'employer' ? '/employer/feed' : '/';
+        const defaultPath = schema === 'professional' ? '/professional/notifications' : schema === 'employer' ? '/employer/feed' : '/';
         const redirectPath = redirect || defaultPath;
 
         const response = NextResponse.json({ verified: true, redirect: redirectPath });

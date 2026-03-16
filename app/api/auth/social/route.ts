@@ -90,8 +90,8 @@ export async function POST(req: Request) {
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
                 // Direct to homepage mode to avoid redirects
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/professional/feed')}`
-                    : '/professional/feed';
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/professional/notifications')}`
+                    : '/professional/notifications';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);

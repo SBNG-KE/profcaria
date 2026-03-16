@@ -236,7 +236,7 @@ function VerificationContent() {
                         </p>
                     </div>
                     <button
-                        onClick={() => router.push('/professional/feed')}
+                        onClick={() => router.push('/professional/notifications')}
                         className="w-full py-4 rounded-xl bg-white text-black font-black uppercase tracking-widest text-xs shadow-lg hover:bg-neutral-200 transition-all"
                     >
                         Return to Platform

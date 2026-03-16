@@ -265,7 +265,7 @@ export default function HangingAuthCard({
 
         if (!finalRedirect) {
             // Default redirect
-            router.push(activeTab === 'professional' ? '/professional/feed' : '/employer/feed');
+            router.push(activeTab === 'professional' ? '/professional/notifications' : '/employer/feed');
             onClose();
             return;
         }

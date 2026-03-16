@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
     MessageSquare, ChevronLeft, Send, Shield, X, Building2, UserCircle, Search,
-    CheckCheck, Plus, FileText, Users, Briefcase, MessagesSquare, Zap, Lock, UserPlus
+    CheckCheck, Plus, FileText, Users, Briefcase, MessagesSquare, Zap, Lock, UserPlus,
+    Smile, Sticker, Heart, Star as StarIcon, ChevronDown, Download, Bookmark
 } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import LinkPreview from '@/app/components/LinkPreview';
@@ -88,6 +89,72 @@ function ChatContent() {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
+
+    // Emoji & Sticker State
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showStickerPanel, setShowStickerPanel] = useState(false);
+    const [emojiCategory, setEmojiCategory] = useState<'smileys' | 'people' | 'nature' | 'food' | 'activities' | 'objects' | 'symbols'>('smileys');
+    const [savedStickers, setSavedStickers] = useState<string[]>([]);
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
+    const stickerPanelRef = useRef<HTMLDivElement>(null);
+
+    // Emoji Data
+    const emojiData: Record<string, string[]> = {
+        smileys: ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🫢','🤫','🤔','🫡','🤐','🤨','😐','😑','😶','🫥','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐'],
+        people: ['👋','🤚','🖐️','✋','🖖','🫱','🫲','🫳','🫴','👌','🤌','🤏','✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','🫵','👍','👎','✊','👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦿','🦵','🦶','👂','🦻','👃','🧠','🫀','🫁','🦷','🦴','👀','👁️','👅','👄'],
+        nature: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🦟','🦗','🕷️','🌸','🌺','🌻','🌹','🌷','🪻','🌱','🌲','🌳','🍀','🌿','☘️','🍃'],
+        food: ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🫘','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🫓','🥪','🌮','🌯','🫔','🥙','🧆','🥗','🥘','🫕','🍜','🍝','🍣','🍱','🍙'],
+        activities: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🪀','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤸','🤼','🤽','🤾','🤺','⛹️','🧘','🏄','🏊','🤽','🧗','🚴','🚵','🎯','🎮','🕹️','🎲','🎰','🧩'],
+        objects: ['⌚','📱','💻','⌨️','🖥️','🖨️','🖱️','🖲️','🕹️','🗜️','💽','💾','💿','📀','📼','📷','📸','📹','🎥','📽️','🎞️','📞','☎️','📟','📠','📺','📻','🎙️','🎚️','🎛️','🧭','⏱️','⏰','🔔','📯','📢','💡','🔦','🕯️','🧯','💰','💳','💎','⚖️','🔧','🔨','⚒️','🛠️','⛏️','🪚','🔩','⚙️','🧱','⛓️','🧲','🔫','💣','🧨','🪓','🔪','🗡️'],
+        symbols: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️']
+    };
+
+    const defaultStickers = ['🎉','🔥','👀','💯','😂','❤️','👍','🙏','🎊','✨','💪','🚀','👏','😍','🥺','😤'];
+
+    // Close emoji/stickers when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) setShowEmojiPicker(false);
+            if (stickerPanelRef.current && !stickerPanelRef.current.contains(e.target as Node)) setShowStickerPanel(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Load saved stickers from localStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('profcaria_saved_stickers');
+        if (saved) setSavedStickers(JSON.parse(saved));
+    }, []);
+
+    const insertEmoji = (emoji: string) => {
+        setNewMessage(prev => prev + emoji);
+        textareaRef.current?.focus();
+    };
+
+    const sendSticker = async (sticker: string) => {
+        setShowStickerPanel(false);
+        setNewMessage(sticker);
+        // Auto-send after a short delay to let state settle
+        setTimeout(() => {
+            const sendBtn = document.getElementById('chat-send-btn');
+            if (sendBtn) sendBtn.click();
+        }, 50);
+    };
+
+    const saveSticker = (sticker: string) => {
+        if (!savedStickers.includes(sticker)) {
+            const updated = [...savedStickers, sticker];
+            setSavedStickers(updated);
+            localStorage.setItem('profcaria_saved_stickers', JSON.stringify(updated));
+        }
+    };
+
+    const removeSticker = (sticker: string) => {
+        const updated = savedStickers.filter(s => s !== sticker);
+        setSavedStickers(updated);
+        localStorage.setItem('profcaria_saved_stickers', JSON.stringify(updated));
+    };
 
     // ─── Fetch Current User ───────────────────────────────────
     useEffect(() => {
@@ -949,12 +1016,75 @@ function ChatContent() {
                                 </div>
                             )}
 
-                            <div className={`flex items-end gap-3 p-2 rounded-[24px] transition-all ${isDark ? 'bg-neutral-900' : 'bg-neutral-50'}`}>
-                                <div className="flex gap-1 pb-1">
+                            <div className={`flex items-end gap-2 p-2 rounded-2xl border transition-all ${isDark ? 'bg-neutral-900/80 border-neutral-800 focus-within:border-neutral-600' : 'bg-white border-neutral-200 focus-within:border-neutral-400 shadow-sm'}`}>
+                                <div className="flex gap-0.5 pb-1 shrink-0">
                                     <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} accept="image/*,application/pdf" />
-                                    <button onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-full transition-all ${isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-200 hover:text-black'}`} title="Attach file">
-                                        <Plus size={20} />
+                                    <button onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-full transition-all ${isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`} title="Attach file">
+                                        <Plus size={18} />
                                     </button>
+                                    {/* Emoji Button */}
+                                    <div className="relative" ref={emojiPickerRef}>
+                                        <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowStickerPanel(false); }} className={`p-2 rounded-full transition-all ${showEmojiPicker ? (isDark ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`} title="Emojis">
+                                            <Smile size={18} />
+                                        </button>
+                                        {showEmojiPicker && (
+                                            <div className={`absolute bottom-12 left-0 z-50 w-[320px] rounded-2xl border shadow-2xl overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                                                <div className={`flex gap-0.5 p-2 overflow-x-auto border-b ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`} style={{ scrollbarWidth: 'none' }}>
+                                                    {(Object.keys(emojiData) as Array<keyof typeof emojiData>).map(cat => (
+                                                        <button key={cat} onClick={() => setEmojiCategory(cat as typeof emojiCategory)} className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider whitespace-nowrap transition-all ${emojiCategory === cat ? (isDark ? 'bg-white text-black' : 'bg-black text-white') : isDark ? 'text-neutral-500 hover:text-white hover:bg-white/5' : 'text-neutral-400 hover:text-black hover:bg-black/5'}`}>
+                                                            {cat === 'smileys' ? '😀' : cat === 'people' ? '👋' : cat === 'nature' ? '🌸' : cat === 'food' ? '🍎' : cat === 'activities' ? '⚽' : cat === 'objects' ? '💡' : '❤️'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <div className="grid grid-cols-8 gap-0.5 p-2 max-h-[220px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                                                    {emojiData[emojiCategory].map((emoji, i) => (
+                                                        <button key={i} onClick={() => insertEmoji(emoji)} className="w-9 h-9 flex items-center justify-center rounded-lg text-xl hover:bg-neutral-800/30 active:scale-90 transition-all">
+                                                            {emoji}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Sticker Button */}
+                                    <div className="relative" ref={stickerPanelRef}>
+                                        <button onClick={() => { setShowStickerPanel(!showStickerPanel); setShowEmojiPicker(false); }} className={`p-2 rounded-full transition-all ${showStickerPanel ? (isDark ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : isDark ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`} title="Stickers">
+                                            <Sticker size={18} />
+                                        </button>
+                                        {showStickerPanel && (
+                                            <div className={`absolute bottom-12 left-0 z-50 w-[300px] rounded-2xl border shadow-2xl overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-700' : 'bg-white border-neutral-200'}`}>
+                                                <div className={`p-3 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
+                                                    <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-black'}`}>Stickers</h4>
+                                                </div>
+                                                {savedStickers.length > 0 && (
+                                                    <div className={`p-2 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
+                                                        <p className={`text-[9px] font-bold uppercase tracking-widest px-1 mb-1.5 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Saved</p>
+                                                        <div className="grid grid-cols-6 gap-1">
+                                                            {savedStickers.map((s, i) => (
+                                                                <div key={i} className="relative group">
+                                                                    <button onClick={() => sendSticker(s)} className="w-full aspect-square flex items-center justify-center rounded-xl text-2xl hover:bg-neutral-800/30 active:scale-90 transition-all">{s}</button>
+                                                                    <button onClick={() => removeSticker(s)} className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X size={8} /></button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="p-2">
+                                                    <p className={`text-[9px] font-bold uppercase tracking-widest px-1 mb-1.5 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Quick Send</p>
+                                                    <div className="grid grid-cols-6 gap-1">
+                                                        {defaultStickers.map((s, i) => (
+                                                            <div key={i} className="relative group">
+                                                                <button onClick={() => sendSticker(s)} className="w-full aspect-square flex items-center justify-center rounded-xl text-2xl hover:bg-neutral-800/30 active:scale-90 transition-all">{s}</button>
+                                                                {!savedStickers.includes(s) && (
+                                                                    <button onClick={() => saveSticker(s)} className={`absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ${isDark ? 'bg-white text-black' : 'bg-black text-white'}`}><Bookmark size={8} /></button>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <textarea
                                     ref={textareaRef}
@@ -968,7 +1098,8 @@ function ChatContent() {
                                     style={{ border: 'none', boxShadow: 'none', outline: 'none' }}
                                 />
                                 <button
-                                    onClick={() => { closeLinkPreview(); sendMessage(); }}
+                                    id="chat-send-btn"
+                                    onClick={() => { closeLinkPreview(); setShowEmojiPicker(false); setShowStickerPanel(false); sendMessage(); }}
                                     disabled={(!newMessage.trim() && !selectedFile) || isSending || isUploading}
                                     className={`w-10 h-10 flex items-center justify-center rounded-full transition-all shrink-0 mb-0.5 ${isDark ? 'bg-white text-black hover:bg-neutral-200 disabled:bg-neutral-800 disabled:text-neutral-600' : 'bg-black text-white hover:bg-neutral-800 disabled:bg-neutral-200 disabled:text-neutral-400'}`}
                                 >

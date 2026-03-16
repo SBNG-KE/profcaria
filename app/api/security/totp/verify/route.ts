@@ -87,7 +87,7 @@ export async function POST(req: Request) {
             .setExpirationTime('30d')
             .sign(tokenSecret);
 
-        const redirectPath = schema === 'professional' ? '/professional/feed' :
+        const redirectPath = schema === 'professional' ? '/professional/notifications' :
             schema === 'employer' ? '/employer/feed' : '/';
 
         const response = NextResponse.json({ success: true, redirect: redirectPath });

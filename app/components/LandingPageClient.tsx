@@ -120,7 +120,7 @@ export default function LandingPageClient() {
                     }
 
                     if (data.schema === 'professional') {
-                        router.push('/professional/feed');
+                        router.push('/professional/notifications');
                     } else if (data.schema === 'employer') {
                         router.push('/employer/feed');
                     }
