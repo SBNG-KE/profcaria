@@ -3,8 +3,8 @@
 import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-    Home, Search, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, UserCircle, Cable, Plus, Power, Menu, X, HelpCircle, Rss, Users, MessageCircle, Shield, BadgeCheck, Trophy, Sparkles, Bot, GraduationCap, BarChart3
+    Home, Search, MessageSquare, Settings, ChevronLeft, ChevronRight,
+    Briefcase, UserCircle, Cable, Plus, Power, Menu, X, HelpCircle, Rss, Users, MessageCircle, Shield, BadgeCheck, Trophy, Sparkles, Bot, GraduationCap, BarChart3, Bell
 } from 'lucide-react';
 import ImageCropper from '@/app/components/ImageCropper';
 import { useNotificationContext } from '@/app/context/NotificationContext';
@@ -318,7 +318,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <NavItem id="communities" href="#" icon={MessageCircle} label="Communities" comingSoon={true} />
 
                     <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Account</div>
-                    <NavItem id="notifications" href="/professional/notifications" icon={Bell} label="Notifications" />
+                    <NavItem id="notifications" href="/professional/notifications" icon={MessageSquare} label="Chat" />
                     <NavItem id="settings" href="/professional/settings" icon={Settings} label="Settings" />
                     <NavItem id="support" href="/professional/support" icon={HelpCircle} label="Support" />
                 </div>
