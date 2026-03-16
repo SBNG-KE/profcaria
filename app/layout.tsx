@@ -17,47 +17,63 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.profcaria.com"),
   manifest: "/manifest.json",
-  title: {
-    default: "Profcaria | The AI-Powered Career Operating System",
-    template: "%s | Profcaria AI Career OS",
+
+  alternates: {
+    canonical: "https://www.profcaria.com",
   },
+
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+
+  title: {
+    default: "Profcaria | AI Professional Network & Messenger",
+    template: "%s | Profcaria AI",
+  },
+
   description:
-    "Profcaria is your autonomous AI career agent. We manage verified professional identities and provide extreme, intelligent talent matching using LLM-native search infrastructure.",
+    "Profcaria is the ultimate AI-powered professional messenger and network. Connect securely, chat instantly, and let autonomous AI agents handle your talent matching in one encrypted ecosystem.",
+
   keywords: [
-    "AI Career Operating System",
+    "AI Professional Network",
+    "Professional Messenger",
+    "Encrypted Professional Chat",
+    "AI Career Matching",
     "Autonomous Career Agent",
-    "AI Recruiter",
-    "LLM Talent Matching",
-    "Intelligent Career Engineering",
-    "Verified Employment Graph",
-    "AI Career Infrastructure",
-    "Smart Talent Search",
-    "Encrypted Career Vault",
+    "LinkedIn Alternative",
+    "Professional Networking",
+    "AI Talent Search",
+    "Secure Professional Messaging",
   ],
+
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://www.profcaria.com",
     siteName: "Profcaria AI",
-    title: "Profcaria | The AI-Powered Career Operating System",
+    title: "Profcaria | AI Professional Network & Messenger",
     description:
-      "Your autonomous AI career agent. Verified professional identity, extreme intelligent matching, and long-term algorithmic growth strategy.",
+      "The next-generation professional network. Instant secure messaging, verified identity, and extreme AI-powered talent matching.",
     images: [
       {
         url: "https://www.profcaria.com/profcaria.png",
         width: 1200,
         height: 630,
-        alt: "Profcaria AI Career Operating System",
+        alt: "Profcaria AI Professional Network",
       },
     ],
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "Profcaria | The AI-Powered Career Operating System",
+    title: "Profcaria | AI Professional Network & Messenger",
     description:
-      "Own your verified career identity. Let autonomous AI agents handle the smart matching. Secure, LLM-native career infrastructure.",
+      "Chat, connect, and grow. The secure AI-powered professional messenger that intelligently matches you to your next career opportunity.",
     creator: "@profcaria",
   },
+
   robots: {
     index: true,
     follow: true,
@@ -66,11 +82,12 @@ export const metadata: Metadata = {
       index: true,
       follow: true,
       noimageindex: false,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
+
   verification: {
     google: "6xck7xYL-QCWEu1is-U_xcQlkUjfWGxengTW-7mIrk4",
     other: {
@@ -79,7 +96,7 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD Structured Data for AI crawlers and search engines
+// JSON-LD Structured Data
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -93,7 +110,7 @@ const structuredData = {
         url: "https://www.profcaria.com/profcaria.png",
       },
       description:
-        "Profcaria is an AI-powered Career Operating System utilizing autonomous agents, LLM-native semantic search, and an encrypted career vault for extreme, high-precision talent matching.",
+        "Profcaria is an AI-powered professional messaging network combining instant secure communication with autonomous career agents and extreme-precision talent matching.",
       founder: {
         "@type": "Person",
         name: "Steve Ngare",
@@ -107,20 +124,20 @@ const structuredData = {
     {
       "@type": "WebApplication",
       "@id": "https://www.profcaria.com/#application",
-      name: "Profcaria AI Career Engine",
+      name: "Profcaria AI Network",
       url: "https://www.profcaria.com",
-      applicationCategory: "AI Business Application",
-      operatingSystem: "Web",
+      applicationCategory: "CommunicationApplication",
+      operatingSystem: "Web, Mobile",
       featureList: [
+        "Instant Professional Messaging",
+        "End-to-End Encrypted Chat",
         "Autonomous AI Career Agents",
         "LLM-Native Semantic Talent Search",
-        "Verified Immutable Career Graph",
         "Algorithmic Intent-Driven Matching",
         "Zero-Application AI Hiring",
-        "Encrypted Career Data Vault",
       ],
       description:
-        "An AI-native Career Operating System powered by autonomous intelligence that replaces traditional CVs with a verified career graph and extreme-precision talent engine.",
+        "A next-generation professional networking and messaging ecosystem powered by autonomous intelligence, replacing traditional profiles with dynamic communication and AI talent matching.",
     },
   ],
 };
@@ -132,18 +149,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${GeistPixelCircle.variable} antialiased`}
+      >
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(structuredData),
           }}
         />
-      </head>
-
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${GeistPixelCircle.variable} antialiased`}
-      >
         <ThemeWrapper>{children}</ThemeWrapper>
       </body>
     </html>
