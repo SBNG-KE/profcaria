@@ -209,7 +209,7 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
             <div className="relative">
                 <Icon size={18} />
                 {comingSoon && (
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-[6px] font-bold text-white">✨</span>
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#3B5998] text-[6px] font-bold text-white">✨</span>
                 )}
                 {(badgeCount && badgeCount > 0) || (id === 'notifications' && unreadCount > 0) ? (
                     <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
@@ -222,7 +222,7 @@ export default function EmployerLayoutContent({ children }: { children: React.Re
             {sidebarOpen && (
                 <span className="font-medium text-xs flex items-center gap-2 flex-1">
                     {label}
-                    {comingSoon && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 font-bold uppercase">Soon</span>}
+                    {comingSoon && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[#3B5998]/20 text-[#6B8CD5] font-bold uppercase">Soon</span>}
                     {hasUpdate && <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500 text-white font-bold uppercase">New</span>}
                 </span>
             )}

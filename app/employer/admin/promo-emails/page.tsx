@@ -117,7 +117,7 @@ export default function AdminPromoEmailsPage() {
                         disabled={isSending}
                         className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${isSending
                                 ? 'bg-neutral-700 text-neutral-400 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:opacity-90'
+                                : 'bg-gradient-to-r from-[#3B5998] to-[#3B5998] text-white hover:opacity-90'
                             }`}
                     >
                         {isSending ? 'Sending...' : '🎁 Send Welcome Emails'}
@@ -132,8 +132,8 @@ export default function AdminPromoEmailsPage() {
                 )}
 
                 {result && (
-                    <div className="mt-6 p-6 rounded-xl bg-green-500/10 border border-green-500/30">
-                        <p className="font-bold text-green-500 mb-4">✅ {result.message}</p>
+                    <div className="mt-6 p-6 rounded-xl bg-[#3B5998]/10 border border-[#3B5998]/30">
+                        <p className="font-bold text-[#3B5998] mb-4">✅ {result.message}</p>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                             <div className={`p-4 rounded-lg ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
                                 <p className="font-bold mb-2">Employers</p>

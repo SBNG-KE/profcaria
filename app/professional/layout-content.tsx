@@ -295,7 +295,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Menu</div>
                     <NavItem id="notifications" href="/professional/notifications" icon={MessageSquare} label="Chats" />
-                    <NavItem id="feed" href="/professional/feed" icon={Rss} label="Feed" hasUpdate={hasNewPosts} onClick={handleFeedClick} />
+                    <NavItem id="feed" href="/professional/feed" icon={Rss} label="Feed" onClick={handleFeedClick} />
                     <NavItem id="home" href="/professional/profile" icon={Home} label="Profile" />
                     <NavItem id="career-ai" href="/professional/career-ai" icon={Bot} label="Career AI" />
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />

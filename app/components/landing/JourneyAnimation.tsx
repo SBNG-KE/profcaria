@@ -45,10 +45,10 @@ export default function JourneyAnimation() {
             >
                 <defs>
                     <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.1" />
-                        <stop offset="40%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity="0.4" />
-                        <stop offset="60%" stopColor={isDark ? '#eab308' : '#ca8a04'} stopOpacity="0.4" />
-                        <stop offset="100%" stopColor={isDark ? '#eab308' : '#ca8a04'} stopOpacity="0.1" />
+                        <stop offset="0%" stopColor={isDark ? '#3B5998' : '#1B2A4A'} stopOpacity="0.1" />
+                        <stop offset="40%" stopColor={isDark ? '#3B5998' : '#1B2A4A'} stopOpacity="0.4" />
+                        <stop offset="60%" stopColor={isDark ? '#3B5998' : '#1B2A4A'} stopOpacity="0.4" />
+                        <stop offset="100%" stopColor={isDark ? '#3B5998' : '#1B2A4A'} stopOpacity="0.1" />
                     </linearGradient>
                 </defs>
 
@@ -66,7 +66,7 @@ export default function JourneyAnimation() {
                 />
                 <motion.circle
                     r="8"
-                    fill={isDark ? '#ffffff' : '#000000'}
+                    fill={isDark ? '#ffffff' : '#0A0F1A'}
                     initial={{ offsetDistance: "0%" }}
                     animate={{
                         offsetDistance: "100%",
@@ -86,7 +86,7 @@ export default function JourneyAnimation() {
 
             {/* Start Icon: Notepad & Pen */}
             <motion.div
-                className={`absolute left-[5%] top-1/2 -translate-y-1/2 p-6 rounded-3xl shadow-2xl backdrop-blur-sm border-2 ${isDark ? 'bg-black/60 border-blue-500/40 text-blue-400' : 'bg-white/90 border-blue-200 text-blue-600'
+                className={`absolute left-[5%] top-1/2 -translate-y-1/2 p-6 rounded-3xl shadow-2xl backdrop-blur-sm border-2 ${isDark ? 'bg-[#0A0F1A]/60 border-[#3B5998]/40 text-[#3B5998]' : 'bg-white/90 border-[#1B2A4A]/30 text-[#1B2A4A]'
                     }`}
                 variants={iconVariants}
                 initial="hidden"
@@ -97,7 +97,7 @@ export default function JourneyAnimation() {
 
             {/* End Icon: Person at Desk (User + Monitor) */}
             <motion.div
-                className={`absolute right-[5%] top-1/2 -translate-y-1/2 p-6 rounded-3xl shadow-2xl backdrop-blur-sm border-2 ${isDark ? 'bg-black/60 border-amber-500/40 text-amber-400' : 'bg-white/90 border-amber-200 text-amber-600'
+                className={`absolute right-[5%] top-1/2 -translate-y-1/2 p-6 rounded-3xl shadow-2xl backdrop-blur-sm border-2 ${isDark ? 'bg-[#0A0F1A]/60 border-[#3B5998]/40 text-[#3B5998]' : 'bg-white/90 border-[#1B2A4A]/30 text-[#1B2A4A]'
                     }`}
                 variants={iconVariants}
                 initial="hidden"
@@ -111,11 +111,11 @@ export default function JourneyAnimation() {
                     <User
                         size={28}
                         strokeWidth={2}
-                        className={`absolute -bottom-1 -right-1 fill-current ${isDark ? 'text-white' : 'text-black'}`}
+                        className={`absolute -bottom-1 -right-1 fill-current ${isDark ? 'text-white' : 'text-[#0A0F1A]'}`}
                     />
                     {/* Hired Pop-up */}
                     <motion.div
-                        className={`absolute -top-8 -right-8 px-3 py-1 rounded-lg font-black text-sm rotate-12 shadow-lg ${isDark ? 'bg-green-500 text-black' : 'bg-green-500 text-white'
+                        className={`absolute -top-8 -right-8 px-3 py-1 rounded-lg font-black text-sm rotate-12 shadow-lg ${isDark ? 'bg-[#3B5998] text-white' : 'bg-[#1B2A4A] text-white'
                             }`}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{

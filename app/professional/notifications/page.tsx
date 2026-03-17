@@ -829,7 +829,7 @@ function ChatContent() {
                                                         <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{conn.company?.name || 'Company'}</p>
                                                         <p className={`text-xs truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{conn.job?.title || 'Connection'}</p>
                                                     </div>
-                                                    <div className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase ${conn.status === 'active' ? 'bg-emerald-500/10 text-emerald-500' : isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
+                                                    <div className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase ${conn.status === 'active' ? 'bg-[#3B5998]/10 text-[#3B5998]' : isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
                                                         {conn.status}
                                                     </div>
                                                 </button>
@@ -908,7 +908,7 @@ function ChatContent() {
                                             </div>
                                             <div className={`flex-1 text-left min-w-0 border-b pb-3 ${isDark ? 'border-neutral-800/50' : 'border-neutral-200'}`}>
                                                 <h4 className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{app.companyName}</h4>
-                                                <p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.jobTitle}</p>
+                                                <p className={`text-xs truncate ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>{app.isDm ? (app.otherPartyType === 'employer' ? 'Company' : 'Professional') : app.jobTitle}</p>
                                             </div>
                                         </button>
                                     );
@@ -949,7 +949,7 @@ function ChatContent() {
                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isDark ? 'bg-white/10 text-neutral-300' : 'bg-black/5 text-neutral-500'}`}>{activeConversation.companyLogoUrl ? <img src={activeConversation.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : (activeConversation.isDm && activeConversation.otherPartyType === 'professional' ? <UserCircle size={20} /> : <Building2 size={20} />)}</div>
                                 <div>
                                     <h2 className={`text-base font-bold ${isDark ? 'text-white' : 'text-black'}`}>{activeConversation.companyName}</h2>
-                                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{activeConversation.jobTitle}</p>
+                                    <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{activeConversation.isDm ? (activeConversation.otherPartyType === 'employer' ? 'Company' : 'Professional') : activeConversation.jobTitle}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -979,7 +979,7 @@ function ChatContent() {
                                                             )}
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                                 <span className={`text-[10px] ${isMe ? (isDark ? 'text-neutral-500' : 'text-neutral-400') : (isDark ? 'text-neutral-500' : 'text-neutral-400')}`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-emerald-500" : (isDark ? 'text-neutral-400' : 'text-neutral-300')} />}
+                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-[#3B5998]" : (isDark ? 'text-neutral-400' : 'text-neutral-300')} />}
                                                             </div>
                                                         </div>
                                                     </div>

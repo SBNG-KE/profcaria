@@ -45,15 +45,15 @@ const ReadOnlyDocumentCard = ({ title, isActive, onClick, isDark }: { title: str
     return (
         <button
             onClick={onClick}
-            className={`group relative flex-shrink-0 w-full md:w-56 h-44 rounded-2xl border overflow-hidden transition-all duration-300 hover:scale-[1.02] ${isActive ? (isDark ? 'border-emerald-500 ring-2 ring-emerald-500/50' : 'border-emerald-500 ring-2 ring-emerald-200') : (isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm')}`}
+            className={`group relative flex-shrink-0 w-full md:w-56 h-44 rounded-2xl border overflow-hidden transition-all duration-300 hover:scale-[1.02] ${isActive ? (isDark ? 'border-[#3B5998] ring-2 ring-[#3B5998]/50' : 'border-[#3B5998] ring-2 ring-[#3B5998]/20') : (isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm')}`}
         >
             <div className="relative z-10 h-full w-full flex flex-col items-center justify-center gap-2">
-                <FileText size={32} className={isActive ? 'text-emerald-500' : (isDark ? 'text-neutral-500' : 'text-neutral-400')} />
+                <FileText size={32} className={isActive ? 'text-[#3B5998]' : (isDark ? 'text-neutral-500' : 'text-neutral-400')} />
                 <h2 className={`text-lg font-black tracking-tight uppercase text-center px-4 ${isDark ? 'text-white' : 'text-black'}`}>
                     {title}
                 </h2>
                 {isActive && (
-                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-2">Viewing</span>
+                    <span className="text-[10px] font-bold text-[#3B5998] uppercase tracking-widest mt-2">Viewing</span>
                 )}
             </div>
         </button>
@@ -104,7 +104,7 @@ export default function EmployerProfileViewPage() {
 
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-[#050b14]">
-            <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-[#3B5998]/20 border-t-[#3B5998] rounded-full animate-spin"></div>
         </div>
     );
 
@@ -112,7 +112,7 @@ export default function EmployerProfileViewPage() {
         <div className="min-h-screen flex flex-col items-center justify-center bg-[#050b14] space-y-4">
             <Lock size={48} className="text-red-500 opacity-20" />
             <p className="font-bold text-slate-500 uppercase tracking-widest text-center">Unauthorized or Profile Missing</p>
-            <button onClick={() => router.back()} className="text-emerald-500 font-bold hover:underline uppercase text-xs">Go Back</button>
+            <button onClick={() => router.back()} className="text-[#3B5998] font-bold hover:underline uppercase text-xs">Go Back</button>
         </div>
     );
 
@@ -129,7 +129,7 @@ export default function EmployerProfileViewPage() {
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">
                         {/* ProfCaria Icon Placeholder */}
-                        <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[#3B5998] rounded-lg flex items-center justify-center">
                             <span className="text-white font-black text-xs">P</span>
                         </div>
                         <span className={`font-black tracking-tight uppercase ${isDark ? 'text-white' : 'text-black'}`}>ProfCaria</span>
@@ -145,7 +145,7 @@ export default function EmployerProfileViewPage() {
 
                 {/* Identity Summary */}
                 <div className="text-center space-y-4 mb-2">
-                    <div className="relative mx-auto w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-emerald-500/20 shadow-2xl group cursor-default">
+                    <div className="relative mx-auto w-32 h-32 rounded-[2rem] overflow-hidden border-4 border-[#3B5998]/20 shadow-2xl group cursor-default">
                         {data.profile.profileImageUrl ? (
                             <img src={data.profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                         ) : (
@@ -154,7 +154,7 @@ export default function EmployerProfileViewPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black uppercase tracking-tighter leading-tight break-words">{data.profile.firstName}<br />{data.profile.lastName}</h1>
-                        <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest mt-2">{data.profile.role}</p>
+                        <p className="text-xs font-bold text-[#3B5998] uppercase tracking-widest mt-2">{data.profile.role}</p>
                     </div>
                 </div>
 
@@ -172,7 +172,7 @@ export default function EmployerProfileViewPage() {
                 {/* Navigation */}
                 <nav className="flex-1 space-y-2">
                     <button
-                        className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all bg-emerald-500 text-white shadow-lg shadow-emerald-500/20`}
+                        className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold transition-all bg-[#3B5998] text-white shadow-lg shadow-[#3B5998]/20`}
                     >
                         <User size={20} />
                         Profile
@@ -222,21 +222,21 @@ export default function EmployerProfileViewPage() {
                                         <div className="space-y-1">
                                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Email</label>
                                             <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                                <Mail size={16} className="text-emerald-500" /> {data.profile.email}
+                                                <Mail size={16} className="text-[#3B5998]" /> {data.profile.email}
                                             </div>
                                         </div>
                                         {data.profile.phone && (
                                             <div className="space-y-1">
                                                 <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Phone</label>
                                                 <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                                    <Phone size={16} className="text-emerald-500" /> {data.profile.phone}
+                                                    <Phone size={16} className="text-[#3B5998]" /> {data.profile.phone}
                                                 </div>
                                             </div>
                                         )}
                                         <div className="space-y-1">
                                             <label className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Location</label>
                                             <div className={`flex items-center gap-2 font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
-                                                <MapPin size={16} className="text-emerald-500" /> {data.profile.city || 'Remote'}, {data.profile.country || 'Global'}
+                                                <MapPin size={16} className="text-[#3B5998]" /> {data.profile.city || 'Remote'}, {data.profile.country || 'Global'}
                                             </div>
                                         </div>
                                     </div>
@@ -274,7 +274,7 @@ export default function EmployerProfileViewPage() {
                                                     <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                                                         <span>{job.startDate}</span>
                                                         <span>—</span>
-                                                        <span className={job.isCurrent ? 'text-emerald-500' : ''}>{job.isCurrent ? 'Present' : job.endDate}</span>
+                                                        <span className={job.isCurrent ? 'text-[#3B5998]' : ''}>{job.isCurrent ? 'Present' : job.endDate}</span>
                                                     </div>
                                                     {job.description && <p className={`text-sm mt-3 leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.description}</p>}
                                                 </div>
@@ -358,9 +358,9 @@ export default function EmployerProfileViewPage() {
                                     <button
                                         key={doc.type}
                                         onClick={() => setActiveDocumentType(doc.type)}
-                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-emerald-500 text-white border-emerald-500 shadow-xl shadow-emerald-500/30') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-emerald-200 shadow-lg shadow-slate-200/50')}`}
+                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? (isDark ? 'bg-[#3B5998] text-white border-[#3B5998]' : 'bg-[#3B5998] text-white border-[#3B5998] shadow-xl shadow-[#3B5998]/30') : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-[#3B5998]/20 shadow-lg shadow-slate-200/50')}`}
                                     >
-                                        <FileText size={40} className={`text-emerald-500 group-hover:text-white transition-colors ${activeDocumentType === doc.type ? 'text-white' : ''}`} />
+                                        <FileText size={40} className={`text-[#3B5998] group-hover:text-white transition-colors ${activeDocumentType === doc.type ? 'text-white' : ''}`} />
                                         <div>
                                             <h3 className={`text-2xl font-black uppercase tracking-tighter ${activeDocumentType === doc.type ? 'text-white' : (isDark ? 'text-white' : 'text-black')}`}>{doc.type}</h3>
                                             <p className={`text-xs font-bold uppercase tracking-widest mt-2 opacity-60 ${activeDocumentType === doc.type ? 'text-white' : ''}`}>Last Updated {new Date(doc.lastUpdated).toLocaleDateString()}</p>

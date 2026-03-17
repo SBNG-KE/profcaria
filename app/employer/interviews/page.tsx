@@ -70,7 +70,7 @@ const InterviewCard = ({ interview, onEdit, onJoin, onConnect }: { interview: In
 
             <div className="flex items-center justify-between pt-6 border-t border-white/5">
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${interview.status === 'scheduled' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
-                    interview.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                    interview.status === 'completed' ? 'bg-[#3B5998]/10 text-[#6B8CD5] border border-[#3B5998]/20' :
                         'bg-slate-800 text-slate-400'
                     }`}>
                     {isPast ? 'Ready to Connect' : interview.status}
@@ -79,7 +79,7 @@ const InterviewCard = ({ interview, onEdit, onJoin, onConnect }: { interview: In
                 {isPast ? (
                     <button
                         onClick={onConnect}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-900/20 transition-all flex items-center gap-2 animate-pulse"
+                        className="px-4 py-2 bg-[#3B5998] hover:bg-[#3B5998] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#3B5998]/20 transition-all flex items-center gap-2 animate-pulse"
                     >
                         <Users size={12} />
                         Connect Now

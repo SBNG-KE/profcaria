@@ -24,17 +24,18 @@ export async function POST(req: Request) {
       companyName,
       workEmail,
       password,
-      industry // Extract industry
+      industry,
+      phoneNumber
     } = body;
 
     // 1. Validation
-    if (!workEmail || !password || !companyName) {
+    if (!workEmail || !password || !companyName || !phoneNumber) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // 2. Create Blind Indexes
     const emailIndex = hashForIndex(workEmail);
-    const phoneIndex = null;
+    const phoneIndex = phoneNumber ? hashForIndex(phoneNumber) : null;
 
     // 3. Check for existing company (Email or Name)
     const { data: existingEmail } = await supabaseAdmin
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
           enc_company_name: encCompanyName,
           enc_logo_url: encLogo,
           enc_work_email: encryptData(workEmail),
-          enc_phone_number: null,
+          enc_phone_number: phoneNumber ? encryptData(phoneNumber) : null,
           industry: industry || null, // Store Industry
           // Default security settings
           requires_2fa: true,

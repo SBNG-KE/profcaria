@@ -26,18 +26,19 @@ export async function POST(req: Request) {
       password,
       firstName,
       lastName,
-      role
+      role,
+      phoneNumber
     } = body;
 
     // 1. Input Validation
-    if (!email || !password) {
+    if (!email || !password || !phoneNumber) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // 2. Create Blind Indexes (For Lookups)
     // We strictly search by hash, never by plain text to protect identity
     const emailIndex = hashForIndex(email);
-    const phoneIndex = null;
+    const phoneIndex = phoneNumber ? hashForIndex(phoneNumber) : null;
 
     // 3. Check if user already exists in Professional Schema
     const { data: existingUser } = await supabaseAdmin
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
           enc_last_name: encLastName,
           enc_current_role: encRole,
           enc_email: encryptData(email),
-          enc_phone_number: null,
+          enc_phone_number: phoneNumber ? encryptData(phoneNumber) : null,
           // Default security
           requires_2fa: false
         }

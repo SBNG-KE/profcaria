@@ -7,44 +7,43 @@
    True Black Dark Mode & Clean Light Mode
    ============================================ */
 
-/* Dark Mode (True Black) */
+/* Dark Mode (Dark Navy) */
 :root,
 .dark {
-  --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-tertiary: #171717;
+  --bg-primary: #0A0F1A;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1B2A4A;
 
   --text-primary: #ffffff;
   --text-secondary: #a3a3a3;
   --text-muted: #525252;
-  --text-inverse: #000000;
+  --text-inverse: #0A0F1A;
 
-  --border-primary: rgba(255, 255, 255, 0.2);
-  --border-secondary: rgba(255, 255, 255, 0.1);
+  --border-primary: rgba(255, 255, 255, 0.15);
+  --border-secondary: rgba(255, 255, 255, 0.08);
 
-  --accent-gold: #D4AF37;
-  /* Vintage Gold */
+  --accent-navy: #3B5998;
 
-  --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.1);
+  --shadow-glow: 0 0 20px rgba(59, 89, 152, 0.15);
 }
 
-/* Light Mode */
+/* Light Mode (Navy + Soft Grey) */
 .light {
   --bg-primary: #ffffff;
-  --bg-secondary: #fafafa;
-  --bg-tertiary: #f5f5f5;
+  --bg-secondary: #F0F2F5;
+  --bg-tertiary: #E8EBF0;
 
-  --text-primary: #000000;
-  --text-secondary: #525252;
-  --text-muted: #a3a3a3;
+  --text-primary: #0A0F1A;
+  --text-secondary: #4A5568;
+  --text-muted: #A0AEC0;
   --text-inverse: #ffffff;
 
-  --border-primary: rgba(0, 0, 0, 0.2);
-  --border-secondary: rgba(0, 0, 0, 0.1);
+  --border-primary: rgba(27, 42, 74, 0.2);
+  --border-secondary: rgba(27, 42, 74, 0.1);
 
-  --accent-gold: #B8860B;
+  --accent-navy: #1B2A4A;
 
-  --shadow-glow: 0 0 20px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(27, 42, 74, 0.1);
 }
 
 @theme inline {
@@ -102,7 +101,7 @@
     50% {
       transform: scale(1.1);
       opacity: 1;
-      border-color: rgba(245, 158, 11, 0.5);
+      border-color: rgba(59, 89, 152, 0.5);
     }
   }
 
@@ -117,7 +116,7 @@
     50% {
       transform: translateX(120%);
       opacity: 1;
-      border-color: #fbbf24;
+      border-color: #3B5998;
     }
   }
 
@@ -132,7 +131,7 @@
     50% {
       transform: translateX(-120%);
       opacity: 1;
-      border-color: #fbbf24;
+      border-color: #3B5998;
     }
   }
 
@@ -230,12 +229,12 @@ body {
 }
 
 @layer utilities {
-  .text-gold {
-    color: var(--accent-gold);
+  .text-navy-accent {
+    color: var(--accent-navy);
   }
 
-  .border-gold {
-    border-color: var(--accent-gold);
+  .border-navy-accent {
+    border-color: var(--accent-navy);
   }
 
   /* Geist Pixel Font - Dotted/Pixelated Style */
@@ -280,8 +279,8 @@ body {
   }
 
   /* Premium Glow Effects */
-  .glow-amber {
-    box-shadow: 0 0 40px rgba(245, 158, 11, 0.15);
+  .glow-navy {
+    box-shadow: 0 0 40px rgba(59, 89, 152, 0.15);
   }
 
   .glow-white {
@@ -292,8 +291,8 @@ body {
     text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
   }
 
-  .text-glow-amber {
-    text-shadow: 0 0 40px rgba(245, 158, 11, 0.4);
+  .text-glow-navy {
+    text-shadow: 0 0 40px rgba(59, 89, 152, 0.4);
   }
 
   /* Floating Animation */

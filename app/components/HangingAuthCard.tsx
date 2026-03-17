@@ -25,8 +25,43 @@ import {
     Check,
     ArrowLeft,
     ChevronDown,
-    Search
+    Search,
+    Phone
 } from 'lucide-react';
+
+// Common country codes
+const COUNTRY_CODES = [
+    { code: '+1', label: 'US/CA', flag: '🇺🇸' },
+    { code: '+44', label: 'UK', flag: '🇬🇧' },
+    { code: '+254', label: 'KE', flag: '🇰🇪' },
+    { code: '+234', label: 'NG', flag: '🇳🇬' },
+    { code: '+27', label: 'ZA', flag: '🇿🇦' },
+    { code: '+91', label: 'IN', flag: '🇮🇳' },
+    { code: '+61', label: 'AU', flag: '🇦🇺' },
+    { code: '+49', label: 'DE', flag: '🇩🇪' },
+    { code: '+33', label: 'FR', flag: '🇫🇷' },
+    { code: '+81', label: 'JP', flag: '🇯🇵' },
+    { code: '+86', label: 'CN', flag: '🇨🇳' },
+    { code: '+55', label: 'BR', flag: '🇧🇷' },
+    { code: '+971', label: 'UAE', flag: '🇦🇪' },
+    { code: '+966', label: 'SA', flag: '🇸🇦' },
+    { code: '+65', label: 'SG', flag: '🇸🇬' },
+    { code: '+82', label: 'KR', flag: '🇰🇷' },
+    { code: '+31', label: 'NL', flag: '🇳🇱' },
+    { code: '+46', label: 'SE', flag: '🇸🇪' },
+    { code: '+41', label: 'CH', flag: '🇨🇭' },
+    { code: '+34', label: 'ES', flag: '🇪🇸' },
+    { code: '+39', label: 'IT', flag: '🇮🇹' },
+    { code: '+7', label: 'RU', flag: '🇷🇺' },
+    { code: '+52', label: 'MX', flag: '🇲🇽' },
+    { code: '+62', label: 'ID', flag: '🇮🇩' },
+    { code: '+63', label: 'PH', flag: '🇵🇭' },
+    { code: '+20', label: 'EG', flag: '🇪🇬' },
+    { code: '+255', label: 'TZ', flag: '🇹🇿' },
+    { code: '+256', label: 'UG', flag: '🇺🇬' },
+    { code: '+233', label: 'GH', flag: '🇬🇭' },
+    { code: '+251', label: 'ET', flag: '🇪🇹' },
+];
 import { useTheme } from '../context/ThemeContext';
 import HangingSecurityCard from './HangingSecurityCard';
 
@@ -153,6 +188,8 @@ export default function HangingAuthCard({
     const [profLastName, setProfLastName] = useState('');
     const [profEmail, setProfEmail] = useState('');
     const [profPassword, setProfPassword] = useState('');
+    const [profPhone, setProfPhone] = useState('');
+    const [profCountryCode, setProfCountryCode] = useState('+1');
     const [passwordVisible, setPasswordVisible] = useState(false);
 
     // Employer State
@@ -160,6 +197,8 @@ export default function HangingAuthCard({
     const [empWorkEmail, setEmpWorkEmail] = useState('');
     const [empPassword, setEmpPassword] = useState('');
     const [empIndustry, setEmpIndustry] = useState('');
+    const [empPhone, setEmpPhone] = useState('');
+    const [empCountryCode, setEmpCountryCode] = useState('+1');
     const [industries, setIndustries] = useState<{ name: string, category: string }[]>([]);
     const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
     const [industrySearch, setIndustrySearch] = useState('');
@@ -244,13 +283,15 @@ export default function HangingAuthCard({
     };
 
     // Validation Checks (UNCHANGED)
+    const isPhoneValid = (phone: string) => /^\d{6,15}$/.test(phone.replace(/\s/g, ''));
+
     const isProfessionalValid = globalMode === 'login'
         ? (profEmail && profPassword)
-        : (profFirstName && profLastName && profEmail && validatePassword(profPassword));
+        : (profFirstName && profLastName && profEmail && validatePassword(profPassword) && isPhoneValid(profPhone));
 
     const isEmployerValid = globalMode === 'login'
         ? (empWorkEmail && empPassword)
-        : (empCompanyName && empWorkEmail && validatePassword(empPassword));
+        : (empCompanyName && empWorkEmail && validatePassword(empPassword) && isPhoneValid(empPhone));
 
     // Handle redirect - intercept security routes
     const handleRedirect = (redirect: string | undefined | null) => {
@@ -340,12 +381,14 @@ export default function HangingAuthCard({
                 password: profPassword,
                 firstName: profFirstName,
                 lastName: profLastName,
-                role: 'User'
+                role: 'User',
+                phoneNumber: `${profCountryCode}${profPhone.replace(/\s/g, '')}`,
             } : {
                 companyName: empCompanyName,
                 workEmail: empWorkEmail,
                 password: empPassword,
-                industry: empIndustry, // Send Selected Industry
+                industry: empIndustry,
+                phoneNumber: `${empCountryCode}${empPhone.replace(/\s/g, '')}`,
             };
 
             const res = await fetch(endpoint, {
@@ -496,10 +539,40 @@ export default function HangingAuthCard({
                         {activeTab === 'professional' && (
                             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                 {globalMode === 'signup' && (
+                                    <>
                                     <div className="grid grid-cols-2 gap-4">
                                         <ModernInput theme={theme} placeholder="First Name" value={profFirstName} onChange={e => setProfFirstName(e.target.value)} icon={User} />
                                         <ModernInput theme={theme} placeholder="Last Name" value={profLastName} onChange={e => setProfLastName(e.target.value)} />
                                     </div>
+                                    {/* Phone Number with Country Code */}
+                                    <div className="relative group flex gap-2">
+                                        <div className="relative">
+                                            <div className={`absolute top-3 left-0 flex items-center transition-colors duration-300 ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`}>
+                                                <Phone size={18} />
+                                            </div>
+                                            <select
+                                                value={profCountryCode}
+                                                onChange={e => setProfCountryCode(e.target.value)}
+                                                className={`w-[100px] bg-transparent border-b-2 py-3 pl-8 pr-1 text-sm outline-none transition-all duration-300 appearance-none cursor-pointer ${isDark ? 'border-neutral-800 text-white focus:border-white' : 'border-neutral-200 text-black focus:border-black'}`}
+                                            >
+                                                {COUNTRY_CODES.map(c => (
+                                                    <option key={c.code} value={c.code} className={isDark ? 'bg-black text-white' : 'bg-white text-black'}>
+                                                        {c.flag} {c.code}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex-1">
+                                            <input
+                                                type="tel"
+                                                value={profPhone}
+                                                onChange={e => setProfPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                                                placeholder="Phone Number"
+                                                className={`w-full bg-transparent border-b-2 py-3 px-2 text-sm outline-none transition-all duration-300 ${isDark ? 'border-neutral-800 text-white placeholder-neutral-600 focus:border-white' : 'border-neutral-200 text-black placeholder-neutral-400 focus:border-black'}`}
+                                            />
+                                        </div>
+                                    </div>
+                                    </>
                                 )}
                                 <ModernInput theme={theme} placeholder="Email" value={profEmail} onChange={e => setProfEmail(e.target.value)} icon={Mail} />
                                 <ModernInput theme={theme} placeholder="Password" value={profPassword} onChange={e => setProfPassword(e.target.value)} icon={Lock} type="password" showPasswordToggle passwordVisible={passwordVisible} onTogglePassword={() => setPasswordVisible(!passwordVisible)} />
@@ -595,6 +668,36 @@ export default function HangingAuthCard({
                                             )}
                                         </div>
                                     </>
+                                )}
+                                {/* Phone Number with Country Code */}
+                                {globalMode === 'signup' && (
+                                    <div className="relative group flex gap-2">
+                                        <div className="relative">
+                                            <div className={`absolute top-3 left-0 flex items-center transition-colors duration-300 ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`}>
+                                                <Phone size={18} />
+                                            </div>
+                                            <select
+                                                value={empCountryCode}
+                                                onChange={e => setEmpCountryCode(e.target.value)}
+                                                className={`w-[100px] bg-transparent border-b-2 py-3 pl-8 pr-1 text-sm outline-none transition-all duration-300 appearance-none cursor-pointer ${isDark ? 'border-neutral-800 text-white focus:border-white' : 'border-neutral-200 text-black focus:border-black'}`}
+                                            >
+                                                {COUNTRY_CODES.map(c => (
+                                                    <option key={c.code} value={c.code} className={isDark ? 'bg-black text-white' : 'bg-white text-black'}>
+                                                        {c.flag} {c.code}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex-1">
+                                            <input
+                                                type="tel"
+                                                value={empPhone}
+                                                onChange={e => setEmpPhone(e.target.value.replace(/[^\d\s]/g, ''))}
+                                                placeholder="Phone Number"
+                                                className={`w-full bg-transparent border-b-2 py-3 px-2 text-sm outline-none transition-all duration-300 ${isDark ? 'border-neutral-800 text-white placeholder-neutral-600 focus:border-white' : 'border-neutral-200 text-black placeholder-neutral-400 focus:border-black'}`}
+                                            />
+                                        </div>
+                                    </div>
                                 )}
                                 <ModernInput theme={theme} placeholder="Work Email" value={empWorkEmail} onChange={e => setEmpWorkEmail(e.target.value)} icon={Mail} />
                                 <ModernInput theme={theme} placeholder="Password" value={empPassword} onChange={e => setEmpPassword(e.target.value)} icon={Lock} type="password" showPasswordToggle passwordVisible={passwordVisible} onTogglePassword={() => setPasswordVisible(!passwordVisible)} />

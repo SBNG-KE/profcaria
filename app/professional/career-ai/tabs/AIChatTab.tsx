@@ -265,7 +265,7 @@ export default function AIChatTab() {
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col h-full bg-transparent max-w-4xl mx-auto w-full">
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4" style={{ scrollbarWidth: 'thin' }}>
+                <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 space-y-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                     {loadingMessages ? (
                         <div className="flex flex-col items-center justify-center py-20 space-y-4">
                             <Loader2 size={32} className="animate-spin text-neutral-500" />

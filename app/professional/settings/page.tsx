@@ -113,7 +113,7 @@ export default function ProfessionalSettingsPage() {
             </div>
 
             {message && (
-                <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {message.text}
                 </div>
             )}
@@ -123,7 +123,7 @@ export default function ProfessionalSettingsPage() {
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                            <Lock className="text-emerald-500" size={24} /> Change Password
+                            <Lock className="text-[#3B5998]" size={24} /> Change Password
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {[
@@ -135,7 +135,7 @@ export default function ProfessionalSettingsPage() {
                                     <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{field.label}</label>
                                     <div className="relative">
                                         <input type={field.show ? 'text' : 'password'} value={field.value} onChange={(e) => field.setter(e.target.value)}
-                                            className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-emerald-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
+                                            className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-[#3B5998]/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
                                         />
                                         <button type="button" onClick={() => field.setShow(!field.show)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}`}>
                                             {field.show ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -153,7 +153,7 @@ export default function ProfessionalSettingsPage() {
 
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                            <Activity className="text-emerald-500" size={24} /> Activity Log
+                            <Activity className="text-[#3B5998]" size={24} /> Activity Log
                         </h3>
                         <div className={`overflow-hidden rounded-xl border ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                             <table className={`w-full text-left text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
@@ -190,7 +190,7 @@ export default function ProfessionalSettingsPage() {
                         <p className={`text-sm max-w-md mx-auto ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                             Profcaria is currently free for professionals. Premium features and subscription plans will be available soon.
                         </p>
-                        <div className={`inline-block px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest ${isDark ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                        <div className={`inline-block px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest ${isDark ? 'bg-[#3B5998]/10 text-[#6B8CD5] border border-[#3B5998]/20' : 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20'}`}>
                             Free Plan — Active
                         </div>
                     </div>
@@ -241,7 +241,7 @@ export default function ProfessionalSettingsPage() {
                                     <span className={`text-xs font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{formatNumber(followerCount)} / {formatNumber(nextTier.min)}</span>
                                 </div>
                                 <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
-                                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${nextTier.key === 'gold' ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : nextTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`} style={{ width: `${progressPercent}%` }} />
+                                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${nextTier.key === 'gold' ? 'bg-gradient-to-r from-[#3B5998] to-[#6B8CD5]' : nextTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`} style={{ width: `${progressPercent}%` }} />
                                 </div>
                                 <p className={`mt-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                     <TrendingUp size={14} className="inline mr-1" />{formatNumber(nextTier.min - followerCount)} more followers to unlock the <strong>{nextTier.label}</strong> badge
@@ -261,7 +261,7 @@ export default function ProfessionalSettingsPage() {
                             const activeRing = isCurrent ? (tier.key === 'gold' ? 'ring-2 ring-yellow-400/40' : tier.key === 'blue' ? 'ring-2 ring-blue-400/40' : 'ring-2 ring-neutral-400/40') : '';
                             return (
                                 <div key={tier.key} className={`relative p-6 rounded-3xl border ${isDark ? `bg-neutral-900/50 ${borderColor}` : `bg-white border-neutral-200`} ${activeRing} transition-all`}>
-                                    {isCurrent && <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">Current</div>}
+                                    {isCurrent && <div className="absolute top-0 right-0 bg-[#3B5998] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">Current</div>}
                                     <div className="flex items-center gap-3 mb-4">
                                         <VerificationBadge tier={tier.key} size={32} showTooltip={false} />
                                         <div>
@@ -269,7 +269,7 @@ export default function ProfessionalSettingsPage() {
                                             <p className={`text-xs font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{formatNumber(tier.min)}+ followers</p>
                                         </div>
                                     </div>
-                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
+                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
                                         {isUnlocked ? '✓ Unlocked' : `${formatNumber(tier.min - followerCount)} to go`}
                                     </div>
                                 </div>

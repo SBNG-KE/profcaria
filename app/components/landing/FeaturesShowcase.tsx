@@ -9,7 +9,7 @@ export default function FeaturesShowcase() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`py-0 pt-12 px-6 md:px-20 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
+        <section className={`py-0 pt-12 px-6 md:px-20 overflow-hidden ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
             <div className="max-w-[1400px] mx-auto">
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-20 items-end">
@@ -20,9 +20,9 @@ export default function FeaturesShowcase() {
                             The Philosophy
                         </div>
 
-                        <h2 className={`text-4xl md:text-6xl lg:text-7xl font-serif italic tracking-tight leading-[0.9] ${isDark ? 'text-white' : 'text-black'}`}>
+                        <h2 className={`text-4xl md:text-6xl lg:text-7xl font-serif italic tracking-tight leading-[0.9] ${isDark ? 'text-white' : 'text-[#0A0F1A]'}`}>
                             Navigated by <br />
-                            <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600 font-pixel">Intelligence.</span>
+                            <span className="not-italic font-sans font-black text-transparent bg-clip-text bg-gradient-to-r from-[#3B5998] to-[#1B2A4A] font-pixel">Intelligence.</span>
                         </h2>
 
                         <div className="space-y-8 max-w-2xl">
@@ -43,23 +43,23 @@ export default function FeaturesShowcase() {
                         <div className="absolute inset-0 flex items-center justify-center opacity-100">
                             {/* Circle 1 - Inner Ring with Marker */}
                             <div
-                                className="relative w-96 h-96 rounded-full border-[2px] border-amber-500/40"
+                                className="relative w-96 h-96 rounded-full border-[2px] border-[#3B5998]/40"
                                 style={{ animation: 'spin-slow 20s linear infinite' }}
                             >
-                                <div className="absolute -top-1.5 left-1/2 w-3 h-3 bg-amber-500 rounded-full shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+                                <div className="absolute -top-1.5 left-1/2 w-3 h-3 bg-[#3B5998] rounded-full shadow-[0_0_10px_rgba(59,89,152,0.5)]" />
                             </div>
 
                             {/* Circle 2 - Outer Ring with Marker */}
                             <div
-                                className="absolute w-[500px] h-[500px] rounded-full border-[1px] border-amber-500/30"
+                                className="absolute w-[500px] h-[500px] rounded-full border-[1px] border-[#3B5998]/30"
                                 style={{ animation: 'spin-slow 30s linear infinite reverse' }}
                             >
-                                <div className="absolute top-1/2 -right-1.5 w-3 h-3 bg-amber-500/50 rounded-full" />
+                                <div className="absolute top-1/2 -right-1.5 w-3 h-3 bg-[#3B5998]/50 rounded-full" />
                             </div>
 
                             {/* Gradient Center - Enhanced Glow */}
-                            <div className="absolute w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
-                            <div className="absolute w-48 h-48 bg-amber-400/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+                            <div className="absolute w-64 h-64 bg-[#3B5998]/10 rounded-full blur-3xl animate-pulse" />
+                            <div className="absolute w-48 h-48 bg-[#3B5998]/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
                         </div>
 
                         {/* Vertical Roles Stack (Static Text, Fits in Circle) */}
@@ -67,8 +67,8 @@ export default function FeaturesShowcase() {
                             {["Designers", "Engineers", "Founders", "Innovators"].map((role, i) => (
                                 <div key={i} className={`
                                     text-2xl md:text-3xl font-light tracking-[0.2em] uppercase transition-all duration-500 cursor-default font-pixel
-                                    ${isDark ? 'text-white' : 'text-black'}
-                                    hover:scale-110 hover:text-amber-500 hover:text-glow-amber
+                                    ${isDark ? 'text-white' : 'text-[#0A0F1A]'}
+                                    hover:scale-110 hover:text-[#3B5998] hover:text-glow-navy
                                  `}>
                                     {role}
                                 </div>

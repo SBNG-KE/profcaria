@@ -184,8 +184,8 @@ export default function ReferenceResponsePage() {
             <div className={`min-h-screen py-12 px-4 ${isDark ? 'bg-black' : 'bg-neutral-50'}`}>
                 <div className={`max-w-2xl mx-auto p-8 sm:p-12 rounded-[32px] ${isDark ? 'bg-neutral-900' : 'bg-white'} shadow-xl`}>
                     <div className="text-center mb-8">
-                        <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${isDark ? 'bg-emerald-500/20' : 'bg-emerald-50'}`}>
-                            <Check size={40} className="text-emerald-500" />
+                        <div className={`w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center ${isDark ? 'bg-[#3B5998]/20' : 'bg-[#3B5998]/10'}`}>
+                            <Check size={40} className="text-[#3B5998]" />
                         </div>
                         <h1 className={`text-2xl sm:text-3xl font-black mb-2 ${isDark ? 'text-white' : 'text-black'}`}>
                             Reference Submitted

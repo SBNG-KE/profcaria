@@ -217,8 +217,8 @@ export default function ConnectionsPage() {
                 {hasCompanies && (
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
-                                <Building2 size={14} className={isDark ? 'text-purple-400' : 'text-purple-600'} />
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-[#3B5998]/20' : 'bg-[#3B5998]/10'}`}>
+                                <Building2 size={14} className={isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'} />
                             </div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
                                 Companies to Subscribe
@@ -245,8 +245,8 @@ export default function ConnectionsPage() {
                 {hasProfessionals && (
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-green-500/20' : 'bg-green-100'}`}>
-                                <Users size={14} className={isDark ? 'text-green-400' : 'text-green-600'} />
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-[#3B5998]/20' : 'bg-[#3B5998]/10'}`}>
+                                <Users size={14} className={isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'} />
                             </div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
                                 People to Follow

@@ -121,7 +121,7 @@ export default function EmployerProfileViewPage() {
 
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-[#3B5998] rounded-lg flex items-center justify-center">
                             <span className="text-white font-black text-xs">P</span>
                         </div>
                         <span className={`font-black tracking-tight uppercase ${isDark ? 'text-white' : 'text-black'}`}>ProfCaria</span>
@@ -161,16 +161,16 @@ export default function EmployerProfileViewPage() {
 
                 {/* Intent Mode */}
                 {data.profile.intentMode && data.profile.intentMode !== 'not_looking' && (
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-4 ${data.profile.intentMode === 'actively_looking' ? 'bg-emerald-500/10 border border-emerald-500/20' :
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-4 ${data.profile.intentMode === 'actively_looking' ? 'bg-[#3B5998]/10 border border-[#3B5998]/20' :
                             'bg-blue-500/10 border border-blue-500/20'
                         }`}>
                         <div className="relative flex h-2 w-2">
-                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${data.profile.intentMode === 'actively_looking' ? 'bg-emerald-400' : 'bg-blue-400'
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${data.profile.intentMode === 'actively_looking' ? 'bg-[#6B8CD5]' : 'bg-blue-400'
                                 }`}></span>
-                            <span className={`relative inline-flex rounded-full h-2 w-2 ${data.profile.intentMode === 'actively_looking' ? 'bg-emerald-500' : 'bg-blue-500'
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${data.profile.intentMode === 'actively_looking' ? 'bg-[#3B5998]' : 'bg-blue-500'
                                 }`}></span>
                         </div>
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${data.profile.intentMode === 'actively_looking' ? 'text-emerald-500' : 'text-blue-500'
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${data.profile.intentMode === 'actively_looking' ? 'text-[#3B5998]' : 'text-blue-500'
                             }`}>
                             {data.profile.intentMode === 'actively_looking' ? 'Actively Looking' :
                                 data.profile.intentMode === 'open_to_freelance' ? 'Open to Freelance' :
@@ -226,26 +226,26 @@ export default function EmployerProfileViewPage() {
                                 {verification ? (
                                     <div className="space-y-4">
                                         {verification.checks.map((check, i) => (
-                                            <div key={i} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${check.status === 'verified' ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10' :
-                                                    check.status === 'partial' ? 'border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10' :
+                                            <div key={i} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all ${check.status === 'verified' ? 'border-[#3B5998]/30 bg-[#3B5998]/5 dark:bg-[#3B5998]/10' :
+                                                    check.status === 'partial' ? 'border-[#3B5998]/30 bg-[#3B5998]/5 dark:bg-[#3B5998]/10' :
                                                         isDark ? 'border-neutral-800 bg-neutral-800/50' : 'border-neutral-200 bg-neutral-50'
                                                 }`}>
                                                 {check.status === 'verified' ? (
-                                                    <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
+                                                    <CheckCircle2 size={20} className="text-[#3B5998] shrink-0" />
                                                 ) : check.status === 'partial' ? (
-                                                    <Clock size={20} className="text-amber-500 shrink-0" />
+                                                    <Clock size={20} className="text-[#3B5998] shrink-0" />
                                                 ) : (
                                                     <Circle size={20} className="text-neutral-400 dark:text-neutral-600 shrink-0" />
                                                 )}
                                                 <div className="flex-1">
                                                     <h4 className="text-sm font-bold">{check.label}</h4>
-                                                    <p className={`text-xs ${check.status === 'verified' ? 'text-emerald-600 dark:text-emerald-400' :
-                                                            check.status === 'partial' ? 'text-amber-600 dark:text-amber-400' :
+                                                    <p className={`text-xs ${check.status === 'verified' ? 'text-[#3B5998] dark:text-[#6B8CD5]' :
+                                                            check.status === 'partial' ? 'text-[#3B5998] dark:text-[#6B8CD5]' :
                                                                 'text-neutral-400 dark:text-neutral-500'
                                                         }`}>{check.detail}</p>
                                                 </div>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${check.status === 'verified' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                        check.status === 'partial' ? 'bg-amber-500/10 text-amber-500' :
+                                                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${check.status === 'verified' ? 'bg-[#3B5998]/10 text-[#3B5998]' :
+                                                        check.status === 'partial' ? 'bg-[#3B5998]/10 text-[#3B5998]' :
                                                             isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'
                                                     }`}>{check.status}</span>
                                             </div>
@@ -317,7 +317,7 @@ export default function EmployerProfileViewPage() {
                                                 <div className="flex flex-col items-center">
                                                     <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border z-10 ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-white border-neutral-200 shadow-sm'}`}>
                                                         {job.source === 'employer_verified' || job.source === 'application' ? (
-                                                            <CheckCircle2 size={24} className="text-emerald-500" />
+                                                            <CheckCircle2 size={24} className="text-[#3B5998]" />
                                                         ) : (
                                                             <Building2 size={24} className={isDark ? 'text-neutral-500' : 'text-neutral-400'} />
                                                         )}
@@ -328,14 +328,14 @@ export default function EmployerProfileViewPage() {
                                                     <div className="flex items-center gap-2">
                                                         <h4 className="text-lg font-bold">{job.title}</h4>
                                                         {(job.source === 'employer_verified' || job.source === 'application') && (
-                                                            <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500">Verified</span>
+                                                            <span className="px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wider bg-[#3B5998]/10 text-[#3B5998]">Verified</span>
                                                         )}
                                                     </div>
                                                     <p className={`font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.company}</p>
                                                     <div className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
                                                         <span>{job.startDate}</span>
                                                         <span>—</span>
-                                                        <span className={job.isCurrent ? 'text-emerald-500' : ''}>{job.isCurrent ? 'Present' : job.endDate}</span>
+                                                        <span className={job.isCurrent ? 'text-[#3B5998]' : ''}>{job.isCurrent ? 'Present' : job.endDate}</span>
                                                     </div>
                                                     {job.description && <p className={`text-sm mt-3 leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{job.description}</p>}
                                                 </div>
@@ -411,7 +411,7 @@ export default function EmployerProfileViewPage() {
                                     <button
                                         key={doc.type}
                                         onClick={() => setActiveDocumentType(doc.type)}
-                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-500 shadow-xl shadow-blue-500/30' : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-blue-200 shadow-lg shadow-slate-200/50')}`}
+                                        className={`group relative aspect-[4/3] rounded-[32px] border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95 text-left p-8 flex flex-col justify-between ${activeDocumentType === doc.type ? 'bg-gradient-to-br from-blue-500 to-[#3B5998] text-white border-blue-500 shadow-xl shadow-blue-500/30' : (isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-blue-200 shadow-lg shadow-slate-200/50')}`}
                                     >
                                         <FileText size={40} className={`${activeDocumentType === doc.type ? 'text-white' : 'text-blue-500'} transition-colors`} />
                                         <div>

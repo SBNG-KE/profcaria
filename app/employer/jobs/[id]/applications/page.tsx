@@ -188,7 +188,7 @@ export default function ViewApplicationsPage() {
         <div className="p-8 max-w-7xl mx-auto space-y-8 pb-32">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-800 pb-8">
                 <div className="text-left">
-                    <div className="flex items-center gap-2 text-emerald-400 mb-2">
+                    <div className="flex items-center gap-2 text-[#6B8CD5] mb-2">
                         <Users size={16} />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Talent Pool</span>
                     </div>
@@ -209,8 +209,8 @@ export default function ViewApplicationsPage() {
                         <button
                             onClick={() => setFilterType('starred')}
                             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${filterType === 'starred'
-                                ? 'bg-amber-500 text-black'
-                                : 'text-slate-400 hover:text-amber-400'
+                                ? 'bg-[#3B5998] text-black'
+                                : 'text-slate-400 hover:text-[#6B8CD5]'
                                 }`}
                         >
                             <Star size={12} className={filterType === 'starred' ? 'fill-black' : ''} />
@@ -219,8 +219,8 @@ export default function ViewApplicationsPage() {
                         <button
                             onClick={() => setFilterType('employed')}
                             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${filterType === 'employed'
-                                ? 'bg-emerald-500 text-black'
-                                : 'text-slate-400 hover:text-emerald-400'
+                                ? 'bg-[#3B5998] text-black'
+                                : 'text-slate-400 hover:text-[#6B8CD5]'
                                 }`}
                         >
                             <CheckCircle2 size={12} className={filterType === 'employed' ? 'text-black' : ''} />
@@ -272,11 +272,11 @@ export default function ViewApplicationsPage() {
                                             onClick={(e) => handleToggleStar(e, app)}
                                             disabled={togglingStarId === app.id}
                                             className={`p-2 rounded-xl transition-all active:scale-90 ${app.is_starred
-                                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                                : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-amber-400 hover:border-amber-500/30'
+                                                ? 'bg-[#3B5998]/20 text-[#6B8CD5] border border-[#3B5998]/30'
+                                                : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-[#6B8CD5] hover:border-[#3B5998]/30'
                                                 } ${togglingStarId === app.id ? 'opacity-50 animate-pulse' : ''}`}
                                         >
-                                            <Star size={16} className={app.is_starred ? 'fill-amber-400' : ''} />
+                                            <Star size={16} className={app.is_starred ? 'fill-[#6B8CD5]' : ''} />
                                         </button>
                                         <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden">
                                             {app.applicant.profileImageUrl ? (
@@ -289,18 +289,18 @@ export default function ViewApplicationsPage() {
                                             <div className="flex items-center gap-2">
                                                 <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{app.applicant.firstName} {app.applicant.lastName}</h3>
                                                 {app.wasInvited && (
-                                                    <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[8px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                                                    <span className="px-2 py-0.5 bg-[#3B5998]/10 border border-[#3B5998]/20 rounded text-[8px] font-black text-[#6B8CD5] uppercase tracking-widest flex items-center gap-1">
                                                         <CheckCircle2 size={10} /> Was Invited
                                                     </span>
                                                 )}
                                                 {app.is_starred && (
-                                                    <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 rounded text-[8px] font-black text-amber-400 uppercase tracking-widest">
+                                                    <span className="px-2 py-0.5 bg-[#3B5998]/10 border border-[#3B5998]/20 rounded text-[8px] font-black text-[#6B8CD5] uppercase tracking-widest">
                                                         Starred
                                                     </span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-[#3B5998]/10 text-[#6B8CD5]' : 'bg-blue-500/10 text-blue-400'}`}>
                                                     {app.status.replace('_', ' ')}
                                                 </span>
                                                 <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
@@ -337,7 +337,7 @@ export default function ViewApplicationsPage() {
                                     <div className="flex flex-wrap items-center gap-2">
                                         <button
                                             onClick={() => openChat(selectedApp)}
-                                            className="px-4 py-2.5 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600/20 transition-all whitespace-nowrap"
+                                            className="px-4 py-2.5 bg-[#3B5998]/10 border border-[#3B5998]/20 text-[#6B8CD5] text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#3B5998]/20 transition-all whitespace-nowrap"
                                         >
                                             <Send size={12} className="inline mr-1.5" />
                                             Message
@@ -364,19 +364,19 @@ export default function ViewApplicationsPage() {
                                 <div className="space-y-6 text-left">
                                     {selectedApp.status === 'employed' && selectedApp.progression && selectedApp.progression.length > 0 && (
                                         <div className="mb-8 space-y-4">
-                                            <h3 className="text-sm font-black text-emerald-400 uppercase tracking-widest border-b border-emerald-500/20 pb-2 flex items-center gap-2">
+                                            <h3 className="text-sm font-black text-[#6B8CD5] uppercase tracking-widest border-b border-[#3B5998]/20 pb-2 flex items-center gap-2">
                                                 <CheckCircle2 size={16} />
                                                 Career Progression
                                             </h3>
                                             <div className="relative pl-4 space-y-6 before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-slate-800">
                                                 {selectedApp.progression.map((role: any, idx: number) => (
                                                     <div key={role.id || idx} className="relative">
-                                                        <div className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-[#0f172a]"></div>
+                                                        <div className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-[#3B5998] ring-4 ring-[#0f172a]"></div>
                                                         <div className="space-y-1">
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="text-lg font-bold text-white leading-none">{role.title}</h4>
                                                                 {role.isCurrent && (
-                                                                    <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase tracking-widest rounded">Current</span>
+                                                                    <span className="px-2 py-0.5 bg-[#3B5998]/10 text-[#6B8CD5] text-[8px] font-black uppercase tracking-widest rounded">Current</span>
                                                                 )}
                                                             </div>
                                                             <p className="text-xs font-bold text-slate-400 tracking-wider">

@@ -119,7 +119,7 @@ export default function JobMatchesPage() {
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 animate-in fade-in slide-in-from-top-4">
                 <div>
                     <h1 className={`text-3xl font-black uppercase tracking-tight flex items-center gap-3 ${isDark ? 'text-white' : 'text-black'}`}>
-                        <Zap className="fill-current text-amber-400" />
+                        <Zap className="fill-current text-[#6B8CD5]" />
                         Top Matches
                     </h1>
                     <p className={`mt-1 font-medium ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
@@ -135,7 +135,7 @@ export default function JobMatchesPage() {
                     className={`
                         px-6 py-4 text-sm font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2
                         ${activeTab === 'suggestions'
-                            ? (isDark ? 'border-amber-400 text-white' : 'border-black text-black')
+                            ? (isDark ? 'border-[#6B8CD5] text-white' : 'border-black text-black')
                             : 'border-transparent text-neutral-500 hover:text-neutral-300'}
                     `}
                 >
@@ -147,7 +147,7 @@ export default function JobMatchesPage() {
                     className={`
                         px-6 py-4 text-sm font-bold uppercase tracking-widest border-b-2 transition-all flex items-center gap-2
                         ${activeTab === 'invited'
-                            ? (isDark ? 'border-emerald-500 text-white' : 'border-emerald-600 text-black')
+                            ? (isDark ? 'border-[#3B5998] text-white' : 'border-[#3B5998] text-black')
                             : 'border-transparent text-neutral-500 hover:text-neutral-300'}
                     `}
                 >
@@ -212,7 +212,7 @@ export default function JobMatchesPage() {
             {!isLoading && isLimitReached && activeTab === 'suggestions' && candidates.length > 0 && (
                 <div className={`mt-12 p-8 rounded-3xl flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-4 border bg-gradient-to-b ${isDark ? 'from-neutral-900 to-black border-neutral-800' : 'from-white to-neutral-50 border-neutral-200 shadow-xl'}`}>
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                        <Zap className="text-amber-400 fill-current" size={32} />
+                        <Zap className="text-[#6B8CD5] fill-current" size={32} />
                     </div>
                     <h3 className={`text-2xl font-black mb-2 uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                         Unlock More Matches

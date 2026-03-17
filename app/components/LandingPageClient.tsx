@@ -16,8 +16,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import HangingAuthCard from '@/app/components/HangingAuthCard';
 import HangingContactCard from '@/app/components/HangingContactCard';
-import HangingWhyUsCard from '@/app/components/HangingWhyUsCard';
-import HangingPricingCard from '@/app/components/HangingPricingCard';
+import HangingDocsCard from '@/app/components/HangingDocsCard';
 import BusinessSolutions from '@/app/components/landing/BusinessSolutions';
 import FeaturesShowcase from '@/app/components/landing/FeaturesShowcase';
 import PlatformTour from '@/app/components/landing/PlatformTour';
@@ -31,8 +30,7 @@ export default function LandingPageClient() {
     const { theme, toggleTheme } = useTheme();
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isContactOpen, setIsContactOpen] = useState(false);
-    const [isWhyUsOpen, setIsWhyUsOpen] = useState(false);
-    const [isPricingOpen, setIsPricingOpen] = useState(false);
+    const [isDocsOpen, setIsDocsOpen] = useState(false);
     const [initialAuthScreen, setInitialAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>('auth');
     const [initialAuthTab, setInitialAuthTab] = useState<'professional' | 'employer'>('professional');
 
@@ -66,7 +64,7 @@ export default function LandingPageClient() {
     }, []);
 
     // Stop background scrolling when any card is open
-    const isAnyCardOpen = isAuthOpen || isContactOpen || isWhyUsOpen || isPricingOpen;
+    const isAnyCardOpen = isAuthOpen || isContactOpen || isDocsOpen;
     useEffect(() => {
         if (isAnyCardOpen) {
             lenisRef.current?.stop();
@@ -135,7 +133,7 @@ export default function LandingPageClient() {
     const isDark = theme === 'dark';
 
     return (
-        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-amber-500/30 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-[#3B5998]/30 ${isDark ? 'bg-[#0A0F1A] text-white' : 'bg-white text-[#0A0F1A]'}`}>
 
             {/* AUTH CARD COMPONENT */}
             <HangingAuthCard
@@ -151,45 +149,23 @@ export default function LandingPageClient() {
                 onClose={() => setIsContactOpen(false)}
             />
 
-            {/* WHY US PANEL */}
-            <HangingWhyUsCard
-                isOpen={isWhyUsOpen}
-                onClose={() => setIsWhyUsOpen(false)}
-            />
-
-            {/* PRICING CARD */}
-            <HangingPricingCard
-                isOpen={isPricingOpen}
-                onClose={() => setIsPricingOpen(false)}
-                onGetStarted={(role) => {
-                    setInitialAuthScreen('auth');
-                    setInitialAuthTab(role);
-                    setIsPricingOpen(false);
-                    setIsAuthOpen(true);
-                }}
+            {/* DOCS PANEL */}
+            <HangingDocsCard
+                isOpen={isDocsOpen}
+                onClose={() => setIsDocsOpen(false)}
             />
 
             {/* LEFT HEADER BUTTONS */}
             <div className="hidden lg:flex fixed top-8 left-8 z-50 items-center gap-8">
                 <button
-                    onClick={() => setIsWhyUsOpen(true)}
+                    onClick={() => setIsDocsOpen(true)}
                     className={`
             text-sm font-black uppercase tracking-[0.2em] relative group
-            ${isDark ? 'text-white' : 'text-black'}
+            ${isDark ? 'text-white' : 'text-[#0A0F1A]'}
           `}
                 >
-                    Why Us
-                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-black'}`} />
-                </button>
-                <button
-                    onClick={() => setIsPricingOpen(true)}
-                    className={`
-            text-sm font-black uppercase tracking-[0.2em] relative group
-            ${isDark ? 'text-white' : 'text-black'}
-          `}
-                >
-                    Pricing
-                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-black'}`} />
+                    Docs
+                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-[#1B2A4A]'}`} />
                 </button>
             </div>
 
@@ -198,14 +174,14 @@ export default function LandingPageClient() {
                 <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
                 <button
-                    onClick={() => setIsAuthOpen(!isAuthOpen)} // Toggle card instead of route
+                    onClick={() => setIsAuthOpen(!isAuthOpen)}
                     className={`
             text-sm font-black uppercase tracking-[0.2em] relative group
-            ${isDark ? 'text-white' : 'text-black'}
+            ${isDark ? 'text-white' : 'text-[#0A0F1A]'}
           `}
                 >
                     Join Now
-                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-black'}`} />
+                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-[#1B2A4A]'}`} />
                 </button>
             </div>
 
@@ -234,7 +210,7 @@ export default function LandingPageClient() {
                                 <div
                                     className={`
                                         border-[4px] md:border-[6px] p-6 md:p-10 flex flex-col items-center gap-4
-                                        ${isDark ? 'text-white bg-neutral-900 border-neutral-700' : 'text-black bg-white border-neutral-300'}
+                                        ${isDark ? 'text-white bg-[#111827] border-[#1B2A4A]/50' : 'text-[#0A0F1A] bg-white border-[#1B2A4A]/30'}
                                     `}
                                     style={{
                                         // Complex jagged "ruins" polygon
@@ -262,13 +238,13 @@ export default function LandingPageClient() {
                             <div className="text-center max-w-sm space-y-2 opacity-80 mt-4">
                                 <h2 className={`
                                     text-xs font-bold uppercase tracking-widest
-                                    ${isDark ? 'text-neutral-300' : 'text-neutral-700'}
+                                    ${isDark ? 'text-neutral-300' : 'text-[#4A5568]'}
                                 `}>
                                     The AI-Powered Career Operating System.
                                 </h2>
                                 <p className={`
                                     text-[10px] uppercase tracking-widest font-pixel mt-4 leading-relaxed
-                                    ${isDark ? 'text-amber-500' : 'text-amber-600'}
+                                    ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}
                                 `}>
                                     Don't just upload a CV.<br/>
                                     Prove your skills with Verified Evidence directly in your profile.
@@ -314,12 +290,12 @@ export default function LandingPageClient() {
 
 
             {/* CALL TO ACTION - Join Profcaria Today */}
-            <section className={`py-32 px-6 text-center relative z-10 ${isDark ? 'bg-black' : 'bg-white'}`}>
+            <section className={`py-32 px-6 text-center relative z-10 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
                 <div className="max-w-4xl mx-auto space-y-12">
-                    <h2 className={`text-5xl md:text-8xl font-black tracking-tighter leading-none ${isDark ? 'text-white' : 'text-black'}`}>
+                    <h2 className={`text-5xl md:text-8xl font-black tracking-tighter leading-none ${isDark ? 'text-white' : 'text-[#0A0F1A]'}`}>
                         JOIN <br /> PROFCARIA <br /> TODAY
                     </h2>
-                    <p className={`text-2xl md:text-3xl font-light ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                    <p className={`text-2xl md:text-3xl font-light ${isDark ? 'text-neutral-400' : 'text-[#4A5568]'}`}>
                         Connect. Apply. Hire. Securely.
                     </p>
                     <button
@@ -328,8 +304,8 @@ export default function LandingPageClient() {
                             px-12 py-6 rounded-none text-lg font-black uppercase tracking-[0.2em]
                             border-2 transition-all duration-300 hover:scale-105
                             ${isDark
-                                ? 'border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black shadow-[0_0_30px_rgba(245,158,11,0.3)]'
-                                : 'border-black text-black hover:bg-black hover:text-white'}
+                                ? 'border-[#3B5998] text-[#3B5998] hover:bg-[#3B5998] hover:text-white shadow-[0_0_30px_rgba(59,89,152,0.3)]'
+                                : 'border-[#1B2A4A] text-[#1B2A4A] hover:bg-[#1B2A4A] hover:text-white'}
                         `}
                     >
                         Get Started
@@ -344,7 +320,7 @@ export default function LandingPageClient() {
             <div className="fixed bottom-8 left-0 right-0 z-40 px-6 md:px-8 flex justify-between items-end pointer-events-none">
                 <div className="pointer-events-auto">
                     {/* Copyright Restored */}
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-700' : 'text-neutral-300'}`}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-[#1B2A4A]/50' : 'text-neutral-300'}`}>
                         &copy; {new Date().getFullYear()} Profcaria
                     </p>
                 </div>
@@ -354,7 +330,7 @@ export default function LandingPageClient() {
                         onClick={() => setIsContactOpen(true)}
                         className={`
               text-xs font-bold uppercase tracking-[0.2em] relative group
-              ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}
+              ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-[#0A0F1A]'}
               transition-colors
             `}
                     >
@@ -370,14 +346,10 @@ export default function LandingPageClient() {
                 lg:hidden fixed bottom-20 md:bottom-24 left-1/2 -translate-x-1/2 z-50 
                 flex justify-center items-center gap-6 px-6 py-3 rounded-full
                 backdrop-blur-xl border shadow-2xl
-                ${isDark ? 'bg-black/80 border-neutral-800/50 text-white' : 'bg-white/80 border-neutral-200/50 text-black'}
+                ${isDark ? 'bg-[#0A0F1A]/80 border-[#1B2A4A]/50 text-white' : 'bg-white/80 border-neutral-200/50 text-[#0A0F1A]'}
             `}>
-                <button onClick={() => setIsWhyUsOpen(true)} className="text-[11px] font-black uppercase tracking-widest hover:text-amber-500 transition-colors pointer-events-auto">
-                    Why Us
-                </button>
-                <div className={`w-px h-4 ${isDark ? 'bg-neutral-800' : 'bg-neutral-300'}`}></div>
-                <button onClick={() => setIsPricingOpen(true)} className="text-[11px] font-black uppercase tracking-widest hover:text-amber-500 transition-colors pointer-events-auto">
-                    Pricing
+                <button onClick={() => setIsDocsOpen(true)} className="text-[11px] font-black uppercase tracking-widest hover:text-[#3B5998] transition-colors pointer-events-auto">
+                    Docs
                 </button>
             </div>
 

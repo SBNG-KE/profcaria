@@ -356,7 +356,7 @@ export default function EmployerProfilePage() {
         <div className="max-w-5xl mx-auto py-8 px-4 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Message Banner */}
             {message && (
-                <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? (isDark ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') : (isDark ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-200')}`}>
+                <div className={`p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? (isDark ? 'bg-[#3B5998]/10 text-[#6B8CD5] border border-[#3B5998]/20' : 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20') : (isDark ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-red-50 text-red-700 border border-red-200')}`}>
                     {message.text}
                 </div>
             )}
@@ -637,7 +637,7 @@ export default function EmployerProfilePage() {
                                     }}
                                     className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
                                 >
-                                    {message?.text === 'Profile link copied!' ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                                    {message?.text === 'Profile link copied!' ? <Check size={16} className="text-[#3B5998]" /> : <Copy size={16} />}
                                 </button>
                             </div>
                             <p className={`text-[10px] ${isDark ? 'text-neutral-600' : 'text-neutral-600'}`}>Share this link for others to view your company profile.</p>
@@ -660,7 +660,7 @@ export default function EmployerProfilePage() {
                                     }}
                                     className={`p-2 rounded-lg transition-colors shrink-0 ${isDark ? 'hover:bg-neutral-800 text-white' : 'hover:bg-white text-black shadow-sm'}`}
                                 >
-                                    {message?.text === 'Careers page link copied!' ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                                    {message?.text === 'Careers page link copied!' ? <Check size={16} className="text-[#3B5998]" /> : <Copy size={16} />}
                                 </button>
                             </div>
                             <p className={`text-[10px] ${isDark ? 'text-neutral-600' : 'text-neutral-600'}`}>Share this link so people can see your open roles and apply directly.</p>

@@ -363,7 +363,7 @@ function SettingsContent() {
                                 </div>
                                 <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
                                     <div
-                                        className={`h-full rounded-full transition-all duration-1000 ease-out ${nextBadgeTier.key === 'gold' ? 'bg-gradient-to-r from-yellow-500 to-amber-400' : nextBadgeTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`}
+                                        className={`h-full rounded-full transition-all duration-1000 ease-out ${nextBadgeTier.key === 'gold' ? 'bg-gradient-to-r from-[#3B5998] to-[#6B8CD5]' : nextBadgeTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`}
                                         style={{ width: `${badgeProgressPercent}%` }}
                                     />
                                 </div>
@@ -390,7 +390,7 @@ function SettingsContent() {
                             return (
                                 <div key={tier.key} className={`relative p-6 rounded-3xl border ${isDark ? `bg-neutral-900/50 ${borderColor}` : `bg-white border-neutral-200`} ${activeRing} transition-all`}>
                                     {isCurrent && (
-                                        <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">
+                                        <div className="absolute top-0 right-0 bg-[#3B5998] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">
                                             Current
                                         </div>
                                     )}
@@ -403,7 +403,7 @@ function SettingsContent() {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
+                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
                                         {isUnlocked ? '✓ Unlocked' : `${formatFollowerNum(tier.min - followerCount)} to go`}
                                     </div>
                                 </div>
@@ -414,8 +414,8 @@ function SettingsContent() {
                     {/* Info Box */}
                     <div className={`p-6 rounded-2xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="flex items-start gap-4">
-                            <div className="p-3 bg-emerald-500/10 rounded-xl">
-                                <TrendingUp className="text-emerald-500" size={24} />
+                            <div className="p-3 bg-[#3B5998]/10 rounded-xl">
+                                <TrendingUp className="text-[#3B5998]" size={24} />
                             </div>
                             <div>
                                 <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-black'}`}>How Badges Work</h3>
