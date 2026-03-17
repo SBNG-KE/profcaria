@@ -565,7 +565,30 @@ function ChatContent() {
         if (activeFilter === 'social') {
             filtered = filtered.filter(app => app.isDm && app.otherPartyType === 'professional');
         } else if (activeFilter === 'job') {
-            filtered = filtered.filter(app => !app.isDm || app.otherPartyType === 'employer');
+            const jobsList = filtered.filter(app => !app.isDm || app.otherPartyType === 'employer');
+            
+            // Inject Company Group 
+            const uniqueCompanies = Array.from(new Set(jobsList.map(app => app.companyId || app.company?.id).filter(Boolean)));
+            const companyGroups = uniqueCompanies.map(companyId => {
+                const firstApp = jobsList.find(app => (app.companyId || app.company?.id) === companyId);
+                return {
+                    id: `prof-company-group-${companyId}`,
+                    status: 'active',
+                    createdAt: new Date().toISOString(),
+                    companyId: companyId,
+                    companyName: firstApp?.companyName || 'Company',
+                    jobTitle: 'Company Group',
+                    companyLogoUrl: firstApp?.companyLogoUrl,
+                    isDm: false,
+                    isGroup: true,
+                    user: {
+                        name: `${firstApp?.companyName || 'Company'} Group`,
+                        profileImageUrl: firstApp?.companyLogoUrl
+                    }
+                };
+            });
+
+            filtered = [...companyGroups, ...jobsList];
         }
 
         // Apply search query (only when not showing search results dropdown)

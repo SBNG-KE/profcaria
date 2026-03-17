@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     MessageSquare, ChevronLeft, Send, X, Building2, UserCircle, Search,
-    CheckCheck, Plus, FileText, Users, Briefcase, MessagesSquare, Zap, Lock
+    CheckCheck, Plus, FileText, Users, Briefcase, MessagesSquare, Zap, Lock, UserPlus
 } from 'lucide-react';
 import { useNotificationContext } from '@/app/context/NotificationContext';
 import LinkPreview from '@/app/components/LinkPreview';
@@ -12,7 +12,7 @@ import { useTheme } from '@/app/context/ThemeContext';
 import { useSearchParams } from 'next/navigation';
 
 // ─── Types ────────────────────────────────────────────────
-type FilterTab = 'social' | 'groups' | 'job';
+type FilterTab = 'social' | 'groups' | 'job' | 'reached_out';
 type SearchResult = {
     id: string;
     name: string;
@@ -55,6 +55,7 @@ function ChatContent() {
     const [isUploading, setIsUploading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState<FilterTab>('job');
+    const [showGroupSettings, setShowGroupSettings] = useState(false);
 
     // Contact Search State
     const [contactResults, setContactResults] = useState<SearchResult[]>([]);
@@ -364,7 +365,27 @@ function ChatContent() {
         if (activeFilter === 'social') {
             filtered = filtered.filter(app => app.isDm);
         } else if (activeFilter === 'job') {
-            filtered = filtered.filter(app => !app.isDm);
+            const jobsList = filtered.filter(app => !app.isDm);
+            // Inject Company Group
+            filtered = [
+                {
+                    id: 'employer-company-group',
+                    status: 'active',
+                    createdAt: new Date().toISOString(),
+                    job: { title: 'Company Chat' },
+                    user: {
+                        id: 'company-group',
+                        name: 'Company Group (All Staff)',
+                        profileImageUrl: null,
+                        badgeType: 'none'
+                    },
+                    isDm: false,
+                    isGroup: true
+                },
+                ...jobsList
+            ];
+        } else if (activeFilter === 'reached_out') {
+            filtered = filtered.filter(app => app.isDm && app.status === 'reached_out');
         }
         if (searchQuery && !showSearchResults) {
             filtered = filtered.filter(app => {
@@ -549,6 +570,7 @@ function ChatContent() {
                     <FilterButton id="social" label="Social" icon={Users} count={socialUnread} />
                     <FilterButton id="groups" label="Groups" icon={MessagesSquare} />
                     <FilterButton id="job" label="Job" icon={Briefcase} count={jobUnread} />
+                    <FilterButton id="reached_out" label="Reached Out" icon={Send} />
                 </div>
 
                 {/* Conversation List */}
@@ -636,6 +658,11 @@ function ChatContent() {
                                     <Lock size={12} className={isDark ? 'text-neutral-600' : 'text-neutral-400'} />
                                     <span className={`text-[9px] font-bold ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>E2E</span>
                                 </div>
+                                {activeConversation.isGroup && (
+                                    <button onClick={() => setShowGroupSettings(true)} className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isDark ? 'bg-neutral-800 text-neutral-300 hover:text-white hover:bg-neutral-700' : 'bg-neutral-100 text-neutral-600 hover:text-black hover:bg-neutral-200'}`}>
+                                        <Users size={14} /> Manage Members
+                                    </button>
+                                )}
                                 <button onClick={() => setActiveConversation(null)} className={`hidden md:flex p-2 hover:bg-neutral-800 rounded-xl transition-all ${isDark ? 'text-slate-400' : 'text-neutral-400'}`}><X size={20} /></button>
                             </div>
                         </header>
@@ -723,6 +750,48 @@ function ChatContent() {
                     </>
                 )}
             </main>
+
+            {/* Manage Group Members Modal */}
+            {showGroupSettings && activeConversation?.isGroup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200'}`}>
+                        <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                            <h3 className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>Manage Company Group</h3>
+                            <button onClick={() => setShowGroupSettings(false)} className={`p-1.5 rounded-lg ${isDark ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'}`}><X size={18} /></button>
+                        </div>
+                        <div className="p-4 overflow-y-auto flex-1">
+                            <p className={`text-xs mb-4 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                The following professionals are currently in this group.
+                            </p>
+                            <div className="space-y-3">
+                                {applications.filter(app => !app.isDm).length === 0 ? (
+                                    <p className={`text-sm text-center py-4 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>No members found.</p>
+                                ) : (
+                                    applications.filter(app => !app.isDm).map(member => (
+                                        <div key={member.id} className={`flex items-center justify-between p-3 rounded-xl border ${isDark ? 'border-neutral-800 bg-neutral-800/50' : 'border-neutral-200 bg-neutral-50'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${isDark ? 'bg-neutral-700' : 'bg-neutral-200'}`}>
+                                                    {member.user?.profileImageUrl ? <img src={member.user.profileImageUrl} alt="" className="w-full h-full object-cover" /> : <UserCircle size={20} className={isDark ? 'text-neutral-400' : 'text-neutral-500'} />}
+                                                </div>
+                                                <div>
+                                                    <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{member.user?.name || 'Professional'}</p>
+                                                    <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>{member.job?.title || 'Employee'}</p>
+                                                </div>
+                                            </div>
+                                            <button className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${isDark ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20' : 'bg-red-50 text-red-600 hover:bg-red-100'}`}>
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                        <div className={`p-4 border-t flex items-center justify-between ${isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-neutral-50'}`}>
+                            <button className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all ${isDark ? 'bg-[#3B5998] text-white hover:bg-[#4A6BB5]' : 'bg-[#3B5998] text-white hover:bg-[#4A6BB5]'}`}><UserPlus size={14} /> Add Member</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

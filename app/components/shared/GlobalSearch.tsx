@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, X, Building2, UserCircle, Clock, TrendingUp } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Search, X, Building2, UserCircle, Clock, TrendingUp, Briefcase, Rss } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import VerificationBadge from '../VerificationBadge';
 
@@ -17,6 +17,20 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
     const [recentSearches, setRecentSearches] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+    const pathname = usePathname();
+
+    // Context-aware search scope based on current page
+    const getSearchContext = () => {
+        if (pathname.includes('/feed')) return { placeholder: 'Search posts and people...', scope: 'feed' };
+        if (pathname.includes('/find')) return { placeholder: 'Search jobs...', scope: 'jobs' };
+        if (pathname.includes('/connections')) return { placeholder: 'Search connections...', scope: 'connections' };
+        if (pathname.includes('/notifications')) return { placeholder: 'Search conversations...', scope: 'chats' };
+        if (pathname.includes('/roles-jobs') || pathname.includes('/jobs')) return { placeholder: 'Search your jobs...', scope: 'myjobs' };
+        if (pathname.includes('/career-ai') || pathname.includes('/recruiter-ai')) return { placeholder: 'Search AI conversations...', scope: 'ai' };
+        if (pathname.includes('/settings')) return { placeholder: 'Search settings...', scope: 'settings' };
+        return { placeholder: 'Search for people or companies...', scope: 'global' };
+    };
+    const searchContext = getSearchContext();
 
     // Fetch search history when modal opens
     useEffect(() => {
@@ -135,7 +149,7 @@ export default function GlobalSearch({ isMobile = false }: { isMobile?: boolean 
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search for people or companies..."
+                        placeholder={searchContext.placeholder}
                         className={`flex-1 bg-transparent text-lg focus:outline-none ${isDark ? 'text-white placeholder-neutral-600' : 'text-black placeholder-neutral-400'}`}
                     />
                     <button

@@ -84,7 +84,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         const encMessage = message ? encryptData(message) : null;
 
         // 5. Create Notification record (Existing logic)
-        await supabaseAdmin
+        const { error: insertError } = await supabaseAdmin
             .schema('employer')
             .from('job_invites') // Or whatever table stores this
             .insert({
@@ -94,6 +94,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 enc_message: encMessage,
                 status: 'pending'
             });
+
+        if (insertError) {
+            console.error('Job Invite Insert Error:', insertError);
+            return NextResponse.json({ error: 'Failed to record job invite' }, { status: 500 });
+        }
 
         return NextResponse.json({ success: true });
 

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Bot, GraduationCap, BarChart3 } from 'lucide-react';
+import { Bot, GraduationCap, BarChart3, Lock } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import AIChatTab from './tabs/AIChatTab';
 import InterviewPrepTab from './tabs/InterviewPrepTab';
@@ -92,7 +92,7 @@ export default function CareerAIGroupPage() {
                                             >
                                                 <div className="flex items-center gap-2">
                                                     <span>{model.name}</span>
-                                                    {isLocked && <span className="text-neutral-500">🔒</span>}
+                                                    {isLocked && <Lock size={14} className="text-neutral-500" />}
                                                 </div>
                                                 <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${model.badge === 'Standard' ? (isDark ? 'bg-[#3B5998]/20 text-[#6B8CD5]' : 'bg-[#3B5998]/10 text-[#3B5998]') : (isDark ? 'bg-yellow-500/10 text-yellow-500' : 'bg-yellow-50 text-yellow-600')}`}>
                                                     {model.badge}

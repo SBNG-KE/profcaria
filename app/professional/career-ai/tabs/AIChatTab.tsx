@@ -19,12 +19,12 @@ interface Session {
 }
 
 const SUGGESTED_PROMPTS = [
-    { label: '🔍 Analyze My Profile', text: 'Analyze my profile and tell me what strengths I have and what I should improve.' },
-    { label: '📈 Increase My Score', text: 'How can I increase my career score? Give me specific, actionable steps.' },
-    { label: '🎯 Skill Gap Analysis', text: 'Based on my target roles and current skills, what skill gaps do I have?' },
-    { label: '💼 Interview Prep', text: 'Help me prepare for an interview for my current target role. Give me likely questions and how to answer them.' },
-    { label: '💰 Salary Negotiation', text: 'Help me prepare for a salary negotiation. What should I ask for based on my profile?' },
-    { label: '🗺️ Career Roadmap', text: 'Create a 6-month career roadmap for me based on my profile and goals.' },
+    { label: 'Analyze My Profile', text: 'Analyze my profile and tell me what strengths I have and what I should improve.' },
+    { label: 'Increase My Score', text: 'How can I increase my career score? Give me specific, actionable steps.' },
+    { label: 'Skill Gap Analysis', text: 'Based on my target roles and current skills, what skill gaps do I have?' },
+    { label: 'Interview Prep', text: 'Help me prepare for an interview for my current target role. Give me likely questions and how to answer them.' },
+    { label: 'Salary Negotiation', text: 'Help me prepare for a salary negotiation. What should I ask for based on my profile?' },
+    { label: 'Career Roadmap', text: 'Create a 6-month career roadmap for me based on my profile and goals.' },
 ];
 
 export default function AIChatTab() {

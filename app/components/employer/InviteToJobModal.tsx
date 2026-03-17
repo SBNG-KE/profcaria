@@ -96,7 +96,7 @@ export default function InviteToJobModal({ isOpen, onClose, professionalId, prof
                 {/* Header */}
                 <div className={`px-6 py-4 flex items-center justify-between border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
                     <div className="flex items-center gap-2">
-                        <Sparkles size={20} className="text-amber-500" />
+                        <Sparkles size={20} className="text-black dark:text-white" />
                         <h2 className={`font-bold ${isDark ? 'text-white' : 'text-black'}`}>
                             Invite {professionalName}
                         </h2>
@@ -110,7 +110,7 @@ export default function InviteToJobModal({ isOpen, onClose, professionalId, prof
                 <div className="p-6">
                     {success ? (
                         <div className="flex flex-col items-center justify-center py-6 text-center animate-in zoom-in duration-300">
-                            <CheckCircle2 size={48} className="text-emerald-500 mb-4" />
+                            <CheckCircle2 size={48} className="text-blue-500 mb-4" />
                             <h3 className={`text-xl font-bold mb-2 ${isDark ? 'text-white' : 'text-black'}`}>Invite Sent!</h3>
                             <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                                 They can accept this invite to instantly apply to the role without a long form.
@@ -193,7 +193,7 @@ export default function InviteToJobModal({ isOpen, onClose, professionalId, prof
                         <button
                             onClick={handleInvite}
                             disabled={sending || jobs.length === 0 || !selectedJobId}
-                            className="px-5 py-2 rounded-lg text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center gap-2"
+                            className="px-5 py-2 rounded-lg text-sm font-bold bg-[#1e293b] text-white hover:bg-[#334155] dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all shadow-lg shadow-black/10 dark:shadow-none disabled:opacity-50 flex items-center gap-2"
                         >
                             {sending && <Loader2 size={16} className="animate-spin" />}
                             {sending ? 'Sending...' : 'Send Invite'}

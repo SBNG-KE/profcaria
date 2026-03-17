@@ -294,6 +294,12 @@ export default function ConnectionsPage() {
     const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const [activeDocument, setActiveDocument] = useState<string | null>(null);
     const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
+    const [hasSyncedContacts, setHasSyncedContacts] = useState(true);
+
+    useEffect(() => {
+        // Assume false initially unless marked true in localStorage for existing users without sync
+        setHasSyncedContacts(localStorage.getItem('contacts_synced') === 'true');
+    }, []);
 
     // Action State
     const [showActionModal, setShowActionModal] = useState(false);
@@ -392,6 +398,24 @@ export default function ConnectionsPage() {
     return (
         <div className="p-8 h-full flex flex-col pb-32">
             <div className="max-w-7xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+                {!hasSyncedContacts && (
+                    <div className="p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 border bg-neutral-100 dark:bg-white/5 border-neutral-200 dark:border-white/10">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 rounded-full bg-neutral-200 dark:bg-white/10 text-neutral-600 dark:text-white">
+                                <Users size={24} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-black dark:text-white">Find People You Know</h3>
+                                <p className="text-sm text-neutral-500 dark:text-neutral-400">Sync your contacts to discover connections already on Profcaria.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+                            <button onClick={() => setHasSyncedContacts(true)} className="flex-1 md:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-white/5">Not Now</button>
+                            <button onClick={() => { localStorage.setItem('contacts_synced', 'true'); setHasSyncedContacts(true); }} className="flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded-xl transition-all shadow-lg bg-[#3B5998] text-white hover:bg-[#4A6BB5] shadow-[#3B5998]/20">Sync Contacts</button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Header & Stats (Keep simplified/same as before) */}
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">

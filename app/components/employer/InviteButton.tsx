@@ -19,9 +19,9 @@ export default function InviteButton({ professionalId, professionalName }: Invit
         <>
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
+                className="h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-widest bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 transition-all shadow-sm"
             >
-                <Sparkles size={16} />
+                <Sparkles size={16} className="text-black dark:text-white" />
                 <span>Invite to Job</span>
             </button>
 

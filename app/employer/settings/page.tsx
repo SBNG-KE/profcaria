@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2, Star, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
+import { User, Save, Shield, MapPin, Globe, Activity, Lock, CheckCircle, CreditCard, LayoutDashboard, Loader2, Star, Users, TrendingUp, Eye, EyeOff, Smartphone, Mail, AlertTriangle } from 'lucide-react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { useCurrency } from '@/app/hooks/useCurrency';
 import { usePayment } from '@/app/hooks/usePayment';
@@ -82,6 +82,20 @@ function SettingsContent() {
 
 
     const [activityLogs, setActivityLogs] = useState<any[]>([]);
+
+    // 2FA State
+    const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+    const [show2FAModal, setShow2FAModal] = useState(false);
+    const [twoFACode, setTwoFACode] = useState('');
+    const [twoFAStep, setTwoFAStep] = useState<'confirm' | 'verify' | 'done'>('confirm');
+    const [twoFALoading, setTwoFALoading] = useState(false);
+    const [twoFAError, setTwoFAError] = useState('');
+
+    // Email Approval State
+    const [emailApprovalEnabled, setEmailApprovalEnabled] = useState(true);
+    const [pendingLogins, setPendingLogins] = useState<any[]>([
+        { id: '1', device: 'Chrome on Windows', location: 'Nairobi, Kenya', time: '2 hours ago', ip: '41.89.xx.xx' },
+    ]);
 
     // Billing State
     const [subscription, setSubscription] = useState<any | null>(null);
@@ -427,6 +441,7 @@ function SettingsContent() {
                     </div>
                 </div>
             ) : activeTab === 'security' ? (
+                <>
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
 
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
@@ -474,7 +489,135 @@ function SettingsContent() {
                             </button>
                         </div>
                     </div>
+
+                    {/* 2FA Section */}
+                    <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className="flex items-center justify-between">
+                            <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                                <Smartphone className={isDark ? 'text-white' : 'text-black'} size={24} /> Two-Factor Authentication
+                            </h3>
+                            <button
+                                onClick={() => { setShow2FAModal(true); setTwoFAStep('confirm'); setTwoFACode(''); setTwoFAError(''); }}
+                                className={`px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${
+                                    twoFAEnabled
+                                        ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20'
+                                        : isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'
+                                }`}
+                            >
+                                {twoFAEnabled ? 'Disable 2FA' : 'Enable 2FA'}
+                            </button>
+                        </div>
+                        <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                            {twoFAEnabled
+                                ? 'Two-factor authentication is enabled. A verification code is required for new device logins.'
+                                : 'Add an extra layer of security. When enabled, a verification code sent to your email is required for logins from new devices.'}
+                        </p>
+                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${twoFAEnabled ? (isDark ? 'border-neutral-600 bg-neutral-800/50' : 'border-neutral-300 bg-neutral-50') : (isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-neutral-50')}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${twoFAEnabled ? (isDark ? 'bg-white/10 text-white' : 'bg-black/10 text-black') : (isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-200 text-neutral-400')}`}>
+                                <Shield size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Status: {twoFAEnabled ? 'Active' : 'Inactive'}</p>
+                                <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                                    {twoFAEnabled ? 'Your account is protected with 2FA' : 'Enable 2FA for enhanced security'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Email Approval Section */}
+                    <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className="flex items-center justify-between">
+                            <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                                <Mail className={isDark ? 'text-white' : 'text-black'} size={24} /> Email Login Approval
+                            </h3>
+                            <button
+                                onClick={() => setEmailApprovalEnabled(!emailApprovalEnabled)}
+                                className={`relative w-12 h-6 rounded-full transition-all duration-300 ${emailApprovalEnabled ? (isDark ? 'bg-white' : 'bg-black') : isDark ? 'bg-neutral-700' : 'bg-neutral-300'}`}
+                            >
+                                <div className={`absolute top-0.5 w-5 h-5 rounded-full shadow-sm transition-all duration-300 ${emailApprovalEnabled ? `left-[26px] ${isDark ? 'bg-black' : 'bg-white'}` : `left-0.5 bg-white`}`} />
+                            </button>
+                        </div>
+                        <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                            Get email notifications for logins from unrecognized devices. Approve or deny directly from the email.
+                        </p>
+                        {pendingLogins.length > 0 && (
+                            <div className="space-y-3">
+                                <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Pending Approvals</h4>
+                                {pendingLogins.map(login => (
+                                    <div key={login.id} className={`flex items-center gap-4 p-4 rounded-xl border ${isDark ? 'border-amber-500/20 bg-amber-500/5' : 'border-amber-200 bg-amber-50'}`}>
+                                        <AlertTriangle size={20} className="text-amber-500 shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{login.device}</p>
+                                            <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>{login.location} · {login.time} · IP: {login.ip}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => setPendingLogins(prev => prev.filter(l => l.id !== login.id))} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}>Approve</button>
+                                            <button onClick={() => setPendingLogins(prev => prev.filter(l => l.id !== login.id))} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all">Deny</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
+
+                {/* 2FA Modal */}
+                {show2FAModal && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShow2FAModal(false)} />
+                        <div className={`relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border animate-in zoom-in-95 fade-in duration-200 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                            <div className={`px-6 py-4 border-b ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
+                                <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>
+                                    {twoFAEnabled ? 'Disable' : 'Enable'} Two-Factor Authentication
+                                </h3>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                {twoFAStep === 'confirm' && (
+                                    <>
+                                        <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                            {twoFAEnabled ? 'Are you sure you want to disable 2FA?' : 'We will send a verification code to your registered email address.'}
+                                        </p>
+                                        <div className="flex justify-end gap-3">
+                                            <button onClick={() => setShow2FAModal(false)} className={`px-4 py-2 rounded-lg text-sm font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Cancel</button>
+                                            <button onClick={() => { setTwoFAStep('verify'); setTwoFALoading(false); }} className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}>
+                                                {twoFAEnabled ? 'Continue' : 'Send Code'}
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                                {twoFAStep === 'verify' && (
+                                    <>
+                                        <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Enter the 6-digit code sent to your email:</p>
+                                        <input type="text" maxLength={6} value={twoFACode} onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, ''))} placeholder="000000"
+                                            className={`w-full text-center text-3xl font-mono tracking-[12px] p-4 rounded-xl border focus:outline-none focus:ring-2 ${isDark ? 'bg-neutral-800 border-neutral-700 text-white focus:ring-neutral-500/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
+                                        />
+                                        {twoFAError && <p className="text-sm text-red-500 text-center">{twoFAError}</p>}
+                                        <div className="flex justify-end gap-3">
+                                            <button onClick={() => setShow2FAModal(false)} className={`px-4 py-2 rounded-lg text-sm font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Cancel</button>
+                                            <button onClick={() => { if (twoFACode.length !== 6) { setTwoFAError('Enter a 6-digit code'); return; } setTwoFALoading(true); setTimeout(() => { setTwoFAEnabled(!twoFAEnabled); setTwoFAStep('done'); setTwoFALoading(false); }, 1500); }} disabled={twoFALoading || twoFACode.length !== 6}
+                                                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}>
+                                                {twoFALoading && <Loader2 size={14} className="animate-spin" />}
+                                                {twoFALoading ? 'Verifying...' : 'Verify'}
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                                {twoFAStep === 'done' && (
+                                    <div className="text-center py-4 space-y-3">
+                                        <CheckCircle size={48} className={`mx-auto ${isDark ? 'text-white' : 'text-black'}`} />
+                                        <h4 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{twoFAEnabled ? '2FA Enabled' : '2FA Disabled'}</h4>
+                                        <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                                            {twoFAEnabled ? 'Your account is now protected with two-factor authentication.' : 'Two-factor authentication has been disabled.'}
+                                        </p>
+                                        <button onClick={() => setShow2FAModal(false)} className={`px-5 py-2 rounded-lg text-sm font-bold ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}>Done</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+                </>
             ) : (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                     {/* Early Adopter Promotion Banner */}
