@@ -20,12 +20,12 @@ interface ChatSession {
 }
 
 const SUGGESTED_PROMPTS = [
-    { label: '📋 Screen Applicants', text: 'Screen all my current applicants and give me a summary of the best candidates for each role.' },
-    { label: '⭐ Starred Candidates', text: 'Analyze my starred candidates and tell me why each one stands out.' },
-    { label: '🎯 Interview Questions', text: 'Generate 5 targeted interview questions for my top applicants based on the job requirements.' },
-    { label: '🔍 Skills Gap', text: 'What skills are my current applicants missing compared to what my jobs require?' },
-    { label: '📊 Compare Candidates', text: 'Compare my top 3 applicants side by side in a table format.' },
-    { label: '📝 Draft Job Description', text: 'Help me write a compelling job description for my next hire based on the gaps in my current team.' },
+    { label: 'Screen Applicants', text: 'Screen all my current applicants and give me a summary of the best candidates for each role.' },
+    { label: 'Starred Candidates', text: 'Analyze my starred candidates and tell me why each one stands out.' },
+    { label: 'Interview Questions', text: 'Generate 5 targeted interview questions for my top applicants based on the job requirements.' },
+    { label: 'Skills Gap', text: 'What skills are my current applicants missing compared to what my jobs require?' },
+    { label: 'Compare Candidates', text: 'Compare my top 3 applicants side by side in a table format.' },
+    { label: 'Draft Job Description', text: 'Help me write a compelling job description for my next hire based on the gaps in my current team.' },
 ];
 
 export default function RecruiterAIPage() {
@@ -339,6 +339,10 @@ export default function RecruiterAIPage() {
                 >
                     {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
+            </div>
+            {/* AI Warning */}
+            <div className={`mt-2 text-center text-[10px] font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
+                Recruiter AI can make mistakes. Check important information before relying on it for hiring decisions.
             </div>
             </div>
         </div>

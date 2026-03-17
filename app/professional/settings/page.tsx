@@ -6,11 +6,32 @@ import { useTheme } from '@/app/context/ThemeContext';
 import { useRouter } from 'next/navigation';
 import { BADGE_TIERS } from '@/lib/billing-config';
 import VerificationBadge from '@/app/components/VerificationBadge';
+import { useCurrency } from '@/app/hooks/useCurrency';
 
 export default function ProfessionalSettingsPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const router = useRouter();
+
+    // Currency Hook
+    const { currency: currencyCode, symbol: currencySymbol, rate: exchangeRate, loading: currencyLoading } = useCurrency();
+
+    // Pricing Config
+    const pricing = {
+        plus: 9,
+        pro: 19
+    };
+
+    const formatCurrency = (usdAmount: number) => {
+        if (currencyLoading) return '...';
+        const converted = usdAmount * exchangeRate;
+        if (currencyCode === 'NGN') return `₦${converted.toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
+        if (currencyCode === 'KES') return `KSh ${converted.toLocaleString('en-KE', { maximumFractionDigits: 0 })}`;
+        if (currencyCode === 'ZAR') return `R ${converted.toLocaleString('en-ZA', { maximumFractionDigits: 0 })}`;
+        if (currencyCode === 'EUR') return `€${converted.toLocaleString('en-EU', { maximumFractionDigits: 2 })}`;
+        if (currencyCode === 'GBP') return `£${converted.toLocaleString('en-GB', { maximumFractionDigits: 2 })}`;
+        return `$${converted.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+    };
 
     // Tab State
     const [activeTab, setActiveTab] = useState<'billing' | 'security' | 'vault' | 'support' | 'badge'>('security');
@@ -125,9 +146,8 @@ export default function ProfessionalSettingsPage() {
                         <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
                             <Lock className="text-[#3B5998]" size={24} /> Change Password
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {[
-                                { label: 'Current Password', value: currentPassword, setter: setCurrentPassword, show: showCurrentPw, setShow: setShowCurrentPw },
                                 { label: 'New Password', value: newPassword, setter: setNewPassword, show: showNewPw, setShow: setShowNewPw },
                                 { label: 'Confirm Password', value: confirmNewPassword, setter: setConfirmNewPassword, show: showConfirmPw, setShow: setShowConfirmPw },
                             ].map((field) => (
@@ -144,36 +164,10 @@ export default function ProfessionalSettingsPage() {
                                 </div>
                             ))}
                         </div>
-                        <div className="flex justify-end">
-                            <button onClick={handlePasswordChange} disabled={isLoading || !currentPassword || !newPassword}
+                        <div className="flex justify-end mt-6">
+                            <button onClick={handlePasswordChange} disabled={isLoading || !newPassword || newPassword !== confirmNewPassword}
                                 className={`px-6 py-3 rounded-xl font-bold text-sm border transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200 border-white' : 'bg-black text-white hover:bg-neutral-800 border-black'}`}
                             >Update Password</button>
-                        </div>
-                    </div>
-
-                    <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                        <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                            <Activity className="text-[#3B5998]" size={24} /> Activity Log
-                        </h3>
-                        <div className={`overflow-hidden rounded-xl border ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                            <table className={`w-full text-left text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                <thead className={`font-bold uppercase text-xs tracking-wider ${isDark ? 'bg-neutral-900 text-neutral-200' : 'bg-neutral-50 text-neutral-700'}`}>
-                                    <tr><th className="p-4">Action</th><th className="p-4">Location</th><th className="p-4">IP</th><th className="p-4">Date</th></tr>
-                                </thead>
-                                <tbody className={`divide-y ${isDark ? 'divide-neutral-800' : 'divide-neutral-200'}`}>
-                                    {activityLogs.map((log, i) => (
-                                        <tr key={i} className={`transition-colors ${isDark ? 'hover:bg-neutral-800/30' : 'hover:bg-neutral-50'}`}>
-                                            <td className={`p-4 font-bold ${isDark ? 'text-white' : 'text-black'}`}>{log.action}</td>
-                                            <td className="p-4">{log.location_details}</td>
-                                            <td className="p-4 font-mono text-xs">{log.ip_address}</td>
-                                            <td className="p-4">{new Date(log.created_at).toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                    {activityLogs.length === 0 && (
-                                        <tr><td colSpan={4} className={`p-8 text-center italic ${isDark ? 'text-slate-600' : 'text-neutral-400'}`}>No activity logs found.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
@@ -182,16 +176,115 @@ export default function ProfessionalSettingsPage() {
             {/* ─── Billing Tab ─── */}
             {activeTab === 'billing' && (
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
-                    <div className={`border p-8 rounded-[32px] text-center space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
-                        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${isDark ? 'bg-white/10 text-white' : 'bg-black/5 text-black'}`}>
-                            <CreditCard size={32} />
+                    <div className={`border p-8 rounded-[32px] space-y-8 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
+                                    <CreditCard className={isDark ? "text-white" : "text-black"} size={24} /> Billing & Subscription
+                                </h3>
+                                <p className={`text-sm mt-1 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Simple, transparent pricing for premium career features.</p>
+                            </div>
                         </div>
-                        <h3 className={`text-2xl font-black ${isDark ? 'text-white' : 'text-black'}`}>Billing & Subscription</h3>
-                        <p className={`text-sm max-w-md mx-auto ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                            Profcaria is currently free for professionals. Premium features and subscription plans will be available soon.
-                        </p>
-                        <div className={`inline-block px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest ${isDark ? 'bg-[#3B5998]/10 text-[#6B8CD5] border border-[#3B5998]/20' : 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20'}`}>
-                            Free Plan — Active
+
+                        {exchangeRate > 1 && (
+                            <div className={`p-4 border rounded-xl flex items-center gap-3 text-xs ${isDark ? 'bg-neutral-900/50 border-neutral-800 text-neutral-400' : 'bg-neutral-50 border-neutral-200 text-neutral-600'}`}>
+                                <Activity size={16} />
+                                <span>Prices are converted from USD and may vary slightly depending on current economic exchange rates.</span>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Free Tier */}
+                            <div className={`border p-6 rounded-[24px] flex flex-col relative overflow-hidden group transition-all duration-300 ${isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm'}`}>
+                                <div className="space-y-4 flex-1">
+                                    <h4 className={`font-black text-xl ${isDark ? 'text-white' : 'text-neutral-900'}`}>Free</h4>
+                                    <div className={`text-3xl font-black ${isDark ? 'text-neutral-500' : 'text-neutral-700'}`}>
+                                        {formatCurrency(0)}
+                                        <span className={`text-xs font-bold ml-1 ${isDark ? 'text-neutral-600' : 'text-neutral-500'}`}>/mo</span>
+                                    </div>
+                                    <div className="pt-2 space-y-3">
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Basic Job Search
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Public Profile
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Limited Career AI
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={`mt-8 pt-6 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
+                                    <div className={`w-full py-3 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default ${isDark ? 'bg-[#3B5998]/20 text-[#6B8CD5]' : 'bg-[#3B5998]/10 text-[#3B5998]'}`}>
+                                        Current Plan
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Plus Tier */}
+                            <div className={`border-2 p-6 rounded-[24px] flex flex-col relative overflow-hidden group transition-all duration-300 transform md:-translate-y-2 shadow-lg ${isDark ? 'bg-gradient-to-b from-neutral-900 to-black border-[#3B5998]/50' : 'bg-white border-[#3B5998]'}`}>
+                                <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#3B5998] to-[#6B8CD5]`} />
+                                <div className="absolute top-4 right-4 bg-gradient-to-r from-[#3B5998] to-[#6B8CD5] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md">
+                                    Popular
+                                </div>
+                                <div className="space-y-4 flex-1 mt-2">
+                                    <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#3B5998]'}`}>
+                                        Plus
+                                    </h4>
+                                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-[#3B5998]'}`}>
+                                        {formatCurrency(pricing.plus)}
+                                        <span className={`text-xs font-bold ml-1 ${isDark ? 'text-neutral-400' : 'text-[#3B5998]/70'}`}>/mo</span>
+                                    </div>
+                                    <div className="pt-2 space-y-3">
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-white' : 'text-black'}`}>
+                                            <CheckCircle size={14} className="text-[#3B5998] shrink-0" /> Unlimited Career AI
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-white' : 'text-black'}`}>
+                                            <CheckCircle size={14} className="text-[#3B5998] shrink-0" /> Basic Interview Prep
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-white' : 'text-black'}`}>
+                                            <CheckCircle size={14} className="text-[#3B5998] shrink-0" /> Resume Analyzer
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={`mt-8 pt-6 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
+                                    <button className="w-full py-3 bg-[#3B5998] hover:bg-[#2A4170] text-white font-bold rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-md active:scale-95">
+                                        Upgrade to Plus
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Pro Tier */}
+                            <div className={`border p-6 rounded-[24px] flex flex-col relative overflow-hidden group transition-all duration-300 ${isDark ? 'bg-neutral-900 border-neutral-800 hover:border-neutral-700' : 'bg-white border-neutral-200 hover:border-neutral-300 shadow-sm'}`}>
+                                <div className="space-y-4 flex-1">
+                                    <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-neutral-900'}`}>
+                                        Pro
+                                    </h4>
+                                    <div className={`text-3xl font-black ${isDark ? 'text-neutral-300' : 'text-neutral-800'}`}>
+                                        {formatCurrency(pricing.pro)}
+                                        <span className={`text-xs font-bold ml-1 ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>/mo</span>
+                                    </div>
+                                    <div className="pt-2 space-y-3">
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Advanced AI Interview Coach
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Premium Profile Badge
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Salary Negotiation Intel
+                                        </div>
+                                        <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-neutral-300' : 'text-neutral-600'}`}>
+                                            <CheckCircle size={14} className="text-neutral-500 shrink-0" /> Priority Support
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={`mt-8 pt-6 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
+                                    <button className={`w-full py-3 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest transition-all active:scale-95 border ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-white border-neutral-700' : 'bg-white hover:bg-neutral-50 text-black border-neutral-200 shadow-sm'}`}>
+                                        Upgrade to Pro
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
