@@ -33,7 +33,7 @@ export default function HangingDocsCard({
     const sections = [
         {
             title: "About Profcaria",
-            content: "Profcaria is an AI-powered Career Operating System designed to transform how professionals and employers connect. Unlike traditional job boards or social networks cluttered with noise, Profcaria provides a focused, intelligent ecosystem where every interaction is meaningful. Built from the ground up with privacy, security, and verified evidence at its core — no ads, no data selling, just career growth."
+            content: "Profcaria is an all-in-one professional and social ecosystem designed to transform how professionals and employers connect. Unlike traditional job boards or purely professional networks, Profcaria combines chatting with friends, curated social feeds, verified skill matching, and AI mentorship. Built from the ground up with privacy, security, and verified evidence at its core — no ads, no data selling, just career growth and genuine social connections."
         },
         {
             title: "Messaging & Social",

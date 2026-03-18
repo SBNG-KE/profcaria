@@ -235,19 +235,18 @@ export default function LandingPageClient() {
                             </div>
 
                             {/* DETAILS TEXT (Tiny, under card) */}
-                            <div className="text-center max-w-sm space-y-2 opacity-80 mt-4">
+                            <div className="text-center max-w-sm xl:max-w-md space-y-2 opacity-80 mt-4">
                                 <h2 className={`
-                                    text-xs font-bold uppercase tracking-widest
+                                    text-[10px] md:text-xs font-black uppercase tracking-widest leading-snug
                                     ${isDark ? 'text-neutral-300' : 'text-[#4A5568]'}
                                 `}>
-                                    The AI-Powered Career Operating System.
+                                    The All-in-One Professional & Social Ecosystem.
                                 </h2>
                                 <p className={`
-                                    text-[10px] uppercase tracking-widest font-pixel mt-4 leading-relaxed
+                                    text-[9px] md:text-[10px] uppercase tracking-widest font-pixel mt-4 leading-relaxed
                                     ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}
                                 `}>
-                                    Don't just upload a CV.<br/>
-                                    Prove your skills with Verified Evidence directly in your profile.
+                                    Connect with friends, follow the feed, prove your skills with Verified Evidence, and let intelligent AI tools sharpen your next career move—all in one place.
                                 </p>
                             </div>
                         </div>

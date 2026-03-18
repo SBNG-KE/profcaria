@@ -29,23 +29,23 @@ export const metadata: Metadata = {
   },
 
   title: {
-    default: "Profcaria | AI Professional Network & Messenger",
+    default: "Profcaria",
     template: "%s | Profcaria AI",
   },
 
   description:
-    "Profcaria is the ultimate AI-powered professional messenger and network. Connect securely, chat instantly, and let autonomous AI agents handle your talent matching in one encrypted ecosystem.",
+    "Profcaria is the all-in-one professional and social ecosystem. Connect with friends, chat instantly, prove your skills with Verified Evidence, and let intelligent AI agents handle your career growth.",
 
   keywords: [
-    "AI Professional Network",
-    "Professional Messenger",
+    "AI Professional Ecosystem",
+    "Professional Social Network",
+    "Career & Social Hub",
     "Encrypted Professional Chat",
-    "AI Career Matching",
-    "Autonomous Career Agent",
-    "LinkedIn Alternative",
+    "AI Career Mentorship",
+    "Verified Skills & Evidence",
+    "Messaging with Friends",
     "Professional Networking",
-    "AI Talent Search",
-    "Secure Professional Messaging",
+    "Interactive Social Feeds",
   ],
 
   openGraph: {
@@ -53,24 +53,24 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://www.profcaria.com",
     siteName: "Profcaria AI",
-    title: "Profcaria | AI Professional Network & Messenger",
+    title: "Profcaria",
     description:
-      "The next-generation professional network. Instant secure messaging, verified identity, and extreme AI-powered talent matching.",
+      "The all-in-one professional and social ecosystem. Connect with friends, prove your skills with Verified Evidence, and let AI tools sharpen your career edge.",
     images: [
       {
         url: "https://www.profcaria.com/profcaria.png",
         width: 1200,
         height: 630,
-        alt: "Profcaria AI Professional Network",
+        alt: "Profcaria",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Profcaria | AI Professional Network & Messenger",
+    title: "Profcaria",
     description:
-      "Chat, connect, and grow. The secure AI-powered professional messenger that intelligently matches you to your next career opportunity.",
+      "Connect with friends, follow the feed, and grow. The all-in-one social and professional ecosystem that intelligently guides your next career move.",
     creator: "@profcaria",
   },
 
@@ -110,7 +110,7 @@ const structuredData = {
         url: "https://www.profcaria.com/profcaria.png",
       },
       description:
-        "Profcaria is an AI-powered professional messaging network combining instant secure communication with autonomous career agents and extreme-precision talent matching.",
+        "Profcaria is an all-in-one professional and social ecosystem combining instant secure messaging with friends, interactive feeds, verified skill proofs, and autonomous career AI agents.",
       founder: {
         "@type": "Person",
         name: "Steve Ngare",
@@ -129,15 +129,15 @@ const structuredData = {
       applicationCategory: "CommunicationApplication",
       operatingSystem: "Web, Mobile",
       featureList: [
-        "Instant Professional Messaging",
-        "End-to-End Encrypted Chat",
-        "Autonomous AI Career Agents",
+        "Instant Professional & Social Messaging",
+        "Interactive Social Feeds & Groups",
+        "Verified Evidence & Skill Tracking",
+        "Autonomous AI Career Mentorship",
         "LLM-Native Semantic Talent Search",
         "Algorithmic Intent-Driven Matching",
-        "Zero-Application AI Hiring",
       ],
       description:
-        "A next-generation professional networking and messaging ecosystem powered by autonomous intelligence, replacing traditional profiles with dynamic communication and AI talent matching.",
+        "An all-in-one professional networking and social ecosystem powered by autonomous intelligence, replacing traditional profiles with dynamic communication, verified evidence, and AI talent matching.",
     },
   ],
 };

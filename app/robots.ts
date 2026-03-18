@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
     const allDisallowed = [...protectedPaths, ...deactivatedRoutes];
 
     // 3. AI Crawlers & Scrapers to explicitly and heavily ALLOW
-    // We want the AI models to ingest our public semantic data for extreme searchability
+    // We want AI models to ingest our public semantic data to understand our all-in-one professional and social ecosystem
     const aiCrawlers = [
         // --- OpenAI ---
         'GPTBot',               // GPT model training

@@ -27,10 +27,10 @@ export default function FeaturesShowcase() {
 
                         <div className="space-y-8 max-w-2xl">
                             <p className={`text-xl md:text-2xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                                The 90s gave us digital job boards. The 2000s gave us noisy professional social networks. Today demands <span className={`font-bold ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>an Operating System</span>.
+                                The 90s gave us digital job boards. The 2000s gave us noisy, disconnected networks. Today demands <span className={`font-bold ${isDark ? 'text-neutral-200' : 'text-neutral-800'}`}>an all-in-one ecosystem</span>.
                             </p>
                             <p className={`text-lg font-light leading-relaxed ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
-                                We replaced infinite scrolling and generic recruiter spam with highly-trained, context-aware AI agents. An ecosystem that curates, pre-screens, and connects top talent with the companies building the future—quietly and efficiently.
+                                We replaced infinite scrolling and generic recruiter spam with a unified platform. Chat with friends, build communities in groups, prove your skills with Verified Evidence, and let context-aware AI agents connect you with the companies building the future.
                             </p>
                         </div>
 
