@@ -29,22 +29,22 @@ export const metadata: Metadata = {
   },
 
   title: {
-    default: "Profcaria",
-    template: "%s | Profcaria AI",
+    default: "Profcaria Nexus",
+    template: "%s | Profcaria Intelligence",
   },
 
   description:
-    "Profcaria is the all-in-one professional and social ecosystem. Connect with friends, chat instantly, prove your skills with Verified Evidence, and let intelligent AI agents handle your career growth.",
+    "Profcaria is the ultimate all-in-one social and professional ecosystem. Connect with friends, build communities, prove your skills with Verified Evidence, and let autonomous AI agents seamlessly guide your growth across the Profcaria Nexus.",
 
   keywords: [
-    "AI Professional Ecosystem",
-    "Professional Social Network",
-    "Career & Social Hub",
-    "Encrypted Professional Chat",
-    "AI Career Mentorship",
-    "Verified Skills & Evidence",
-    "Messaging with Friends",
-    "Professional Networking",
+    "Profcaria Nexus",
+    "Profcaria Intelligence",
+    "Social Ecosystem",
+    "Professional Network",
+    "Encrypted Chat",
+    "Autonomous AI Agents",
+    "Verified Evidence",
+    "Community Building",
     "Interactive Social Feeds",
   ],
 
@@ -52,16 +52,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://www.profcaria.com",
-    siteName: "Profcaria AI",
-    title: "Profcaria",
+    siteName: "Profcaria Nexus",
+    title: "Profcaria Nexus",
     description:
-      "The all-in-one professional and social ecosystem. Connect with friends, prove your skills with Verified Evidence, and let AI tools sharpen your career edge.",
+      "The complete social and professional ecosystem powered by autonomous intelligence. Replacing traditional networks with dynamic interactions, verified proof, and AI-driven connections.",
     images: [
       {
         url: "https://www.profcaria.com/profcaria.png",
         width: 1200,
         height: 630,
-        alt: "Profcaria",
+        alt: "Profcaria Nexus",
       },
     ],
   },
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Profcaria",
     description:
-      "Connect with friends, follow the feed, and grow. The all-in-one social and professional ecosystem that intelligently guides your next career move.",
+      "Connect with friends, build communities, and evolve. The all-in-one social and professional ecosystem powered by autonomous intelligence.",
     creator: "@profcaria",
   },
 
@@ -124,17 +124,17 @@ const structuredData = {
     {
       "@type": "WebApplication",
       "@id": "https://www.profcaria.com/#application",
-      name: "Profcaria AI Network",
+      name: "Profcaria Nexus",
       url: "https://www.profcaria.com",
       applicationCategory: "CommunicationApplication",
       operatingSystem: "Web, Mobile",
       featureList: [
-        "Instant Professional & Social Messaging",
-        "Interactive Social Feeds & Groups",
-        "Verified Evidence & Skill Tracking",
-        "Autonomous AI Career Mentorship",
-        "LLM-Native Semantic Talent Search",
-        "Algorithmic Intent-Driven Matching",
+        "Instant Social & Professional Messaging",
+        "Interactive Communities & Groups",
+        "Cryptographically Verified Evidence",
+        "Autonomous AI Sub-Agents",
+        "Semantic Network Building",
+        "Algorithmic Intent-Driven Connections",
       ],
       description:
         "An all-in-one professional networking and social ecosystem powered by autonomous intelligence, replacing traditional profiles with dynamic communication, verified evidence, and AI talent matching.",

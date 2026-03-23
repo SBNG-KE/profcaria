@@ -4,7 +4,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://www.profcaria.com'
 
     return [
-        // Main pages
+        // Profcaria Nexus Hub
         {
             url: baseUrl,
             lastModified: new Date(),
