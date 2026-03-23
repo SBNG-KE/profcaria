@@ -434,7 +434,9 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                     mx-auto
                     rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] custom-scrollbar
                     transform transition-all duration-500 origin-top
-                    ${isDark ? 'bg-black border border-neutral-800' : 'bg-white border text-black'}
+                    ${isDark
+                        ? 'glass-card border-neutral-700/50 glow-white'
+                        : 'glass-card-light border-neutral-200'}
                 `}
                 style={{
                     boxShadow: isDark ? '0 20px 60px -10px rgba(0,0,0,0.8)' : '0 20px 60px -10px rgba(0,0,0,0.2)',
@@ -465,7 +467,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                             <div className={`inline-flex items-center justify-center p-3 rounded-full ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>
                                 <ShieldCheck size={28} className={isDark ? 'text-white' : 'text-black'} />
                             </div>
-                            <h2 className="text-2xl font-black tracking-tight">
+                            <h2 className="text-2xl md:text-3xl font-black tracking-tight font-pixel uppercase">
                                 {mode === 'setup' ? 'Secure Your Account' : 'Verify Identity'}
                             </h2>
                             <p className={`text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
@@ -598,7 +600,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                 {status && (status.hasPasskey || status.hasTotp || status.hasEmail) && (
                                     <button
                                         onClick={() => setMode('verify')}
-                                        className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
+                                        className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all font-pixel ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
                                     >
                                         Proceed to Verify
                                     </button>
@@ -627,7 +629,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                 <button
                                     onClick={verifyTotpSetup}
                                     disabled={totpCode.length !== 6 || loading}
-                                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isDark ? 'bg-white text-black' : 'bg-black text-white'} disabled:opacity-50`}
+                                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all font-pixel ${isDark ? 'bg-white text-black' : 'bg-black text-white'} disabled:opacity-50`}
                                 >
                                     {loading ? 'Verifying...' : 'Verify & Enable'}
                                 </button>
@@ -728,7 +730,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                                 <button
                                     onClick={verifyTotpMethod}
                                     disabled={totpCode.length !== 6 || verifying}
-                                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isDark ? 'bg-white text-black' : 'bg-black text-white'} disabled:opacity-50`}
+                                    className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all font-pixel ${isDark ? 'bg-white text-black' : 'bg-black text-white'} disabled:opacity-50`}
                                 >
                                     {verifying ? 'Verifying...' : 'Verify'}
                                 </button>

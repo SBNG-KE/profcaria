@@ -472,7 +472,7 @@ export default function HangingAuthCard({
 
                     {/* TITLE & TOGGLE */}
                     <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-black tracking-tight">
+                        <h2 className="text-2xl md:text-3xl font-black tracking-tight font-pixel uppercase">
                             {globalMode === 'login' ? 'Welcome Back' : 'Join the Network'}
                         </h2>
                         <div className="flex justify-center gap-2 text-xs font-medium opacity-60">
@@ -710,7 +710,7 @@ export default function HangingAuthCard({
                             onClick={() => globalMode === 'login' ? handleLogin(activeTab) : handleSignup(activeTab)}
                             disabled={loading || (activeTab === 'professional' ? !isProfessionalValid : !isEmployerValid)}
                             className={`
-                                w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all
+                                w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all font-pixel
                                 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}
                                 ${loading ? 'opacity-50 cursor-wait' : ''}
                                 ${(activeTab === 'professional' ? !isProfessionalValid : !isEmployerValid) ? 'opacity-50 cursor-not-allowed' : ''}

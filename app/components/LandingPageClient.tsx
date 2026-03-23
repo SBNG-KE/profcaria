@@ -17,11 +17,12 @@ import ThemeToggle from '@/app/components/ThemeToggle';
 import HangingAuthCard from './HangingAuthCard';
 import HangingContactCard from './HangingContactCard';
 import HangingDocsCard from './HangingDocsCard';
-import BusinessSolutions from '@/app/components/landing/BusinessSolutions';
-import FeaturesShowcase from '@/app/components/landing/FeaturesShowcase';
-import PlatformTour from '@/app/components/landing/PlatformTour';
-import VerifiedEvidenceShowcase from '@/app/components/landing/VerifiedEvidenceShowcase';
-import JourneyAnimation from '@/app/components/landing/JourneyAnimation';
+import HeroSection from '@/app/components/landing/HeroSection';
+import MessagingSection from '@/app/components/landing/MessagingSection';
+import JobsSection from '@/app/components/landing/JobsSection';
+import CareerSection from '@/app/components/landing/CareerSection';
+import AIHouseSection from '@/app/components/landing/AIHouseSection';
+import FooterActionSection from '@/app/components/landing/FooterActionSection';
 
 // Main Landing Page Client Component
 export default function LandingPageClient() {
@@ -133,7 +134,7 @@ export default function LandingPageClient() {
     const isDark = theme === 'dark';
 
     return (
-        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-[#3B5998]/30 ${isDark ? 'bg-[#0A0F1A] text-white' : 'bg-white text-[#0A0F1A]'}`}>
+        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-[#3B5998]/30 ${isDark ? 'bg-[#0A0F1A] text-white' : 'bg-white text-black'}`}>
 
             {/* AUTH CARD COMPONENT */}
             <HangingAuthCard
@@ -155,18 +156,8 @@ export default function LandingPageClient() {
                 onClose={() => setIsDocsOpen(false)}
             />
 
-            {/* LEFT HEADER BUTTONS */}
-            <div className="hidden lg:flex fixed top-8 left-8 z-50 items-center gap-8">
-                <button
-                    onClick={() => setIsDocsOpen(true)}
-                    className={`
-            text-sm font-black uppercase tracking-[0.2em] relative group
-            ${isDark ? 'text-white' : 'text-[#0A0F1A]'}
-          `}
-                >
-                    Docs
-                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-[#1B2A4A]'}`} />
-                </button>
+            {/* LEFT HEADER BUTTONS - Removed Docs Button from UI */}
+            <div className="hidden lg:flex fixed top-8 left-8 z-[60] items-center gap-8">
             </div>
 
             {/* HEADER BUTTONS */}
@@ -185,172 +176,24 @@ export default function LandingPageClient() {
                 </button>
             </div>
 
-            {/* ============================================
-          HERO SECTION - Minimalist & Bold
-          Shows peek of next section at bottom
-          ============================================ */}
-            {/* ============================================
-          HERO SECTION - Minimalist & Bold
-          Shows peek of next section at bottom
-          ============================================ */}
-            <section className="relative min-h-auto lg:min-h-[75vh] flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10 py-12 md:py-0">
-                {/* Full Width Background Animation REMOVED */}
-
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-24 w-full relative z-10">
-
-                    {/* LEFT: CARD & DETAILS */}
-                    <div className="flex-1 flex flex-col items-center lg:items-start gap-12 w-full lg:w-auto">
-
-                        {/* PROFCARIA CARD - Stone/Rigid Shape */}
-                        <div className="flex flex-col items-center gap-6">
-                            <div className={`
-                                relative p-2 inline-block animate-float-slow shadow-2xl scale-[0.85] md:scale-90 origin-center
-                                before:absolute before:inset-0 before:bg-neutral-500/20 before:blur-xl before:-z-10
-                            `}>
-                                <div
-                                    className={`
-                                        border-[4px] md:border-[6px] p-6 md:p-10 flex flex-col items-center gap-4
-                                        ${isDark ? 'text-white bg-[#111827] border-[#1B2A4A]/50' : 'text-[#0A0F1A] bg-white border-[#1B2A4A]/30'}
-                                    `}
-                                    style={{
-                                        // Complex jagged "ruins" polygon
-                                        clipPath: "polygon(2% 0%, 15% 4%, 25% 1%, 40% 3%, 55% 0%, 75% 4%, 85% 1%, 98% 2%, 100% 15%, 96% 25%, 99% 40%, 97% 60%, 100% 75%, 96% 90%, 95% 100%, 80% 96%, 60% 99%, 40% 97%, 20% 99%, 5% 98%, 0% 90%, 3% 75%, 0% 60%, 2% 40%, 0% 20%, 3% 10%)",
-                                        borderRadius: "0px"
-                                    }}
-                                >
-                                    <Image
-                                        src="/profcaria.png"
-                                        alt="Profcaria Logo"
-                                        width={100}
-                                        height={100}
-                                        className="rounded-full w-16 h-16 md:w-24 md:h-24 shadow-lg shrink-0"
-                                    />
-                                    <h1 className={`
-                                    text-4xl md:text-6xl font-black tracking-tighter leading-none
-                                    font-pixel uppercase text-center
-                                    `}>
-                                        #PROFCARIA
-                                    </h1>
-                                </div>
-                            </div>
-
-                            {/* DETAILS TEXT (Tiny, under card) */}
-                            <div className="text-center max-w-sm xl:max-w-md space-y-2 opacity-80 mt-4">
-                                <h2 className={`
-                                    text-[10px] md:text-xs font-black uppercase tracking-widest leading-snug
-                                    ${isDark ? 'text-neutral-300' : 'text-[#4A5568]'}
-                                `}>
-                                    The All-in-One Professional & Social Ecosystem.
-                                </h2>
-                                <p className={`
-                                    text-[9px] md:text-[10px] uppercase tracking-widest font-pixel mt-4 leading-relaxed
-                                    ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}
-                                `}>
-                                    Connect with friends, follow the feed, prove your skills with Verified Evidence, and let intelligent AI tools sharpen your next career move—all in one place.
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {/* RIGHT: SPACER (Animation is now background) */}
-                    {/* RIGHT: SPACER (Animation is now background) */}
-                    <div className="w-full lg:flex-1 relative -mt-12 lg:mt-0 -mb-8 lg:mb-0 flex justify-center lg:justify-center lg:items-center h-[220px] lg:h-[600px] overflow-hidden">
-                        {/* Mobile: Scale down significantly (0.5). Desktop: Full scale (1). */}
-                        {/* We force the inner container to be 600x600 so SVG renders perfectly, then shrink it. */}
-                        <div className="w-[600px] h-[600px] origin-top scale-[0.5] lg:scale-100 lg:origin-center">
-                            <JourneyAnimation />
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
-            {/* ============================================
-          BUSINESS SOLUTIONS (Restored)
-          ============================================ */}
-            <BusinessSolutions onStart={() => setIsAuthOpen(true)} />
-
-            {/* ============================================
-          FEATURES SHOWCASE (Restored)
-          ============================================ */}
-            <FeaturesShowcase />
-
-            {/* ============================================
-          PLATFORM TOUR (New)
-          ============================================ */}
-            {/* <PlatformTour /> Commented out to prioritize skill evidence over platform tour */}
-
-            {/* ============================================
-          VERIFIED EVIDENCE (Replaces Platform Tour)
-          ============================================ */}
-            <VerifiedEvidenceShowcase />
-
-
-
-            {/* CALL TO ACTION - Join Profcaria Today */}
-            <section className={`py-32 px-6 text-center relative z-10 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
-                <div className="max-w-4xl mx-auto space-y-12">
-                    <h2 className={`text-5xl md:text-8xl font-black tracking-tighter leading-none ${isDark ? 'text-white' : 'text-[#0A0F1A]'}`}>
-                        JOIN <br /> PROFCARIA <br /> TODAY
-                    </h2>
-                    <p className={`text-2xl md:text-3xl font-light ${isDark ? 'text-neutral-400' : 'text-[#4A5568]'}`}>
-                        Connect. Apply. Hire. Securely.
-                    </p>
-                    <button
-                        onClick={() => setIsAuthOpen(true)}
-                        className={`
-                            px-12 py-6 rounded-none text-lg font-black uppercase tracking-[0.2em]
-                            border-2 transition-all duration-300 hover:scale-105
-                            ${isDark
-                                ? 'border-[#3B5998] text-[#3B5998] hover:bg-[#3B5998] hover:text-white shadow-[0_0_30px_rgba(59,89,152,0.3)]'
-                                : 'border-[#1B2A4A] text-[#1B2A4A] hover:bg-[#1B2A4A] hover:text-white'}
-                        `}
-                    >
-                        Get Started
-                    </button>
-                </div>
-            </section>
+            {/* NEW FUTURISTIC SECTIONS */}
+            <HeroSection />
+            <MessagingSection />
+            <JobsSection />
+            <CareerSection />
+            <AIHouseSection />
+            <FooterActionSection onJoin={() => setIsAuthOpen(true)} onContact={() => setIsContactOpen(true)} />
 
 
             {/* ============================================
           FLOATING FOOTER ELEMENT (No Container)
           ============================================ */}
-            <div className="fixed bottom-8 left-0 right-0 z-40 px-6 md:px-8 flex justify-between items-end pointer-events-none">
-                <div className="pointer-events-auto">
-                    {/* Copyright Restored */}
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-[#1B2A4A]/50' : 'text-neutral-300'}`}>
-                        &copy; {new Date().getFullYear()} Profcaria
-                    </p>
-                </div>
-
-                <div className="pointer-events-auto">
-                    <button
-                        onClick={() => setIsContactOpen(true)}
-                        className={`
-              text-xs font-bold uppercase tracking-[0.2em] relative group
-              ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-[#0A0F1A]'}
-              transition-colors
-            `}
-                    >
-                        Contact Us
-                    </button>
-                </div>
-            </div>
+            {/* Removed the fixed footer with Copyright and Contact Us as it is moved into FooterActionSection */}
 
             {/* ============================================
           MOBILE/TABLET NAV PILL (Fixed)
           ============================================ */}
-            <div className={`
-                lg:hidden fixed bottom-20 md:bottom-24 left-1/2 -translate-x-1/2 z-50 
-                flex justify-center items-center gap-6 px-6 py-3 rounded-full
-                backdrop-blur-xl border shadow-2xl
-                ${isDark ? 'bg-[#0A0F1A]/80 border-[#1B2A4A]/50 text-white' : 'bg-white/80 border-neutral-200/50 text-[#0A0F1A]'}
-            `}>
-                <button onClick={() => setIsDocsOpen(true)} className="text-[11px] font-black uppercase tracking-widest hover:text-[#3B5998] transition-colors pointer-events-auto">
-                    Docs
-                </button>
-            </div>
+            {/* Nav Pill Docs removed */}
 
             <Analytics />
         </div>

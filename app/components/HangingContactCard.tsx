@@ -133,7 +133,7 @@ export default function HangingContactCard({
 
                     {/* TITLE */}
                     <div className="text-center space-y-2">
-                        <h2 className="text-2xl font-black tracking-tight">
+                        <h2 className="text-2xl font-black tracking-tight font-pixel uppercase">
                             Contact Us
                         </h2>
                         <p className={`text-xs font-medium ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
@@ -178,7 +178,7 @@ export default function HangingContactCard({
                         onClick={handleSubmit}
                         disabled={isSubmitting || !email || !message}
                         className={`
-                            w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2
+                            w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all flex items-center justify-center gap-2 font-pixel
                             ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}
                             ${(isSubmitting || !email || !message) ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
