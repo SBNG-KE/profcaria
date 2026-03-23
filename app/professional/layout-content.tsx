@@ -13,6 +13,7 @@ import AlertsSidebar from '@/app/components/professional/AlertsSidebar';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import GlobalSearch from '@/app/components/shared/GlobalSearch';
 import TermsOfService from '@/app/components/TermsOfService';
+import { PixelBackground } from '@/app/components/PixelBackground';
 
 export default function ProfessionalLayoutContent({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,12 +60,21 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
         checkTos();
     }, [router]);
 
-    // Initialize sidebar state based on screen size
+    // Initialize sidebar state based on screen size and localStorage
     useEffect(() => {
-        if (window.innerWidth >= 768) {
+        const saved = localStorage.getItem('profcaria_sidebar_open');
+        if (saved !== null) {
+            setSidebarOpen(saved === 'true');
+        } else if (window.innerWidth >= 768) {
             setSidebarOpen(true);
         }
     }, []);
+
+    const toggleSidebar = () => {
+        const newVal = !sidebarOpen;
+        setSidebarOpen(newVal);
+        localStorage.setItem('profcaria_sidebar_open', String(newVal));
+    };
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -205,10 +215,10 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 else if (!comingSoon) router.push(href);
             }}
             className={`
-                w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group relative
+                w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group relative z-10
                 ${activeTab === id
-                    ? (isDark ? 'bg-white/10 text-white' : 'bg-black/10 text-black')
-                    : (isDark ? 'text-neutral-400 hover:bg-white/5 hover:text-white' : 'text-neutral-500 hover:bg-black/5 hover:text-black')}
+                    ? (isDark ? 'bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/20' : 'bg-black/5 text-black shadow-sm ring-1 ring-black/10')
+                    : (isDark ? 'text-neutral-400 hover:bg-white/5 hover:text-white border border-transparent' : 'text-neutral-500 hover:bg-black/5 hover:text-black border border-transparent')}
                 ${!sidebarOpen ? 'justify-center' : ''}
                 ${comingSoon ? 'cursor-default opacity-70' : ''}
             `}
@@ -242,7 +252,8 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     }
 
     return (
-        <div className={`professional-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 ${isDark ? 'bg-black text-neutral-200 selection:bg-white/30' : 'bg-neutral-50 text-neutral-900 selection:bg-black/20'}`}>
+        <div className={`professional-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 relative ${isDark ? 'bg-[#0A0F1A] text-neutral-200 selection:bg-white/30' : 'bg-white text-neutral-900 selection:bg-black/20'}`}>
+            <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none opacity-40" />
 
             {/* SIDEBAR BACKDROP (Mobile) - disabled, now using bottom taskbar */}
 
@@ -250,12 +261,12 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
             <aside className={`
                 hidden md:flex md:relative inset-y-0 left-0 h-full
                 flex-col border-r transition-all duration-300 ease-in-out z-[100]
-                ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}
-                ${sidebarOpen ? 'w-56' : 'md:w-16'}
+                ${isDark ? 'bg-black/20 backdrop-blur-md border-neutral-800' : 'bg-white/50 backdrop-blur-md border-neutral-200'}
+                ${sidebarOpen ? 'w-52' : 'md:w-16'}
             `}>
                 {/* Toggle Button */}
                 <button
-                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    onClick={toggleSidebar}
                     className={`absolute -right-3 top-6 z-40 rounded-full p-1 hidden md:flex border ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white' : 'bg-white border-neutral-200 text-neutral-400 hover:text-black shadow-sm'}`}
                 >
                     {sidebarOpen ? <ChevronLeft size={12} /> : <ChevronRight size={12} />}
