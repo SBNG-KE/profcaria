@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
 import { useTheme } from '@/app/context/ThemeContext';
 
 export default function FooterActionSection({ onJoin, onContact }: { onJoin: () => void, onContact: () => void }) {
@@ -14,9 +14,14 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
         offset: ["start start", "end end"]
     });
 
-    // The design draws immediately as you scroll into the section
+    // The design draws smoothly as you scroll into the section
     const arcLength = useTransform(scrollYProgress, [0.0, 0.5], [0, 1]);
-    const buttonPointerEvents = useTransform(scrollYProgress, (latest) => latest < 0.5 ? "none" : "auto");
+
+    // Track when the design is fully formed (0.5) to enable pointer events safely natively
+    const [isInteractable, setIsInteractable] = useState(false);
+    useMotionValueEvent(scrollYProgress, "change", (latest) => {
+        setIsInteractable(latest >= 0.5);
+    });
 
     // White for dark mode (blending with other sections), dark navy for light mode
     const primaryColor = isDark ? '#FFFFFF' : '#0A0F1A';
@@ -70,10 +75,9 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                 </div>
 
                 {/* THE "KOMME I GANG" Internal Trigger locked perfectly in the center */}
-                <motion.button
+                <button
                     onClick={onJoin}
-                    style={{ opacity: arcLength, pointerEvents: buttonPointerEvents }}
-                    className="group absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[224px] h-[224px] rounded-full flex items-center justify-center cursor-pointer outline-none"
+                    className={`group absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[224px] h-[224px] rounded-full flex items-center justify-center cursor-pointer outline-none transition-opacity duration-1000 ease-in-out ${isInteractable ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 >
                     <div 
                         className="absolute inset-0 rounded-full transition-opacity duration-300 opacity-[0.02] group-hover:opacity-[0.08] group-active:opacity-[0.15]"
@@ -90,7 +94,7 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                     >
                         Komme <br/> i gang
                     </span>
-                </motion.button>
+                </button>
 
             </div>
 
