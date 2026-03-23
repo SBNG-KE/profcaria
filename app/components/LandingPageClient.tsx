@@ -2,14 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import {
-    Users,
-    Globe,
-    Building2,
-    Handshake
-} from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next";
 import Lenis from 'lenis';
 import { useTheme } from '@/app/context/ThemeContext';
@@ -129,7 +121,7 @@ export default function LandingPageClient() {
             }
         };
         checkSession();
-    }, [router]);
+    }, [router, searchParams]);
 
     const isDark = theme === 'dark';
 
