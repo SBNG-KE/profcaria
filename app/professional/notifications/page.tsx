@@ -726,8 +726,9 @@ function ChatContent() {
 
     // ─── RENDER ──────────────────────────────────────────────
     return (
-        <div className={`flex h-full w-full overflow-hidden font-sans ${isDark ? 'bg-black text-neutral-200' : 'bg-neutral-50 text-neutral-800'}`}>
-            {/* ── LEFT SIDEBAR ── */}
+        <div className="h-full w-full p-1.5 md:p-3 pb-24 md:pb-3">
+            <div className={`flex h-full w-full overflow-hidden font-sans rounded-3xl border shadow-2xl ${isDark ? 'bg-[#0A0F1A]/90 backdrop-blur-2xl border-neutral-800/50 text-neutral-200' : 'bg-white/90 backdrop-blur-2xl border-neutral-200/50 text-neutral-800'}`}>
+                {/* ── LEFT SIDEBAR ── */}
             <aside className={`md:w-[380px] h-full border-r flex-col backdrop-blur-xl shrink-0 w-full ${isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-white'} ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 {/* Header */}
                 <header className={`p-5 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-neutral-800 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
@@ -1134,6 +1135,7 @@ function ChatContent() {
                     </>
                 )}
             </main>
+            </div>
         </div>
     );
 }

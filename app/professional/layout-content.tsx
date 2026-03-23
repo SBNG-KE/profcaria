@@ -307,7 +307,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                     <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Menu</div>
                     <NavItem id="notifications" href="/professional/notifications" icon={MessageSquare} label="Chats" />
                     <NavItem id="feed" href="/professional/feed" icon={Rss} label="Feed" onClick={handleFeedClick} />
-                    <NavItem id="home" href="/professional/profile" icon={Home} label="Profile" />
+                    <NavItem id="profile" href="/professional/profile" icon={Home} label="Profile" />
                     <NavItem id="career-ai" href="/professional/career-ai" icon={Bot} label="Career AI" />
                     <NavItem id="find" href="/professional/find" icon={Search} label="Find Work" />
                     <NavItem id="roles-jobs" href="/professional/roles-jobs" icon={Briefcase} label="My Jobs" />
@@ -429,7 +429,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
                 {[
                     { id: 'notifications', href: '/professional/notifications', icon: MessageSquare, label: 'Chats' },
                     { id: 'feed', href: '/professional/feed', icon: Rss, label: 'Feed' },
-                    { id: 'home', href: '/professional/profile', icon: Home, label: 'Profile' },
+                    { id: 'profile', href: '/professional/profile', icon: Home, label: 'Profile' },
                     { id: 'career-ai', href: '/professional/career-ai', icon: Bot, label: 'AI' },
                     { id: 'find', href: '/professional/find', icon: Search, label: 'Find' },
                     { id: 'roles-jobs', href: '/professional/roles-jobs', icon: Briefcase, label: 'Jobs' },
