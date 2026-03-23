@@ -98,10 +98,10 @@ export default function AIHouseSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: 2 + (idx * 0.2) }}
-                            className={`p-10 rounded-3xl border backdrop-blur-xl transition-all
+                            className={`p-10 rounded-3xl border transition-all hover:-translate-y-2
                                 ${isDark 
-                                    ? 'bg-[#111827]/50 border-neutral-800 hover:border-white hover:shadow-[0_0_30px_rgba(255,255,255,0.1)]' 
-                                    : 'bg-white border-neutral-200 hover:border-[#1B2A4A] hover:shadow-2xl'
+                                    ? 'bg-[#111827]/80 border-[#1B2A4A] hover:bg-[#111827] hover:shadow-[0_20px_40px_rgba(59,89,152,0.15)]' 
+                                    : 'bg-neutral-50 border-neutral-200 hover:shadow-2xl hover:bg-white'
                                 }
                             `}
                         >

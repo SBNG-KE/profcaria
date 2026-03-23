@@ -14,12 +14,12 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
         offset: ["start start", "end end"]
     });
 
-    // Compressed animation so it finishes early and stays visibly locked at 1.0!
-    const lineScale = useTransform(scrollYProgress, [0.0, 0.3], [0, 1]);
-    const arcLength = useTransform(scrollYProgress, [0.3, 0.5], [0, 1]);
-    const circleOpacity = useTransform(scrollYProgress, [0.5, 0.6], [0, 1]);
+    // The design draws immediately as you scroll into the section
+    const arcLength = useTransform(scrollYProgress, [0.0, 0.5], [0, 1]);
+    const buttonPointerEvents = useTransform(scrollYProgress, (latest) => latest < 0.5 ? "none" : "auto");
 
-    const goldColor = '#FFD700';
+    // White for dark mode (blending with other sections), dark navy for light mode
+    const primaryColor = isDark ? '#FFFFFF' : '#0A0F1A';
 
     return (
         <section ref={containerRef} className={`relative h-[110vh] flex flex-col justify-end items-center pb-8 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'} overflow-hidden`}>
@@ -40,43 +40,31 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                         {/* Top Left S-Curve: 224px radius restored */}
                         <motion.path 
                             d="M 1100 300 C 1200 300, 1168 188, 1280 188" 
-                            fill="none" stroke={goldColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "drop-shadow(0 0 3px rgba(0,0,0,0.5))"}
+                            fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
+                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
                         />
                         {/* Bottom Left S-Curve */}
                         <motion.path 
                             d="M 1100 300 C 1200 300, 1168 412, 1280 412" 
-                            fill="none" stroke={goldColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "drop-shadow(0 0 3px rgba(0,0,0,0.5))"}
+                            fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
+                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
-                        />
-                        <motion.path 
-                            d="M 0 300 L 1100 300" 
-                            fill="none" stroke={goldColor} strokeWidth="4" strokeLinecap="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "drop-shadow(0 0 3px rgba(0,0,0,0.5))"}
-                            style={{ pathLength: lineScale }} 
                         />
                         
                         {/* Top Right S-Curve */}
                         <motion.path 
                             d="M 1460 300 C 1360 300, 1392 188, 1280 188" 
-                            fill="none" stroke={goldColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "drop-shadow(0 0 3px rgba(0,0,0,0.5))"}
+                            fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
+                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
                         />
                         {/* Bottom Right S-Curve */}
                         <motion.path 
                             d="M 1460 300 C 1360 300, 1392 412, 1280 412" 
-                            fill="none" stroke={goldColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "drop-shadow(0 0 3px rgba(0,0,0,0.5))"}
+                            fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
+                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
-                        />
-                        <motion.path 
-                            d="M 2560 300 L 1460 300" 
-                            fill="none" stroke={goldColor} strokeWidth="4" strokeLinecap="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "drop-shadow(0 0 3px rgba(0,0,0,0.5))"}
-                            style={{ pathLength: lineScale }} 
                         />
                     </svg>
                 </div>
@@ -84,23 +72,19 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                 {/* THE "KOMME I GANG" Internal Trigger locked perfectly in the center */}
                 <motion.button
                     onClick={onJoin}
-                    style={{ opacity: circleOpacity }}
+                    style={{ opacity: arcLength, pointerEvents: buttonPointerEvents }}
                     className="group absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[224px] h-[224px] rounded-full flex items-center justify-center cursor-pointer outline-none"
                 >
                     <div 
-                        className="absolute inset-2 rounded-full border border-dashed animate-spin-slow transition-transform duration-200 group-active:scale-[0.85]" 
-                        style={{ borderColor: goldColor, opacity: 0.4 }}
-                    />
-                    <div 
                         className="absolute inset-0 rounded-full transition-opacity duration-300 opacity-[0.02] group-hover:opacity-[0.08] group-active:opacity-[0.15]"
-                        style={{ backgroundColor: goldColor }}
+                        style={{ backgroundColor: primaryColor }}
                     />
 
-                    {/* Text with soft dark shadowing in light mode for guaranteed visibility */}
+                    {/* Text with high contrast */}
                     <span 
                         style={{ 
-                            color: goldColor, 
-                            textShadow: isDark ? '0 0 12px rgba(255,215,0,0.8)' : '0 0 10px rgba(0,0,0,0.6), 0 0 20px rgba(0,0,0,0.4), 0 0 3px rgba(0,0,0,0.9)' 
+                            color: primaryColor, 
+                            textShadow: isDark ? '0 0 12px rgba(255,215,0,0.8)' : 'none' 
                         }}
                         className="font-black uppercase tracking-widest font-pixel text-lg md:text-xl text-center leading-snug transition-transform duration-200 group-active:scale-[0.80]"
                     >
