@@ -10,7 +10,7 @@ export default function AIHouseSection() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`relative flex flex-col items-center pt-8 pb-0 px-4 sm:px-8 md:px-24 z-10 overflow-hidden ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
+        <section className={`relative flex flex-col items-center pt-8 pb-0 px-4 sm:px-8 md:px-24 z-10 overflow-hidden`}>
             
             {/* INCOMING "NERVES" / STREAMS */}
             <div className="absolute top-0 left-0 right-0 h-16 flex justify-center opacity-70">

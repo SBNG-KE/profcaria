@@ -9,7 +9,7 @@ export default function JobsSection() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
+        <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10`}>
             <div className="max-w-7xl mx-auto w-full text-center space-y-20">
                 
                 <motion.div

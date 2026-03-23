@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import { useTheme } from '../context/ThemeContext';
+import { PixelBackground } from './PixelBackground';
 
 type SecurityStatus = {
     hasPasskey: boolean;
@@ -435,8 +436,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                     rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] custom-scrollbar
                     transform transition-all duration-500 origin-top
                     ${isDark
-                        ? 'glass-card border-neutral-700/50 glow-white'
-                        : 'glass-card-light border-neutral-200'}
+                        ? 'bg-[#0A0F1A] shadow-2xl border-neutral-700/50 glow-white'
+                        : 'bg-white shadow-2xl border-neutral-200'}
                 `}
                 style={{
                     boxShadow: isDark ? '0 20px 60px -10px rgba(0,0,0,0.8)' : '0 20px 60px -10px rgba(0,0,0,0.2)',
@@ -444,6 +445,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                 }}
                 data-lenis-prevent="true"
             >
+                <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none" />
+
                 {/* CLOSE BUTTON */}
                 <button
                     onClick={onClose}
@@ -454,14 +457,14 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
 
                 {/* Loading State */}
                 {loading && (
-                    <div className="flex items-center justify-center py-20">
+                    <div className="relative z-10 flex items-center justify-center py-20">
                         <Loader2 className={`animate-spin ${isDark ? 'text-white' : 'text-black'}`} size={32} />
                     </div>
                 )}
 
                 {/* Content */}
                 {!loading && (
-                    <div className="space-y-6">
+                    <div className="relative z-10 space-y-6">
                         {/* Header with Mode Tabs */}
                         <div className="text-center space-y-4">
                             <div className={`inline-flex items-center justify-center p-3 rounded-full ${isDark ? 'bg-neutral-900' : 'bg-neutral-100'}`}>

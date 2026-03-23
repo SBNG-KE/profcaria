@@ -27,7 +27,7 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
     const primaryColor = isDark ? '#FFFFFF' : '#0A0F1A';
 
     return (
-        <section ref={containerRef} className={`relative -mt-16 md:-mt-24 h-[110vh] flex flex-col justify-end items-center pb-8 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'} overflow-hidden`}>
+        <section ref={containerRef} className={`relative -mt-16 md:-mt-24 h-[110vh] flex flex-col justify-end items-center pb-8 overflow-hidden`}>
             
             {/* The Sticky Container - Standardized centering */}
             <div className="sticky top-0 h-screen w-full relative overflow-hidden flex items-center justify-center">

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { PixelBackground } from './PixelBackground';
 
 // --- MODERN INPUT COMPONENT (Reused for consistency) ---
 interface ModernInputProps {
@@ -121,15 +122,17 @@ export default function HangingContactCard({
                     rounded-[2rem] p-6 md:p-8 overflow-hidden
                     transform transition-all duration-500 origin-top
                     ${isDark
-                        ? 'glass-card border-neutral-700/50 glow-white'
-                        : 'glass-card-light border-neutral-200'}
+                        ? 'bg-[#0A0F1A] shadow-2xl border-neutral-700/50 glow-white'
+                        : 'bg-white shadow-2xl border-neutral-200'}
                 `}
                 style={{
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
             >
+                <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none" />
+
                 {/* --- CONTENT --- */}
-                <div className="flex flex-col gap-6">
+                <div className="relative z-10 flex flex-col gap-6">
 
                     {/* TITLE */}
                     <div className="text-center space-y-2">

@@ -16,6 +16,8 @@ import CareerSection from '@/app/components/landing/CareerSection';
 import AIHouseSection from '@/app/components/landing/AIHouseSection';
 import FooterActionSection from '@/app/components/landing/FooterActionSection';
 
+import { PixelBackground } from './PixelBackground';
+
 // Main Landing Page Client Component
 export default function LandingPageClient() {
     const router = useRouter();
@@ -126,7 +128,10 @@ export default function LandingPageClient() {
     const isDark = theme === 'dark';
 
     return (
-        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-[#3B5998]/30 ${isDark ? 'bg-[#0A0F1A] text-white' : 'bg-white text-black'}`}>
+        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-[#3B5998]/30 relative ${isDark ? 'bg-[#0A0F1A] text-white' : 'bg-white text-black'}`}>
+            
+            {/* SPY/CYBORG DENSE PIXEL BACKGROUND */}
+            <PixelBackground isDark={isDark} className="fixed inset-0 z-0 pointer-events-none" />
 
             {/* AUTH CARD COMPONENT */}
             <HangingAuthCard

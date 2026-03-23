@@ -11,7 +11,7 @@ export default function HeroSection() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`relative min-h-[100vh] flex flex-col justify-center items-center text-center overflow-hidden ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
+        <section className={`relative min-h-[100vh] flex flex-col justify-center items-center text-center overflow-hidden`}>
             
             {/* Title Formation */}
             <div className="z-10 mt-12 mb-8">

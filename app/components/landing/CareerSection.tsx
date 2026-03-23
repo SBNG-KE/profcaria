@@ -9,7 +9,7 @@ export default function CareerSection() {
     const isDark = theme === 'dark';
 
     return (
-        <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
+        <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10`}>
             <div className={`absolute inset-0 z-0 ${isDark ? 'bg-[radial-gradient(circle_at_center,rgba(59,89,152,0.05)_0%,transparent_70%)]' : 'bg-[radial-gradient(circle_at_center,rgba(27,42,74,0.03)_0%,transparent_70%)]'}`} />
             
             <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col lg:flex-row items-center gap-20">

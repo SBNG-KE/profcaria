@@ -27,7 +27,7 @@ export default function MessagingSection() {
     }, []);
 
     return (
-        <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 overflow-hidden z-10 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
+        <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 overflow-hidden z-10`}>
             <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 
                 {/* Text Content */}
@@ -42,7 +42,7 @@ export default function MessagingSection() {
                             Absolute <br /> <span className={`font-pixel text-4xl md:text-6xl ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}`}>Separation.</span>
                         </h2>
                         <p className={`text-lg md:text-xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                            Why mix your professional network with your personal WhatsApp or Signal chats? Profcaria provides a dedicated, highly secure messaging ecosystem specifically tailored for professionals, recruiters, and companies. Keep your social life entirely separate, while operating with absolute privacy and unparalleled speed in your professional communications. You stay in control.
+                            Why mix your professional network with your personal social chat apps? Profcaria provides a dedicated, highly secure messaging ecosystem specifically tailored for professionals, recruiters, and companies. Keep your social life entirely separate, while operating with absolute privacy and unparalleled speed in your professional communications. You stay in control.
                         </p>
                     </motion.div>
 
@@ -108,7 +108,7 @@ export default function MessagingSection() {
                                     {/* The Payload */}
                                     <div className={`w-full p-4 rounded-xl border text-center font-mono text-sm break-all
                                         ${[1, 2].includes(activeIndex) ? "tracking-widest" : "text-lg"}
-                                        ${isDark ? 'bg-black border-neutral-800 text-green-400' : 'bg-neutral-50 border-neutral-200 text-[#1B2A4A]'}
+                                        bg-[#0A0F1A] border-[#1B2A4A]/50 text-green-400 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]
                                     `}>
                                         {messageStates[activeIndex].content}
                                     </div>

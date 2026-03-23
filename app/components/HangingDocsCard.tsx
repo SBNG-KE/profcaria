@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { PixelBackground } from './PixelBackground';
 import { X, MessageCircle, Briefcase, Users, Bot, Shield, Link2, Zap, Globe, Share2, Search, Bell, BarChart3, GraduationCap, Building2, Handshake } from 'lucide-react';
 
 export default function HangingDocsCard({
@@ -132,17 +133,19 @@ export default function HangingDocsCard({
                     {/* CARD */}
                     <div
                         className={`
-                            relative w-full max-w-[900px] mx-auto
+                            relative w-full max-w-[900px] mx-auto overflow-hidden
                             rounded-[2rem] p-6 md:p-10 pb-10 md:pb-14
                             transform transition-all duration-500 origin-top
                             ${isDark
-                                ? 'glass-card border-[#1B2A4A]/50 text-white'
-                                : 'glass-card-light border-[#1B2A4A]/20 text-[#0A0F1A]'}
+                                ? 'bg-[#0A0F1A] shadow-2xl border-[#1B2A4A]/50 text-white'
+                                : 'bg-white shadow-2xl border-[#1B2A4A]/20 text-[#0A0F1A]'}
                         `}
                         style={{
                             animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                         }}
                     >
+                        <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none" />
+
                         {/* Close Button */}
                         <button
                             onClick={onClose}
@@ -155,7 +158,7 @@ export default function HangingDocsCard({
                         </button>
 
                         {/* Content */}
-                        <div className="mt-4 md:mt-6 space-y-16">
+                        <div className="relative z-10 mt-4 md:mt-6 space-y-16">
                             {/* Header */}
                             <div className="text-center">
                                 <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-4">

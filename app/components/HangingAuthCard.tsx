@@ -64,6 +64,7 @@ const COUNTRY_CODES = [
 ];
 import { useTheme } from '../context/ThemeContext';
 import HangingSecurityCard from './HangingSecurityCard';
+import { PixelBackground } from './PixelBackground';
 
 // Supabase client for OAuth only
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -440,17 +441,18 @@ export default function HangingAuthCard({
                     rounded-[2rem] p-6 md:p-8 pb-10 md:pb-12
                     transform transition-all duration-500 origin-top
                     ${isDark
-                        ? 'glass-card border-neutral-700/50 glow-white'
-                        : 'glass-card-light border-neutral-200'}
+                        ? 'bg-[#0A0F1A] shadow-2xl border-neutral-700/50 glow-white'
+                        : 'bg-white shadow-2xl border-neutral-200'}
                 `}
                 style={{
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
                 data-lenis-prevent="true"
             >
+                <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none" />
 
                 {/* --- CONTENT --- */}
-                <div className="flex flex-col gap-6">
+                <div className="relative z-10 flex flex-col gap-6">
 
                     {/* TABS (Prof/Emp) */}
                     <div className="flex p-1 rounded-full bg-neutral-100/10 border border-neutral-500/20">
