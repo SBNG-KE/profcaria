@@ -3,6 +3,23 @@ import path from "path";
 
 const nextConfig: NextConfig = {
 
+  // Ondwira is one application. Keep legacy URLs only as entry redirects while
+  // their underlying data workflows are migrated into the unified shell.
+  async redirects() {
+    return [
+      {
+        source: '/professional/:path*',
+        destination: '/social',
+        permanent: false,
+      },
+      {
+        source: '/employer/:path*',
+        destination: '/work',
+        permanent: false,
+      },
+    ];
+  },
+
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
