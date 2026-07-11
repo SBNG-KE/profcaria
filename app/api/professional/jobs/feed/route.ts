@@ -32,7 +32,7 @@ export async function GET(req: Request) {
         }
 
         // 1. Fetch User Preferences
-        const { data: prefs } = await supabaseAdmin
+        const { data: storedPrefs } = await supabaseAdmin
             .schema('professional')
             .from('preferences')
             .select('*')
@@ -136,10 +136,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Failed to fetch jobs' }, { status: 500 });
         }
 
-        if (!prefs) {
-            // No prefs? Return chronological
-            return NextResponse.json({ jobs });
-        }
+        const prefs = storedPrefs || {};
 
         console.log('[MetaFeed] Starting scoring for', jobs?.length || 0, 'jobs. Prefs:', JSON.stringify(prefs));
 

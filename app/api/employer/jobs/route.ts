@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, decryptData } from '@/lib/security';
 import { checkLimit, incrementUsage } from '@/lib/billing';
 import { generateEmbedding } from '@/lib/embeddings';
+import { validateJobCategory } from '@/lib/ai-moderation';
 
 export const runtime = 'nodejs';
 
@@ -65,6 +66,11 @@ export async function POST(req: Request) {
 
         if (!title || !description || !formSchema) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        const moderation = await validateJobCategory(String(title).trim());
+        if (!moderation.valid) {
+            return NextResponse.json({ error: moderation.reason || 'Use a valid professional job title.' }, { status: 422 });
         }
 
         // Check Restricted Location Access

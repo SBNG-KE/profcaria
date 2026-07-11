@@ -15,6 +15,7 @@ export async function GET() {
     .select('conversation_id, role, membership_status, archived_at, locked_at, muted_until, conversations!inner(id, kind, title, created_at, updated_at, disappearing_seconds)')
     .eq('user_id', session.uid)
     .eq('membership_status', 'accepted')
+    .eq('conversations.context', 'social')
     .order('joined_at', { ascending: false });
 
   if (error) {
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
   const { data: conversation, error: conversationError } = await supabaseAdmin
     .schema('ondwira')
     .from('conversations')
-    .insert({ kind: input.kind, title: input.kind === 'group' ? input.title?.trim().slice(0, 120) || null : null, created_by: session.uid })
+    .insert({ kind: input.kind, context: 'social', title: input.kind === 'group' ? input.title?.trim().slice(0, 120) || null : null, created_by: session.uid })
     .select('id, kind, title, created_at')
     .single();
 

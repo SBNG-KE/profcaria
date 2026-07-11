@@ -15,8 +15,15 @@ const LABELS = [
 ];
 
 export async function validateJobCategory(text: string): Promise<{ valid: boolean; reason?: string }> {
+    const normalized = text.trim().replace(/\s+/g, ' ');
+    if (normalized.length < 2 || normalized.length > 120) return { valid: false, reason: 'Use a job title between 2 and 120 characters.' };
+    if (/https?:\/\/|www\.|@\w+|\b(?:whatsapp|telegram)\b/i.test(normalized)) return { valid: false, reason: 'Job titles cannot contain links or contact handles.' };
+    if (/(.)\1{4,}/i.test(normalized) || (normalized.match(/[a-z]/gi)?.length || 0) / normalized.length < 0.45) return { valid: false, reason: 'Use a clear professional job title.' };
+    if (/\b(?:idiot|stupid|sexy|nude|porn|scam|fraud|terrorist|slave)\b/i.test(normalized)) return { valid: false, reason: 'This job title contains inappropriate or unsafe language.' };
+    if (normalized.split(' ').length > 14) return { valid: false, reason: 'Use the role name as the title and put details in the description.' };
+
     if (!HF_TOKEN) {
-        console.warn('HF_TOKEN missing, skipping AI moderation (failing open for dev)');
+        console.warn('HF_TOKEN missing; deterministic job-title moderation remains active');
         return { valid: true };
     }
 
@@ -44,7 +51,7 @@ export async function validateJobCategory(text: string): Promise<{ valid: boolea
         }
         // Handle Parallel Arrays format (legacy or different models)
         else {
-            const result = Array.isArray(response) ? response[0] : response as any;
+            const result = (Array.isArray(response) ? response[0] : response) as { labels?: string[]; scores?: number[] };
             topLabel = result?.labels?.[0];
             topScore = result?.scores?.[0];
         }

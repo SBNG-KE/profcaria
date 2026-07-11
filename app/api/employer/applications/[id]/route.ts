@@ -274,6 +274,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const jobTitle = jobData?.enc_title ? decryptData(jobData.enc_title) : 'Position';
         const companyName = company?.enc_company_name ? decryptData(company.enc_company_name) : 'Employer';
 
+        if (status === 'employed' || status === 'terminated') {
+            try {
+                const { syncOndwiraEmployment } = await import('@/lib/ondwira-work');
+                await syncOndwiraEmployment({
+                    applicationId,
+                    companyId: companyId as string,
+                    companyName: companyName || 'Organisation',
+                    professionalId: application.user_id,
+                    jobId: application.job_id,
+                    jobTitle: jobTitle || 'Position',
+                    status,
+                });
+            } catch (syncError) {
+                console.error('[ONDWIRA] Employment sync failed', syncError);
+                return NextResponse.json({ error: 'Employment changed, but Ondwira workspace sync failed. Please retry.' }, { status: 500 });
+            }
+        }
+
         // Send email notifications for key status changes
         if (professionalEmail) {
             const { sendShortlistedNotification, sendEmployedNotification, sendKYCRequiredNotification } = await import('@/lib/email');
