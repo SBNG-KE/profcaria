@@ -1,17 +1,17 @@
 {
-    "name": "Profcaria",
-    "short_name": "Profcaria",
-    "description": "Private Privacy-First Career Network",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#020617",
-    "theme_color": "#3b82f6",
-    "icons": [
-        {
-            "src": "/profcaria.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ]
+  "name": "Ondwira",
+  "short_name": "Ondwira",
+  "description": "Social communication and work, together.",
+  "start_url": "/social",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#183d31",
+  "icons": [
+    {
+      "src": "/ondwira.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }

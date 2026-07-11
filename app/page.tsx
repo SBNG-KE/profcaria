@@ -1,43 +1,20 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { jwtVerify } from 'jose';
 import LandingPageClient from '@/app/components/LandingPageClient';
 
-// Server Component (Default)
-export default async function LandingPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ mode?: string }>;
-}) {
-  // Server-side auth check for instant redirect
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('profcaria_session')?.value;
+    const token = (await cookies()).get('profcaria_session')?.value;
     const { mode } = await searchParams;
-
-    if (token && !mode) {
-      const secretKey = new TextEncoder().encode(process.env.JWT_SECRET);
-      const { payload } = await jwtVerify(token, secretKey);
-
-      if (payload?.schema === 'professional') {
-        redirect('/professional/notifications');
-      } else if (payload?.schema === 'employer') {
-        redirect('/employer/feed');
-      }
+    if (token && !mode && process.env.JWT_SECRET) {
+      const { payload } = await jwtVerify(token, new TextEncoder().encode(process.env.JWT_SECRET));
+      if (payload?.uid) redirect('/social');
     }
-  } catch (e) {
-    // If token is invalid or verification fails, just render the landing page
-    // No action needed, flow continues below
+  } catch {
+    // Invalid or expired sessions see the public landing page.
   }
 
-  return (
-    <Suspense fallback={
-      <div className="h-screen w-full flex items-center justify-center bg-black text-white">
-        <div className="animate-spin w-8 h-8 border-2 border-t-transparent border-white rounded-full" />
-      </div>
-    }>
-      <LandingPageClient />
-    </Suspense>
-  );
+  return <Suspense fallback={<div className="grid h-screen place-items-center bg-[#183d31] text-white">Opening Ondwira…</div>}><LandingPageClient /></Suspense>;
 }
