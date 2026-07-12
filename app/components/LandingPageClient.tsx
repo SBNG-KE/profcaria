@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Analytics } from "@vercel/analytics/next";
 import Lenis from 'lenis';
-import { useTheme } from '@/app/context/ThemeContext';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import HangingAuthCard from './HangingAuthCard';
 import HangingContactCard from './HangingContactCard';
@@ -16,18 +15,15 @@ import CareerSection from '@/app/components/landing/CareerSection';
 import AIHouseSection from '@/app/components/landing/AIHouseSection';
 import FooterActionSection from '@/app/components/landing/FooterActionSection';
 
-import { PixelBackground } from './PixelBackground';
 
 // Main Landing Page Client Component
 export default function LandingPageClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { theme, toggleTheme } = useTheme();
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isContactOpen, setIsContactOpen] = useState(false);
     const [isDocsOpen, setIsDocsOpen] = useState(false);
     const [initialAuthScreen, setInitialAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>('auth');
-    const [initialAuthTab, setInitialAuthTab] = useState<'professional' | 'employer'>('professional');
 
     const lenisRef = useRef<Lenis | null>(null);
 
@@ -76,9 +72,8 @@ export default function LandingPageClient() {
     useEffect(() => {
         const authParam = searchParams.get('auth'); // 'login' or 'signup'
         const modeParam = searchParams.get('mode'); // 'setup', 'verify'
-        const roleParam = searchParams.get('role'); // 'professional', 'employer'
 
-        if (modeParam === 'verify') {
+        const syncAuthState = () => { if (modeParam === 'verify') {
             setInitialAuthScreen('security_verify');
             setIsAuthOpen(true);
         } else if (modeParam === 'setup') {
@@ -86,10 +81,9 @@ export default function LandingPageClient() {
             setIsAuthOpen(true);
         } else if (authParam) {
             setInitialAuthScreen('auth');
-            if (roleParam === 'employer') setInitialAuthTab('employer');
-            else setInitialAuthTab('professional');
             setIsAuthOpen(true);
-        }
+        } };
+        syncAuthState();
     }, [searchParams]);
 
     useEffect(() => {
@@ -112,33 +106,24 @@ export default function LandingPageClient() {
                         }
                     }
 
-                    if (data.schema === 'professional') {
-                        router.push('/professional/notifications');
-                    } else if (data.schema === 'employer') {
-                        router.push('/employer/feed');
-                    }
+                    if (data.uid) router.push('/social');
                 }
-            } catch (e) {
+            } catch {
                 // Not authenticated
             }
         };
         checkSession();
     }, [router, searchParams]);
 
-    const isDark = theme === 'dark';
-
     return (
-        <div className={`min-h-screen font-sans overflow-x-hidden selection:bg-[#3B5998]/30 relative ${isDark ? 'bg-[#0A0F1A] text-white' : 'bg-white text-black'}`}>
+        <div className="relative min-h-screen overflow-x-hidden bg-[var(--bg-primary)] font-sans text-[var(--text-primary)] selection:bg-[var(--accent-soft)]">
             
-            {/* SPY/CYBORG DENSE PIXEL BACKGROUND */}
-            <PixelBackground isDark={isDark} className="fixed inset-0 z-0 pointer-events-none" />
-
             {/* AUTH CARD COMPONENT */}
             <HangingAuthCard
                 isOpen={isAuthOpen}
                 onClose={() => setIsAuthOpen(false)}
                 initialScreen={initialAuthScreen}
-                initialTab={initialAuthTab}
+                initialTab="professional"
             />
 
             {/* CONTACT CARD COMPONENT */}
@@ -159,17 +144,17 @@ export default function LandingPageClient() {
 
             {/* HEADER BUTTONS */}
             <div className="fixed top-8 right-8 z-50 flex items-center gap-8">
-                <ThemeToggle theme={theme} onToggle={toggleTheme} />
+                <ThemeToggle />
 
                 <button
                     onClick={() => setIsAuthOpen(!isAuthOpen)}
                     className={`
             text-sm font-black uppercase tracking-[0.2em] relative group
-            ${isDark ? 'text-white' : 'text-[#0A0F1A]'}
+            text-[var(--text-primary)]
           `}
                 >
                     Join Now
-                    <span className={`block absolute -bottom-1 left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full ${isDark ? 'bg-white' : 'bg-[#1B2A4A]'}`} />
+                    <span className="absolute -bottom-1 left-0 block h-[2px] w-0 bg-[var(--accent-primary)] transition-all duration-300 group-hover:w-full" />
                 </button>
             </div>
 

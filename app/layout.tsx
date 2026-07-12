@@ -24,5 +24,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" suppressHydrationWarning><body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><ThemeWrapper>{children}</ThemeWrapper></body></html>;
+  return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var p=localStorage.getItem('ondwira-theme')||localStorage.getItem('profcaria-theme')||'system';var d=p==='system'?matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light':p;document.documentElement.classList.add(d);document.documentElement.dataset.theme=d;document.documentElement.dataset.themePreference=p;document.documentElement.style.colorScheme=d}catch(e){document.documentElement.classList.add('light')}})()` }} /></head><body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><ThemeWrapper>{children}</ThemeWrapper></body></html>;
 }

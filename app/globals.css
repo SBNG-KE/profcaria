@@ -2,48 +2,48 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ============================================
-   PROFCARIA THEME SYSTEM
-   True Black Dark Mode & Clean Light Mode
-   ============================================ */
-
-/* Dark Mode (Dark Navy) */
+/* Ondwira matte palette. System mode resolves to one of these themes. */
 :root,
-.dark {
-  --bg-primary: #0A0F1A;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1B2A4A;
-
-  --text-primary: #ffffff;
-  --text-secondary: #a3a3a3;
-  --text-muted: #525252;
-  --text-inverse: #0A0F1A;
-
-  --border-primary: rgba(255, 255, 255, 0.15);
-  --border-secondary: rgba(255, 255, 255, 0.08);
-
-  --accent-navy: #3B5998;
-
-  --shadow-glow: 0 0 20px rgba(59, 89, 152, 0.15);
+.light {
+  --bg-primary: #f7f4ee;
+  --bg-secondary: #f0ece4;
+  --bg-tertiary: #e7e1d8;
+  --surface-raised: #fffdf9;
+  --surface-muted: #eee9e1;
+  --surface-strong: #e4dde8;
+  --text-primary: #242127;
+  --text-secondary: #6f6972;
+  --text-muted: #9b949d;
+  --text-inverse: #fffdf9;
+  --border-primary: rgba(64, 55, 69, 0.16);
+  --border-secondary: rgba(64, 55, 69, 0.09);
+  --accent-primary: #5b506e;
+  --accent-strong: #463b59;
+  --accent-soft: #e8e1ed;
+  --accent-warm: #c77f62;
+  --accent-navy: #5b506e;
+  --shadow-glow: 0 16px 45px rgba(70, 59, 89, 0.10);
 }
 
-/* Light Mode (Navy + Soft Grey) */
-.light {
-  --bg-primary: #ffffff;
-  --bg-secondary: #F0F2F5;
-  --bg-tertiary: #E8EBF0;
-
-  --text-primary: #0A0F1A;
-  --text-secondary: #4A5568;
-  --text-muted: #A0AEC0;
-  --text-inverse: #ffffff;
-
-  --border-primary: rgba(27, 42, 74, 0.2);
-  --border-secondary: rgba(27, 42, 74, 0.1);
-
-  --accent-navy: #1B2A4A;
-
-  --shadow-glow: 0 0 20px rgba(27, 42, 74, 0.1);
+.dark {
+  --bg-primary: #17161b;
+  --bg-secondary: #1f1d24;
+  --bg-tertiary: #292630;
+  --surface-raised: #242129;
+  --surface-muted: #2d2933;
+  --surface-strong: #383142;
+  --text-primary: #f5f1eb;
+  --text-secondary: #b7b0ba;
+  --text-muted: #817983;
+  --text-inverse: #1b181f;
+  --border-primary: rgba(245, 241, 235, 0.15);
+  --border-secondary: rgba(245, 241, 235, 0.08);
+  --accent-primary: #79658d;
+  --accent-strong: #b6a3ca;
+  --accent-soft: #332d3b;
+  --accent-warm: #d99173;
+  --accent-navy: #b6a3ca;
+  --shadow-glow: 0 16px 48px rgba(0, 0, 0, 0.28);
 }
 
 @theme inline {
@@ -200,6 +200,16 @@ body {
   font-family: var(--font-sans), Arial, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Transitional bridge while legacy utility colors are retired. */
+.bg-\[\#183d31\] { background-color: var(--accent-primary) !important; }
+.text-\[\#183d31\] { color: var(--accent-primary) !important; }
+.border-\[\#183d31\] { border-color: var(--accent-primary) !important; }
+.bg-\[\#f4f1ea\] { background-color: var(--bg-primary) !important; }
+.bg-\[\#fbfaf7\], .bg-\[\#fffdf9\] { background-color: var(--surface-raised) !important; }
+.bg-\[\#f0eee8\], .bg-\[\#eeebe4\] { background-color: var(--surface-muted) !important; }
+.bg-\[\#e8efe9\], .bg-\[\#d9e3db\] { background-color: var(--accent-soft) !important; }
+.text-\[\#6c756f\], .text-\[\#747d77\], .text-\[\#667069\] { color: var(--text-secondary) !important; }
 
 /* ============================================
    SCROLLBAR HIDDEN

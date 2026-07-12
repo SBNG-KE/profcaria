@@ -22,7 +22,7 @@ export default function HeroSection() {
                     className={`text-5xl md:text-8xl lg:text-9xl font-black uppercase tracking-widest font-pixel 
                         ${isDark ? 'text-white text-glow' : 'text-black'}`}
                 >
-                    PROFCARIA
+                    ONDWIRA
                 </motion.h1>
             </div>
 
@@ -31,16 +31,15 @@ export default function HeroSection() {
                 initial={{ scale: 0, opacity: 0, rotate: -180 }}
                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
                 transition={{ duration: 1.2, ease: "circOut", delay: 1.5 }}
-                className={`relative p-[1px] rounded-full overflow-hidden ${isDark ? 'shadow-[0_0_40px_rgba(59,89,152,0.4)]' : 'shadow-2xl'}`}
+                className="relative overflow-hidden rounded-3xl border border-[var(--border-primary)] bg-[var(--surface-raised)] p-3 shadow-[var(--shadow-glow)]"
             >
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#3B5998] to-transparent animate-spin-slow" />
-                <div className={`relative rounded-full p-2 ${isDark ? 'bg-[#0A0F1A]' : 'bg-white'}`}>
+                <div className="relative rounded-2xl bg-[var(--accent-primary)] p-2">
                     <Image
-                        src="/profcaria.png"
-                        alt="Profcaria Logo"
+                        src="/ondwira.svg"
+                        alt="Ondwira"
                         width={64}
                         height={64}
-                        className="rounded-full w-12 h-12 md:w-16 md:h-16 border"
+                        className="h-12 w-12 md:h-16 md:w-16"
                     />
                 </div>
             </motion.div>
@@ -59,7 +58,7 @@ export default function HeroSection() {
                     animate={{ y: [0, 10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 >
-                    <ChevronDown size={24} className={isDark ? 'text-[#3B5998]' : 'text-black'} />
+                    <ChevronDown size={24} className="text-[var(--accent-primary)]" />
                 </motion.div>
             </motion.div>
 

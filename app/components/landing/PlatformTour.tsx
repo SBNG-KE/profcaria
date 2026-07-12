@@ -24,7 +24,7 @@ const features: Feature[] = [
     },
     {
         title: "Verified Employment",
-        description: "No more employment verification. No more background checks. Your employment history is cryptographically verified at the source. When you join a company on Profcaria, your role is stamped as authentic. When you leave, your history is yours to keep instantly trusted by your next employer.",
+        description: "Your employment history can update from real organisation lifecycle events. When work begins or ends in Ondwira, the verified record stays with your account while company access follows its permissions.",
         images: [
             "/landing/verified-2.png",
             "/landing/verified-1.png",
@@ -40,7 +40,7 @@ const features: Feature[] = [
     },
     {
         title: "The AI Career OS",
-        description: "Traditional CVs still work. We just made them smarter. Profcaria enhances your CV with dynamic, AI-powered career agents that operate 24/7, accelerating your growth, discovering aligned opportunities, and preparing you for the right interviews. Your CV becomes intelligent, adaptive, and always working for you.",
+        description: "Traditional CVs still work. Ondwira keeps versions, writing, uploads, certificates, and sharing choices together so you decide what a job or connected agent may read.",
         id: "ai-agents",
         customVisual: true
     }
@@ -58,7 +58,7 @@ export default function PlatformTour() {
     return (
         <section ref={containerRef} className={`relative py-12 md:py-32 overflow-hidden ${isDark ? 'bg-black' : 'bg-white'}`}>
 
-            {/* BACKGROUND CONSTELLATION ANIMATION (The "Profcaria Universe") */}
+            {/* Background constellation animation */}
             <div className="absolute inset-0 pointer-events-none z-0">
                 <div className={`absolute top-0 right-0 w-2/3 h-full opacity-20 ${isDark ? 'bg-gradient-to-l from-blue-900/20 to-transparent' : 'bg-gradient-to-l from-blue-100 to-transparent'}`} />
                 {/* Simulated connecting lines/nodes could go here with SVG or Canvas */}
@@ -67,7 +67,7 @@ export default function PlatformTour() {
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="mb-4 md:mb-8 text-left">
                     <div className={`text-xs font-bold uppercase tracking-[0.3em] pl-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                        See how Profcaria redefines professional networking.
+                        See how Ondwira brings conversations and work into one account.
                     </div>
                 </div>
 

@@ -15,6 +15,5 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
   } catch {
     // Invalid or expired sessions see the public landing page.
   }
-
-  return <Suspense fallback={<div className="grid h-screen place-items-center bg-[#183d31] text-white">Opening Ondwira…</div>}><LandingPageClient /></Suspense>;
+  return <Suspense fallback={<div className="grid h-screen place-items-center bg-[var(--bg-primary)] text-[var(--text-primary)]">Opening Ondwira…</div>}><LandingPageClient /></Suspense>;
 }

@@ -27,7 +27,7 @@ export default function CareerSection() {
                         Evolved.
                     </h2>
                     <p className={`text-xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                        Take absolute, uncompromising control over your entire professional trajectory. Profcaria is not just a place to find your next job—it is a comprehensive command center for your entire life's work. 
+                        Keep your work history, applications, documents, certificates, and opportunities together. Ondwira is more than a place to find your next job—it is a private home for your working life.
                     </p>
                     <p className={`text-lg leading-relaxed ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
                         Everything you need is centralized, securely vaulted, brilliantly analyzed, and relentlessly optimized for your continuous growth. Instead of scattering your career across dozens of disjointed platforms, PDFs, and endless email chains, you now have a single source of truth. Manage live applications in real-time without losing track, monitor your skill progression through verifiable metrics, securely network with key players behind closed doors, and watch your professional capital grow natively within the ecosystem. We turn your chaotic job history into a structured, indisputable asset.
@@ -52,7 +52,7 @@ export default function CareerSection() {
                         `}>
                             <div className="mb-8">
                                 <span className={`text-[10px] md:text-xs font-pixel uppercase tracking-[0.2em] ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]/50'}`}>
-                                    {item.num} // {item.tag}
+                                    {item.num} {'//'} {item.tag}
                                 </span>
                             </div>
                             <div>

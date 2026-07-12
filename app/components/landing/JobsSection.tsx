@@ -23,7 +23,7 @@ export default function JobsSection() {
                         <br /> Not Noise.
                     </h2>
                     <p className={`text-lg md:text-2xl font-light max-w-5xl mx-auto leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                        The days of endlessly scrolling through irrelevant job postings, ghosting recruiters, and bloated networking feeds are entirely over. Job boards today are fundamentally broken spaces filled with spam, untrusted profiles, and wasted time. Profcaria operates on a completely different paradigm. Our intelligent matching system analyzes your verified skills, experience, and trajectory to connect you directly with roles where you undeniably belong. It's not about applying to a hundred jobs; it's about applying to the exact right one.
+                        Stop losing time to irrelevant listings, unclear requirements, and scattered applications. Ondwira uses your chosen preferences, verified experience, and skills to rank roles that fit, while keeping every application and conversation in the same account. It is not about applying everywhere; it is about finding work that makes sense for you.
                     </p>
                 </motion.div>
 
@@ -39,7 +39,7 @@ export default function JobsSection() {
                         },
                         { 
                             title: 'Direct, Unfiltered Access', 
-                            desc: 'Skip the third-party recruiter spam and the endless intermediary agency hurdles. Profcaria enables you to connect directly with hiring managers, founders, and team leads who are actively and urgently looking for exactly what you bring to the table. Our private messaging protocols ensure that these conversations remain strictly confidential and out of the public eye.' 
+                            desc: 'Move from a relevant opening into a private conversation with the hiring team. Applications, updates, and decisions stay organised without creating another identity or exposing them on a public feed.'
                         }
                     ].map((card, idx) => (
                         <motion.div

@@ -17,13 +17,11 @@ import { createClient } from '@supabase/supabase-js';
 import {
     User,
     Briefcase,
-    ArrowRight,
     Lock,
     Mail,
     Eye,
     EyeOff,
     Check,
-    ArrowLeft,
     ChevronDown,
     Search,
     Phone
@@ -64,7 +62,6 @@ const COUNTRY_CODES = [
 ];
 import { useTheme } from '../context/ThemeContext';
 import HangingSecurityCard from './HangingSecurityCard';
-import { PixelBackground } from './PixelBackground';
 
 // Supabase client for OAuth only
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -80,16 +77,6 @@ const GoogleIcon = () => (
         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
     </svg>
 );
-
-const MicrosoftIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 21 21">
-        <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-        <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-        <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
-        <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
-    </svg>
-);
-
 
 // --- MODERN INPUT COMPONENT ---
 interface ModernInputProps {
@@ -163,8 +150,7 @@ const ModernInput = ({
 export default function HangingAuthCard({
     isOpen,
     onClose,
-    initialScreen = 'auth',
-    initialTab = 'professional'
+    initialScreen = 'auth'
 }: {
     isOpen: boolean;
     onClose: () => void;
@@ -181,7 +167,7 @@ export default function HangingAuthCard({
     // AUTH STATE (PRESERVED FROM auth/page.tsx)
     const [globalMode, setGlobalMode] = useState<'login' | 'signup'>('login');
     const [socialLoading, setSocialLoading] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'professional' | 'employer'>(initialTab);
+    const [activeTab] = useState<'professional' | 'employer'>('professional');
     const [loading, setLoading] = useState(false);
 
     // Professional State
@@ -244,9 +230,8 @@ export default function HangingAuthCard({
             setScreen('auth');
         } else {
             setScreen(initialScreen);
-            setActiveTab(initialTab);
         }
-    }, [isOpen, initialScreen, initialTab]);
+    }, [isOpen, initialScreen]);
 
     // Password Validation Helper (UNCHANGED)
     const validatePassword = (password: string) => {
@@ -263,7 +248,7 @@ export default function HangingAuthCard({
         setSocialLoading(provider);
         try {
             // Store role for callback page
-            localStorage.setItem('pendingOAuthRole', activeTab);
+            localStorage.setItem('pendingOAuthRole', 'account');
 
             const { error } = await supabaseAuth.auth.signInWithOAuth({
                 provider,
@@ -277,8 +262,8 @@ export default function HangingAuthCard({
                 setSocialLoading(null);
             }
             // If successful, the page will redirect — no need to reset loading
-        } catch (err: any) {
-            alert(err.message || 'Social login failed');
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : 'Social login failed');
             setSocialLoading(null);
         }
     };
@@ -301,13 +286,13 @@ export default function HangingAuthCard({
         try {
             pendingJobRedirect = localStorage.getItem('profcaria_job_redirect');
             if (pendingJobRedirect) localStorage.removeItem('profcaria_job_redirect');
-        } catch (e) { /* localStorage not available */ }
+        } catch { /* localStorage not available */ }
 
         const finalRedirect = pendingJobRedirect || redirect;
 
         if (!finalRedirect) {
             // Default redirect
-            router.push(activeTab === 'professional' ? '/professional/notifications' : '/employer/feed');
+            router.push('/social');
             onClose();
             return;
         }
@@ -331,12 +316,13 @@ export default function HangingAuthCard({
                 const meData = await msRes.json();
                 if (meData.security) {
                     const { hasPasskey, hasTotp, hasEmail } = meData.security;
-                    // If any method is set up, go to Verify. Otherwise, go to Setup.
+                    // Existing protected accounts still verify. New accounts enter
+                    // Ondwira directly and can add security methods in Settings.
                     if (hasPasskey || hasTotp || hasEmail) {
                         setScreen('security_verify');
                         return;
                     } else {
-                        setScreen('security_setup');
+                        handleRedirect('/social');
                         return;
                     }
                 }
@@ -349,12 +335,12 @@ export default function HangingAuthCard({
         }
     };
 
-    const handleLogin = async (type: 'professional' | 'employer') => {
+    const handleLogin = async () => {
         setLoading(true);
         try {
-            const endpoint = type === 'professional' ? '/api/professional/login' : '/api/employer/login';
-            const email = type === 'professional' ? profEmail : empWorkEmail;
-            const password = type === 'professional' ? profPassword : empPassword;
+            const endpoint = '/api/auth/login';
+            const email = profEmail;
+            const password = profPassword;
 
             const res = await fetch(endpoint, {
                 method: 'POST',
@@ -366,8 +352,8 @@ export default function HangingAuthCard({
             if (!res.ok) throw new Error(data.error || 'Login failed');
 
             await handlePostAuth(data.redirect);
-        } catch (err: any) {
-            alert(err.message || 'Authentication failed');
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : 'Authentication failed');
         } finally {
             setLoading(false);
         }
@@ -402,8 +388,8 @@ export default function HangingAuthCard({
             if (!res.ok) throw new Error(data.error || 'Registration failed');
 
             await handlePostAuth(data.redirect);
-        } catch (err: any) {
-            alert(err.message || 'Registration failed');
+        } catch (err: unknown) {
+            alert(err instanceof Error ? err.message : 'Registration failed');
         } finally {
             setLoading(false);
         }
@@ -441,36 +427,18 @@ export default function HangingAuthCard({
                     rounded-[2rem] p-6 md:p-8 pb-10 md:pb-12
                     transform transition-all duration-500 origin-top
                     ${isDark
-                        ? 'bg-[#0A0F1A] shadow-2xl border-neutral-700/50 glow-white'
-                        : 'bg-white shadow-2xl border-neutral-200'}
+                        ? 'bg-[var(--surface-raised)] shadow-2xl border-[var(--border-primary)]'
+                        : 'bg-[var(--surface-raised)] shadow-2xl border-[var(--border-primary)]'}
                 `}
                 style={{
                     animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
                 }}
                 data-lenis-prevent="true"
             >
-                <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none" />
-
                 {/* --- CONTENT --- */}
                 <div className="relative z-10 flex flex-col gap-6">
 
-                    {/* TABS (Prof/Emp) */}
-                    <div className="flex p-1 rounded-full bg-neutral-100/10 border border-neutral-500/20">
-                        {(['professional', 'employer'] as const).map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`
-                                    flex-1 py-3 px-4 rounded-full text-xs font-bold uppercase tracking-widest transition-all
-                                    ${activeTab === tab
-                                        ? (isDark ? 'bg-white text-black' : 'bg-black text-white')
-                                        : 'opacity-50 hover:opacity-100'}
-                                `}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
+                    <p className="text-center text-xs font-black uppercase tracking-[0.2em] text-[var(--accent-primary)]">One Ondwira account</p>
 
                     {/* TITLE & TOGGLE */}
                     <div className="text-center space-y-2">
@@ -508,23 +476,6 @@ export default function HangingAuthCard({
                             {socialLoading === 'google' ? 'Redirecting...' : 'Continue with Google'}
                         </button>
 
-                        <button
-                            type="button"
-                            onClick={() => handleSocialLogin('azure')}
-                            disabled={!!socialLoading}
-                            className={`
-                                w-full py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-3
-                                border transition-all duration-300
-                                ${isDark
-                                    ? 'border-neutral-700 bg-neutral-900/50 text-white hover:bg-neutral-800'
-                                    : 'border-neutral-200 bg-white text-black hover:bg-neutral-50'}
-                                ${socialLoading === 'azure' ? 'opacity-50 cursor-wait' : ''}
-                                ${socialLoading && socialLoading !== 'azure' ? 'opacity-30 cursor-not-allowed' : ''}
-                            `}
-                        >
-                            <MicrosoftIcon />
-                            {socialLoading === 'azure' ? 'Redirecting...' : 'Continue with Microsoft'}
-                        </button>
                     </div>
 
                     {/* DIVIDER */}
@@ -709,7 +660,7 @@ export default function HangingAuthCard({
                         {/* SUBMIT BUTTON */}
                         <button
                             type="button"
-                            onClick={() => globalMode === 'login' ? handleLogin(activeTab) : handleSignup(activeTab)}
+                            onClick={() => globalMode === 'login' ? handleLogin() : handleSignup(activeTab)}
                             disabled={loading || (activeTab === 'professional' ? !isProfessionalValid : !isEmployerValid)}
                             className={`
                                 w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all font-pixel

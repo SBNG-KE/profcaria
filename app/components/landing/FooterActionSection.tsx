@@ -100,7 +100,7 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
 
             <div className="absolute bottom-6 w-full px-8 flex justify-between items-center z-30 pointer-events-auto">
                 <div className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest font-pixel flex-1 text-left ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                    &copy; 2026 PROFCARIA
+                    &copy; 2026 ONDWIRA
                 </div>
 
                 <div className="flex gap-8 sm:gap-12 items-center justify-center flex-1">

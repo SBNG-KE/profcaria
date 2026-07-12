@@ -1,97 +1,63 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark';
+export type ThemePreference = 'system' | Theme;
 
 interface ThemeContextType {
   theme: Theme;
+  preference: ThemePreference;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  setPreference: (preference: ThemePreference) => void;
 }
 
-// Create context with default value to prevent error during SSR
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
-  toggleTheme: () => { },
-  setTheme: () => { },
+  theme: 'light', preference: 'system', toggleTheme: () => {}, setTheme: () => {}, setPreference: () => {},
 });
 
+const STORAGE_KEY = 'ondwira-theme';
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
-  const [mounted, setMounted] = useState(false);
+  const [preference, setPreferenceState] = useState<ThemePreference>('system');
+  const [systemTheme, setSystemTheme] = useState<Theme>('light');
+  const theme: Theme = preference === 'system' ? systemTheme : preference;
 
-  // On mount, check device preference or stored preference
   useEffect(() => {
-    setMounted(true);
-
-    // Check localStorage first (user's explicit choice)
-    try {
-      const storedTheme = localStorage.getItem('profcaria-theme') as Theme | null;
-
-      if (storedTheme) {
-        setThemeState(storedTheme);
-      } else {
-        // Check device/browser preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setThemeState(prefersDark ? 'dark' : 'light');
-      }
-    } catch (e) {
-      // localStorage not available (SSR), use default
-    }
-
-    // Listen for system theme changes
-    try {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = (e: MediaQueryListEvent) => {
-        // Only auto-switch if user hasn't set explicit preference
-        if (!localStorage.getItem('profcaria-theme')) {
-          setThemeState(e.matches ? 'dark' : 'light');
-        }
-      };
-
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } catch (e) {
-      // matchMedia not available
-    }
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const syncSystem = () => setSystemTheme(media.matches ? 'dark' : 'light');
+    const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
+    const legacy = localStorage.getItem('profcaria-theme') as Theme | null;
+    const restorePreference = () => setPreferenceState(stored && ['system', 'light', 'dark'].includes(stored) ? stored : legacy || 'system');
+    restorePreference();
+    if (legacy && !stored) localStorage.setItem(STORAGE_KEY, legacy);
+    syncSystem();
+    media.addEventListener('change', syncSystem);
+    return () => media.removeEventListener('change', syncSystem);
   }, []);
 
-  // Apply theme to document
   useEffect(() => {
-    if (mounted && typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
-      document.documentElement.classList.remove('light', 'dark');
-      document.documentElement.classList.add(theme);
-    }
-  }, [theme, mounted]);
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.themePreference = preference;
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+    document.documentElement.style.colorScheme = theme;
+  }, [theme, preference]);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem('profcaria-theme', newTheme);
-    } catch (e) {
-      // localStorage not available
-    }
+  const setPreference = (next: ThemePreference) => {
+    setPreferenceState(next);
+    localStorage.setItem(STORAGE_KEY, next);
+    localStorage.removeItem('profcaria-theme');
   };
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem('profcaria-theme', newTheme);
-    } catch (e) {
-      // localStorage not available
-    }
-  };
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{
+    theme,
+    preference,
+    setPreference,
+    setTheme: (next) => setPreference(next),
+    toggleTheme: () => setPreference(theme === 'dark' ? 'light' : 'dark'),
+  }}>{children}</ThemeContext.Provider>;
 }
 
-export function useTheme() {
-  return useContext(ThemeContext);
-}
+export function useTheme() { return useContext(ThemeContext); }

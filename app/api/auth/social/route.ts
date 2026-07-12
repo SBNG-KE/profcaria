@@ -15,7 +15,7 @@ export async function POST(req: Request) {
         const body = await req.json();
         const {
             fullName,
-            role,         // 'professional' | 'employer'
+            role: requestedRole,
             companyName,
             industry
         } = body;
@@ -42,11 +42,15 @@ export async function POST(req: Request) {
         const provider = user.app_metadata?.provider || 'unknown';
         const providerId = user.id;
 
-        if (!role) {
-            return NextResponse.json({ error: 'Missing required OAuth data' }, { status: 400 });
-        }
-
         const emailIndex = hashForIndex(email);
+        let role: 'professional' | 'employer' = requestedRole === 'employer' ? 'employer' : 'professional';
+        if (requestedRole === 'account' || !requestedRole) {
+            const [{ data: person }, { data: company }] = await Promise.all([
+                supabaseAdmin.schema('professional').from('users').select('id').eq('email_index', emailIndex).maybeSingle(),
+                supabaseAdmin.schema('employer').from('companies').select('id').eq('work_email_index', emailIndex).maybeSingle(),
+            ]);
+            role = person ? 'professional' : company ? 'employer' : 'professional';
+        }
 
         // ==========================================
         // PROFESSIONAL FLOW
@@ -90,8 +94,8 @@ export async function POST(req: Request) {
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
                 // Direct to homepage mode to avoid redirects
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/professional/notifications')}`
-                    : '/professional/notifications';
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/social')}`
+                    : '/social';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -139,7 +143,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newUser.id, 'professional', false);
             // New user needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/?mode=setup' });
+            const response = NextResponse.json({ success: true, redirect: '/social' });
             setSessionCookie(response, token);
             return response;
         }
@@ -185,8 +189,8 @@ export async function POST(req: Request) {
                 const has2fa = existingCompany.has_totp || existingCompany.has_passkey || existingCompany.has_phone_otp;
                 // Direct to homepage mode
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/employer/feed')}`
-                    : '/employer/feed';
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/social')}`
+                    : '/social';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -253,7 +257,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newCompany.id, 'employer', false);
             // New employer needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/?mode=setup' });
+            const response = NextResponse.json({ success: true, redirect: '/social' });
             setSessionCookie(response, token);
             return response;
         }

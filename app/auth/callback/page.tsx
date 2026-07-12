@@ -85,7 +85,7 @@ export default function AuthCallbackPage() {
                 const providerId = user.id;
 
                 // Read the role from localStorage (set before OAuth redirect)
-                const pendingRole = localStorage.getItem('pendingOAuthRole') || 'professional';
+                const pendingRole = localStorage.getItem('pendingOAuthRole') || 'account';
                 localStorage.removeItem('pendingOAuthRole');
 
                 const payload: Record<string, string> = {
@@ -141,7 +141,7 @@ export default function AuthCallbackPage() {
                 }
 
                 // Success — redirect
-                router.push(data.redirect || '/professional/notifications');
+                router.push(data.redirect || '/social');
 
             } catch (err) {
                 console.error('OAuth Callback Error:', err);

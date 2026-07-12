@@ -69,7 +69,7 @@ export default function AIHouseSection() {
                         The <span className={`font-pixel ${isDark ? 'text-white' : 'text-[#1B2A4A]'}`}>Overseer</span> AI.
                     </h2>
                     <p className={`text-xl md:text-2xl font-light max-w-5xl mx-auto leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                        Think of Profcaria as a living, breathing digital infrastructure governed by a true presidential intelligence. The Overseer AI watches from the top, simultaneously directing and coordinating a legion of highly specialized sub-agent AIs tailored entirely to your success. It manages timelines, enforces privacy constraints, and strategically deploys lower-level agents precisely when you need them.
+                        Think of Ondwira as a living digital workspace where connected agents operate only within the permissions you grant. They can help organise timelines, prepare documents, and surface opportunities without silently crossing the boundaries between your personal and work data.
                     </p>
                 </motion.div>
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/app/context/ThemeContext';
-import { Lock, Zap, ShieldCheck, Mailbox, RefreshCcw } from 'lucide-react';
+import { Lock, Zap, ShieldCheck, Mailbox } from 'lucide-react';
 
 const messageStates = [
     { id: 'COMPOSE', label: 'PLAIN TEXT', content: 'Let\'s close the $2M deal.', icon: Mailbox },
@@ -39,17 +39,17 @@ export default function MessagingSection() {
                         transition={{ duration: 0.8 }}
                     >
                         <h2 className={`text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-6 ${isDark ? 'text-white' : 'text-black'}`}>
-                            Absolute <br /> <span className={`font-pixel text-4xl md:text-6xl ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}`}>Separation.</span>
+                            One place. <br /> <span className="font-pixel text-4xl text-[var(--accent-primary)] md:text-6xl">Two clear modes.</span>
                         </h2>
                         <p className={`text-lg md:text-xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                            Why mix your professional network with your personal social chat apps? Profcaria provides a dedicated, highly secure messaging ecosystem specifically tailored for professionals, recruiters, and companies. Keep your social life entirely separate, while operating with absolute privacy and unparalleled speed in your professional communications. You stay in control.
+                            Ondwira brings everyday conversations and work collaboration into one account without mixing their permissions. Switch between Social and Work whenever you need, while your private chats remain yours and organisation data stays governed by its workspace.
                         </p>
                     </motion.div>
 
                     <div className="flex flex-col gap-6">
                         {[
-                            { title: 'Advanced Cryptographic Shielding', desc: 'Every single message, document, and contract you send is encrypted before it ever leaves your device. Not even we can read your communications. Your corporate negotiations and private career moves are guarded by unbreakable cryptographic protocols ensuring total peace of mind.' },
-                            { title: 'Instantaneous Delivery Networks', desc: 'No lag, no waiting. Utilizing global edge network distribution, messages flow instantly across continents without compromising the heavy encryption layer. It feels as instantaneous as your favorite social chat app, but built with a foundation suitable for high-stakes business environments.' }
+                            { title: 'One identity, clear boundaries', desc: 'Your phone, email, documents, job history, and settings belong to you. Organisation access is attached through permissions instead of creating another account.' },
+                            { title: 'Conversations that fit the moment', desc: 'Chat with friends in Social, then move into company groups and hiring workflows in Work without signing out or changing identities.' }
                         ].map((feature, idx) => (
                             <motion.div
                                 key={idx}
