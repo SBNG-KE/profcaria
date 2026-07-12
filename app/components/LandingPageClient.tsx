@@ -14,12 +14,15 @@ import JobsSection from '@/app/components/landing/JobsSection';
 import CareerSection from '@/app/components/landing/CareerSection';
 import AIHouseSection from '@/app/components/landing/AIHouseSection';
 import FooterActionSection from '@/app/components/landing/FooterActionSection';
+import { useTheme } from '@/app/context/ThemeContext';
+import { PixelBackground } from './PixelBackground';
 
 
 // Main Landing Page Client Component
 export default function LandingPageClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { theme } = useTheme();
     const [isAuthOpen, setIsAuthOpen] = useState(false);
     const [isContactOpen, setIsContactOpen] = useState(false);
     const [isDocsOpen, setIsDocsOpen] = useState(false);
@@ -117,6 +120,7 @@ export default function LandingPageClient() {
 
     return (
         <div className="relative min-h-screen overflow-x-hidden bg-[var(--bg-primary)] font-sans text-[var(--text-primary)] selection:bg-[var(--accent-soft)]">
+            <PixelBackground isDark={theme === 'dark'} className="fixed inset-0 z-0 pointer-events-none" />
             
             {/* AUTH CARD COMPONENT */}
             <HangingAuthCard

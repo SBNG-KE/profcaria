@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, BriefcaseBusiness, CalendarDays, ChartNoAxesCombined, FileText, MessageCircle, Phone, Search, Settings, ShieldCheck, Users, UserRoundSearch } from 'lucide-react';
+import { PixelBackground } from '@/app/components/PixelBackground';
+import { useTheme } from '@/app/context/ThemeContext';
 
 type Mode = 'social' | 'work';
 
@@ -24,6 +26,7 @@ const workNav = [
 export default function OndwiraShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme } = useTheme();
   const mode: Mode = pathname.startsWith('/work') ? 'work' : 'social';
   const [findWorkEnabled, setFindWorkEnabled] = useState(false);
 
@@ -38,7 +41,8 @@ export default function OndwiraShell({ children }: { children: React.ReactNode }
   const changeMode = (next: Mode) => router.push(next === 'social' ? '/social' : '/work');
 
   return (
-    <div className="min-h-dvh bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors">
+    <div className="relative min-h-dvh overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors">
+      <PixelBackground isDark={theme === 'dark'} className="fixed inset-0 z-0 pointer-events-none" />
       <header className="sticky top-0 z-40 border-b border-[var(--border-secondary)] bg-[color:var(--surface-raised)]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <button onClick={() => router.push('/social')} className="flex items-center gap-2.5" aria-label="Ondwira home">
@@ -55,7 +59,7 @@ export default function OndwiraShell({ children }: { children: React.ReactNode }
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1600px]">
+      <div className="relative z-10 mx-auto flex max-w-[1600px]">
         <aside className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-[var(--border-secondary)] bg-[var(--surface-raised)] px-2 md:sticky md:top-16 md:h-[calc(100dvh-4rem)] md:w-60 md:shrink-0 md:flex-col md:items-stretch md:justify-start md:border-r md:border-t-0 md:p-4">
           <p className="mb-3 hidden px-3 pt-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8a918b] md:block">{mode === 'social' ? 'Your space' : 'Workspace'}</p>
           {nav.map(({ label, href, icon: Icon }) => {

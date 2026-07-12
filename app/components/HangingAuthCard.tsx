@@ -62,6 +62,7 @@ const COUNTRY_CODES = [
 ];
 import { useTheme } from '../context/ThemeContext';
 import HangingSecurityCard from './HangingSecurityCard';
+import { PixelBackground } from './PixelBackground';
 
 // Supabase client for OAuth only
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -435,6 +436,7 @@ export default function HangingAuthCard({
                 }}
                 data-lenis-prevent="true"
             >
+                <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none rounded-[2rem] overflow-hidden" />
                 {/* --- CONTENT --- */}
                 <div className="relative z-10 flex flex-col gap-6">
 

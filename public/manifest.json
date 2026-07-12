@@ -5,7 +5,7 @@
   "start_url": "/social",
   "display": "standalone",
   "background_color": "#f7f4ee",
-  "theme_color": "#5b506e",
+  "theme_color": "#a65336",
   "icons": [
     {
       "src": "/ondwira.svg",
