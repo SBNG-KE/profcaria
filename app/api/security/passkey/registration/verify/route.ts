@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { jwtVerify } from 'jose';
+import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
 
 export const runtime = 'nodejs';
 
@@ -26,14 +27,13 @@ export async function POST(req: Request) {
         try {
             const verified = await jwtVerify(token, secretKey);
             payload = verified.payload as { uid: string; schema: string };
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
         const { uid, schema } = payload;
         const body = await req.json();
 
         // Allow both www and non-www in production
-        const origin = req.headers.get('origin');
         const validOrigins = process.env.NODE_ENV === 'production'
             ? ['https://profcaria.com', 'https://www.profcaria.com']
             : ['http://localhost:3000'];
@@ -84,6 +84,8 @@ export async function POST(req: Request) {
                 })
                 .eq('id', uid);
 
+            await syncOndwiraSecurity(uid, { hasPasskey: true, requires2fa: true });
+
             // Cleanup challenge
             const response = NextResponse.json({ success: true, verified: true });
             response.cookies.delete('reg_challenge');
@@ -92,13 +94,9 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ error: 'Verification failed', verified: false }, { status: 400 });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Passkey Verify Error:", error);
-        console.error("Passkey Verify Error Details:", {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
+        if (error instanceof Error) console.error("Passkey Verify Error Details:", { message: error.message, stack: error.stack, name: error.name });
         return NextResponse.json({
             error: 'Internal Server Error',
             details: error instanceof Error ? error.message : String(error)

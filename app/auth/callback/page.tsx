@@ -140,7 +140,16 @@ export default function AuthCallbackPage() {
                     return;
                 }
 
-                // Success — redirect
+                // Carry the device's chosen appearance into the new account.
+                const savedTheme = localStorage.getItem('ondwira-theme');
+                const savedFont = localStorage.getItem('ondwira-font');
+                if (savedTheme || savedFont) {
+                    await fetch('/api/settings/appearance', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...(savedTheme ? { theme: savedTheme } : {}), ...(savedFont ? { fontFamily: savedFont } : {}) }),
+                    }).catch(() => undefined);
+                }
                 router.push(data.redirect || '/social');
 
             } catch (err) {
@@ -179,7 +188,7 @@ export default function AuthCallbackPage() {
                 return;
             }
 
-            router.push(data.redirect || '/employer/feed');
+            router.push(data.redirect || '/social');
         } catch (err) {
             console.error('Employer Completion Error:', err);
             setErrorMessage('Something went wrong. Please try again.');

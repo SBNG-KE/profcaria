@@ -6,6 +6,7 @@ import { jwtVerify, SignJWT } from 'jose';
 import { authenticator } from 'otplib';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
+import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
         try {
             const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
             payload = verifiedPayload;
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
@@ -70,6 +71,8 @@ export async function POST(req: Request) {
         if (updateError) {
             return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
         }
+
+        await syncOndwiraSecurity(uid, { hasTotp: true, requires2fa: true });
 
         // 5. Upgrade Session (AAL 2)
         const newPayload = {

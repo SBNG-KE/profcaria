@@ -4,6 +4,7 @@ import * as argon2 from 'argon2';
 import { supabaseAdmin } from '@/lib/supabase';
 import { hashForIndex } from '@/lib/security';
 import { checkRateLimit, getClientIdentifier, rateLimitedResponse } from '@/lib/rate-limit';
+import { ensureOndwiraAccount } from '@/lib/ondwira-identity';
 
 export const runtime = 'nodejs';
 
@@ -26,8 +27,22 @@ export async function POST(request: Request) {
   }
   if (account.tos_status === 'rejected') return NextResponse.json({ error: 'This account is suspended.' }, { status: 403 });
 
+  await ensureOndwiraAccount({
+    id: account.id,
+    identityType: schema,
+    emailIndex,
+    encryptedEmail: person ? account.enc_email : account.enc_work_email,
+    security: {
+      requires2fa: account.requires_2fa,
+      hasPasskey: account.has_passkey,
+      hasTotp: account.has_totp,
+      hasEmailOtp: account.has_email_otp,
+      defaultMethod: account.default_2fa_method,
+    },
+  });
+
   const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  const token = await new SignJWT({ uid: account.id, schema, has_totp: Boolean(account.has_totp), aal: 1 })
+  const token = await new SignJWT({ uid: account.id, account_id: account.id, schema, has_totp: Boolean(account.has_totp), aal: 1 })
     .setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('30d').sign(secret);
   const has2fa = Boolean(account.has_totp || account.has_passkey || account.has_phone_otp || account.has_email_otp);
   const response = NextResponse.json({ success: true, redirect: has2fa ? '/?mode=verify&redirect=/social' : '/social' });

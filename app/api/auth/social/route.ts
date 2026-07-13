@@ -7,6 +7,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, hashForIndex } from '@/lib/security';
 import { SignJWT } from 'jose';
 import { createClient } from '@supabase/supabase-js';
+import { ensureOndwiraAccount } from '@/lib/ondwira-identity';
 
 export const runtime = 'nodejs';
 
@@ -89,6 +90,21 @@ export async function POST(req: Request) {
                         .eq('id', existingUser.id);
                 }
 
+                await ensureOndwiraAccount({
+                    id: existingUser.id,
+                    identityType: 'professional',
+                    emailIndex,
+                    encryptedEmail: existingUser.enc_email,
+                    authUserId: providerId,
+                    security: {
+                        requires2fa: existingUser.requires_2fa,
+                        hasPasskey: existingUser.has_passkey,
+                        hasTotp: existingUser.has_totp,
+                        hasEmailOtp: existingUser.has_email_otp,
+                        defaultMethod: existingUser.default_2fa_method,
+                    },
+                });
+
                 // Issue session
                 const token = await issueToken(existingUser.id, 'professional', existingUser.has_totp || false);
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
@@ -131,6 +147,16 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Failed to create account' }, { status: 500 });
             }
 
+            await ensureOndwiraAccount({
+                id: newUser.id,
+                identityType: 'professional',
+                emailIndex,
+                encryptedEmail: newUser.enc_email,
+                displayName: fullName || `${firstName} ${lastName}`.trim(),
+                authUserId: providerId,
+                security: { requires2fa: false },
+            });
+
             // Early adopters just join and grow naturally — badges earned via followers.
 
             // Send Welcome Email (non-blocking)
@@ -143,7 +169,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newUser.id, 'professional', false);
             // New user needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/social' });
+            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/social' });
             setSessionCookie(response, token);
             return response;
         }
@@ -184,6 +210,21 @@ export async function POST(req: Request) {
                         .update({ updated_at: new Date().toISOString() })
                         .eq('id', existingCompany.id);
                 }
+
+                await ensureOndwiraAccount({
+                    id: existingCompany.id,
+                    identityType: 'employer',
+                    emailIndex,
+                    encryptedEmail: existingCompany.enc_work_email,
+                    authUserId: providerId,
+                    security: {
+                        requires2fa: existingCompany.requires_2fa,
+                        hasPasskey: existingCompany.has_passkey,
+                        hasTotp: existingCompany.has_totp,
+                        hasEmailOtp: existingCompany.has_email_otp,
+                        defaultMethod: existingCompany.default_2fa_method,
+                    },
+                });
 
                 const token = await issueToken(existingCompany.id, 'employer', existingCompany.has_totp || false);
                 const has2fa = existingCompany.has_totp || existingCompany.has_passkey || existingCompany.has_phone_otp;
@@ -247,6 +288,16 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Failed to create company account' }, { status: 500 });
             }
 
+            await ensureOndwiraAccount({
+                id: newCompany.id,
+                identityType: 'employer',
+                emailIndex,
+                encryptedEmail: newCompany.enc_work_email,
+                displayName: companyName,
+                authUserId: providerId,
+                security: { requires2fa: true },
+            });
+
             // Send Welcome Email (non-blocking)
             try {
                 const { sendWelcomeEmail } = await import('@/lib/email');
@@ -257,7 +308,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newCompany.id, 'employer', false);
             // New employer needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/social' });
+            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/social' });
             setSessionCookie(response, token);
             return response;
         }
@@ -275,6 +326,7 @@ async function issueToken(userId: string, schema: string, hasTotp: boolean): Pro
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     return new SignJWT({
         uid: userId,
+        account_id: userId,
         schema,
         has_totp: hasTotp,
         aal: 1

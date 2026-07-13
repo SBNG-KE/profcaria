@@ -5,12 +5,13 @@
 /* Ondwira matte palette. System mode resolves to one of these themes. */
 :root,
 .light {
+  --font-interface: var(--font-geist-sans), Arial, sans-serif;
   --bg-primary: #f7f4ee;
   --bg-secondary: #f0ece4;
   --bg-tertiary: #e7e1d8;
   --surface-raised: #fffdf9;
   --surface-muted: #eee9e1;
-  --surface-strong: #e4dde8;
+  --surface-strong: #ded5c9;
   --text-primary: #242127;
   --text-secondary: #6f6972;
   --text-muted: #9b949d;
@@ -24,6 +25,20 @@
   --accent-navy: #a65336;
   --pixel-color: #6f554a;
   --shadow-glow: 0 16px 45px rgba(120, 56, 36, 0.10);
+}
+
+.font-editorial {
+  font-family: var(--font-editorial), Georgia, 'Times New Roman', serif;
+}
+
+html {
+  background: var(--bg-primary);
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .dark {
@@ -51,7 +66,7 @@
 @theme inline {
   --color-background: var(--bg-primary);
   --color-foreground: var(--text-primary);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-interface);
   --font-mono: var(--font-geist-mono);
 
   --animate-grow-line: grow-line 0.5s ease-out forwards;
@@ -199,9 +214,15 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans), Arial, sans-serif;
+  font-family: var(--font-interface);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+[data-font='system'] { --font-interface: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+[data-font='modern'] { --font-interface: var(--font-geist-sans), Arial, sans-serif; }
+[data-font='heritage'] { --font-interface: var(--font-editorial), Georgia, serif; }
+[data-font='editorial'] { --font-interface: Georgia, 'Times New Roman', serif; }
+[data-font='accessible'] { --font-interface: Verdana, Tahoma, Arial, sans-serif; }
 
 /* Transitional bridge while legacy utility colors are retired. */
 .bg-\[\#183d31\] { background-color: var(--accent-primary) !important; }

@@ -3,6 +3,8 @@ import path from "path";
 
 const nextConfig: NextConfig = {
 
+  outputFileTracingRoot: path.join(__dirname),
+
   // Ondwira is one application. Keep legacy URLs only as entry redirects while
   // their underlying data workflows are migrated into the unified shell.
   async redirects() {
@@ -48,7 +50,7 @@ const nextConfig: NextConfig = {
     ];
   },
   // Optimize webpack for faster compilation
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { dev }) => {
     if (dev) {
       // Faster development builds
       config.optimization = {

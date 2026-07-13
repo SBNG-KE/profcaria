@@ -4,13 +4,14 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
+import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
 
 export async function POST(req: Request) {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
         const body = await req.json();
-        const { code, type } = body;
+        const { code } = body;
         // Since we removed phone support, we classify any non-specified type as email for safety, 
         // OR strictly check for email. Given the user context, defaulting to email logic is safest.
         const column = 'has_email_otp';
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
         try {
             const { payload: verified } = await jwtVerify(token, secretKey);
             payload = verified;
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
@@ -54,14 +55,15 @@ export async function POST(req: Request) {
             console.error('[OTP Verify] DB Update Error:', error);
             throw error;
         }
+        await syncOndwiraSecurity((payload as { uid: string }).uid, { hasEmailOtp: true, requires2fa: true });
         console.log('[OTP Verify] DB Update Success:', updateData);
 
         // Upgrade Session (AAL 2)
-        const newPayload: any = {
+        const newPayload = {
             ...payload,
-            aal: 2 // Authentication Assurance Level 2 (2FA Verified)
+            aal: 2,
+            has_email_otp: true,
         };
-        newPayload['has_email_otp'] = true;
 
         const tokenSecret = new TextEncoder().encode(process.env.JWT_SECRET);
         const newToken = await new SignJWT(newPayload)
@@ -73,8 +75,7 @@ export async function POST(req: Request) {
         // Clear OTP cookie and set new Session cookie
         // Use provided redirect, or fall back to schema default
         const { redirect } = body;
-        const defaultPath = schema === 'professional' ? '/professional/notifications' : schema === 'employer' ? '/employer/feed' : '/';
-        const redirectPath = redirect || defaultPath;
+        const redirectPath = redirect || '/social';
 
         const response = NextResponse.json({ verified: true, redirect: redirectPath });
 
@@ -89,8 +90,8 @@ export async function POST(req: Request) {
 
         return response;
 
-    } catch (e: any) {
-        console.error(e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (error: unknown) {
+        console.error(error);
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Internal Server Error' }, { status: 500 });
     }
 }

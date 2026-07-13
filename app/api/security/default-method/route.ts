@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
+import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
 
 export async function POST(req: Request) {
     try {
@@ -18,16 +19,16 @@ export async function POST(req: Request) {
         try {
             const { payload: verified } = await jwtVerify(token, secretKey);
             payload = verified;
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
         const { uid, schema } = payload as { uid: string; schema: string };
         const body = await req.json();
-        const { method } = body; // 'passkey', 'totp', 'phone', or null
+        const { method } = body; // 'passkey', 'totp', 'email', or null
 
         // Validate method
-        const validMethods = ['passkey', 'totp', 'phone', null];
+        const validMethods = ['passkey', 'totp', 'email', null];
         if (!validMethods.includes(method)) {
             return NextResponse.json({ error: 'Invalid method' }, { status: 400 });
         }
@@ -45,9 +46,11 @@ export async function POST(req: Request) {
             throw error;
         }
 
+        await syncOndwiraSecurity(uid, { defaultMethod: method });
+
         return NextResponse.json({ success: true });
 
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message || 'Server Error' }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : 'Server Error' }, { status: 500 });
     }
 }

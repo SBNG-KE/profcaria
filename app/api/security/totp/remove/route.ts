@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData } from '@/lib/security';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
 
 export const runtime = 'nodejs';
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
         try {
             const { payload: verified } = await jwtVerify(token, secret);
             payload = verified as { uid: string; schema: string };
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
@@ -38,6 +39,8 @@ export async function POST(req: Request) {
             console.error('DB Error:', error);
             return NextResponse.json({ error: 'Failed to remove TOTP' }, { status: 500 });
         }
+
+        await syncOndwiraSecurity(uid, { hasTotp: false });
 
         // Log
         const ip = req.headers.get('x-forwarded-for') || 'Unknown IP';

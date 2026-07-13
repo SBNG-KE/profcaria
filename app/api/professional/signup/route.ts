@@ -7,6 +7,7 @@ import { encryptData, hashForIndex } from '@/lib/security';
 import { checkRateLimit, getClientIdentifier, rateLimitedResponse } from '@/lib/rate-limit';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
+import { ensureOndwiraAccount } from '@/lib/ondwira-identity';
 
 // Force Node.js runtime for Argon2 support
 export const runtime = 'nodejs';
@@ -40,15 +41,13 @@ export async function POST(req: Request) {
     const emailIndex = hashForIndex(email);
     const phoneIndex = phoneNumber ? hashForIndex(phoneNumber) : null;
 
-    // 3. Check if user already exists in Professional Schema
-    const { data: existingUser } = await supabaseAdmin
-      .schema('professional')
-      .from('users')
-      .select('id')
-      .eq('email_index', emailIndex)
-      .single();
+    // 3. One email can own only one Ondwira login, including legacy accounts.
+    const [{ data: existingUser }, { data: existingCompany }] = await Promise.all([
+      supabaseAdmin.schema('professional').from('users').select('id').eq('email_index', emailIndex).maybeSingle(),
+      supabaseAdmin.schema('employer').from('companies').select('id').eq('work_email_index', emailIndex).maybeSingle(),
+    ]);
 
-    if (existingUser) {
+    if (existingUser || existingCompany) {
       return NextResponse.json({ error: 'User already exists' }, { status: 409 });
     }
 
@@ -94,6 +93,15 @@ export async function POST(req: Request) {
       throw error;
     }
 
+    await ensureOndwiraAccount({
+      id: data.id,
+      identityType: 'professional',
+      emailIndex,
+      encryptedEmail: data.enc_email,
+      displayName: `${firstName || ''} ${lastName || ''}`.trim(),
+      security: { requires2fa: false },
+    });
+
     // Early adopters just join and grow naturally — badges earned via followers.
 
     // Send Welcome Email (non-blocking)
@@ -106,15 +114,15 @@ export async function POST(req: Request) {
 
     // 7. Generate Session Token (JWT) - 30 Days
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const token = await new SignJWT({ uid: data.id, schema: 'professional' })
+    const token = await new SignJWT({ uid: data.id, schema: 'professional', account_id: data.id, aal: 1 })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('30d')
       .sign(secret);
 
     // 7. Set Cookie & Return
-    const has2fa = data.has_totp || data.has_passkey || data.has_phone_otp;
-    const redirectPath = has2fa ? '/security/verify?redirect=/professional/notifications' : '/professional/notifications';
+    const has2fa = data.has_totp || data.has_passkey || data.has_phone_otp || data.has_email_otp;
+    const redirectPath = has2fa ? '/?mode=verify&redirect=/social' : '/?mode=setup&redirect=/social';
     const response = NextResponse.json({ success: true, user_id: data.id, redirect: redirectPath });
 
     response.cookies.set('profcaria_session', token, {
@@ -127,7 +135,7 @@ export async function POST(req: Request) {
 
     return response;
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Professional Signup Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

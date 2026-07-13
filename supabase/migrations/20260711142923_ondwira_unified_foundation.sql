@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS ondwira.employment_records (
     organization_id UUID REFERENCES ondwira.organizations(id) ON DELETE SET NULL,
     legacy_application_id UUID UNIQUE,
     job_id UUID,
-    enc_title TEXT NOT NULL,
+    title TEXT NOT NULL,
     employment_type TEXT,
     status TEXT NOT NULL CHECK (status IN ('offered', 'active', 'notice', 'ended', 'terminated', 'resigned')),
     started_at DATE,
@@ -75,7 +75,7 @@ CREATE INDEX IF NOT EXISTS ondwira_employment_org_idx ON ondwira.employment_reco
 CREATE TABLE IF NOT EXISTS ondwira.documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL,
-    title TEXT NOT NULL,
+    enc_title TEXT NOT NULL,
     document_kind TEXT NOT NULL CHECK (document_kind IN ('cv', 'cover_letter', 'certificate', 'contract', 'portfolio', 'identity', 'note', 'other')),
     source_type TEXT NOT NULL CHECK (source_type IN ('written', 'upload', 'linked', 'generated', 'legacy')),
     enc_content TEXT,
