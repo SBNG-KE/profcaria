@@ -110,8 +110,8 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto overscroll-contain bg-black/55 p-0 backdrop-blur-sm sm:p-4 lg:p-6" role="dialog" aria-modal="true" aria-label={mode === 'login' ? 'Sign in to Ondwira' : 'Create an Ondwira account'} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="relative my-auto grid min-h-full w-full max-w-5xl overflow-hidden border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl sm:min-h-0 lg:h-[min(760px,calc(100dvh-3rem))] lg:grid-cols-[0.9fr_1.1fr]">
+    <div className="ondwira-scrollbar fixed inset-0 z-[100] flex touch-pan-y items-start justify-center overflow-y-scroll overscroll-contain bg-black/55 p-0 backdrop-blur-sm sm:p-4 lg:p-6" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel role="dialog" aria-modal="true" aria-label={mode === 'login' ? 'Sign in to Ondwira' : 'Create an Ondwira account'} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="relative my-auto grid min-h-full w-full max-w-5xl overflow-hidden border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl sm:min-h-0 lg:h-[calc(100dvh-3rem)] lg:max-h-[900px] lg:grid-cols-[0.9fr_1.1fr]">
         <PixelBackground isDark={theme === 'dark'} className="absolute inset-0 z-0 pointer-events-none" />
         <button onClick={onClose} className="absolute right-5 top-5 z-20 h-9 w-9 border border-[var(--border-primary)] text-lg text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]" aria-label="Close">×</button>
 
@@ -121,7 +121,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
           <p className="text-[9px] font-bold uppercase tracking-[0.28em] opacity-65">Private by structure · continuous by design</p>
         </aside>
 
-        <div className="relative z-10 flex min-h-full flex-col overflow-y-auto overscroll-contain bg-[var(--surface-raised)]/82 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10 lg:min-h-0 lg:px-12 lg:py-10 xl:px-14">
+        <div className="ondwira-scrollbar relative z-10 flex min-h-full touch-pan-y flex-col overflow-y-scroll overscroll-y-contain bg-[var(--surface-raised)]/82 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10 lg:h-full lg:min-h-0 lg:px-12 lg:py-10 xl:px-14" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel tabIndex={0} aria-label="Scrollable sign in form">
           <div className="pr-12"><OndwiraLogo className="text-xl" markClassName="text-[var(--accent-primary)]" /><p className="mt-3 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">One personal account</p></div>
 
           <div className="my-auto py-9 sm:py-10">

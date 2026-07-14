@@ -261,6 +261,30 @@ body {
   -ms-overflow-style: none;
 }
 
+/* Ondwira navigation and forms keep a visible scroll rail so their movement is obvious. */
+.ondwira-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) transparent;
+  -ms-overflow-style: auto;
+}
+
+.ondwira-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 7px;
+  height: 7px;
+}
+
+.ondwira-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ondwira-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--accent-primary);
+  background-clip: padding-box;
+}
+
 @layer utilities {
   .text-navy-accent {
     color: var(--accent-navy);

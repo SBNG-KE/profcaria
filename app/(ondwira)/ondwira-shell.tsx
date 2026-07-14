@@ -41,7 +41,7 @@ export default function OndwiraShell({ children }: { children: React.ReactNode }
   const changeMode = (next: Mode) => router.push(next === 'social' ? '/social' : '/work');
 
   return (
-    <div className="relative min-h-dvh overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors">
+    <div className="relative min-h-dvh overflow-x-clip bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors">
       <PixelBackground isDark={theme === 'dark'} className="fixed inset-0 z-0 pointer-events-none" />
       <header className="sticky top-0 z-40 border-b border-[var(--border-secondary)] bg-[color:var(--surface-raised)]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
@@ -60,15 +60,15 @@ export default function OndwiraShell({ children }: { children: React.ReactNode }
       </header>
 
       <div className="relative z-10 mx-auto flex max-w-[1600px]">
-        <aside className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-start overflow-x-auto border-t border-[var(--border-secondary)] bg-[var(--surface-raised)] px-2 md:static md:min-h-[calc(100dvh-4rem)] md:w-60 md:shrink-0 md:self-stretch md:overflow-visible md:flex-col md:items-stretch md:border-r md:border-t-0 md:p-4">
+        <aside className="ondwira-scrollbar fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] touch-pan-x snap-x snap-mandatory items-center justify-start overflow-x-auto overscroll-x-contain border-t border-[var(--border-secondary)] bg-[var(--surface-raised)] px-2 pb-1 md:sticky md:top-16 md:h-[calc(100dvh-4rem)] md:w-60 md:shrink-0 md:touch-pan-y md:snap-none md:self-start md:overflow-x-hidden md:overflow-y-auto md:overscroll-y-contain md:border-r md:border-t-0 md:p-4">
           <p className="mb-3 hidden px-3 pt-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8a918b] md:block">{mode === 'social' ? 'Your space' : 'Workspace'}</p>
           {nav.map(({ label, href, icon: Icon }) => {
             const active = pathname === href;
-            return <button key={href} onClick={() => router.push(href)} className={`flex min-w-[4.5rem] flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold transition md:min-w-0 md:flex-row md:gap-3 md:text-sm ${active ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] hover:text-[var(--accent-primary)]'}`}><Icon size={19} /><span className="truncate">{label}</span></button>;
+            return <button key={href} onClick={() => router.push(href)} className={`flex min-w-[4.5rem] snap-start flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold transition md:min-w-0 md:snap-none md:flex-row md:gap-3 md:text-sm ${active ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] hover:text-[var(--accent-primary)]'}`}><Icon size={19} /><span className="truncate">{label}</span></button>;
           })}
-          {mode === 'social' && findWorkEnabled && <button onClick={() => router.push('/find-work')} className={`flex min-w-[4.5rem] flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold md:min-w-0 md:flex-row md:gap-3 md:text-sm ${pathname === '/find-work' ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]'}`}><UserRoundSearch size={19} /><span>Find work</span></button>}
+          {mode === 'social' && findWorkEnabled && <button onClick={() => router.push('/find-work')} className={`flex min-w-[4.5rem] snap-start flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold md:min-w-0 md:snap-none md:flex-row md:gap-3 md:text-sm ${pathname === '/find-work' ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]'}`}><UserRoundSearch size={19} /><span>Find work</span></button>}
           <div className="hidden flex-1 md:block" />
-          <button onClick={() => router.push('/settings')} className={`flex min-w-[4.5rem] flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold md:min-w-0 md:flex-row md:gap-3 md:text-sm ${pathname.startsWith('/settings') ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]'}`}><Settings size={19} /><span>Settings</span></button>
+          <button onClick={() => router.push('/settings')} className={`flex min-w-[4.5rem] snap-start flex-col items-center gap-1 rounded-xl px-3 py-2 text-[10px] font-bold md:min-w-0 md:snap-none md:flex-row md:gap-3 md:text-sm ${pathname.startsWith('/settings') ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]'}`}><Settings size={19} /><span>Settings</span></button>
           <div className="mt-3 hidden rounded-2xl bg-[var(--accent-soft)] p-3 text-xs leading-5 text-[var(--text-secondary)] md:flex md:gap-2"><ShieldCheck size={17} className="mt-0.5 shrink-0" /><span>One account. Work access follows your organisation permissions.</span></div>
         </aside>
         <main className="min-w-0 flex-1 pb-20 md:pb-0">{children}</main>
