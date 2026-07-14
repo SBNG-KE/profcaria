@@ -110,21 +110,21 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
   }
 
   return (
-    <div className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-black/55 p-3 backdrop-blur-sm sm:p-6" role="dialog" aria-modal="true" aria-label={mode === 'login' ? 'Sign in to Ondwira' : 'Create an Ondwira account'} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="relative my-auto grid w-full max-w-5xl overflow-hidden border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl lg:grid-cols-[0.9fr_1.1fr]">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto overscroll-contain bg-black/55 p-0 backdrop-blur-sm sm:p-4 lg:p-6" role="dialog" aria-modal="true" aria-label={mode === 'login' ? 'Sign in to Ondwira' : 'Create an Ondwira account'} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="relative my-auto grid min-h-full w-full max-w-5xl overflow-hidden border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl sm:min-h-0 lg:h-[min(760px,calc(100dvh-3rem))] lg:grid-cols-[0.9fr_1.1fr]">
         <PixelBackground isDark={theme === 'dark'} className="absolute inset-0 z-0 pointer-events-none" />
         <button onClick={onClose} className="absolute right-5 top-5 z-20 h-9 w-9 border border-[var(--border-primary)] text-lg text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]" aria-label="Close">×</button>
 
-        <aside className="relative z-10 hidden min-h-[680px] flex-col justify-between border-r border-[var(--border-primary)] bg-[var(--accent-primary)] p-12 text-[var(--text-inverse)] lg:flex">
+        <aside className="relative z-10 hidden min-h-0 flex-col justify-between overflow-hidden border-r border-[var(--border-primary)] bg-[var(--accent-primary)] p-10 text-[var(--text-inverse)] lg:flex xl:p-12">
           <OndwiraMark className="h-24 w-20" />
           <div><p className="font-editorial text-6xl leading-[0.88]">One entrance.<br /><span className="italic">Every chapter.</span></p><p className="mt-7 max-w-xs text-sm leading-7 opacity-80">Your social life and work life remain clearly separated by permissions, while the account always remains yours.</p></div>
           <p className="text-[9px] font-bold uppercase tracking-[0.28em] opacity-65">Private by structure · continuous by design</p>
         </aside>
 
-        <div className="relative z-10 flex min-h-[680px] flex-col bg-[var(--surface-raised)]/82 p-7 backdrop-blur-sm sm:p-12 lg:p-14">
+        <div className="relative z-10 flex min-h-full flex-col overflow-y-auto overscroll-contain bg-[var(--surface-raised)]/82 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10 lg:min-h-0 lg:px-12 lg:py-10 xl:px-14">
           <div className="pr-12"><OndwiraLogo className="text-xl" markClassName="text-[var(--accent-primary)]" /><p className="mt-3 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">One personal account</p></div>
 
-          <div className="my-auto py-12">
+          <div className="my-auto py-9 sm:py-10">
             <div className="mb-10 flex border-b border-[var(--border-primary)]">
               {(['login', 'signup'] as const).map((item) => <button key={item} onClick={() => { setMode(item); setError(''); }} className={`relative flex-1 pb-4 text-[10px] font-bold uppercase tracking-[0.25em] transition-colors ${mode === item ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]'}`}>{item === 'login' ? 'Sign in' : 'Create account'}{mode === item && <span className="absolute inset-x-0 -bottom-px h-px bg-[var(--accent-primary)]" />}</button>)}
             </div>
