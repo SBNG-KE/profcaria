@@ -60,7 +60,7 @@ export default function OndwiraShell({ children }: { children: React.ReactNode }
       </header>
 
       <div className="relative z-10 mx-auto flex max-w-[1600px]">
-        <aside className="ondwira-scrollbar fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] touch-pan-x snap-x snap-mandatory items-center justify-start overflow-x-auto overscroll-x-contain border-t border-[var(--border-secondary)] bg-[var(--surface-raised)] px-2 pb-1 md:sticky md:top-16 md:h-[calc(100dvh-4rem)] md:w-60 md:shrink-0 md:touch-pan-y md:snap-none md:self-start md:overflow-x-hidden md:overflow-y-auto md:overscroll-y-contain md:border-r md:border-t-0 md:p-4">
+        <aside className="ondwira-scrollbar fixed inset-x-0 bottom-0 z-40 flex h-[4.5rem] touch-pan-x snap-x snap-mandatory items-center justify-start overflow-x-auto overscroll-x-contain border-t border-[var(--border-secondary)] bg-[var(--surface-raised)] px-2 pb-1 md:sticky md:top-16 md:h-[calc(100dvh-4rem)] md:w-60 md:shrink-0 md:touch-pan-y md:snap-none md:flex-col md:items-stretch md:self-start md:overflow-x-hidden md:overflow-y-auto md:overscroll-y-contain md:border-r md:border-t-0 md:p-4">
           <p className="mb-3 hidden px-3 pt-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8a918b] md:block">{mode === 'social' ? 'Your space' : 'Workspace'}</p>
           {nav.map(({ label, href, icon: Icon }) => {
             const active = pathname === href;
