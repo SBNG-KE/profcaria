@@ -265,6 +265,43 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await supabaseAdmin.schema('ondwira').from('messages').delete().eq('id', data.id);
       return NextResponse.json({ error: 'Unable to create event' }, { status: 500 });
     }
+    if (messageType === 'meeting') {
+      const { data: group } = await supabaseAdmin.schema('ondwira').from('work_groups')
+        .select('id, organization_id').eq('conversation_id', id).is('archived_at', null).maybeSingle();
+      if (group) {
+        const startsAt = new Date(payload.startsAt!);
+        const endsAt = payload.endsAt && !Number.isNaN(Date.parse(payload.endsAt))
+          ? new Date(payload.endsAt)
+          : new Date(startsAt.getTime() + 60 * 60000);
+        const { data: meeting } = await supabaseAdmin.schema('ondwira').from('work_meetings').insert({
+          organization_id: group.organization_id,
+          work_group_id: group.id,
+          conversation_id: id,
+          organizer_id: session.uid,
+          enc_title: encryptData(payload.title!.trim()),
+          enc_agenda: payload.description?.trim() ? encryptData(payload.description.trim()) : null,
+          enc_location: payload.location?.trim() ? encryptData(payload.location.trim()) : null,
+          enc_meeting_url: payload.meetingUrl?.trim() ? encryptData(payload.meetingUrl.trim().slice(0, 2000)) : null,
+          provider: 'custom',
+          starts_at: startsAt.toISOString(),
+          ends_at: endsAt.toISOString(),
+          timezone: 'Africa/Nairobi',
+          reminder_minutes: [10],
+        }).select('id').single();
+        if (meeting) {
+          const { data: members } = await supabaseAdmin.schema('ondwira').from('conversation_members').select('user_id').eq('conversation_id', id).eq('membership_status', 'accepted');
+          const participantIds = (members ?? []).map((member: { user_id: string }) => member.user_id);
+          await supabaseAdmin.schema('ondwira').from('work_meeting_participants').insert(participantIds.map((userId: string) => ({
+            meeting_id: meeting.id,
+            user_id: userId,
+            participant_role: userId === session.uid ? 'host' : 'required',
+            response: userId === session.uid ? 'accepted' : 'pending',
+            responded_at: userId === session.uid ? new Date().toISOString() : null,
+          })));
+          await supabaseAdmin.schema('ondwira').from('work_meeting_reminders').insert(participantIds.map((userId: string) => ({ meeting_id: meeting.id, user_id: userId, reminder_minutes: 10 })));
+        }
+      }
+    }
   }
 
   await supabaseAdmin.schema('ondwira').from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', id);
