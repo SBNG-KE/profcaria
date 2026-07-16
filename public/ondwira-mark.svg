@@ -1,18 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Ondwira detached D">
   <defs>
-    <pattern id="pixels" width="8" height="8" patternUnits="userSpaceOnUse">
-      <rect width="8" height="8" fill="#111214"/>
-      <rect width="3" height="3" fill="#1D1A1A"/>
-      <rect x="4" y="4" width="3" height="3" fill="#171515"/>
+    <clipPath id="tile"><rect width="96" height="96" rx="22"/></clipPath>
+    <pattern id="pixels" width="77" height="157" patternUnits="userSpaceOnUse">
+      <image href="/ondwira-pixel-background.png" width="77" height="157"/>
     </pattern>
-    <radialGradient id="glow" cx="28%" cy="18%" r="78%">
-      <stop offset="0" stop-color="#C56F4A" stop-opacity=".16"/>
-      <stop offset=".7" stop-color="#111214" stop-opacity="0"/>
-    </radialGradient>
   </defs>
-  <rect width="96" height="96" rx="22" fill="url(#pixels)"/>
-  <rect width="96" height="96" rx="22" fill="url(#glow)"/>
-  <rect x=".75" y=".75" width="94.5" height="94.5" rx="21.25" fill="none" stroke="#FFFDF9" stroke-opacity=".11" stroke-width="1.5"/>
+  <rect width="96" height="96" rx="22" fill="#111214"/>
+  <rect width="96" height="96" fill="url(#pixels)" clip-path="url(#tile)"/>
   <g fill="none" stroke="#C56F4A">
     <path d="M23 17V79" stroke-width="9" stroke-linecap="square"/>
     <path d="M42 21H48C68 21 79 31.4 79 48C79 64.6 68 75 48 75H42" stroke-width="9" stroke-linecap="square"/>

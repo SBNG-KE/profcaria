@@ -1,17 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Ondwira">
   <defs>
-    <pattern id="pixel" width="8" height="8" patternUnits="userSpaceOnUse">
-      <rect width="8" height="8" fill="#111214"/>
-      <rect width="3" height="3" fill="#1D1A1A"/>
-      <rect x="4" y="4" width="3" height="3" fill="#171515"/>
+    <clipPath id="frame"><rect width="1200" height="630"/></clipPath>
+    <pattern id="pixels" width="77" height="157" patternUnits="userSpaceOnUse">
+      <image href="/ondwira-pixel-background.png" width="77" height="157"/>
     </pattern>
-    <linearGradient id="shade" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#A65336" stop-opacity=".16"/>
-      <stop offset="1" stop-color="#111214" stop-opacity="0"/>
-    </linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#pixel)"/>
-  <rect width="1200" height="630" fill="url(#shade)"/>
+  <rect width="1200" height="630" fill="#111214"/>
+  <rect width="1200" height="630" fill="url(#pixels)" clip-path="url(#frame)"/>
   <g transform="translate(80 165)">
     <g fill="#FFFDF9" font-family="Georgia, 'Times New Roman', serif" font-size="126" font-weight="600" letter-spacing="14">
       <text x="0" y="130">ON</text>
