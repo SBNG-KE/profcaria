@@ -1,10 +1,10 @@
 "use client"
 
 import React from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/app/context/ThemeContext';
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
+import OndwiraLogo, { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
 
 export default function HeroSection() {
     const { theme } = useTheme();
@@ -15,15 +15,15 @@ export default function HeroSection() {
             
             {/* Title Formation */}
             <div className="z-10 mt-12 mb-8">
-                <motion.h1 
+                <motion.div
                     initial={{ letterSpacing: '40px', opacity: 0, filter: 'blur(20px)' }}
                     animate={{ letterSpacing: '8px', opacity: 1, filter: 'blur(0px)' }}
                     transition={{ duration: 1.8, ease: "easeOut", delay: 0.2 }}
-                    className={`text-5xl md:text-8xl lg:text-9xl font-black uppercase tracking-widest font-pixel 
+                    className={`text-5xl md:text-8xl lg:text-9xl
                         ${isDark ? 'text-white text-glow' : 'text-black'}`}
                 >
-                    ONDWIRA
-                </motion.h1>
+                    <OndwiraLogo markClassName="text-[var(--accent-primary)]" />
+                </motion.div>
             </div>
 
             {/* Circular Logo Formation */}
@@ -33,15 +33,7 @@ export default function HeroSection() {
                 transition={{ duration: 1.2, ease: "circOut", delay: 1.5 }}
                 className="relative overflow-hidden rounded-3xl border border-[var(--border-primary)] bg-[var(--surface-raised)] p-3 shadow-[var(--shadow-glow)]"
             >
-                <div className="relative rounded-2xl bg-[var(--accent-primary)] p-2">
-                    <Image
-                        src="/ondwira.svg"
-                        alt="Ondwira"
-                        width={64}
-                        height={64}
-                        className="h-12 w-12 md:h-16 md:w-16"
-                    />
-                </div>
+                <OndwiraBadge className="h-16 w-16 rounded-2xl md:h-20 md:w-20" />
             </motion.div>
 
             {/* Downward Arrow */}

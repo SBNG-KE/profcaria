@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Archive, BellOff, ChevronDown, EllipsisVertical, LockKeyhole, MessageCirclePlus, Search, Send, Settings2, Smile, Sparkles, UsersRound } from 'lucide-react';
+import { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
 
 type Conversation = {
   conversation_id: string;
@@ -41,7 +42,6 @@ export default function SocialClient() {
 
   useEffect(() => {
     if (!selectedId) return;
-    setMessages([]);
     fetch(`/api/social/conversations/${selectedId}/messages`)
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('Unable to load this chat.')))
       .then((data) => { setMessages(data.messages ?? []); setViewerId(data.viewerId ?? null); })
@@ -54,6 +54,11 @@ export default function SocialClient() {
   }), [conversations, search]);
   const selected = conversations.find((item) => item.conversation_id === selectedId);
   const selectedTitle = selected?.conversations.title || (selected?.conversations.kind === 'group' ? 'Untitled group' : 'Private conversation');
+
+  function selectConversation(conversationId: string) {
+    setMessages([]);
+    setSelectedId(conversationId);
+  }
 
   async function sendMessage() {
     if (!draft.trim() || !selectedId) return;
@@ -76,7 +81,7 @@ export default function SocialClient() {
     if (!response.ok) { setError(data.error || 'Conversation could not be created.'); return; }
     const item: Conversation = { conversation_id: data.conversation.id, archived_at: null, locked_at: null, muted_until: null, conversations: { ...data.conversation, updated_at: data.conversation.created_at } };
     setConversations((current) => [item, ...current]);
-    setSelectedId(data.conversation.id);
+    selectConversation(data.conversation.id);
     setContactPickerOpen(false);
   }
 
@@ -84,7 +89,7 @@ export default function SocialClient() {
     <main className="min-h-screen bg-[#f7f8fb] text-[#14213d] selection:bg-[#ffca3a]/50">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside className="hidden w-[84px] flex-col items-center border-r border-[#e5e9f2] bg-white py-7 lg:flex">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#14213d] text-lg font-black tracking-tighter text-white">O</div>
+          <OndwiraBadge className="h-11 w-11 rounded-2xl" />
           <nav className="mt-12 flex flex-1 flex-col gap-5 text-[#74809a]">
             <button className="grid h-11 w-11 place-items-center rounded-xl bg-[#ffca3a] text-[#14213d]" aria-label="Messages"><MessageCirclePlus size={20} /></button>
             <button className="grid h-11 w-11 place-items-center rounded-xl hover:bg-[#f0f3f8]" aria-label="Groups"><UsersRound size={20} /></button>
@@ -103,7 +108,7 @@ export default function SocialClient() {
             {loading && <p className="px-3 py-8 text-center text-sm text-[#74809a]">Opening your conversations…</p>}
             {error && !loading && <p className="mx-3 rounded-xl bg-[#fff4e5] p-3 text-sm text-[#9a5a00]">{error}</p>}
             {!loading && !error && filtered.length === 0 && <div className="mx-3 mt-10 text-center"><div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#fff1bf] text-[#a97800]"><Sparkles size={24} /></div><h2 className="mt-4 font-bold">Your conversations start here</h2><p className="mt-2 text-sm leading-6 text-[#74809a]">Private chats and groups will appear here. Contacts and new-chat invitations are the next Social feature.</p></div>}
-            {filtered.map((item) => <button key={item.conversation_id} onClick={() => setSelectedId(item.conversation_id)} className={`mb-1 flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${selectedId === item.conversation_id ? 'bg-[#eef2ff]' : 'hover:bg-[#f6f8fb]'}`}><div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#dce4fa] font-black text-[#314b87]">{item.conversations.kind === 'group' ? <UsersRound size={20} /> : (item.conversations.title || 'P').slice(0, 1).toUpperCase()}</div><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="truncate text-sm font-bold">{item.conversations.title || (item.conversations.kind === 'group' ? 'Untitled group' : 'Private conversation')}</p>{item.locked_at && <LockKeyhole size={13} className="text-[#74809a]" />}</div><p className="mt-1 truncate text-xs text-[#74809a]">{item.muted_until ? 'Muted' : item.conversations.kind === 'group' ? 'Group conversation' : 'Private conversation'}</p></div></button>)}
+            {filtered.map((item) => <button key={item.conversation_id} onClick={() => selectConversation(item.conversation_id)} className={`mb-1 flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${selectedId === item.conversation_id ? 'bg-[#eef2ff]' : 'hover:bg-[#f6f8fb]'}`}><div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#dce4fa] font-black text-[#314b87]">{item.conversations.kind === 'group' ? <UsersRound size={20} /> : (item.conversations.title || 'P').slice(0, 1).toUpperCase()}</div><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="truncate text-sm font-bold">{item.conversations.title || (item.conversations.kind === 'group' ? 'Untitled group' : 'Private conversation')}</p>{item.locked_at && <LockKeyhole size={13} className="text-[#74809a]" />}</div><p className="mt-1 truncate text-xs text-[#74809a]">{item.muted_until ? 'Muted' : item.conversations.kind === 'group' ? 'Group conversation' : 'Private conversation'}</p></div></button>)}
           </div>
         </section>
 

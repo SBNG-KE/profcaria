@@ -16,12 +16,17 @@ export const metadata: Metadata = {
   description: 'One place to talk, work, meet, manage opportunities, and connect the tools you trust.',
   applicationName: 'Ondwira',
   keywords: ['Ondwira', 'messaging', 'workspaces', 'meetings', 'jobs', 'private communication'],
-  icons: { icon: [{ url: '/icon.svg', type: 'image/svg+xml' }, { url: '/favicon.ico' }], apple: '/apple-touch-icon.png' },
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }, { url: '/favicon.ico', sizes: 'any' }],
+    shortcut: '/favicon.ico',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   openGraph: {
     type: 'website', url: appUrl, siteName: 'Ondwira', title: 'Ondwira',
     description: 'Always connected to people, work, and opportunity.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Ondwira detached D wordmark' }],
   },
-  twitter: { card: 'summary_large_image', title: 'Ondwira', description: 'Always connected to people, work, and opportunity.' },
+  twitter: { card: 'summary_large_image', title: 'Ondwira', description: 'Always connected to people, work, and opportunity.', images: ['/og-image.png'] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

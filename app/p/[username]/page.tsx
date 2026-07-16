@@ -1,16 +1,36 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { notFound, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, MapPin, Link as LinkIcon, Building2, Calendar, Share2 } from 'lucide-react';
 import ProfileImage from '@/app/components/ProfileImage';
+import OndwiraLogo from '@/app/components/brand/OndwiraLogo';
+
+type PublicExperience = {
+    title?: string;
+    company?: string;
+    dateRange?: string;
+    description?: string;
+};
+
+type PublicProfile = {
+    profileImage?: string | null;
+    firstName: string;
+    lastName: string;
+    headline?: string;
+    location?: string;
+    website?: string;
+    createdAt?: string;
+    about?: string;
+    experience?: PublicExperience[];
+};
 
 export default function PublicProfilePage() {
     const params = useParams();
     const username = params.username as string; // expecting "firstname-lastname" format or similar ID logic
 
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<PublicProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
@@ -86,7 +106,7 @@ export default function PublicProfilePage() {
         <div className="min-h-screen bg-[#020617] text-white">
             {/* Simple Header */}
             <nav className="fixed top-0 inset-x-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center justify-between px-6">
-                <Link href="/" className="font-black text-xl tracking-tight">PROFCARIA</Link>
+                <Link href="/" aria-label="Ondwira home"><OndwiraLogo className="text-xl" markClassName="text-[#C56F4A]" /></Link>
                 <Link href="/auth" className="text-xs font-bold uppercase tracking-widest px-4 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all">
                     Log In
                 </Link>
@@ -137,7 +157,7 @@ export default function PublicProfilePage() {
                     <h2 className="text-xl font-bold">Experience</h2>
                     {profile.experience && profile.experience.length > 0 ? (
                         <div className="space-y-6">
-                            {profile.experience.map((exp: any, i: number) => (
+                            {profile.experience.map((exp, i) => (
                                 <div key={i} className="flex gap-4">
                                     <div className="w-12 h-12 bg-neutral-800 rounded-xl flex items-center justify-center shrink-0">
                                         <Building2 size={24} className="text-neutral-500" />

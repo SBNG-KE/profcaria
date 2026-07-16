@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
+import { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
 
 // Create a client-side Supabase client for reading the OAuth session
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -201,6 +202,7 @@ export default function AuthCallbackPage() {
     if (status === 'loading') {
         return (
             <div className={`min-h-screen flex flex-col items-center justify-center ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                <OndwiraBadge className="mb-5 h-12 w-12 rounded-2xl" />
                 <Loader2 className="animate-spin mb-4" size={32} />
                 <p className="text-sm font-bold uppercase tracking-widest opacity-60">Authenticating...</p>
             </div>
@@ -211,6 +213,7 @@ export default function AuthCallbackPage() {
     if (status === 'error') {
         return (
             <div className={`min-h-screen flex flex-col items-center justify-center gap-4 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                <OndwiraBadge className="h-12 w-12 rounded-2xl" />
                 <p className="text-lg font-bold">{errorMessage}</p>
                 <button
                     onClick={() => router.push('/')}
@@ -226,6 +229,7 @@ export default function AuthCallbackPage() {
     return (
         <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
             <div className={`w-full max-w-md rounded-[2rem] p-8 border ${isDark ? 'bg-neutral-900/80 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+                <OndwiraBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
                 <h2 className="text-2xl font-black tracking-tight text-center mb-2">Complete Your Profile</h2>
                 <p className={`text-center text-sm mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                     Just a couple more details to set up your employer account

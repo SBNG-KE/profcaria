@@ -1,6 +1,8 @@
-<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Ondwira detached D">
   <rect width="96" height="96" rx="22" fill="#A65336"/>
-  <path d="M23 17V79" stroke="#FFFDF9" stroke-width="9" stroke-linecap="square"/>
-  <path d="M42 21H48C68 21 79 31.4 79 48C79 64.6 68 75 48 75H42" stroke="#FFFDF9" stroke-width="9" stroke-linecap="square"/>
-  <path d="M23 48H36" stroke="#FFFDF9" stroke-width="4"/>
+  <g fill="none" stroke="#FFFDF9">
+    <path d="M23 17V79" stroke-width="9" stroke-linecap="square"/>
+    <path d="M42 21H48C68 21 79 31.4 79 48C79 64.6 68 75 48 75H42" stroke-width="9" stroke-linecap="square"/>
+    <path d="M23 48H36" stroke-width="4"/>
+  </g>
 </svg>

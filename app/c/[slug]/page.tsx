@@ -3,14 +3,26 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, MapPin, Link as LinkIcon, Building2, Calendar, Share2, Users, Briefcase, Mail } from 'lucide-react';
+import { Loader2, MapPin, Link as LinkIcon, Share2, Users, Briefcase, Mail } from 'lucide-react';
 import ProfileImage from '@/app/components/ProfileImage';
+import OndwiraLogo from '@/app/components/brand/OndwiraLogo';
+
+type PublicCompany = {
+    logo?: string | null;
+    name: string;
+    industry?: string;
+    location?: string;
+    website?: string;
+    size?: string | number;
+    about?: string;
+    email?: string;
+};
 
 export default function PublicCompanyProfilePage() {
     const params = useParams();
     const slug = params.slug as string;
 
-    const [company, setCompany] = useState<any>(null);
+    const [company, setCompany] = useState<PublicCompany | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
@@ -75,7 +87,7 @@ export default function PublicCompanyProfilePage() {
         <div className="min-h-screen bg-[#020617] text-white">
             {/* Simple Header */}
             <nav className="fixed top-0 inset-x-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center justify-between px-6">
-                <Link href="/" className="font-black text-xl tracking-tight">PROFCARIA</Link>
+                <Link href="/" aria-label="Ondwira home"><OndwiraLogo className="text-xl" markClassName="text-[#C56F4A]" /></Link>
                 <Link href="/auth" className="text-xs font-bold uppercase tracking-widest px-4 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all">
                     Log In
                 </Link>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, BriefcaseBusiness, CalendarDays, ChartNoAxesCombined, FileText, MessageCircle, Phone, Search, Settings, ShieldCheck, Users, UserRoundSearch } from 'lucide-react';
 import { PixelBackground } from '@/app/components/PixelBackground';
+import OndwiraLogo, { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
 import { useTheme } from '@/app/context/ThemeContext';
 
 type Mode = 'social' | 'work';
@@ -46,8 +47,8 @@ export default function OndwiraShell({ children }: { children: React.ReactNode }
       <header className="sticky top-0 z-40 border-b border-[var(--border-secondary)] bg-[color:var(--surface-raised)]/95 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <button onClick={() => router.push('/social')} className="flex items-center gap-2.5" aria-label="Ondwira home">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--accent-primary)] font-black text-[var(--text-inverse)]">O</span>
-            <span className="hidden text-lg font-black tracking-[-0.04em] sm:block">ondwira</span>
+            <OndwiraBadge className="h-9 w-9 rounded-xl" />
+            <OndwiraLogo variant="lowercase" className="hidden text-lg sm:inline-flex" markClassName="text-[var(--accent-primary)]" />
           </button>
 
           <div className="mx-auto flex rounded-full bg-[var(--surface-muted)] p-1 text-xs font-bold sm:text-sm" aria-label="Choose Ondwira mode">
