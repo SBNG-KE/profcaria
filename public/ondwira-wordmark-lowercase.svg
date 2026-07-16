@@ -3,7 +3,7 @@
     <text x="0" y="91">on</text>
     <text x="194" y="91">wira</text>
   </g>
-  <g fill="none" stroke="#A65336">
+  <g fill="none" stroke="#C56F4A">
     <path d="M116 25V101" stroke-width="8" stroke-linecap="square"/>
     <path d="M134 29H140C164 29 178 42.8 178 63C178 83.2 164 97 140 97H134" stroke-width="8" stroke-linecap="square"/>
     <path d="M116 63H129" stroke-width="3"/>

@@ -4,23 +4,23 @@
   "description": "Social communication and work, together.",
   "start_url": "/social",
   "display": "standalone",
-  "background_color": "#f7f4ee",
-  "theme_color": "#a65336",
+  "background_color": "#111214",
+  "theme_color": "#111214",
   "icons": [
     {
-      "src": "/icon.svg",
+      "src": "/icon.svg?v=20260716b",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/ondwira.svg",
+      "src": "/ondwira.svg?v=20260716b",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/apple-touch-icon.png?v=20260716b",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"

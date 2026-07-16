@@ -17,9 +17,9 @@ export const metadata: Metadata = {
   applicationName: 'Ondwira',
   keywords: ['Ondwira', 'messaging', 'workspaces', 'meetings', 'jobs', 'private communication'],
   icons: {
-    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }, { url: '/favicon.ico', sizes: 'any' }],
-    shortcut: '/favicon.ico',
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/icon.svg?v=20260716b', type: 'image/svg+xml' }, { url: '/favicon.ico?v=20260716b', sizes: 'any' }],
+    shortcut: '/favicon.ico?v=20260716b',
+    apple: [{ url: '/apple-touch-icon.png?v=20260716b', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
     type: 'website', url: appUrl, siteName: 'Ondwira', title: 'Ondwira',

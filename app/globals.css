@@ -41,6 +41,17 @@ body {
   color: var(--text-primary);
 }
 
+.ondwira-brand-tile {
+  background-color: #111214;
+  background-image:
+    radial-gradient(circle at 28% 18%, rgba(197, 111, 74, 0.16), transparent 58%),
+    linear-gradient(90deg, rgba(255, 253, 249, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(255, 253, 249, 0.035) 1px, transparent 1px);
+  background-size: auto, 4px 4px, 4px 4px;
+  border: 1px solid rgba(255, 253, 249, 0.11);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.34);
+}
+
 .dark {
   --bg-primary: #111214;
   --bg-secondary: #191a1d;

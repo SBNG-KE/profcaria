@@ -196,7 +196,7 @@ export default function ConversationPanel({ conversationId, context, title, subt
     closeDialog();
   }
 
-  return <section className="relative flex h-full min-h-0 flex-1 flex-col bg-[var(--bg-primary)]">
+  return <section className={`relative flex h-full min-h-0 flex-1 flex-col ${context === 'social' ? 'bg-transparent' : 'bg-[var(--bg-primary)]'}`}>
     <header className="flex min-h-[72px] items-center gap-3 border-b border-[var(--border-secondary)] bg-[var(--surface-raised)]/92 px-3 backdrop-blur-lg sm:px-5">
       {onBack && <button onClick={onBack} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--surface-muted)] md:hidden" aria-label="Back to conversations">‹</button>}
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--accent-soft)] font-black text-[var(--accent-primary)]">{displayTitle.slice(0, 1).toUpperCase()}</span>

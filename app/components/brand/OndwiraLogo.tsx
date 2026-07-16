@@ -34,20 +34,20 @@ export function OndwiraMark({ className = '', style, labelled = true }: Pick<Log
 
 export function OndwiraBadge({ className = '', markClassName = '' }: Pick<LogoProps, 'className' | 'markClassName'>) {
   return (
-    <span className={`grid place-items-center overflow-hidden bg-[var(--accent-primary)] text-[var(--text-inverse)] ${className}`} role="img" aria-label="Ondwira">
-      <OndwiraMark labelled={false} className={`h-[76%] w-[62%] ${markClassName}`} />
+    <span className={`ondwira-brand-tile grid place-items-center overflow-hidden text-[#C56F4A] ${className}`} role="img" aria-label="Ondwira">
+      <OndwiraMark labelled={false} className={`h-[76%] w-[62%] ${markClassName}`} style={{ color: '#C56F4A' }} />
     </span>
   );
 }
 
 export default function OndwiraLogo({ className = '', markClassName = '', compact = false, variant = 'display', style }: LogoProps) {
-  if (compact) return <OndwiraMark className={markClassName || className} style={style} />;
+  if (compact) return <OndwiraMark className={`text-[#C56F4A] ${markClassName || className}`} style={{ ...style, color: '#C56F4A' }} />;
 
   const lowercase = variant === 'lowercase';
   return (
     <span className={`inline-flex items-center whitespace-nowrap ${className}`} style={style} role="img" aria-label="Ondwira">
       <span className={lowercase ? 'font-sans text-[1em] font-black tracking-[-0.055em]' : 'font-editorial text-[1.04em] font-semibold tracking-[0.12em]'}>{lowercase ? 'on' : 'ON'}</span>
-      <OndwiraMark labelled={false} className={`${lowercase ? 'mx-[0.01em] h-[1.12em] w-[0.76em]' : 'mx-[0.08em] h-[1.18em] w-[0.9em]'} shrink-0 ${markClassName}`} />
+      <OndwiraMark labelled={false} className={`${lowercase ? 'mx-[0.01em] h-[1.12em] w-[0.76em]' : 'mx-[0.08em] h-[1.18em] w-[0.9em]'} shrink-0 text-[#C56F4A] ${markClassName}`} style={{ color: '#C56F4A' }} />
       <span className={lowercase ? 'font-sans text-[1em] font-black tracking-[-0.055em]' : 'font-editorial text-[1.04em] font-semibold tracking-[0.12em]'}>{lowercase ? 'wira' : 'WIRA'}</span>
     </span>
   );

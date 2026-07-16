@@ -53,7 +53,7 @@ export default function ChatHome() {
     setSelectedContacts(current => current.some(item => item.id === contact.id) ? current.filter(item => item.id !== contact.id) : [...current, contact]);
   }
 
-  return <div className="flex h-[calc(100dvh-4rem)] min-h-0 bg-[var(--bg-primary)]">
+  return <div className="flex h-[calc(100dvh-4rem)] min-h-0 bg-transparent">
     <section className={`${selected ? 'hidden md:flex' : 'flex'} w-full shrink-0 flex-col border-r border-[var(--border-secondary)] bg-[var(--surface-raised)]/88 md:w-[360px]`}>
       <div className="p-5">
         <div className="flex items-center justify-between"><div><p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Social</p><h1 className="mt-1 text-2xl font-black">Chats</h1></div><button onClick={() => setPicker(true)} className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--accent-primary)] text-[var(--text-inverse)]"><MessageCirclePlus size={20} /></button></div>
