@@ -22,7 +22,7 @@ import { useTheme, type FontPreference } from '@/app/context/ThemeContext';
 const sections = [
   { title: 'CVs and documents', text: 'CV versions, certificates, files, writing and saved signatures.', note: 'Open document room', icon: FileText, href: '/settings/documents' },
   { title: 'Work record', text: 'Job preferences, verified employment and application history.', note: 'Open work record', icon: BriefcaseBusiness, href: '/settings/employment' },
-  { title: 'Account and identity', text: 'Name, photo, phone number, email and linked devices.', note: 'Being unified', icon: UserRound },
+  { title: 'Account and identity', text: 'Your unique username, private phone number and account identity.', note: 'Open identity room', icon: UserRound, href: '/settings/identity' },
   { title: 'Privacy and safety', text: 'Blocked people, chat locks, visibility and screen privacy.', note: 'Being prepared', icon: Shield },
   { title: 'Chats and appearance', text: 'Wallpaper, message defaults, stickers and conversation display.', note: 'Being prepared', icon: Palette },
   { title: 'Agent connections', text: 'Give an external AI agent only the access you approve.', note: 'Being prepared', icon: Bot },

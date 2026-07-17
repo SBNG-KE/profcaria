@@ -169,7 +169,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newUser.id, 'professional', false);
             // New user needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/social' });
+            const response = NextResponse.json({ success: true, redirect: `/?mode=setup&redirect=${encodeURIComponent('/settings/identity?setup=1')}` });
             setSessionCookie(response, token);
             return response;
         }

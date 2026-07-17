@@ -34,8 +34,31 @@ export async function POST(request: Request) {
   if (!input || (input.kind !== 'direct' && input.kind !== 'group') || !Array.isArray(input.members)) {
     return NextResponse.json({ error: 'Invalid conversation request' }, { status: 400 });
   }
+  if (input.members.length > 100) {
+    return NextResponse.json({ error: 'A group can include up to 100 people during this rollout.' }, { status: 400 });
+  }
 
-  const uniqueMembers = new Map(input.members.map((member) => [member.id, member]));
+  const requestedIds = [...new Set(input.members.map(member => member.id).filter(id => typeof id === 'string' && id !== session.uid))];
+  const [{ data: activeAccounts }, { data: identities }] = await Promise.all([
+    requestedIds.length
+      ? supabaseAdmin.schema('ondwira').from('accounts').select('id').in('id', requestedIds).eq('status', 'active')
+      : Promise.resolve({ data: [] }),
+    requestedIds.length
+      ? supabaseAdmin.schema('ondwira').from('account_identities').select('account_id, identity_type').in('account_id', requestedIds).in('identity_type', ['professional', 'employer'])
+      : Promise.resolve({ data: [] }),
+  ]);
+  const activeIds = new Set((activeAccounts ?? []).map((account: { id: string }) => account.id));
+  const verifiedTypes = new Map<string, 'professional' | 'employer'>();
+  (identities ?? []).forEach((identity: { account_id: string; identity_type: string }) => {
+    if (activeIds.has(identity.account_id) && (identity.identity_type === 'professional' || !verifiedTypes.has(identity.account_id))) {
+      verifiedTypes.set(identity.account_id, identity.identity_type as 'professional' | 'employer');
+    }
+  });
+  if (verifiedTypes.size !== requestedIds.length) {
+    return NextResponse.json({ error: 'One or more selected accounts are unavailable.' }, { status: 400 });
+  }
+
+  const uniqueMembers = new Map([...verifiedTypes].map(([id, type]) => [id, { id, type }]));
   uniqueMembers.set(session.uid, { id: session.uid, type: session.schema });
   if ((input.kind === 'direct' && uniqueMembers.size !== 2) || (input.kind === 'group' && uniqueMembers.size < 2)) {
     return NextResponse.json({ error: 'Choose valid conversation members' }, { status: 400 });

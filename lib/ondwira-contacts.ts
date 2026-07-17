@@ -8,7 +8,17 @@ export type OndwiraContact = {
   type: 'professional' | 'employer';
   name: string;
   avatarUrl: string | null;
+  username?: string;
 };
+
+async function attachUsernames(contacts: OndwiraContact[]) {
+  if (!contacts.length) return contacts;
+  const { data } = await supabaseAdmin.schema('ondwira').from('accounts')
+    .select('id, username').in('id', contacts.map(contact => contact.id));
+  const usernames = new Map<string, string>();
+  (data ?? []).forEach((account: { id: string; username: string }) => usernames.set(account.id, account.username));
+  return contacts.map(contact => ({ ...contact, username: usernames.get(contact.id) }));
+}
 
 export async function getOndwiraContacts(session: OndwiraSession): Promise<OndwiraContact[]> {
   if (session.schema === 'professional') {
@@ -25,12 +35,12 @@ export async function getOndwiraContacts(session: OndwiraSession): Promise<Ondwi
     const { data: companies, error: companiesError } = await supabaseAdmin
       .schema('employer').from('companies').select('id, enc_company_name, enc_logo_url').in('id', companyIds);
     if (companiesError) throw companiesError;
-    return (companies ?? []).map((company: any) => ({
+    return attachUsernames((companies ?? []).map((company: any) => ({
       id: company.id,
       type: 'employer',
       name: decryptData(company.enc_company_name) || 'Company',
       avatarUrl: decryptData(company.enc_logo_url) || null,
-    }));
+    })));
   }
 
   const { data: jobs, error: jobsError } = await supabaseAdmin.schema('employer').from('jobs').select('id').eq('company_id', session.uid);
@@ -48,12 +58,12 @@ export async function getOndwiraContacts(session: OndwiraSession): Promise<Ondwi
   const { data: people, error: peopleError } = await supabaseAdmin
     .schema('professional').from('users').select('id, enc_first_name, enc_last_name, enc_profile_image_url').in('id', userIds);
   if (peopleError) throw peopleError;
-  return (people ?? []).map((person: any) => ({
+  return attachUsernames((people ?? []).map((person: any) => ({
     id: person.id,
     type: 'professional',
     name: `${decryptData(person.enc_first_name) || ''} ${decryptData(person.enc_last_name) || ''}`.trim() || 'Ondwira member',
     avatarUrl: decryptData(person.enc_profile_image_url) || null,
-  }));
+  })));
 }
 
 export async function resolveOndwiraPeople(rows: Array<{ user_id: string; account_type: string }>) {

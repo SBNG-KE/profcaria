@@ -1,4 +1,5 @@
 //app/api/auth/me/route.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -10,7 +11,7 @@ import { getFollowerCount } from '@/lib/followers';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
         try {
             const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
             payload = verifiedPayload as { [key: string]: any };
-        } catch (e) {
+        } catch {
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
@@ -107,7 +108,7 @@ export async function GET(req: Request) {
                                 profile.address = decryptedLoc;
                             }
                         }
-                    } catch (e) {
+                    } catch {
                         // Same fallback logic for error
                         if (decryptedLoc.includes(',')) {
                             const parts = decryptedLoc.split(',').map(s => s.trim());
@@ -179,7 +180,7 @@ export async function GET(req: Request) {
                                 profile.address = decryptedLoc;
                             }
                         }
-                    } catch (e) {
+                    } catch {
                         // Same fallback logic for error
                         if (decryptedLoc.includes(',')) {
                             const parts = decryptedLoc.split(',').map(s => s.trim());
@@ -193,6 +194,18 @@ export async function GET(req: Request) {
                     }
                 }
             }
+        }
+
+        // Canonical Ondwira identity is shared by Social and Work. Legacy
+        // profile fields remain migration sources, not separate account names.
+        const { data: ondwiraAccount } = await supabaseAdmin.schema('ondwira').from('accounts')
+            .select('username, enc_phone_number, phone_verified_at')
+            .eq('id', uid)
+            .maybeSingle();
+        if (ondwiraAccount) {
+            profile.username = ondwiraAccount.username;
+            profile.phone = decryptData(ondwiraAccount.enc_phone_number) || profile.phone || '';
+            profile.phoneVerified = Boolean(ondwiraAccount.phone_verified_at);
         }
 
         const res = NextResponse.json({

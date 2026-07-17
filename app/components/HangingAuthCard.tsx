@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { PixelBackground } from './PixelBackground';
 import OndwiraLogo, { OndwiraMark } from './brand/OndwiraLogo';
 import HangingSecurityCard from './HangingSecurityCard';
+import { validateOndwiraUsername } from '@/lib/ondwira-username';
 
 const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,6 +39,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+254');
   const [busy, setBusy] = useState(false);
@@ -51,9 +53,10 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
     return <HangingSecurityCard isOpen onClose={onClose} initialMode={screen === 'security_setup' ? 'setup' : 'verify'} />;
   }
 
+  const usernameCheck = validateOndwiraUsername(username);
   const valid = mode === 'login'
     ? Boolean(email.trim() && password)
-    : Boolean(firstName.trim() && lastName.trim() && email.trim() && password.length >= 8 && phone.trim());
+    : Boolean(firstName.trim() && lastName.trim() && email.trim() && password.length >= 8 && usernameCheck.valid);
 
   async function submit() {
     if (!valid || busy) return;
@@ -66,9 +69,11 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
         : {
             firstName: firstName.trim(),
             lastName: lastName.trim(),
+            username: usernameCheck.username,
             email: email.trim().toLowerCase(),
             password,
-            phoneNumber: `${countryCode}${phone.replace(/\D/g, '')}`,
+            phoneNumber: phone.trim() ? `${countryCode}${phone.replace(/\D/g, '')}` : null,
+            onboardingChannel: 'web',
             role: 'Member',
           };
       const response = await fetch(endpoint, {
@@ -137,9 +142,10 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
 
             <form onSubmit={(event) => { event.preventDefault(); submit(); }} className="space-y-5">
               {mode === 'signup' && <div className="grid gap-5 sm:grid-cols-2"><Field label="First name" value={firstName} onChange={setFirstName} autoComplete="given-name" /><Field label="Last name" value={lastName} onChange={setLastName} autoComplete="family-name" /></div>}
+              {mode === 'signup' && <div><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><span className="py-3 pr-1 text-[15px] text-[var(--accent-primary)]">@</span><input aria-label="Unique username" value={username} onChange={(event) => setUsername(event.target.value.replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))} autoComplete="username" placeholder="your_unique_name" className="min-w-0 flex-1 bg-transparent py-3 text-[15px] outline-none placeholder:text-[var(--text-muted)]" /></div><p className={`mt-2 text-[10px] leading-4 ${username && !usernameCheck.valid ? 'text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'}`}>{username && !usernameCheck.valid ? usernameCheck.error : 'Your unique Ondwira name. People can find you without seeing your phone number.'}</p></div>}
               <Field label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
               <Field label={mode === 'signup' ? 'Password · 8 characters minimum' : 'Password'} type="password" value={password} onChange={setPassword} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
-              {mode === 'signup' && <div><span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--text-muted)]">Phone number</span><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} className="bg-transparent py-3 pr-3 text-sm outline-none"><option value="+254">KE +254</option><option value="+256">UG +256</option><option value="+255">TZ +255</option><option value="+250">RW +250</option><option value="+234">NG +234</option><option value="+27">ZA +27</option><option value="+1">US/CA +1</option><option value="+44">UK +44</option></select><input value={phone} onChange={(event) => setPhone(event.target.value.replace(/[^0-9 ]/g, ''))} inputMode="tel" autoComplete="tel" className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none" /></div></div>}
+              {mode === 'signup' && <div><span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--text-muted)]">Phone number · optional on web</span><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} className="bg-transparent py-3 pr-3 text-sm outline-none"><option value="+254">KE +254</option><option value="+256">UG +256</option><option value="+255">TZ +255</option><option value="+250">RW +250</option><option value="+234">NG +234</option><option value="+27">ZA +27</option><option value="+1">US/CA +1</option><option value="+44">UK +44</option></select><input value={phone} onChange={(event) => setPhone(event.target.value.replace(/[^0-9 ]/g, ''))} inputMode="tel" autoComplete="tel" placeholder="Add now or later in Settings" className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[var(--text-muted)]" /></div></div>}
               {error && <p className="border-l-2 border-[var(--accent-primary)] pl-3 text-sm text-[var(--accent-strong)]" role="alert">{error}</p>}
               <button type="submit" disabled={!valid || busy} className="w-full bg-[var(--accent-primary)] px-5 py-4 text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--text-inverse)] transition-opacity disabled:cursor-not-allowed disabled:opacity-45">{busy ? 'Please wait…' : mode === 'login' ? 'Enter Ondwira' : 'Create one account'}</button>
             </form>

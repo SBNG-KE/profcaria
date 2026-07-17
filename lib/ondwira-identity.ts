@@ -10,6 +10,9 @@ export async function ensureOndwiraAccount(input: {
   encryptedEmail?: string | null;
   displayName?: string | null;
   authUserId?: string | null;
+  username?: string | null;
+  phoneIndex?: string | null;
+  encryptedPhone?: string | null;
   security?: {
     requires2fa?: boolean;
     hasPasskey?: boolean;
@@ -19,7 +22,7 @@ export async function ensureOndwiraAccount(input: {
   };
 }) {
   const now = new Date().toISOString();
-  const account = {
+  const account: Record<string, unknown> = {
     id: input.id,
     email_index: input.emailIndex,
     enc_email: input.encryptedEmail || null,
@@ -29,6 +32,9 @@ export async function ensureOndwiraAccount(input: {
     updated_at: now,
     last_login_at: now,
   };
+  if (input.username) account.username = input.username;
+  if (input.phoneIndex !== undefined) account.phone_index = input.phoneIndex;
+  if (input.encryptedPhone !== undefined) account.enc_phone_number = input.encryptedPhone;
   const { error: accountError } = await supabaseAdmin.schema('ondwira').from('accounts').upsert(account, { onConflict: 'id' });
   if (accountError) throw accountError;
 
