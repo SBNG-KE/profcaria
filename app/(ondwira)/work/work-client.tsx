@@ -9,7 +9,7 @@ type Group = { id: string; name: string; group_type: string; auto_membership: bo
 type Member = { id: string; name: string; role: string };
 const tools = [
   ['Meetings', 'Team meetings, agendas, and notes.', '/work/meetings', CalendarDays],
-  ['People', 'Members and workspace groups.', '/work/people', Users],
+  ['People', 'Directory, roles, invitations and work groups.', '/work/people', Users],
   ['Jobs', 'Create, publish, and monitor jobs.', '/work/jobs', BriefcaseBusiness],
   ['Applications', 'Review candidates and decisions.', '/work/applications', FileText],
   ['Contracts', 'Review and sign agreements on screen.', '/work/contracts', FileText],

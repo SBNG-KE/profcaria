@@ -32,11 +32,28 @@ export async function POST(request: Request) {
 
   const { data: conversation, error: conversationError } = await supabaseAdmin.schema('ondwira').from('conversations')
     .insert({ kind: 'group', context: 'work', title: `${name} company`, created_by: session.uid }).select('id').single();
-  if (conversationError || !conversation) return NextResponse.json({ error: 'Organisation created, but its company group could not be opened' }, { status: 500 });
-  await supabaseAdmin.schema('ondwira').from('conversation_members').insert({ conversation_id: conversation.id, user_id: session.uid, account_type: session.schema, role: 'owner', membership_status: 'accepted' });
+  if (conversationError || !conversation) {
+    await supabaseAdmin.schema('ondwira').from('organizations').delete().eq('id', organization.id);
+    return NextResponse.json({ error: 'The organisation could not open its automatic company group.' }, { status: 500 });
+  }
+  const { error: conversationMemberError } = await supabaseAdmin.schema('ondwira').from('conversation_members').insert({ conversation_id: conversation.id, user_id: session.uid, account_type: session.schema, role: 'owner', membership_status: 'accepted' });
+  if (conversationMemberError) {
+    await supabaseAdmin.schema('ondwira').from('conversations').delete().eq('id', conversation.id);
+    await supabaseAdmin.schema('ondwira').from('organizations').delete().eq('id', organization.id);
+    return NextResponse.json({ error: 'The organisation owner could not be added to its company group.' }, { status: 500 });
+  }
   const { data: group, error: groupError } = await supabaseAdmin.schema('ondwira').from('work_groups').insert({ organization_id: organization.id, conversation_id: conversation.id, name: `${name} company`, group_type: 'company', auto_membership: true, created_by: session.uid }).select('id, name, group_type, auto_membership, conversation_id, created_at').single();
-  if (groupError || !group) return NextResponse.json({ error: 'Organisation created, but its company group could not be completed' }, { status: 500 });
-  await supabaseAdmin.schema('ondwira').from('work_group_members').insert({ group_id: group.id, user_id: session.uid, role: 'owner', membership_source: 'organization' });
+  if (groupError || !group) {
+    await supabaseAdmin.schema('ondwira').from('conversations').delete().eq('id', conversation.id);
+    await supabaseAdmin.schema('ondwira').from('organizations').delete().eq('id', organization.id);
+    return NextResponse.json({ error: 'The organisation could not complete its automatic company group.' }, { status: 500 });
+  }
+  const { error: groupMemberError } = await supabaseAdmin.schema('ondwira').from('work_group_members').insert({ group_id: group.id, user_id: session.uid, role: 'owner', membership_source: 'organization' });
+  if (groupMemberError) {
+    await supabaseAdmin.schema('ondwira').from('conversations').delete().eq('id', conversation.id);
+    await supabaseAdmin.schema('ondwira').from('organizations').delete().eq('id', organization.id);
+    return NextResponse.json({ error: 'The organisation owner could not enter its automatic company group.' }, { status: 500 });
+  }
 
   return NextResponse.json({ organization: { role: 'owner', status: 'active', organizations: organization }, group }, { status: 201 });
 }
