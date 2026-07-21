@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { resolveOndwiraAccounts } from '@/lib/ondwira-contacts';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+type ConversationListRow = {
+  conversation_id: string;
+  role: string;
+  membership_status: string;
+  archived_at: string | null;
+  locked_at: string | null;
+  muted_until: string | null;
+  conversations: { id: string; kind: 'direct' | 'group'; title: string | null; created_at: string; updated_at: string; disappearing_seconds: number | null };
+};
 
 export async function GET() {
   const session = await getOndwiraSession();
@@ -23,7 +34,48 @@ export async function GET() {
     return NextResponse.json({ error: 'Unable to load conversations' }, { status: 500 });
   }
 
-  return NextResponse.json({ conversations: data ?? [] });
+  const conversations = (data ?? []) as unknown as ConversationListRow[];
+  const directIds = conversations
+    .filter(item => item.conversations.kind === 'direct')
+    .map(item => item.conversation_id);
+  if (!directIds.length) return NextResponse.json({ conversations });
+
+  const { data: directMembers, error: membersError } = await supabaseAdmin.schema('ondwira')
+    .from('conversation_members')
+    .select('conversation_id, user_id')
+    .in('conversation_id', directIds)
+    .eq('membership_status', 'accepted')
+    .neq('user_id', session.uid);
+  if (membersError) {
+    console.error('[ONDWIRA] direct conversation members failed', membersError);
+    return NextResponse.json({ error: 'Unable to resolve conversation members' }, { status: 500 });
+  }
+
+  const directMemberRows = (directMembers ?? []) as unknown as Array<{ conversation_id: string; user_id: string }>;
+  const peerIds = [...new Set<string>(directMemberRows.map(member => member.user_id))];
+  const [profiles, accountsResult] = await Promise.all([
+    resolveOndwiraAccounts(peerIds),
+    peerIds.length
+      ? supabaseAdmin.schema('ondwira').from('accounts').select('id, username').in('id', peerIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const usernames = new Map<string, string>(((accountsResult.data ?? []) as Array<{ id: string; username: string }>).map(account => [account.id, account.username]));
+  const peerByConversation = new Map<string, string>(directMemberRows.map(member => [member.conversation_id, member.user_id]));
+
+  return NextResponse.json({
+    conversations: conversations.map(item => {
+      const peerId = item.conversations?.kind === 'direct' ? peerByConversation.get(item.conversation_id) : null;
+      const profile = peerId ? profiles.get(peerId) : null;
+      const username = peerId ? usernames.get(peerId) : null;
+      return {
+        ...item,
+        displayTitle: item.conversations?.kind === 'group' ? item.conversations.title || 'Untitled group' : profile?.name || username || 'Ondwira member',
+        displaySubtitle: item.conversations?.kind === 'group' ? 'Social group' : username ? `@${username}` : 'Direct conversation',
+        avatarUrl: profile?.avatarUrl || null,
+        peerUsername: username || null,
+      };
+    }),
+  });
 }
 
 export async function POST(request: Request) {

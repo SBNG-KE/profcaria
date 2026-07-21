@@ -57,6 +57,18 @@ type ConversationSettings = {
 
 type DialogKind = 'poll' | 'event' | 'meeting' | 'contact' | 'ai' | null;
 const quickEmoji = ['\u{1F44D}', '\u{2764}\u{FE0F}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+const emojiCategories = {
+  Recent: ['😀','😂','🥰','😍','😊','😉','😭','😮','😎','🤔','🙏','👍','❤️','🔥','✨','🎉'],
+  Faces: ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🫣','🤭','🫢','🫡','🤫','🫠','🤥','😶','🫥','😐','🫤','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪'],
+  People: ['👋','🤚','🖐️','✋','🖖','🫱','🫲','🫳','🫴','👌','🤌','🤏','✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','👇','☝️','🫵','👍','👎','✊','👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏','✍️','💪','🦾','🧠','🫀','👀','👁️','👄','🫦','🧑','👩','👨','👶','🧒','👧','👦','🧓','👵','👴'],
+  Nature: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧','🐦','🐤','🦄','🐝','🦋','🐌','🐞','🐢','🐍','🦎','🐙','🦑','🦀','🐠','🐟','🐬','🐳','🌵','🌲','🌳','🌴','🪴','🌱','🌿','☘️','🍀','🍁','🍂','🌹','🌸','🌺','🌻','🌼','🌞','🌝','🌙','⭐','🌟','✨','⚡','🔥','🌈','☀️','🌤️','🌧️'],
+  Food: ['🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🥑','🥦','🥬','🥒','🌶️','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🧀','🥚','🍳','🥞','🧇','🥓','🍔','🍟','🍕','🌭','🥪','🌮','🌯','🥗','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍦','🍩','🍪','🎂','🍫','🍿','☕','🫖','🥤','🧋','🍷','🍸'],
+  Activity: ['⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🥏','🎱','🏓','🏸','🏒','🏑','🥍','🏏','⛳','🏹','🎣','🤿','🥊','🥋','🎽','🛹','🛼','🛷','⛸️','🎿','🏂','🏋️','🤸','⛹️','🤺','🏊','🚴','🧗','🎯','🎮','🎲','🧩','♟️','🎨','🎭','🎤','🎧','🎷','🎸','🎹','🥁','🎬','🎪','🎉','🎊','🏆','🥇'],
+  Travel: ['🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🛵','🏍️','🚲','🛴','🚨','🚥','🚧','⚓','⛵','🛶','🚤','🛳️','✈️','🛫','🛬','🚁','🚀','🛸','🏠','🏡','🏢','🏥','🏦','🏨','🏫','🏭','🏰','🗼','🗽','⛲','⛺','🏖️','🏝️','🏔️','🗻','🌋','🗺️','🧭'],
+  Symbols: ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','☢️','☣️','📴','📳','🈶','🆚','💯','❗','❓','‼️','⁉️','✅','❌','⭕','🚫','💤','💬','🗨️','🗯️','♻️','🔱','⚜️','🔰','🎵','➕','➖','➗','✖️','✔️'],
+};
+type EmojiCategory = keyof typeof emojiCategories;
+type PendingAttachment = { file: File; kind: string; previewUrl: string | null };
 
 export default function ConversationPanel({ conversationId, context, title, subtitle, onBack }: {
   conversationId: string;
@@ -80,6 +92,7 @@ export default function ConversationPanel({ conversationId, context, title, subt
   const [viewOnce, setViewOnce] = useState(false);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [settings, setSettings] = useState<ConversationSettings | null>(null);
+  const [pendingAttachment, setPendingAttachment] = useState<PendingAttachment | null>(null);
   const [pollQuestion, setPollQuestion] = useState('');
   const [pollOptions, setPollOptions] = useState(['', '']);
   const [richTitle, setRichTitle] = useState('');
@@ -95,6 +108,7 @@ export default function ConversationPanel({ conversationId, context, title, subt
   const audioRef = useRef<HTMLInputElement>(null);
   const stickerRef = useRef<HTMLInputElement>(null);
   const messageEndRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const loadMessages = useCallback(async () => {
     const response = await fetch(`/api/social/conversations/${conversationId}/messages`, { cache: 'no-store' });
@@ -128,10 +142,24 @@ export default function ConversationPanel({ conversationId, context, title, subt
 
   useEffect(() => { messageEndRef.current?.scrollIntoView({ block: 'end' }); }, [messages.length]);
 
+  useEffect(() => () => {
+    if (pendingAttachment?.previewUrl) URL.revokeObjectURL(pendingAttachment.previewUrl);
+  }, [pendingAttachment?.previewUrl]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (event: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [menuOpen]);
+
   const shownMessages = useMemo(() => search.trim() ? messages.filter(message => message.body.toLowerCase().includes(search.trim().toLowerCase())) : messages, [messages, search]);
   const displayTitle = settings?.title || title;
 
   async function sendText() {
+    if (pendingAttachment) return upload(pendingAttachment.file, pendingAttachment.kind);
     const body = draft.trim();
     if (!body || busy) return;
     setBusy(true); setDraft(''); setNotice('');
@@ -157,7 +185,14 @@ export default function ConversationPanel({ conversationId, context, title, subt
     const response = await fetch(`/api/social/conversations/${conversationId}/attachments`, { method: 'POST', body: form });
     const data = await response.json(); setBusy(false);
     if (!response.ok) return setNotice(data.error || 'Attachment could not be sent.');
-    setMessages(current => [...current, data.message]); setDraft(''); setViewOnce(false);
+    setMessages(current => [...current, data.message]); setDraft(''); setViewOnce(false); setPendingAttachment(null);
+  }
+
+  function stageAttachment(file: File, kind: string) {
+    const previewUrl = /^(image|video|audio)\//.test(file.type) ? URL.createObjectURL(file) : null;
+    setPendingAttachment({ file, kind, previewUrl });
+    setTrayOpen(false);
+    setEmojiOpen(false);
   }
 
   async function shareLocation() {
@@ -197,13 +232,13 @@ export default function ConversationPanel({ conversationId, context, title, subt
   }
 
   return <section className={`relative flex h-full min-h-0 flex-1 flex-col ${context === 'social' ? 'bg-transparent' : 'bg-[var(--bg-primary)]'}`}>
-    <header className="flex min-h-[72px] items-center gap-3 border-b border-[var(--border-secondary)] bg-[var(--surface-raised)]/92 px-3 backdrop-blur-lg sm:px-5">
+    <header className="relative z-50 flex min-h-[72px] shrink-0 items-center gap-3 overflow-visible border-b border-[var(--border-secondary)] bg-[var(--surface-raised)]/95 px-3 backdrop-blur-lg sm:px-5">
       {onBack && <button onClick={onBack} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--surface-muted)] md:hidden" aria-label="Back to conversations">‹</button>}
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--accent-soft)] font-black text-[var(--accent-primary)]">{displayTitle.slice(0, 1).toUpperCase()}</span>
       <div className="min-w-0 flex-1"><h2 className="truncate font-black">{displayTitle}</h2><p className="truncate text-xs text-[var(--text-secondary)]">{subtitle}</p></div>
       {context === 'work' && <button onClick={() => setDialog('meeting')} className="hidden items-center gap-2 rounded-xl bg-[var(--accent-soft)] px-3 py-2 text-xs font-bold text-[var(--accent-primary)] sm:flex"><Video size={16} /> Meeting</button>}
       <button onClick={() => setSearchOpen(value => !value)} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--surface-muted)]" aria-label="Search messages"><Search size={18} /></button>
-      <div className="relative"><button onClick={() => setMenuOpen(value => !value)} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--surface-muted)]" aria-label="Conversation menu"><MoreVertical size={18} /></button>{menuOpen && <ConversationMenu context={context} settings={settings} onMeeting={() => { setMenuOpen(false); setDialog('meeting'); }} onMute={() => updateSettings({ action: 'mute', mutedUntil: new Date(Date.now() + 8 * 3600 * 1000).toISOString() })} onDisappear={seconds => updateSettings({ action: 'disappearing', seconds })} onReport={() => { const reason = window.prompt('What should Ondwira review?'); if (reason) updateSettings({ action: 'report', reason }); }} onBlock={() => { const accountId = settings?.otherMembers[0]?.user_id; if (accountId) updateSettings({ action: 'block', accountId }); }} />}</div>
+      <div ref={menuRef} className="relative z-[70]"><button onClick={() => setMenuOpen(value => !value)} className="grid h-9 w-9 place-items-center rounded-xl hover:bg-[var(--surface-muted)]" aria-label="Conversation menu" aria-expanded={menuOpen}><MoreVertical size={18} /></button>{menuOpen && <ConversationMenu context={context} settings={settings} onMeeting={() => { setMenuOpen(false); setDialog('meeting'); }} onMute={() => updateSettings({ action: 'mute', mutedUntil: new Date(Date.now() + 8 * 3600 * 1000).toISOString() })} onDisappear={seconds => updateSettings({ action: 'disappearing', seconds })} onReport={() => { const reason = window.prompt('What should Ondwira review?'); if (reason) updateSettings({ action: 'report', reason }); }} onBlock={() => { const accountId = settings?.otherMembers[0]?.user_id; if (accountId) updateSettings({ action: 'block', accountId }); }} />}</div>
     </header>
 
     {searchOpen && <div className="flex items-center gap-3 border-b border-[var(--border-secondary)] bg-[var(--surface-raised)] px-4 py-3"><Search size={17} className="text-[var(--text-muted)]" /><input autoFocus value={search} onChange={event => setSearch(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search this conversation" /><button onClick={() => { setSearchOpen(false); setSearch(''); }}><X size={17} /></button></div>}
@@ -215,22 +250,23 @@ export default function ConversationPanel({ conversationId, context, title, subt
       <div ref={messageEndRef} />
     </div>
 
-    <footer className="border-t border-[var(--border-secondary)] bg-[var(--surface-raised)]/95 p-2.5 sm:p-4">
+    <footer className="relative z-30 shrink-0 border-t border-[var(--border-secondary)] bg-[var(--surface-raised)]/95 p-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:p-4">
       {viewOnce && <div className="mb-2 flex items-center justify-between rounded-xl bg-[var(--accent-soft)] px-3 py-2 text-xs font-bold text-[var(--accent-primary)]"><span>View once is on for the next message</span><button onClick={() => setViewOnce(false)}><X size={14} /></button></div>}
+      {pendingAttachment && <PendingAttachmentPreview pending={pendingAttachment} onRemove={() => setPendingAttachment(null)} />}
       <div className="relative flex items-end gap-1.5 rounded-[22px] border border-[var(--border-secondary)] bg-[var(--surface-muted)] p-2 shadow-sm sm:gap-2">
-        <button onClick={() => { setTrayOpen(value => !value); setEmojiOpen(false); }} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl hover:bg-[var(--surface-raised)]" aria-label="Attach"><Paperclip size={19} /></button>
-        <button onClick={() => { setEmojiOpen(value => !value); setTrayOpen(false); }} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl hover:bg-[var(--surface-raised)]" aria-label="Emoji"><Smile size={19} /></button>
+        <button onClick={() => { setTrayOpen(value => !value); setEmojiOpen(false); }} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl hover:bg-[var(--surface-raised)] sm:h-10 sm:w-10" aria-label="Attach"><Paperclip size={19} /></button>
+        <button onClick={() => { setEmojiOpen(value => !value); setTrayOpen(false); }} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl hover:bg-[var(--surface-raised)] sm:h-10 sm:w-10" aria-label="Emoji"><Smile size={19} /></button>
         <textarea rows={1} value={draft} onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendText(); } }} className="max-h-32 min-h-10 min-w-0 flex-1 resize-none bg-transparent px-1 py-2.5 text-sm outline-none" placeholder={context === 'work' ? 'Message your team' : 'Message'} />
-        <button onClick={() => setViewOnce(value => !value)} className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xs font-black ${viewOnce ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'hover:bg-[var(--surface-raised)]'}`} title="View once">1</button>
-        <button onClick={sendText} disabled={!draft.trim() || busy} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--accent-primary)] text-[var(--text-inverse)] disabled:opacity-35" aria-label="Send"><Send size={17} /></button>
+        <button onClick={() => setViewOnce(value => !value)} className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-black sm:h-10 sm:w-10 ${viewOnce ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'hover:bg-[var(--surface-raised)]'}`} title="View once">1</button>
+        <button onClick={sendText} disabled={(!draft.trim() && !pendingAttachment) || busy} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--accent-primary)] text-[var(--text-inverse)] disabled:opacity-35 sm:h-10 sm:w-10" aria-label={pendingAttachment ? 'Send attachment' : 'Send message'}><Send size={17} /></button>
         {trayOpen && <AttachmentTray context={context} onClose={() => setTrayOpen(false)} onGallery={() => galleryRef.current?.click()} onCamera={() => cameraRef.current?.click()} onDocument={() => documentRef.current?.click()} onAudio={() => audioRef.current?.click()} onSticker={() => stickerRef.current?.click()} onLocation={shareLocation} onContact={() => { setTrayOpen(false); setDialog('contact'); }} onPoll={() => { setTrayOpen(false); setDialog('poll'); }} onEvent={() => { setTrayOpen(false); setDialog('event'); }} onMeeting={() => { setTrayOpen(false); setDialog('meeting'); }} onAi={() => { setTrayOpen(false); setDialog('ai'); }} />}
-        {emojiOpen && <div className="absolute bottom-[calc(100%+0.6rem)] left-10 z-30 flex flex-wrap gap-1 rounded-2xl border border-[var(--border-secondary)] bg-[var(--surface-raised)] p-2 shadow-xl">{quickEmoji.map(emoji => <button key={emoji} onClick={() => { setDraft(current => current + emoji); setEmojiOpen(false); }} className="grid h-9 w-9 place-items-center rounded-xl text-xl hover:bg-[var(--surface-muted)]">{emoji}</button>)}</div>}
+        {emojiOpen && <EmojiPicker onSelect={emoji => setDraft(current => current + emoji)} onClose={() => setEmojiOpen(false)} />}
       </div>
-      <input ref={galleryRef} hidden type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) upload(file, file.type.startsWith('video/') ? 'video' : 'image'); event.target.value = ''; }} />
-      <input ref={cameraRef} hidden type="file" accept="image/*" capture="environment" onChange={event => { const file = event.target.files?.[0]; if (file) upload(file, 'camera'); event.target.value = ''; }} />
-      <input ref={documentRef} hidden type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" onChange={event => { const file = event.target.files?.[0]; if (file) upload(file, 'document'); event.target.value = ''; }} />
-      <input ref={audioRef} hidden type="file" accept="audio/*" onChange={event => { const file = event.target.files?.[0]; if (file) upload(file, 'audio'); event.target.value = ''; }} />
-      <input ref={stickerRef} hidden type="file" accept="image/png,image/webp,image/jpeg" onChange={event => { const file = event.target.files?.[0]; if (file) upload(file, 'sticker'); event.target.value = ''; }} />
+      <input ref={galleryRef} hidden type="file" accept="image/*,video/*" onChange={event => { const file = event.target.files?.[0]; if (file) stageAttachment(file, file.type.startsWith('video/') ? 'video' : 'image'); event.target.value = ''; }} />
+      <input ref={cameraRef} hidden type="file" accept="image/*" capture="environment" onChange={event => { const file = event.target.files?.[0]; if (file) stageAttachment(file, 'camera'); event.target.value = ''; }} />
+      <input ref={documentRef} hidden type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" onChange={event => { const file = event.target.files?.[0]; if (file) stageAttachment(file, 'document'); event.target.value = ''; }} />
+      <input ref={audioRef} hidden type="file" accept="audio/*" onChange={event => { const file = event.target.files?.[0]; if (file) stageAttachment(file, 'audio'); event.target.value = ''; }} />
+      <input ref={stickerRef} hidden type="file" accept="image/png,image/webp,image/jpeg" onChange={event => { const file = event.target.files?.[0]; if (file) stageAttachment(file, 'sticker'); event.target.value = ''; }} />
     </footer>
 
     {dialog && <RichDialog kind={dialog} context={context} busy={busy} pollQuestion={pollQuestion} setPollQuestion={setPollQuestion} pollOptions={pollOptions} setPollOptions={setPollOptions} title={richTitle} setTitle={setRichTitle} description={richDescription} setDescription={setRichDescription} location={richLocation} setLocation={setRichLocation} startsAt={startsAt} setStartsAt={setStartsAt} contactName={contactName} setContactName={setContactName} contactPhone={contactPhone} setContactPhone={setContactPhone} aiPrompt={aiPrompt} setAiPrompt={setAiPrompt} onClose={closeDialog} onSubmit={() => {
@@ -249,8 +285,15 @@ export default function ConversationPanel({ conversationId, context, title, subt
 }
 
 function DeliveryCircle({ status }: { status: DeliveryStatus }) {
-  const progress = status === 'sent' ? 0 : status === 'delivered' ? 48 : status === 'read' ? 75 : 100;
-  return <span className="inline-flex items-center gap-1" title={status === 'sent' ? 'Sent' : status === 'delivered' ? 'Delivered' : status === 'read' ? 'Read' : 'Viewed'}><svg viewBox="0 0 20 20" className="h-4 w-4 -rotate-90" aria-hidden="true"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeDasharray="1.5 2.4" className="opacity-45" /><circle cx="10" cy="10" r="7" pathLength="100" fill="none" stroke="var(--accent-warm)" strokeWidth="2" strokeLinecap="round" strokeDasharray={`${progress} 100`} /></svg></span>;
+  const label = status === 'sent' ? 'Sent' : status === 'delivered' ? 'Delivered' : status === 'read' ? 'Read' : 'Viewed';
+  const progress = status === 'sent' ? 0 : status === 'delivered' ? 50 : status === 'read' ? 78 : 100;
+  return <span className="inline-flex items-center" title={label} role="img" aria-label={label}>
+    <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] -rotate-90 drop-shadow-[0_0_2px_rgba(0,0,0,0.25)]" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" fill={status === 'viewed' ? 'var(--accent-warm)' : 'none'} fillOpacity="0.18" stroke="currentColor" strokeWidth="2.1" strokeDasharray={status === 'sent' || status === 'delivered' ? '2.2 2.6' : undefined} opacity={status === 'sent' ? 0.9 : 0.55} />
+      {progress > 0 && <circle cx="12" cy="12" r="8" pathLength="100" fill="none" stroke="var(--accent-warm)" strokeWidth="2.8" strokeLinecap="round" strokeDasharray={`${progress} 100`} />}
+      {status === 'viewed' && <circle cx="12" cy="12" r="2.5" fill="var(--accent-warm)" />}
+    </svg>
+  </span>;
 }
 
 function MessageCard({ message, mine, revealed, reactionOpen, onToggleReaction, onReact, onReveal, onVote, onEventResponse }: {
@@ -283,6 +326,28 @@ function AttachmentCard({ attachment, sticker }: { attachment: Attachment; stick
   return <a href={attachment.url || '#'} target="_blank" rel="noreferrer" className="mb-2 flex items-center gap-3 rounded-xl bg-black/10 p-3"><FileText /><span className="min-w-0"><span className="block truncate font-bold">{attachment.name}</span><span className="text-xs opacity-70">{formatBytes(attachment.byteSize)}</span></span></a>;
 }
 
+function PendingAttachmentPreview({ pending, onRemove }: { pending: PendingAttachment; onRemove: () => void }) {
+  const visual = pending.file.type.startsWith('image/') && pending.previewUrl
+    ? <Image src={pending.previewUrl} alt="Attachment preview" width={128} height={96} unoptimized className="h-20 w-24 rounded-xl object-cover" />
+    : pending.file.type.startsWith('video/') && pending.previewUrl
+      ? <video src={pending.previewUrl} className="h-20 w-24 rounded-xl object-cover" muted />
+      : <span className="grid h-20 w-24 place-items-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent-primary)]"><FileText size={28} /></span>;
+  return <div className="mb-2 flex items-center gap-3 rounded-2xl border border-[var(--border-secondary)] bg-[var(--surface-muted)] p-2.5">
+    {visual}
+    <div className="min-w-0 flex-1"><p className="truncate text-sm font-black">{pending.file.name}</p><p className="mt-1 text-xs text-[var(--text-secondary)]">{formatBytes(pending.file.size)} · Ready to send</p><p className="mt-1 text-[10px] text-[var(--text-muted)]">Add a caption below, then press send.</p></div>
+    <button onClick={onRemove} className="grid h-9 w-9 shrink-0 place-items-center rounded-xl hover:bg-[var(--surface-raised)]" aria-label="Remove attachment"><X size={17} /></button>
+  </div>;
+}
+
+function EmojiPicker({ onSelect, onClose }: { onSelect: (emoji: string) => void; onClose: () => void }) {
+  const [category, setCategory] = useState<EmojiCategory>('Recent');
+  return <div className="absolute bottom-[calc(100%+0.6rem)] left-0 z-[75] w-[min(25rem,calc(100vw-1.25rem))] overflow-hidden rounded-[24px] border border-[var(--border-secondary)] bg-[var(--surface-raised)] text-[var(--text-primary)] shadow-2xl">
+    <div className="flex items-center justify-between border-b border-[var(--border-secondary)] px-4 py-3"><div><p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Emoji</p><p className="mt-0.5 text-xs text-[var(--text-secondary)]">Choose as many as you like</p></div><button onClick={onClose} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-[var(--surface-muted)]" aria-label="Close emoji picker"><X size={15} /></button></div>
+    <div className="ondwira-scrollbar flex gap-1 overflow-x-auto border-b border-[var(--border-secondary)] p-2">{(Object.keys(emojiCategories) as EmojiCategory[]).map(name => <button key={name} onClick={() => setCategory(name)} className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black ${category === name ? 'bg-[var(--accent-primary)] text-[var(--text-inverse)]' : 'text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]'}`}>{name}</button>)}</div>
+    <div className="ondwira-scrollbar grid max-h-60 grid-cols-7 gap-1 overflow-y-auto p-3 sm:grid-cols-8">{emojiCategories[category].map((emoji, index) => <button key={`${emoji}-${index}`} onClick={() => onSelect(emoji)} className="grid h-10 w-10 place-items-center rounded-xl text-2xl transition hover:bg-[var(--surface-muted)] hover:scale-110" aria-label={`Insert ${emoji}`}>{emoji}</button>)}</div>
+  </div>;
+}
+
 function PollCard({ poll, onVote }: { poll: Poll; onVote: (optionId: string) => void }) {
   const total = poll.options.reduce((sum, option) => sum + option.votes, 0);
   return <div className="min-w-56"><p className="font-bold">{poll.question}</p><div className="mt-3 space-y-2">{poll.options.map(option => <button key={option.id} onClick={() => onVote(option.id)} className="relative block w-full overflow-hidden rounded-xl border border-current/15 p-2.5 text-left text-xs"><span className="absolute inset-y-0 left-0 bg-current/10" style={{ width: `${total ? option.votes / total * 100 : 0}%` }} /><span className="relative flex justify-between gap-3"><span>{option.mine ? '● ' : '○ '}{option.label}</span><span>{option.votes}</span></span></button>)}</div><p className="mt-2 text-[10px] opacity-65">{total} vote{total === 1 ? '' : 's'}</p></div>;
@@ -303,7 +368,7 @@ function AttachmentTray({ context, onClose, onGallery, onCamera, onDocument, onA
 }
 
 function ConversationMenu({ context, settings, onMeeting, onMute, onDisappear, onReport, onBlock }: { context: 'social' | 'work'; settings: ConversationSettings | null; onMeeting: () => void; onMute: () => void; onDisappear: (seconds: number | null) => void; onReport: () => void; onBlock: () => void }) {
-  return <div className="absolute right-0 top-11 z-40 w-64 rounded-[20px] border border-[var(--border-secondary)] bg-[var(--surface-raised)] p-2 shadow-2xl">
+  return <div className="absolute right-0 top-11 z-[80] w-[min(18rem,calc(100vw-1.5rem))] rounded-[20px] border border-[var(--border-primary)] bg-[var(--surface-raised)] p-2 text-[var(--text-primary)] shadow-[0_22px_70px_rgba(0,0,0,0.38)]">
     {context === 'work' && <MenuButton label="Set a meeting" icon={Video} onClick={onMeeting} />}
     <MenuButton label={settings?.mutedUntil ? 'Muted' : 'Mute for 8 hours'} icon={Mic} onClick={onMute} />
     <div className="px-3 py-2"><label className="text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)]">Disappearing messages</label><select value={settings?.disappearingSeconds ?? ''} onChange={event => onDisappear(event.target.value ? Number(event.target.value) : null)} className="mt-2 w-full rounded-xl bg-[var(--surface-muted)] p-2 text-xs outline-none"><option value="">Off</option><option value="3600">1 hour</option><option value="86400">24 hours</option><option value="604800">7 days</option><option value="7776000">90 days</option></select></div>

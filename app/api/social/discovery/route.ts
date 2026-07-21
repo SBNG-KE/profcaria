@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { getOndwiraSession } from '@/lib/ondwira-auth';
 import { resolveOndwiraAccounts } from '@/lib/ondwira-contacts';
 import { supabaseAdmin } from '@/lib/supabase';
-import { normalizeOndwiraUsername } from '@/lib/ondwira-username';
+import { normalizeOndwiraUsername, validateOndwiraPhone } from '@/lib/ondwira-username';
+import { hashForIndex } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,22 +12,33 @@ export async function GET(request: Request) {
   const session = await getOndwiraSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const query = normalizeOndwiraUsername(new URL(request.url).searchParams.get('query'));
-  if (query.length < 2 || query.length > 30 || !/^[a-z0-9_]+$/.test(query)) {
-    return NextResponse.json({ people: [] });
-  }
-
-  const { data: accounts, error } = await supabaseAdmin.schema('ondwira').from('accounts')
+  const rawQuery = new URL(request.url).searchParams.get('query')?.trim() || '';
+  const phoneSearch = /^[+\d][\d\s()-]+$/.test(rawQuery) && rawQuery.replace(/\D/g, '').length >= 8;
+  const usernameQuery = normalizeOndwiraUsername(rawQuery);
+  let accountsQuery = supabaseAdmin.schema('ondwira').from('accounts')
     .select('id, username')
     .eq('status', 'active')
-    .neq('id', session.uid)
-    .gte('username', query)
-    .lt('username', `${query}\uffff`)
-    .order('username', { ascending: true })
-    .limit(12);
+    .neq('id', session.uid);
+
+  if (phoneSearch) {
+    const phone = validateOndwiraPhone(rawQuery);
+    if (!phone.valid || !phone.phone) return NextResponse.json({ people: [] });
+    accountsQuery = accountsQuery.eq('phone_index', hashForIndex(phone.phone)).limit(1);
+  } else {
+    if (usernameQuery.length < 2 || usernameQuery.length > 30 || !/^[a-z0-9_]+$/.test(usernameQuery)) {
+      return NextResponse.json({ people: [] });
+    }
+    accountsQuery = accountsQuery
+      .gte('username', usernameQuery)
+      .lt('username', `${usernameQuery}\uffff`)
+      .order('username', { ascending: true })
+      .limit(12);
+  }
+
+  const { data: accounts, error } = await accountsQuery;
   if (error) {
-    console.error('[ONDWIRA] username discovery failed', error);
-    return NextResponse.json({ error: 'Unable to search usernames.' }, { status: 500 });
+    console.error('[ONDWIRA] account discovery failed', error);
+    return NextResponse.json({ error: 'Unable to search accounts.' }, { status: 500 });
   }
 
   const ids = (accounts ?? []).map((account: { id: string; username: string }) => account.id);

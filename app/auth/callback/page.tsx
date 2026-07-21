@@ -14,6 +14,7 @@ import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '@/app/context/ThemeContext';
 import { AtSign, Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
 import { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
+import { PixelBackground } from '@/app/components/PixelBackground';
 import { validateOndwiraUsername } from '@/lib/ondwira-username';
 
 // Create a client-side Supabase client for reading the OAuth session
@@ -209,10 +210,13 @@ export default function AuthCallbackPage() {
     // ------- LOADING STATE -------
     if (status === 'loading') {
         return (
-            <div className={`min-h-screen flex flex-col items-center justify-center ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
-                <OndwiraBadge className="mb-5 h-12 w-12 rounded-2xl" />
-                <Loader2 className="animate-spin mb-4" size={32} />
-                <p className="text-sm font-bold uppercase tracking-widest opacity-60">Authenticating...</p>
+            <div className="relative flex min-h-dvh overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
+                <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
+                <div className="relative z-10 m-auto flex flex-col items-center rounded-[28px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/86 px-10 py-9 shadow-[var(--shadow-glow)] backdrop-blur-sm">
+                    <OndwiraBadge className="mb-5 h-12 w-12 rounded-2xl" />
+                    <Loader2 className="mb-4 animate-spin text-[var(--accent-primary)]" size={32} />
+                    <p className="text-sm font-bold uppercase tracking-widest text-[var(--text-secondary)]">Authenticating...</p>
+                </div>
             </div>
         );
     }
@@ -220,23 +224,24 @@ export default function AuthCallbackPage() {
     // ------- ERROR STATE -------
     if (status === 'error') {
         return (
-            <div className={`min-h-screen flex flex-col items-center justify-center gap-4 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
-                <OndwiraBadge className="h-12 w-12 rounded-2xl" />
-                <p className="text-lg font-bold">{errorMessage}</p>
-                <button
-                    onClick={() => router.push('/')}
-                    className={`px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
-                >
-                    Back to Home
-                </button>
+            <div className="relative flex min-h-dvh overflow-hidden bg-[var(--bg-primary)] p-4 text-[var(--text-primary)]">
+                <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
+                <div className="relative z-10 m-auto flex max-w-md flex-col items-center gap-4 rounded-[28px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/90 p-8 text-center shadow-[var(--shadow-glow)] backdrop-blur-sm">
+                    <OndwiraBadge className="h-12 w-12 rounded-2xl" />
+                    <p className="text-lg font-bold">{errorMessage}</p>
+                    <button onClick={() => router.push('/')} className="rounded-xl bg-[var(--accent-primary)] px-6 py-3 text-sm font-bold uppercase tracking-widest text-[var(--text-inverse)] transition hover:brightness-105">
+                        Back to Home
+                    </button>
+                </div>
             </div>
         );
     }
 
     // ------- OAUTH IDENTITY COMPLETION -------
     return (
-        <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
-            <div className={`w-full max-w-md rounded-[2rem] p-8 border ${isDark ? 'bg-neutral-900/80 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
+        <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[var(--bg-primary)] px-4 py-8 text-[var(--text-primary)]">
+            <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
+            <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-[var(--border-primary)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-glow)] backdrop-blur-sm">
                 <OndwiraBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
                 <h2 className="text-2xl font-black tracking-tight text-center mb-2">{needsCompany ? 'Complete your account' : 'Choose your username'}</h2>
                 <p className={`text-center text-sm mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
@@ -343,7 +348,7 @@ export default function AuthCallbackPage() {
                     <button
                         onClick={handleOAuthComplete}
                         disabled={submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)}
-                        className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} ${(submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-full rounded-xl bg-[var(--accent-primary)] py-4 text-sm font-bold uppercase tracking-widest text-[var(--text-inverse)] transition hover:brightness-105 ${(submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)) ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {submitting ? 'Saving…' : 'Continue'}
                     </button>
