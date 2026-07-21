@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
 import {
   ArrowUpRight,
   Bot,
@@ -10,7 +11,9 @@ import {
   CircleDashed,
   FileText,
   KeyRound,
+  Loader2,
   LockKeyhole,
+  LogOut,
   Palette,
   Phone,
   Shield,
@@ -18,6 +21,11 @@ import {
 } from 'lucide-react';
 import ThemeToggle from '@/app/components/ThemeToggle';
 import { useTheme, type FontPreference } from '@/app/context/ThemeContext';
+
+const supabaseAuth = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
+);
 
 const sections = [
   { title: 'CVs and documents', text: 'CV versions, certificates, files, writing and saved signatures.', note: 'Open document room', icon: FileText, href: '/settings/documents' },
@@ -40,6 +48,8 @@ const fontOptions: Array<{ value: FontPreference; label: string; sample: string 
 export default function SettingsClient() {
   const { fontPreference, setFontPreference } = useTheme();
   const [findWork, setFindWork] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
 
   useEffect(() => {
     const sync = () => setFindWork(localStorage.getItem('ondwira_find_work') === 'true');
@@ -55,6 +65,29 @@ export default function SettingsClient() {
     setFindWork(enabled);
     localStorage.setItem('ondwira_find_work', String(enabled));
     window.dispatchEvent(new Event('ondwira:preferences'));
+  }
+
+  async function logOut() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError('');
+
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+      });
+      if (!response.ok) throw new Error('Ondwira could not close this session.');
+
+      // Google OAuth can leave a separate local Supabase session behind.
+      // Close only this device session; other signed-in devices remain active.
+      await supabaseAuth.auth.signOut({ scope: 'local' }).catch(() => undefined);
+      window.location.replace('/');
+    } catch (error) {
+      setLogoutError(error instanceof Error ? error.message : 'Ondwira could not close this session.');
+      setLoggingOut(false);
+    }
   }
 
   return (
@@ -110,6 +143,22 @@ export default function SettingsClient() {
       </div>
 
       <div className="mt-5 flex items-start gap-3 rounded-[22px] border border-[var(--border-secondary)] bg-[var(--surface-muted)]/90 p-5 text-sm leading-6 text-[var(--text-secondary)]"><Phone size={18} className="mt-0.5 shrink-0 text-[var(--accent-primary)]" /><p>Phone and email belong to one Ondwira account. Workspaces are permissions attached to that account, never a separate employer login.</p></div>
+
+      <div className="mt-5 flex flex-col gap-5 rounded-[24px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/90 p-5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="flex min-w-0 items-start gap-4">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-[var(--accent-soft)] text-[var(--accent-primary)]"><LogOut size={21} /></span>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent-primary)]">This device</p>
+            <h2 className="mt-1 font-editorial text-2xl">Leave Ondwira safely</h2>
+            <p className="mt-1 max-w-xl text-sm leading-6 text-[var(--text-secondary)]">Log out of this browser without deleting your account, conversations, documents or work history.</p>
+            {logoutError && <p className="mt-2 text-xs font-bold text-red-500" role="alert">{logoutError}</p>}
+          </div>
+        </div>
+        <button type="button" onClick={logOut} disabled={loggingOut} className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full border border-[var(--accent-primary)] px-5 py-3 text-sm font-black text-[var(--accent-primary)] transition hover:bg-[var(--accent-primary)] hover:text-[var(--text-inverse)] disabled:cursor-wait disabled:opacity-60 sm:w-auto" aria-label="Log out of Ondwira on this device">
+          {loggingOut ? <Loader2 size={17} className="animate-spin" /> : <LogOut size={17} />}
+          {loggingOut ? 'Logging out…' : 'Log out'}
+        </button>
+      </div>
     </section>
   );
 }
