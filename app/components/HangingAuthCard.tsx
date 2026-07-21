@@ -15,6 +15,15 @@ const supabaseAuth = createClient(
 
 type AuthScreen = 'auth' | 'security_setup' | 'security_verify';
 
+function GoogleMark() {
+  return <svg aria-hidden="true" viewBox="0 0 48 48" className="h-5 w-5 shrink-0">
+    <path fill="#FBBC05" d="M43.6 20.5H42V20H24v8h11.3A12 12 0 0 1 12.7 32l-6.6 5.1A20 20 0 0 0 44 24c0-1.2-.1-2.3-.4-3.5Z" />
+    <path fill="#EA4335" d="m6.1 10.9 6.6 4.8A12 12 0 0 1 32 12.1l5.8-5.7A20 20 0 0 0 6.1 10.9Z" />
+    <path fill="#34A853" d="M24 44c5.4 0 10-1.8 13.4-4.9L31.2 34a12 12 0 0 1-18.5-6l-6.6 5.1A20 20 0 0 0 24 44Z" />
+    <path fill="#4285F4" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4.1 6l6.2 5.1C41 35.8 44 30.8 44 24c0-1.2-.1-2.3-.4-3.5Z" />
+  </svg>;
+}
+
 function Field({ label, type = 'text', value, onChange, autoComplete, required = true }: {
   label: string;
   type?: string;
@@ -127,7 +136,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
         </aside>
 
         <div className="ondwira-scrollbar relative z-10 flex min-h-full touch-pan-y flex-col overflow-y-scroll overscroll-y-contain bg-[var(--surface-raised)]/82 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10 lg:h-full lg:min-h-0 lg:px-12 lg:py-10 xl:px-14" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel tabIndex={0} aria-label="Scrollable sign in form">
-          <div className="pr-12"><OndwiraLogo className="text-xl" markClassName="text-[var(--accent-primary)]" /><p className="mt-3 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">One personal account</p></div>
+          <div className="pr-12"><OndwiraLogo className="text-xl" markClassName="text-[var(--accent-primary)]" /><p className="mt-3 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">One account</p></div>
 
           <div className="my-auto py-9 sm:py-10">
             <div className="mb-10 flex border-b border-[var(--border-primary)]">
@@ -135,9 +144,9 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
             </div>
 
             <h1 className="font-editorial text-5xl leading-none">{mode === 'login' ? 'Welcome back.' : 'Begin your ledger.'}</h1>
-            <p className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">{mode === 'login' ? 'Enter the same account for Social and Work.' : 'You will create organisations from Work—not a separate employer identity.'}</p>
+            {mode === 'signup' && <p className="mt-4 text-sm leading-6 text-[var(--text-secondary)]">You will create organisations from Work—not a separate employer identity.</p>}
 
-            <button onClick={continueWithGoogle} disabled={busy} className="mt-8 flex w-full items-center justify-center gap-3 border border-[var(--border-primary)] bg-[var(--bg-primary)] px-5 py-3.5 text-sm font-semibold transition-colors hover:border-[var(--accent-primary)] disabled:opacity-50"><span className="font-bold text-[#4285f4]">G</span>Continue with Google</button>
+            <button onClick={continueWithGoogle} disabled={busy} className="mt-8 flex w-full items-center justify-center gap-3 border border-[var(--border-primary)] bg-[var(--bg-primary)] px-5 py-3.5 text-sm font-semibold transition-colors hover:border-[var(--accent-primary)] disabled:opacity-50"><GoogleMark />Continue with Google</button>
             <div className="my-7 flex items-center gap-4"><span className="h-px flex-1 bg-[var(--border-primary)]" /><span className="text-[9px] uppercase tracking-[0.24em] text-[var(--text-muted)]">or use email</span><span className="h-px flex-1 bg-[var(--border-primary)]" /></div>
 
             <form onSubmit={(event) => { event.preventDefault(); submit(); }} className="space-y-5">

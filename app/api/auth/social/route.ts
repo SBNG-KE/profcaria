@@ -8,6 +8,7 @@ import { encryptData, hashForIndex } from '@/lib/security';
 import { SignJWT } from 'jose';
 import { createClient } from '@supabase/supabase-js';
 import { ensureOndwiraAccount } from '@/lib/ondwira-identity';
+import { validateOndwiraUsername } from '@/lib/ondwira-username';
 
 export const runtime = 'nodejs';
 
@@ -18,7 +19,8 @@ export async function POST(req: Request) {
             fullName,
             role: requestedRole,
             companyName,
-            industry
+            industry,
+            username,
         } = body;
 
         const authHeader = req.headers.get('Authorization');
@@ -105,6 +107,9 @@ export async function POST(req: Request) {
                     },
                 });
 
+                const usernameGate = await chooseUsernameForExistingOAuthAccount(existingUser.id, username);
+                if (usernameGate) return usernameGate;
+
                 // Issue session
                 const token = await issueToken(existingUser.id, 'professional', existingUser.has_totp || false);
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
@@ -122,6 +127,8 @@ export async function POST(req: Request) {
             const nameParts = (fullName || '').split(' ');
             const firstName = nameParts[0] || 'User';
             const lastName = nameParts.slice(1).join(' ') || '';
+            const usernameGate = await chooseUsernameForNewOAuthAccount(username);
+            if ('response' in usernameGate) return usernameGate.response;
 
             const { data: newUser, error } = await supabaseAdmin
                 .schema('professional')
@@ -154,6 +161,7 @@ export async function POST(req: Request) {
                 encryptedEmail: newUser.enc_email,
                 displayName: fullName || `${firstName} ${lastName}`.trim(),
                 authUserId: providerId,
+                username: usernameGate.username,
                 security: { requires2fa: false },
             });
 
@@ -226,6 +234,9 @@ export async function POST(req: Request) {
                     },
                 });
 
+                const usernameGate = await chooseUsernameForExistingOAuthAccount(existingCompany.id, username);
+                if (usernameGate) return usernameGate;
+
                 const token = await issueToken(existingCompany.id, 'employer', existingCompany.has_totp || false);
                 const has2fa = existingCompany.has_totp || existingCompany.has_passkey || existingCompany.has_phone_otp;
                 // Direct to homepage mode
@@ -240,13 +251,20 @@ export async function POST(req: Request) {
 
             // SIGNUP: New employer — need company name + industry
 
-            if (!companyName) {
+            if (!companyName && (typeof username !== 'string' || !username.trim())) {
                 // Signal to callback page: need more info
                 return NextResponse.json({
                     needsCompletion: true,
+                    needsUsername: true,
+                    needsCompany: true,
                     message: 'Company name and industry required for employer signup'
                 }, { status: 200 });
             }
+            if (!companyName) {
+                return NextResponse.json({ needsCompletion: true, needsCompany: true }, { status: 200 });
+            }
+            const usernameGate = await chooseUsernameForNewOAuthAccount(username);
+            if ('response' in usernameGate) return usernameGate.response;
 
             const companyNameIndex = hashForIndex(companyName);
 
@@ -295,6 +313,7 @@ export async function POST(req: Request) {
                 encryptedEmail: newCompany.enc_work_email,
                 displayName: companyName,
                 authUserId: providerId,
+                username: usernameGate.username,
                 security: { requires2fa: true },
             });
 
@@ -319,6 +338,68 @@ export async function POST(req: Request) {
         console.error('Social Auth Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
+}
+
+const GENERATED_USERNAME = /^ondwira_[a-f0-9]{12}$/;
+
+function usernameCompletionResponse(extra: Record<string, unknown> = {}) {
+    return NextResponse.json({
+        needsCompletion: true,
+        needsUsername: true,
+        message: 'Choose the unique username people will use to find you.',
+        ...extra,
+    });
+}
+
+async function chooseUsernameForNewOAuthAccount(input: unknown): Promise<{ username: string } | { response: NextResponse }> {
+    if (typeof input !== 'string' || !input.trim()) {
+        return { response: usernameCompletionResponse() };
+    }
+    const result = validateOndwiraUsername(input);
+    if (!result.valid) {
+        return { response: NextResponse.json({ error: result.error }, { status: 400 }) };
+    }
+    const { data, error } = await supabaseAdmin.schema('ondwira').from('accounts')
+        .select('id').eq('username', result.username).maybeSingle();
+    if (error) {
+        console.error('[ONDWIRA] OAuth username availability check failed', error);
+        return { response: NextResponse.json({ error: 'Unable to check that username.' }, { status: 500 }) };
+    }
+    if (data) {
+        return { response: NextResponse.json({ error: 'That username is already taken.' }, { status: 409 }) };
+    }
+    return { username: result.username };
+}
+
+async function chooseUsernameForExistingOAuthAccount(accountId: string, input: unknown): Promise<NextResponse | null> {
+    const { data: account, error: readError } = await supabaseAdmin.schema('ondwira').from('accounts')
+        .select('username').eq('id', accountId).maybeSingle();
+    if (readError) {
+        console.error('[ONDWIRA] OAuth username read failed', readError);
+        return NextResponse.json({ error: 'Unable to read the account username.' }, { status: 500 });
+    }
+    if (account?.username && !GENERATED_USERNAME.test(account.username)) return null;
+    if (typeof input !== 'string' || !input.trim()) return usernameCompletionResponse();
+
+    const result = validateOndwiraUsername(input);
+    if (!result.valid) return NextResponse.json({ error: result.error }, { status: 400 });
+    const { data: owner, error: lookupError } = await supabaseAdmin.schema('ondwira').from('accounts')
+        .select('id').eq('username', result.username).neq('id', accountId).maybeSingle();
+    if (lookupError) {
+        console.error('[ONDWIRA] OAuth username availability check failed', lookupError);
+        return NextResponse.json({ error: 'Unable to check that username.' }, { status: 500 });
+    }
+    if (owner) return NextResponse.json({ error: 'That username is already taken.' }, { status: 409 });
+
+    const { error: updateError } = await supabaseAdmin.schema('ondwira').from('accounts')
+        .update({ username: result.username, username_updated_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq('id', accountId);
+    if (updateError) {
+        if (updateError.code === '23505') return NextResponse.json({ error: 'That username is already taken.' }, { status: 409 });
+        console.error('[ONDWIRA] OAuth username update failed', updateError);
+        return NextResponse.json({ error: 'Unable to save that username.' }, { status: 500 });
+    }
+    return null;
 }
 
 // --- Helper: Issue JWT ---

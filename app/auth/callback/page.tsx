@@ -12,8 +12,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '@/app/context/ThemeContext';
-import { Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
+import { AtSign, Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
 import { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
+import { validateOndwiraUsername } from '@/lib/ondwira-username';
 
 // Create a client-side Supabase client for reading the OAuth session
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -35,6 +36,9 @@ export default function AuthCallbackPage() {
     const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
     const [industrySearch, setIndustrySearch] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [oauthUsername, setOauthUsername] = useState('');
+    const [needsUsername, setNeedsUsername] = useState(false);
+    const [needsCompany, setNeedsCompany] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,9 +123,11 @@ export default function AuthCallbackPage() {
                         role: pendingRole,
                         token: session.access_token
                     });
+                    setNeedsUsername(Boolean(data.needsUsername));
+                    setNeedsCompany(Boolean(data.needsCompany));
 
                     // Fetch industries for the dropdown
-                    try {
+                    if (data.needsCompany) try {
                         const indRes = await fetch('/api/common/industries');
                         if (indRes.ok) {
                             const indData = await indRes.json();
@@ -163,9 +169,11 @@ export default function AuthCallbackPage() {
         handleCallback();
     }, [router]);
 
-    // Handle employer completion form submit
-    const handleEmployerComplete = async () => {
-        if (!oauthData || !companyName) return;
+    const oauthUsernameResult = validateOndwiraUsername(oauthUsername);
+
+    // Finish identity details that Google cannot choose for the person.
+    const handleOAuthComplete = async () => {
+        if (!oauthData || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)) return;
 
         setSubmitting(true);
         try {
@@ -177,8 +185,8 @@ export default function AuthCallbackPage() {
                 },
                 body: JSON.stringify({
                     ...oauthData,
-                    companyName,
-                    industry
+                    ...(needsUsername ? { username: oauthUsernameResult.username } : {}),
+                    ...(needsCompany ? { companyName, industry } : {}),
                 }),
             });
 
@@ -191,7 +199,7 @@ export default function AuthCallbackPage() {
 
             router.push(data.redirect || '/social');
         } catch (err) {
-            console.error('Employer Completion Error:', err);
+            console.error('OAuth Completion Error:', err);
             setErrorMessage('Something went wrong. Please try again.');
         } finally {
             setSubmitting(false);
@@ -225,14 +233,14 @@ export default function AuthCallbackPage() {
         );
     }
 
-    // ------- EMPLOYER COMPLETION FORM -------
+    // ------- OAUTH IDENTITY COMPLETION -------
     return (
         <div className={`min-h-screen flex items-center justify-center px-4 ${isDark ? 'bg-black text-white' : 'bg-white text-black'}`}>
             <div className={`w-full max-w-md rounded-[2rem] p-8 border ${isDark ? 'bg-neutral-900/80 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                 <OndwiraBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
-                <h2 className="text-2xl font-black tracking-tight text-center mb-2">Complete Your Profile</h2>
+                <h2 className="text-2xl font-black tracking-tight text-center mb-2">{needsCompany ? 'Complete your account' : 'Choose your username'}</h2>
                 <p className={`text-center text-sm mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                    Just a couple more details to set up your employer account
+                    {needsCompany ? 'Choose how people find you, then add the organisation details.' : 'This unique name lets people find you without seeing your phone number.'}
                 </p>
 
                 {errorMessage && (
@@ -240,6 +248,20 @@ export default function AuthCallbackPage() {
                 )}
 
                 <div className="space-y-6">
+                    {needsUsername && <div className="relative group">
+                        <AtSign size={18} className={`absolute left-0 top-3 ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`} />
+                        <input
+                            aria-label="Unique username"
+                            value={oauthUsername}
+                            onChange={(event) => setOauthUsername(event.target.value.replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))}
+                            autoComplete="username"
+                            placeholder="your_unique_name"
+                            className={`w-full border-b-2 bg-transparent py-3 pl-8 pr-4 text-sm outline-none transition-all ${isDark ? 'border-neutral-800 text-white placeholder-neutral-600 focus:border-white' : 'border-neutral-200 text-black placeholder-neutral-400 focus:border-black'}`}
+                        />
+                        <p className={`mt-2 text-xs ${oauthUsername && !oauthUsernameResult.valid ? 'text-[var(--accent-primary)]' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{oauthUsername && !oauthUsernameResult.valid ? oauthUsernameResult.error : 'Unique across Ondwira. You can change it later in Settings.'}</p>
+                    </div>}
+
+                    {needsCompany && <>
                     {/* Company Name */}
                     <div className="relative group">
                         <div className={`absolute top-3 left-0 flex items-center transition-colors duration-300 ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`}>
@@ -315,14 +337,15 @@ export default function AuthCallbackPage() {
                             </div>
                         )}
                     </div>
+                    </>}
 
                     {/* Submit */}
                     <button
-                        onClick={handleEmployerComplete}
-                        disabled={submitting || !companyName}
-                        className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} ${(submitting || !companyName) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={handleOAuthComplete}
+                        disabled={submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)}
+                        className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'} ${(submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        {submitting ? 'Setting up...' : 'Complete Setup'}
+                        {submitting ? 'Saving…' : 'Continue'}
                     </button>
                 </div>
             </div>
