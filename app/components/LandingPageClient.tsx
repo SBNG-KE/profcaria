@@ -72,14 +72,19 @@ export default function LandingPageClient() {
       <header className="fixed inset-x-0 top-0 z-40 border-b border-[var(--border-secondary)] bg-[color:var(--bg-primary)]/88 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-[1480px] items-center justify-between px-5 md:px-10">
           <a href="#top" className="text-[22px] text-[var(--text-primary)]"><OndwiraLogo /></a>
-          <nav className="hidden items-center gap-9 text-[11px] font-semibold uppercase tracking-[0.24em] text-[var(--text-secondary)] md:flex">
-            <a href="#one-account" className="transition-colors hover:text-[var(--accent-primary)]">One account</a>
-            <a href="#continuity" className="transition-colors hover:text-[var(--accent-primary)]">Continuity</a>
-            <a href="#private" className="transition-colors hover:text-[var(--accent-primary)]">Privacy</a>
-          </nav>
           <div className="flex items-center gap-3 md:gap-6">
-            <ThemeToggle />
-            <button onClick={openAuth} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--text-inverse)] transition-transform hover:-translate-y-0.5 md:px-6">Enter Ondwira</button>
+            <ThemeToggle showSystem={false} />
+            <button
+              onClick={openAuth}
+              aria-label="Begin account access"
+              className="group relative isolate min-w-[7.2rem] overflow-hidden border border-[var(--accent-primary)] bg-[var(--surface-raised)] px-5 py-3 text-[10px] font-black uppercase tracking-[0.32em] text-[var(--text-primary)] shadow-[0_10px_30px_rgba(0,0,0,0.14)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(0,0,0,0.22)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)]"
+              style={{ clipPath: 'polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px))' }}
+            >
+              <span aria-hidden="true" className="absolute left-[-22%] top-[58%] h-[2px] w-[145%] -translate-y-1/2 -rotate-[13deg] bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-90 shadow-[0_0_12px_var(--accent-primary)] transition-transform duration-500 group-hover:translate-x-3 group-hover:scale-x-110" />
+              <span aria-hidden="true" className="absolute left-[-18%] top-[43%] h-px w-[138%] -translate-y-1/2 -rotate-[13deg] bg-gradient-to-r from-transparent via-[var(--accent-primary)] to-transparent opacity-35 transition-transform duration-500 group-hover:-translate-x-2" />
+              <span aria-hidden="true" className="absolute inset-y-0 left-[-55%] w-1/3 -skew-x-[22deg] bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-[520%]" />
+              <span className="relative z-10 drop-shadow-[0_1px_1px_var(--surface-raised)]">Begin</span>
+            </button>
           </div>
         </div>
       </header>
