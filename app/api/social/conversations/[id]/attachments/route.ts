@@ -28,12 +28,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const viewOnce = String(form?.get('viewOnce')) === 'true';
   if (!(file instanceof File) || !allowedKinds.has(requestedKind)) return NextResponse.json({ error: 'Choose a valid attachment' }, { status: 400 });
   if (!file.size || file.size > 50 * 1024 * 1024) return NextResponse.json({ error: 'Attachments must be smaller than 50 MB' }, { status: 400 });
-  if (!allowedMime.test(file.type)) return NextResponse.json({ error: 'This file type is not supported' }, { status: 400 });
+  const baseMimeType = file.type.split(';', 1)[0].trim().toLowerCase();
+  if (!allowedMime.test(baseMimeType)) return NextResponse.json({ error: 'This file type is not supported' }, { status: 400 });
 
   const extension = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) : 'bin';
   const storagePath = `${id}/${session.uid}/${new Date().toISOString().slice(0, 10)}/${randomUUID()}.${extension || 'bin'}`;
   const bytes = Buffer.from(await file.arrayBuffer());
-  const { error: uploadError } = await supabaseAdmin.storage.from('ondwira-chat').upload(storagePath, bytes, { contentType: file.type, upsert: false });
+  const { error: uploadError } = await supabaseAdmin.storage.from('ondwira-chat').upload(storagePath, bytes, { contentType: baseMimeType, upsert: false });
   if (uploadError) return NextResponse.json({ error: 'Attachment upload failed' }, { status: 500 });
 
   const messageType = requestedKind === 'camera' ? 'image' : requestedKind === 'document' ? 'file' : requestedKind;
@@ -57,7 +58,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     storage_path: storagePath,
     attachment_type: requestedKind,
     encrypted_name: encryptData(file.name),
-    mime_type: file.type,
+    mime_type: baseMimeType,
     byte_size: file.size,
   }).select('id').single();
   if (attachmentError || !attachment) {
@@ -79,6 +80,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     reactions: [],
     poll: null,
     event: null,
-    attachments: [{ id: attachment.id, messageId: message.id, type: requestedKind, name: file.name, mimeType: file.type, byteSize: file.size, url }],
+    attachments: [{ id: attachment.id, messageId: message.id, type: requestedKind, name: file.name, mimeType: baseMimeType, byteSize: file.size, url }],
   } }, { status: 201 });
 }

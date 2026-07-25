@@ -114,7 +114,10 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   const pollOptionRows = (optionsResult.data ?? []) as PollOptionRow[];
   const voteRows = (votesResult.data ?? []) as VoteRow[];
-  const attachments = await Promise.all(attachmentRows.map(async attachment => ({
+  const attachmentMessageIds = new Set(rawMessages
+    .filter(message => !message.view_once || message.sender_id === session.uid)
+    .map(message => message.id));
+  const attachments = await Promise.all(attachmentRows.filter(attachment => attachmentMessageIds.has(attachment.message_id)).map(async attachment => ({
     id: attachment.id,
     messageId: attachment.message_id,
     type: attachment.attachment_type,
@@ -131,7 +134,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   const memberIds = conversationMemberRows.map(member => member.user_id);
   const responseMessages = rawMessages.map(message => {
     const myReceipt = receipts.find(receipt => receipt.message_id === message.id && receipt.user_id === session.uid);
-    const hidden = message.view_once && message.sender_id !== session.uid && Boolean(myReceipt?.viewed_at);
+    const incomingViewOnce = message.view_once && message.sender_id !== session.uid;
+    const viewOnceState = incomingViewOnce ? (myReceipt?.viewed_at ? 'consumed' : 'locked') : null;
+    const concealed = viewOnceState === 'locked' || viewOnceState === 'consumed';
     const recipients = memberIds.filter(userId => userId !== message.sender_id);
     const recipientReceipts = receipts.filter(receipt => receipt.message_id === message.id && recipients.includes(receipt.user_id));
     let deliveryStatus: 'sent' | 'delivered' | 'read' | 'viewed' = 'sent';
@@ -146,18 +151,19 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       id: message.id,
       sender_id: message.sender_id,
       sender_type: message.sender_type,
-      body: hidden ? '' : decryptData(message.body),
+      body: concealed ? '' : decryptData(message.body),
       message_type: message.message_type,
       reply_to_id: message.reply_to_id,
       expires_at: message.expires_at,
       created_at: message.created_at,
       edited_at: message.edited_at,
       view_once: message.view_once,
-      hidden,
+      hidden: viewOnceState === 'consumed',
+      view_once_state: viewOnceState,
       read_by_viewer: Boolean(myReceipt?.read_at),
       delivery_status: deliveryStatus,
-      payload: hidden ? null : safeJson<RichPayload>(payloadText),
-      attachments: hidden ? [] : attachments.filter(attachment => attachment.messageId === message.id),
+      payload: concealed ? null : safeJson<RichPayload>(payloadText),
+      attachments: concealed ? [] : attachments.filter(attachment => attachment.messageId === message.id),
       reactions: reactionRows.filter(reaction => reaction.message_id === message.id).map(reaction => ({ emoji: reaction.emoji, userId: reaction.user_id, mine: reaction.user_id === session.uid })),
       poll: poll ? {
         id: poll.id,

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { getConversationAccess } from '@/lib/ondwira-chat';
+import { decryptData } from '@/lib/security';
+import { createAttachmentUrl, getConversationAccess, safeJson } from '@/lib/ondwira-chat';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { id, messageId } = await params;
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!(await getConversationAccess(id, session.uid))) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  const { data: message } = await supabaseAdmin.schema('ondwira').from('messages').select('id, sender_id, view_once').eq('id', messageId).eq('conversation_id', id).is('deleted_at', null).maybeSingle();
+  const { data: message } = await supabaseAdmin.schema('ondwira').from('messages').select('id, sender_id, body, message_type, payload_ciphertext, view_once').eq('id', messageId).eq('conversation_id', id).is('deleted_at', null).maybeSingle();
   if (!message) return NextResponse.json({ error: 'Message not found' }, { status: 404 });
 
   const input = await request.json().catch(() => null) as ActionInput | null;
@@ -32,9 +33,31 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   if (input?.action === 'view') {
     if (message.sender_id === session.uid) return NextResponse.json({ viewed: true });
+    if (!message.view_once) return NextResponse.json({ viewed: true, viewOnce: false });
+    const { data: existingReceipt } = await supabaseAdmin.schema('ondwira').from('message_receipts').select('viewed_at').eq('message_id', messageId).eq('user_id', session.uid).maybeSingle();
+    if (existingReceipt?.viewed_at) return NextResponse.json({ error: 'This message has already been opened' }, { status: 410 });
+    const { data: attachmentData } = await supabaseAdmin.schema('ondwira').from('message_attachments').select('id, storage_path, attachment_type, encrypted_name, mime_type, byte_size').eq('message_id', messageId);
+    const attachmentRows = (attachmentData ?? []) as Array<{ id: string; storage_path: string; attachment_type: string; encrypted_name: string; mime_type: string; byte_size: number }>;
+    const attachments = await Promise.all(attachmentRows.map(async attachment => ({
+      id: attachment.id,
+      type: attachment.attachment_type,
+      name: decryptData(attachment.encrypted_name),
+      mimeType: attachment.mime_type,
+      byteSize: attachment.byte_size,
+      url: await createAttachmentUrl(attachment.storage_path),
+    })));
     const now = new Date().toISOString();
     await supabaseAdmin.schema('ondwira').from('message_receipts').upsert({ message_id: messageId, user_id: session.uid, delivered_at: now, read_at: now, viewed_at: now }, { onConflict: 'message_id,user_id' });
-    return NextResponse.json({ viewed: true, viewOnce: message.view_once });
+    return NextResponse.json({
+      viewed: true,
+      viewOnce: true,
+      content: {
+        body: decryptData(message.body),
+        message_type: message.message_type,
+        payload: message.payload_ciphertext ? safeJson(message.payload_ciphertext ? decryptData(message.payload_ciphertext) : null) : null,
+        attachments,
+      },
+    });
   }
 
   if (input?.action === 'poll_vote' && input.optionId) {

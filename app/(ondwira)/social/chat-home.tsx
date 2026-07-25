@@ -15,9 +15,10 @@ type Conversation = {
   conversations: { id: string; kind: 'direct' | 'group'; title: string | null };
 };
 type Contact = { id: string; type: 'professional' | 'employer'; name: string; avatarUrl: string | null; username?: string };
+let conversationCache: Conversation[] | null = null;
 
 export default function ChatHome() {
-  const [chats, setChats] = useState<Conversation[]>([]);
+  const [chats, setChats] = useState<Conversation[]>(() => conversationCache ?? []);
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [picker, setPicker] = useState(false);
@@ -32,9 +33,13 @@ export default function ChatHome() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    fetch('/api/social/conversations')
+    fetch('/api/social/conversations', { cache: 'no-store' })
       .then(async response => { if (!response.ok) throw new Error('Sign in to open chats.'); return response.json(); })
-      .then(data => { const items = data.conversations ?? []; setChats(items); setSelected(items[0]?.conversation_id ?? null); })
+      .then(data => {
+        const next = data.conversations ?? [];
+        conversationCache = next;
+        setChats(next);
+      })
       .catch(error => setNotice(error.message));
   }, []);
 
@@ -111,7 +116,11 @@ export default function ChatHome() {
       peerUsername: directContact?.username || null,
       conversations: data.conversation,
     };
-    setChats(current => [item, ...current]);
+    setChats(current => {
+      const next = [item, ...current];
+      conversationCache = next;
+      return next;
+    });
     setSelected(data.conversation.id);
     closePicker();
   }
