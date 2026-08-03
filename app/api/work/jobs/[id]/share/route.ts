@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { cleanText, makeShareCode, requireOrganizationManager } from '@/lib/ondwira-recruitment';
+import { cleanText, makeShareCode, requireOrganizationManager } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
-  const { data: job } = await supabaseAdmin.schema('ondwira').from('jobs')
+  const { data: job } = await supabaseAdmin.schema('profcaria').from('jobs')
     .select('id, organization_id, status, visibility').eq('id', id).maybeSingle();
   if (!job || !(await requireOrganizationManager(job.organization_id, session.uid))) {
     return NextResponse.json({ error: 'Job not found' }, { status: 404 });
@@ -19,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const channels = new Set(['copy', 'email', 'message', 'social', 'qr', 'referral', 'internal']);
   const channel = channels.has(cleanText(input?.channel, 20)) ? cleanText(input?.channel, 20) : 'copy';
   const shareCode = makeShareCode();
-  const { data: share, error } = await supabaseAdmin.schema('ondwira').from('job_shares').insert({
+  const { data: share, error } = await supabaseAdmin.schema('profcaria').from('job_shares').insert({
     job_id: id,
     share_code: shareCode,
     channel,
@@ -28,7 +28,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     expires_at: input?.expiresAt ? new Date(input.expiresAt).toISOString() : null,
   }).select('id, share_code, channel, expires_at').single();
   if (error || !share) return NextResponse.json({ error: 'Share link could not be created.' }, { status: 500 });
-  await supabaseAdmin.schema('ondwira').from('job_events').insert({
+  await supabaseAdmin.schema('profcaria').from('job_events').insert({
     job_id: id, organization_id: job.organization_id, actor_id: session.uid,
     share_id: share.id, event_type: 'shared', metadata: { channel },
   });

@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Ondwira matte palette. System mode resolves to one of these themes. */
+/* Profcaria high-contrast Y2K / neo-brutalist palette. */
 :root,
 .light {
   --font-interface: var(--font-geist-sans), Arial, sans-serif;
@@ -41,12 +41,12 @@ body {
   color: var(--text-primary);
 }
 
-.ondwira-brand-tile {
-  background-color: #111214;
-  background-image: url('/ondwira-pixel-background.png');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 77px 157px;
+.profcaria-matrix {
+  background-image:
+    radial-gradient(circle at center, var(--pixel-color) 1px, transparent 1.2px),
+    linear-gradient(90deg, transparent 49.5%, var(--border-secondary) 50%, transparent 50.5%);
+  background-size: 12px 12px, 72px 72px;
+  mask-image: linear-gradient(to right, rgba(0,0,0,.8), transparent 82%);
 }
 
 .dark {
@@ -269,24 +269,24 @@ body {
   -ms-overflow-style: none;
 }
 
-/* Ondwira navigation and forms keep a visible scroll rail so their movement is obvious. */
-.ondwira-scrollbar {
+/* Profcaria navigation and forms keep a visible scroll rail so their movement is obvious. */
+.profcaria-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--accent-primary) transparent;
   -ms-overflow-style: auto;
 }
 
-.ondwira-scrollbar::-webkit-scrollbar {
+.profcaria-scrollbar::-webkit-scrollbar {
   display: block;
   width: 7px;
   height: 7px;
 }
 
-.ondwira-scrollbar::-webkit-scrollbar-track {
+.profcaria-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.ondwira-scrollbar::-webkit-scrollbar-thumb {
+.profcaria-scrollbar::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
   background: var(--accent-primary);

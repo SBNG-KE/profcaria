@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -40,5 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# docs with secrets
-/docs/
+# Documentation is private by default; explicitly allow reviewed product guides.
+/docs/*
+!/docs/PROFCARIA_PRODUCT_BLUEPRINT.md
+!/docs/PAYSTACK_AND_EMAIL_CUTOVER.md

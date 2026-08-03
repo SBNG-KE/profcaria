@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { getOndwiraContacts } from '@/lib/ondwira-contacts';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
+import { getProfcariaContacts } from '@/lib/profcaria-contacts';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData } from '@/lib/security';
 
@@ -13,7 +13,7 @@ const textStyles = new Set(['editorial', 'modern', 'heritage', 'quiet', 'stateme
 const backgrounds = new Set(['parchment', 'terracotta', 'ink', 'olive', 'gold', 'rose']);
 
 export async function POST(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const form = await request.formData().catch(() => null);
   const files = (form?.getAll('files') ?? []).filter((item): item is File => item instanceof File);
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   if (videos.length > 1 || (videos.length && files.length > 1)) return NextResponse.json({ error: 'A video update can contain one video' }, { status: 400 });
   if (files.some(file => !file.size || file.size > 100 * 1024 * 1024 || !allowedMime.test(file.type))) return NextResponse.json({ error: 'Use supported photos or videos smaller than 100 MB each' }, { status: 400 });
 
-  const contacts = await getOndwiraContacts(session).catch(() => []);
+  const contacts = await getProfcariaContacts(session).catch(() => []);
   const contactIds = new Set(contacts.map(contact => contact.id));
   const mode = form?.get('audienceMode') === 'selected' ? 'selected' : 'all_contacts';
   const requestedAudience = JSON.parse(String(form?.get('audienceIds') || '[]')) as string[];
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const requestedTextStyle = String(form?.get('textStyle') || '');
   const requestedBackground = String(form?.get('backgroundStyle') || '');
   const contentType = videos.length ? 'video' : 'photo';
-  const { data: update, error } = await supabaseAdmin.schema('ondwira').from('social_updates').insert({
+  const { data: update, error } = await supabaseAdmin.schema('profcaria').from('social_updates').insert({
     author_id: session.uid,
     author_type: session.schema,
     enc_body: body ? encryptData(body) : null,
@@ -57,21 +57,21 @@ export async function POST(request: Request) {
     for (const [position, file] of files.entries()) {
       const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) || (file.type.startsWith('video/') ? 'mp4' : 'jpg');
       const path = `${session.uid}/${new Date().toISOString().slice(0, 10)}/${update.id}/${randomUUID()}.${extension}`;
-      const { error: uploadError } = await supabaseAdmin.storage.from('ondwira-updates').upload(path, Buffer.from(await file.arrayBuffer()), { contentType: file.type, upsert: false });
+      const { error: uploadError } = await supabaseAdmin.storage.from('profcaria-updates').upload(path, Buffer.from(await file.arrayBuffer()), { contentType: file.type, upsert: false });
       if (uploadError) throw uploadError;
       uploaded.push(path);
       mediaRows.push({ update_id: update.id, storage_path: path, media_type: file.type.startsWith('video/') ? 'video' : 'photo', mime_type: file.type, byte_size: file.size, position });
     }
-    const { error: mediaError } = await supabaseAdmin.schema('ondwira').from('social_update_media').insert(mediaRows);
+    const { error: mediaError } = await supabaseAdmin.schema('profcaria').from('social_update_media').insert(mediaRows);
     if (mediaError) throw mediaError;
     if (mode === 'selected') {
-      const { error: audienceError } = await supabaseAdmin.schema('ondwira').from('social_update_audience').insert(audienceIds.map(userId => ({ update_id: update.id, user_id: userId })));
+      const { error: audienceError } = await supabaseAdmin.schema('profcaria').from('social_update_audience').insert(audienceIds.map(userId => ({ update_id: update.id, user_id: userId })));
       if (audienceError) throw audienceError;
     }
     return NextResponse.json({ update: { id: update.id } }, { status: 201 });
   } catch {
-    if (uploaded.length) await supabaseAdmin.storage.from('ondwira-updates').remove(uploaded);
-    await supabaseAdmin.schema('ondwira').from('social_updates').delete().eq('id', update.id);
+    if (uploaded.length) await supabaseAdmin.storage.from('profcaria-updates').remove(uploaded);
+    await supabaseAdmin.schema('profcaria').from('social_updates').delete().eq('id', update.id);
     return NextResponse.json({ error: 'The media update could not be published' }, { status: 500 });
   }
 }

@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createHash } from 'crypto';
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { decryptJob, getOrganizationMembership } from '@/lib/ondwira-recruitment';
+import { decryptJob, getOrganizationMembership } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const ref = new URL(request.url).searchParams.get('ref');
-  const { data: job } = await supabaseAdmin.schema('ondwira').from('jobs')
+  const { data: job } = await supabaseAdmin.schema('profcaria').from('jobs')
     .select('*, organizations(id, name)').eq('id', id).eq('status', 'published').maybeSingle();
   if (!job) return NextResponse.json({ error: 'Role not found.' }, { status: 404 });
   if (job.closes_at && new Date(job.closes_at) <= new Date()) {
@@ -23,13 +23,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   let share: any = null;
   if (ref) {
-    const { data } = await supabaseAdmin.schema('ondwira').from('job_shares')
+    const { data } = await supabaseAdmin.schema('profcaria').from('job_shares')
       .select('id, referrer_id, expires_at, revoked_at, click_count').eq('job_id', id).eq('share_code', ref).maybeSingle();
     if (data && !data.revoked_at && (!data.expires_at || new Date(data.expires_at) > new Date())) {
       share = data;
       await Promise.all([
-        supabaseAdmin.schema('ondwira').from('job_shares').update({ click_count: Number(data.click_count || 0) + 1 }).eq('id', data.id),
-        supabaseAdmin.schema('ondwira').from('job_events').insert({
+        supabaseAdmin.schema('profcaria').from('job_shares').update({ click_count: Number(data.click_count || 0) + 1 }).eq('id', data.id),
+        supabaseAdmin.schema('profcaria').from('job_events').insert({
           job_id: id, organization_id: job.organization_id, share_id: data.id,
           event_type: 'share_opened', visitor_hash: createHash('sha256').update(session.uid).digest('hex'),
         }),
@@ -42,14 +42,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const [{ data: questions }, { data: application }, { data: documents }] = await Promise.all([
-    supabaseAdmin.schema('ondwira').from('job_questions').select('*').eq('job_id', id).order('position'),
-    supabaseAdmin.schema('ondwira').from('applications').select('id, status, submitted_at, screening_score, screening_recommendation')
+    supabaseAdmin.schema('profcaria').from('job_questions').select('*').eq('job_id', id).order('position'),
+    supabaseAdmin.schema('profcaria').from('applications').select('id, status, submitted_at, screening_score, screening_recommendation')
       .eq('job_id', id).eq('applicant_id', session.uid).maybeSingle(),
-    supabaseAdmin.schema('ondwira').from('documents')
+    supabaseAdmin.schema('profcaria').from('documents')
       .select('id, enc_title, document_kind, source_type, credential_issuer, issued_at, expires_at')
       .eq('owner_id', session.uid).is('archived_at', null).order('updated_at', { ascending: false }),
   ]);
-  await supabaseAdmin.schema('ondwira').from('job_events').insert({
+  await supabaseAdmin.schema('profcaria').from('job_events').insert({
     job_id: id, organization_id: job.organization_id, actor_id: session.uid,
     event_type: 'viewed', metadata: { authenticated: true },
   });

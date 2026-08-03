@@ -1,20 +1,20 @@
-# Ondwira
+# Profcaria
 
-Ondwira is one application for private social communication, workspaces, meetings, documents, jobs, applications, and permissioned agent connections.
+Applying for jobs, made simple.
 
-The product has one account model and two contexts:
+Profcaria is a Kenya-only jobs platform. The public home page is the job board; a job seeker can open a current vacancy and apply without creating an account. Companies must sign in to publish and manage jobs. Accounts become necessary for job seekers only when they want to track applications or reply to a company in the platform.
 
-- **Social** for personal chats, updates, calls, contacts, and optional work discovery.
-- **Work** for organisation-managed conversations, meetings, people, jobs, applications, and reports.
+## Product rules
 
-Profile, CV, job history, privacy, appearance, security, and external agent access are managed from Settings. There is no public feed and no separate professional or employer product experience.
+- Public jobs are limited to Kenya, including Kenya-restricted remote roles.
+- Currency and billing are shown in Kenyan shillings (KES).
+- Jobs disappear automatically at their closing time or application limit.
+- No advertising, social feed, photo messaging, emoji reactions or stale vacancy inventory.
+- Chat accepts text, HTTPS links and inspected PDF/DOCX/TXT documents.
+- Basic hiring works without AI. AI ranking and advanced security analysis are optional usage charges.
+- Public jobs are available through `/api/jobs`, per-job pages, Schema.org JobPosting JSON-LD, `llms.txt`, `robots.txt` and the sitemap.
 
-## Technology
-
-- Next.js 16 and React 19
-- TypeScript and Tailwind CSS
-- Supabase/PostgreSQL
-- Server-authorized messaging with encrypted message bodies
+See [the product blueprint](docs/PROFCARIA_PRODUCT_BLUEPRINT.md) for the complete scope, roles, lifecycle, identifiers, pricing and security rules.
 
 ## Local development
 
@@ -23,8 +23,14 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Copy the required server and publishable values into `.env.local`. Never expose the Supabase secret key in a browser variable.
 
-## Current migration status
+## Database release order
 
-Legacy Profcaria routes and schemas remain temporarily as migration sources while their useful job and document workflows are moved into the unified Ondwira structure. New product navigation must not link to those legacy routes.
+The new migration renames the active application schema from the former product name to `profcaria`. Release it in the same maintenance window as the matching application build; applying the schema rename before deploying the code would interrupt the old production build.
+
+## Paystack wallet
+
+The payment bridge is prepared for KES-only company wallet top-ups. Initialization is server-side, callbacks require an authenticated company, webhooks require HMAC-SHA512 verification, and the wallet is credited atomically only after reference, amount, currency and provider status match. No live key is stored in the repository.
+
+See [the Paystack and email cutover guide](docs/PAYSTACK_AND_EMAIL_CUTOVER.md) and copy `.env.example` when connecting test credentials.

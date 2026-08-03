@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
 
   outputFileTracingRoot: path.join(__dirname),
 
-  // Ondwira is one application. Keep legacy URLs only as entry redirects while
+  // Profcaria is one application. Keep legacy URLs only as entry redirects while
   // their underlying data workflows are migrated into the unified shell.
   async redirects() {
     return [

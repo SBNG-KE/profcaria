@@ -20,8 +20,8 @@ const ThemeContext = createContext<ThemeContextType>({
   theme: 'light', preference: 'system', fontPreference: 'modern', toggleTheme: () => {}, setTheme: () => {}, setPreference: () => {}, setFontPreference: () => {},
 });
 
-const STORAGE_KEY = 'ondwira-theme';
-const FONT_STORAGE_KEY = 'ondwira-font';
+const STORAGE_KEY = 'profcaria-theme';
+const FONT_STORAGE_KEY = 'profcaria-font';
 const themes: ThemePreference[] = ['system', 'light', 'dark'];
 const fonts: FontPreference[] = ['modern', 'heritage', 'editorial', 'accessible', 'system'];
 
@@ -29,8 +29,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => {
     if (typeof window === 'undefined') return 'system';
     const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
-    const legacy = localStorage.getItem('profcaria-theme') as Theme | null;
-    return stored && themes.includes(stored) ? stored : legacy || 'system';
+    return stored && themes.includes(stored) ? stored : 'system';
   });
   const [fontPreference, setFontPreferenceState] = useState<FontPreference>(() => {
     if (typeof window === 'undefined') return 'modern';
@@ -44,8 +43,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     const syncSystem = () => setSystemTheme(media.matches ? 'dark' : 'light');
     const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
-    const legacy = localStorage.getItem('profcaria-theme') as Theme | null;
-    if (legacy && !stored) localStorage.setItem(STORAGE_KEY, legacy);
+    void stored;
     media.addEventListener('change', syncSystem);
     return () => media.removeEventListener('change', syncSystem);
   }, []);
@@ -75,7 +73,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setPreference = (next: ThemePreference) => {
     setPreferenceState(next);
     localStorage.setItem(STORAGE_KEY, next);
-    localStorage.removeItem('profcaria-theme');
     fetch('/api/settings/appearance', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ theme: next }) }).catch(() => undefined);
   };
 

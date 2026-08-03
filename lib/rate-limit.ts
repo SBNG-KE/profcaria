@@ -29,6 +29,7 @@ export const RATE_LIMITS = {
     jobCreate: { windowMs: 60 * 60 * 1000, maxRequests: 20 },  // 20 jobs/hour
     application: { windowMs: 60 * 60 * 1000, maxRequests: 50 },// 50 applications/hour
     message: { windowMs: 60 * 1000, maxRequests: 60 },         // 60 messages/minute
+    payment: { windowMs: 60 * 60 * 1000, maxRequests: 10 },    // 10 payment attempts/hour
 
     // Support - Prevent spam
     support: { windowMs: 60 * 60 * 1000, maxRequests: 10 },    // 10/hour

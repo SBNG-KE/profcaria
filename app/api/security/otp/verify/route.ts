@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { jwtVerify, SignJWT } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
-import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
+import { syncProfcariaSecurity } from '@/lib/profcaria-identity';
 
 export async function POST(req: Request) {
     try {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
             console.error('[OTP Verify] DB Update Error:', error);
             throw error;
         }
-        await syncOndwiraSecurity((payload as { uid: string }).uid, { hasEmailOtp: true, requires2fa: true });
+        await syncProfcariaSecurity((payload as { uid: string }).uid, { hasEmailOtp: true, requires2fa: true });
         console.log('[OTP Verify] DB Update Success:', updateData);
 
         // Upgrade Session (AAL 2)
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
         // Clear OTP cookie and set new Session cookie
         // Use provided redirect, or fall back to schema default
         const { redirect } = body;
-        const redirectPath = redirect || '/social';
+        const redirectPath = redirect || '/find-work';
 
         const response = NextResponse.json({ verified: true, redirect: redirectPath });
 

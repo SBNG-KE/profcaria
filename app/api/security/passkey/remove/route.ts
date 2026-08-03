@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData } from '@/lib/security';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
-import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
+import { syncProfcariaSecurity } from '@/lib/profcaria-identity';
 
 export const runtime = 'nodejs';
 
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Failed to update user status' }, { status: 500 });
         }
 
-        await syncOndwiraSecurity(uid, { hasPasskey: false });
+        await syncProfcariaSecurity(uid, { hasPasskey: false });
 
         // Log
         const ip = req.headers.get('x-forwarded-for') || 'Unknown IP';

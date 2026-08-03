@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { resolveOndwiraAccounts } from '@/lib/ondwira-contacts';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
+import { resolveProfcariaAccounts } from '@/lib/profcaria-contacts';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { decryptJob } from '@/lib/ondwira-recruitment';
+import { decryptJob } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const url = new URL(request.url);
   const view = url.searchParams.get('view') === 'mine' ? 'mine' : 'hiring';
@@ -18,13 +18,13 @@ export async function GET(request: Request) {
   const jobId = url.searchParams.get('jobId');
   const status = url.searchParams.get('status');
 
-  let query = supabaseAdmin.schema('ondwira').from('applications')
+  let query = supabaseAdmin.schema('profcaria').from('applications')
     .select('*, jobs(*, organizations(id, name))').order('submitted_at', { ascending: false }).limit(250);
   let organizations: any[] = [];
   if (view === 'mine') {
     query = query.eq('applicant_id', session.uid);
   } else {
-    const { data: memberships, error } = await supabaseAdmin.schema('ondwira').from('organization_members')
+    const { data: memberships, error } = await supabaseAdmin.schema('profcaria').from('organization_members')
       .select('organization_id, role, organizations!inner(id, name)')
       .eq('user_id', session.uid).eq('status', 'active').in('role', ['owner', 'admin', 'manager']);
     if (error) return NextResponse.json({ error: 'Unable to load hiring access.' }, { status: 500 });
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   if (status) query = query.eq('status', status);
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: 'Unable to load applications.' }, { status: 500 });
-  const people = await resolveOndwiraAccounts((data ?? []).map((application: any) => application.applicant_id));
+  const people = await resolveProfcariaAccounts((data ?? []).map((application: any) => application.applicant_id));
 
   return NextResponse.json({
     viewerId: session.uid,
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
         screeningSummary: decryptData(application.enc_screening_summary),
         candidate: {
           id: application.applicant_id,
-          name: people.get(application.applicant_id)?.name || snapshot.name || 'Ondwira member',
+          name: people.get(application.applicant_id)?.name || snapshot.name || 'Profcaria member',
           hidden: Boolean(application.jobs?.blind_review)
             && ['submitted', 'screening', 'needs_review', 'on_hold'].includes(application.status),
         },

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { decryptData } from '@/lib/security';
-import { createAttachmentUrl, getConversationAccess, safeJson } from '@/lib/ondwira-chat';
+import { createAttachmentUrl, getConversationAccess, safeJson } from '@/lib/profcaria-chat';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,29 +14,29 @@ type ActionInput = {
 };
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; messageId: string }> }) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   const { id, messageId } = await params;
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   if (!(await getConversationAccess(id, session.uid))) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  const { data: message } = await supabaseAdmin.schema('ondwira').from('messages').select('id, sender_id, body, message_type, payload_ciphertext, view_once').eq('id', messageId).eq('conversation_id', id).is('deleted_at', null).maybeSingle();
+  const { data: message } = await supabaseAdmin.schema('profcaria').from('messages').select('id, sender_id, body, message_type, payload_ciphertext, view_once').eq('id', messageId).eq('conversation_id', id).is('deleted_at', null).maybeSingle();
   if (!message) return NextResponse.json({ error: 'Message not found' }, { status: 404 });
 
   const input = await request.json().catch(() => null) as ActionInput | null;
   if (input?.action === 'react') {
     const emoji = input.emoji?.trim().slice(0, 16);
     if (!emoji) return NextResponse.json({ error: 'Choose a reaction' }, { status: 400 });
-    const { data: existing } = await supabaseAdmin.schema('ondwira').from('message_reactions').select('message_id').eq('message_id', messageId).eq('user_id', session.uid).eq('emoji', emoji).maybeSingle();
-    if (existing) await supabaseAdmin.schema('ondwira').from('message_reactions').delete().eq('message_id', messageId).eq('user_id', session.uid).eq('emoji', emoji);
-    else await supabaseAdmin.schema('ondwira').from('message_reactions').insert({ message_id: messageId, user_id: session.uid, emoji });
+    const { data: existing } = await supabaseAdmin.schema('profcaria').from('message_reactions').select('message_id').eq('message_id', messageId).eq('user_id', session.uid).eq('emoji', emoji).maybeSingle();
+    if (existing) await supabaseAdmin.schema('profcaria').from('message_reactions').delete().eq('message_id', messageId).eq('user_id', session.uid).eq('emoji', emoji);
+    else await supabaseAdmin.schema('profcaria').from('message_reactions').insert({ message_id: messageId, user_id: session.uid, emoji });
     return NextResponse.json({ active: !existing });
   }
 
   if (input?.action === 'view') {
     if (message.sender_id === session.uid) return NextResponse.json({ viewed: true });
     if (!message.view_once) return NextResponse.json({ viewed: true, viewOnce: false });
-    const { data: existingReceipt } = await supabaseAdmin.schema('ondwira').from('message_receipts').select('viewed_at').eq('message_id', messageId).eq('user_id', session.uid).maybeSingle();
+    const { data: existingReceipt } = await supabaseAdmin.schema('profcaria').from('message_receipts').select('viewed_at').eq('message_id', messageId).eq('user_id', session.uid).maybeSingle();
     if (existingReceipt?.viewed_at) return NextResponse.json({ error: 'This message has already been opened' }, { status: 410 });
-    const { data: attachmentData } = await supabaseAdmin.schema('ondwira').from('message_attachments').select('id, storage_path, attachment_type, encrypted_name, mime_type, byte_size').eq('message_id', messageId);
+    const { data: attachmentData } = await supabaseAdmin.schema('profcaria').from('message_attachments').select('id, storage_path, attachment_type, encrypted_name, mime_type, byte_size').eq('message_id', messageId);
     const attachmentRows = (attachmentData ?? []) as Array<{ id: string; storage_path: string; attachment_type: string; encrypted_name: string; mime_type: string; byte_size: number }>;
     const attachments = await Promise.all(attachmentRows.map(async attachment => ({
       id: attachment.id,
@@ -47,7 +47,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       url: await createAttachmentUrl(attachment.storage_path),
     })));
     const now = new Date().toISOString();
-    await supabaseAdmin.schema('ondwira').from('message_receipts').upsert({ message_id: messageId, user_id: session.uid, delivered_at: now, read_at: now, viewed_at: now }, { onConflict: 'message_id,user_id' });
+    await supabaseAdmin.schema('profcaria').from('message_receipts').upsert({ message_id: messageId, user_id: session.uid, delivered_at: now, read_at: now, viewed_at: now }, { onConflict: 'message_id,user_id' });
     return NextResponse.json({
       viewed: true,
       viewOnce: true,
@@ -61,22 +61,22 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   if (input?.action === 'poll_vote' && input.optionId) {
-    const { data: option } = await supabaseAdmin.schema('ondwira').from('message_poll_options').select('id, poll_id, message_polls!inner(message_id, allows_multiple)').eq('id', input.optionId).eq('message_polls.message_id', messageId).maybeSingle();
+    const { data: option } = await supabaseAdmin.schema('profcaria').from('message_poll_options').select('id, poll_id, message_polls!inner(message_id, allows_multiple)').eq('id', input.optionId).eq('message_polls.message_id', messageId).maybeSingle();
     if (!option) return NextResponse.json({ error: 'Poll option not found' }, { status: 404 });
-    const { data: existing } = await supabaseAdmin.schema('ondwira').from('message_poll_votes').select('option_id').eq('poll_id', option.poll_id).eq('option_id', input.optionId).eq('user_id', session.uid).maybeSingle();
-    if (existing) await supabaseAdmin.schema('ondwira').from('message_poll_votes').delete().eq('poll_id', option.poll_id).eq('option_id', input.optionId).eq('user_id', session.uid);
+    const { data: existing } = await supabaseAdmin.schema('profcaria').from('message_poll_votes').select('option_id').eq('poll_id', option.poll_id).eq('option_id', input.optionId).eq('user_id', session.uid).maybeSingle();
+    if (existing) await supabaseAdmin.schema('profcaria').from('message_poll_votes').delete().eq('poll_id', option.poll_id).eq('option_id', input.optionId).eq('user_id', session.uid);
     else {
       const poll = Array.isArray(option.message_polls) ? option.message_polls[0] : option.message_polls;
-      if (!poll?.allows_multiple) await supabaseAdmin.schema('ondwira').from('message_poll_votes').delete().eq('poll_id', option.poll_id).eq('user_id', session.uid);
-      await supabaseAdmin.schema('ondwira').from('message_poll_votes').insert({ poll_id: option.poll_id, option_id: input.optionId, user_id: session.uid });
+      if (!poll?.allows_multiple) await supabaseAdmin.schema('profcaria').from('message_poll_votes').delete().eq('poll_id', option.poll_id).eq('user_id', session.uid);
+      await supabaseAdmin.schema('profcaria').from('message_poll_votes').insert({ poll_id: option.poll_id, option_id: input.optionId, user_id: session.uid });
     }
     return NextResponse.json({ active: !existing });
   }
 
   if (input?.action === 'event_response' && input.response) {
-    const { data: event } = await supabaseAdmin.schema('ondwira').from('message_events').select('id').eq('message_id', messageId).maybeSingle();
+    const { data: event } = await supabaseAdmin.schema('profcaria').from('message_events').select('id').eq('message_id', messageId).maybeSingle();
     if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
-    await supabaseAdmin.schema('ondwira').from('message_event_responses').upsert({ event_id: event.id, user_id: session.uid, response: input.response, responded_at: new Date().toISOString() }, { onConflict: 'event_id,user_id' });
+    await supabaseAdmin.schema('profcaria').from('message_event_responses').upsert({ event_id: event.id, user_id: session.uid, response: input.response, responded_at: new Date().toISOString() }, { onConflict: 'event_id,user_id' });
     return NextResponse.json({ response: input.response });
   }
 

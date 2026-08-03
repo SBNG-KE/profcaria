@@ -69,7 +69,7 @@ export default function AIHouseSection() {
                         The <span className={`font-pixel ${isDark ? 'text-white' : 'text-[#1B2A4A]'}`}>Overseer</span> AI.
                     </h2>
                     <p className={`text-xl md:text-2xl font-light max-w-5xl mx-auto leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                        Think of Ondwira as a living digital workspace where connected agents operate only within the permissions you grant. They can help organise timelines, prepare documents, and surface opportunities without silently crossing the boundaries between your personal and work data.
+                        Think of Profcaria as a living digital workspace where connected agents operate only within the permissions you grant. They can help organise timelines, prepare documents, and surface opportunities without silently crossing the boundaries between your personal and work data.
                     </p>
                 </motion.div>
 

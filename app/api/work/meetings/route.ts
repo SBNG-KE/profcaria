@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { resolveOndwiraPeople } from '@/lib/ondwira-contacts';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
+import { resolveProfcariaPeople } from '@/lib/profcaria-contacts';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData, encryptData } from '@/lib/security';
 
@@ -28,7 +28,7 @@ const providers = new Set(['google_meet', 'zoom', 'teams', 'jitsi', 'custom']);
 const allowedReminders = new Set([0, 5, 10, 15, 30, 60, 1440, 10080]);
 
 async function activeMembership(organizationId: string, userId: string) {
-  const { data } = await supabaseAdmin.schema('ondwira').from('organization_members')
+  const { data } = await supabaseAdmin.schema('profcaria').from('organization_members')
     .select('role, status, account_type').eq('organization_id', organizationId).eq('user_id', userId).maybeSingle();
   return data?.status === 'active' ? data : null;
 }
@@ -44,23 +44,23 @@ function safeMeetingUrl(value: string | undefined) {
 }
 
 export async function GET(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const requestedOrganization = new URL(request.url).searchParams.get('organizationId');
-  const { data: memberships, error: membershipError } = await supabaseAdmin.schema('ondwira').from('organization_members')
+  const { data: memberships, error: membershipError } = await supabaseAdmin.schema('profcaria').from('organization_members')
     .select('organization_id, account_type, role, status, organizations!inner(id, name)').eq('user_id', session.uid).eq('status', 'active');
   if (membershipError) return NextResponse.json({ error: 'Unable to load meeting access' }, { status: 500 });
   const allowedOrganizations = (memberships ?? []).filter((item: any) => !requestedOrganization || item.organization_id === requestedOrganization);
   const organizationIds = allowedOrganizations.map((item: any) => item.organization_id);
   if (!organizationIds.length) return NextResponse.json({ organizations: memberships ?? [], meetings: [] });
 
-  const { data: participantRows } = await supabaseAdmin.schema('ondwira').from('work_meeting_participants').select('meeting_id').eq('user_id', session.uid);
+  const { data: participantRows } = await supabaseAdmin.schema('profcaria').from('work_meeting_participants').select('meeting_id').eq('user_id', session.uid);
   const participantMeetingIds = (participantRows ?? []).map((item: { meeting_id: string }) => item.meeting_id);
   const select = 'id, organization_id, work_group_id, conversation_id, organizer_id, enc_title, enc_agenda, enc_location, enc_meeting_url, provider, starts_at, ends_at, timezone, reminder_minutes, status, native_room_ready, created_at, work_groups(name)';
   const [organizedResult, invitedResult] = await Promise.all([
-    supabaseAdmin.schema('ondwira').from('work_meetings').select(select).in('organization_id', organizationIds).eq('organizer_id', session.uid).order('starts_at'),
+    supabaseAdmin.schema('profcaria').from('work_meetings').select(select).in('organization_id', organizationIds).eq('organizer_id', session.uid).order('starts_at'),
     participantMeetingIds.length
-      ? supabaseAdmin.schema('ondwira').from('work_meetings').select(select).in('organization_id', organizationIds).in('id', participantMeetingIds).order('starts_at')
+      ? supabaseAdmin.schema('profcaria').from('work_meetings').select(select).in('organization_id', organizationIds).in('id', participantMeetingIds).order('starts_at')
       : Promise.resolve({ data: [], error: null }),
   ]);
   if (organizedResult.error || invitedResult.error) return NextResponse.json({ error: 'Unable to load meetings' }, { status: 500 });
@@ -69,11 +69,11 @@ export async function GET(request: Request) {
   if (!meetingIds.length) return NextResponse.json({ organizations: memberships ?? [], meetings: [] });
 
   const [participantsResult, remindersResult, memberResult] = await Promise.all([
-    supabaseAdmin.schema('ondwira').from('work_meeting_participants').select('meeting_id, user_id, participant_role, response, responded_at').in('meeting_id', meetingIds),
-    supabaseAdmin.schema('ondwira').from('work_meeting_reminders').select('meeting_id, reminder_minutes, delivered_at, dismissed_at').eq('user_id', session.uid).in('meeting_id', meetingIds),
-    supabaseAdmin.schema('ondwira').from('organization_members').select('organization_id, user_id, account_type').in('organization_id', organizationIds).eq('status', 'active'),
+    supabaseAdmin.schema('profcaria').from('work_meeting_participants').select('meeting_id, user_id, participant_role, response, responded_at').in('meeting_id', meetingIds),
+    supabaseAdmin.schema('profcaria').from('work_meeting_reminders').select('meeting_id, reminder_minutes, delivered_at, dismissed_at').eq('user_id', session.uid).in('meeting_id', meetingIds),
+    supabaseAdmin.schema('profcaria').from('organization_members').select('organization_id, user_id, account_type').in('organization_id', organizationIds).eq('status', 'active'),
   ]);
-  const people = await resolveOndwiraPeople((memberResult.data ?? []) as Array<{ user_id: string; account_type: string }>);
+  const people = await resolveProfcariaPeople((memberResult.data ?? []) as Array<{ user_id: string; account_type: string }>);
   return NextResponse.json({
     viewerId: session.uid,
     organizations: memberships ?? [],
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const input = await request.json().catch(() => null) as MeetingInput | null;
   if (!input?.organizationId || !(await activeMembership(input.organizationId, session.uid))) return NextResponse.json({ error: 'Choose an organisation you belong to' }, { status: 403 });
@@ -119,25 +119,25 @@ export async function POST(request: Request) {
   if (startsAt.getTime() < Date.now() - 5 * 60000) return NextResponse.json({ error: 'Meeting time must be in the future' }, { status: 400 });
   const provider = providers.has(input.provider || '') ? input.provider! : 'custom';
   let meetingUrl = safeMeetingUrl(input.meetingUrl);
-  if (provider === 'jitsi' && !meetingUrl) meetingUrl = `https://meet.jit.si/ondwira-${randomUUID().replace(/-/g, '')}`;
+  if (provider === 'jitsi' && !meetingUrl) meetingUrl = `https://meet.jit.si/profcaria-${randomUUID().replace(/-/g, '')}`;
   if (input.meetingUrl && !meetingUrl) return NextResponse.json({ error: 'Use a valid http or https meeting link' }, { status: 400 });
   const reminderMinutes = [...new Set((input.reminderMinutes ?? [10]).map(Number).filter(value => allowedReminders.has(value)))].sort((a, b) => a - b);
 
   let group: { id: string; conversation_id: string | null } | null = null;
   if (input.workGroupId) {
-    const { data } = await supabaseAdmin.schema('ondwira').from('work_groups').select('id, conversation_id').eq('id', input.workGroupId).eq('organization_id', input.organizationId).is('archived_at', null).maybeSingle();
+    const { data } = await supabaseAdmin.schema('profcaria').from('work_groups').select('id, conversation_id').eq('id', input.workGroupId).eq('organization_id', input.organizationId).is('archived_at', null).maybeSingle();
     if (!data) return NextResponse.json({ error: 'Choose a valid work group' }, { status: 400 });
     group = data;
   }
   const requestedIds = new Set([session.uid, ...(input.participantIds ?? [])]);
   if (group) {
-    const { data: groupMembers } = await supabaseAdmin.schema('ondwira').from('work_group_members').select('user_id').eq('group_id', group.id).is('removed_at', null);
+    const { data: groupMembers } = await supabaseAdmin.schema('profcaria').from('work_group_members').select('user_id').eq('group_id', group.id).is('removed_at', null);
     (groupMembers ?? []).forEach((member: { user_id: string }) => requestedIds.add(member.user_id));
   }
-  const { data: allowedParticipants } = await supabaseAdmin.schema('ondwira').from('organization_members').select('user_id').eq('organization_id', input.organizationId).eq('status', 'active').in('user_id', [...requestedIds]);
+  const { data: allowedParticipants } = await supabaseAdmin.schema('profcaria').from('organization_members').select('user_id').eq('organization_id', input.organizationId).eq('status', 'active').in('user_id', [...requestedIds]);
   const participantIds = (allowedParticipants ?? []).map((item: { user_id: string }) => item.user_id);
 
-  const { data: meeting, error } = await supabaseAdmin.schema('ondwira').from('work_meetings').insert({
+  const { data: meeting, error } = await supabaseAdmin.schema('profcaria').from('work_meetings').insert({
     organization_id: input.organizationId,
     work_group_id: group?.id || null,
     conversation_id: group?.conversation_id || null,
@@ -154,7 +154,7 @@ export async function POST(request: Request) {
   }).select('id').single();
   if (error || !meeting) return NextResponse.json({ error: 'The meeting could not be scheduled' }, { status: 500 });
 
-  const { error: participantError } = await supabaseAdmin.schema('ondwira').from('work_meeting_participants').insert(participantIds.map((userId: string) => ({
+  const { error: participantError } = await supabaseAdmin.schema('profcaria').from('work_meeting_participants').insert(participantIds.map((userId: string) => ({
     meeting_id: meeting.id,
     user_id: userId,
     participant_role: userId === session.uid ? 'host' : 'required',
@@ -162,14 +162,14 @@ export async function POST(request: Request) {
     responded_at: userId === session.uid ? new Date().toISOString() : null,
   })));
   if (participantError) {
-    await supabaseAdmin.schema('ondwira').from('work_meetings').delete().eq('id', meeting.id);
+    await supabaseAdmin.schema('profcaria').from('work_meetings').delete().eq('id', meeting.id);
     return NextResponse.json({ error: 'Meeting participants could not be saved' }, { status: 500 });
   }
-  if (reminderMinutes.length) await supabaseAdmin.schema('ondwira').from('work_meeting_reminders').insert(participantIds.flatMap((userId: string) => reminderMinutes.map(minutes => ({ meeting_id: meeting.id, user_id: userId, reminder_minutes: minutes }))));
+  if (reminderMinutes.length) await supabaseAdmin.schema('profcaria').from('work_meeting_reminders').insert(participantIds.flatMap((userId: string) => reminderMinutes.map(minutes => ({ meeting_id: meeting.id, user_id: userId, reminder_minutes: minutes }))));
 
   if (group?.conversation_id) {
     const payload = { title, description: input.agenda?.trim() || '', location: input.location?.trim() || '', startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString(), meetingUrl };
-    const { data: message } = await supabaseAdmin.schema('ondwira').from('messages').insert({
+    const { data: message } = await supabaseAdmin.schema('profcaria').from('messages').insert({
       conversation_id: group.conversation_id,
       sender_id: session.uid,
       sender_type: session.schema,
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
       message_type: 'meeting',
       payload_ciphertext: encryptData(JSON.stringify(payload)),
     }).select('id').single();
-    if (message) await supabaseAdmin.schema('ondwira').from('message_events').insert({
+    if (message) await supabaseAdmin.schema('profcaria').from('message_events').insert({
       message_id: message.id,
       event_kind: 'meeting',
       encrypted_title: encryptData(title),

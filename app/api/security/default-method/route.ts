@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { supabaseAdmin } from '@/lib/supabase';
-import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
+import { syncProfcariaSecurity } from '@/lib/profcaria-identity';
 
 export async function POST(req: Request) {
     try {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
             throw error;
         }
 
-        await syncOndwiraSecurity(uid, { defaultMethod: method });
+        await syncProfcariaSecurity(uid, { defaultMethod: method });
 
         return NextResponse.json({ success: true });
 

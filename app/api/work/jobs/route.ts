@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData } from '@/lib/security';
 import { validateJobCategory } from '@/lib/ai-moderation';
 import {
   cleanTags, cleanText, decryptJob,
   makeJobCode, makeShareCode, requireOrganizationManager,
-} from '@/lib/ondwira-recruitment';
+} from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,10 +23,10 @@ type QuestionInput = {
 };
 
 export async function GET(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const organizationId = new URL(request.url).searchParams.get('organizationId');
-  const { data: memberships, error: membershipError } = await supabaseAdmin.schema('ondwira')
+  const { data: memberships, error: membershipError } = await supabaseAdmin.schema('profcaria')
     .from('organization_members').select('organization_id, role, status, organizations!inner(id, name)')
     .eq('user_id', session.uid).eq('status', 'active');
   if (membershipError) return NextResponse.json({ error: 'Unable to load workspaces' }, { status: 500 });
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   const organizationIds = allowed.map((item: any) => item.organization_id);
   if (!organizationIds.length) return NextResponse.json({ jobs: [], organizations: [] });
 
-  const { data: rows, error } = await supabaseAdmin.schema('ondwira').from('jobs')
+  const { data: rows, error } = await supabaseAdmin.schema('profcaria').from('jobs')
     .select('*, organizations(id, name), job_screening_profiles(*)')
     .in('organization_id', organizationIds).order('created_at', { ascending: false });
   if (error) return NextResponse.json({ error: 'Unable to load jobs' }, { status: 500 });
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const input = await request.json().catch(() => null) as any;
   const organizationId = cleanText(input?.organizationId, 80);
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
   if (closesAt && (!Number.isFinite(closesAt.getTime()) || closesAt <= new Date())) {
     return NextResponse.json({ error: 'Closing date must be in the future.' }, { status: 400 });
   }
-  const { data: job, error: jobError } = await supabaseAdmin.schema('ondwira').from('jobs').insert({
+  const { data: job, error: jobError } = await supabaseAdmin.schema('profcaria').from('jobs').insert({
     organization_id: organizationId,
     created_by: session.uid,
     job_code: jobCode,
@@ -129,15 +129,15 @@ export async function POST(request: Request) {
     } : null;
   }).filter(Boolean);
   if (questionRows.length) {
-    const { error } = await supabaseAdmin.schema('ondwira').from('job_questions').insert(questionRows);
+    const { error } = await supabaseAdmin.schema('profcaria').from('job_questions').insert(questionRows);
     if (error) {
-      await supabaseAdmin.schema('ondwira').from('jobs').delete().eq('id', job.id);
+      await supabaseAdmin.schema('profcaria').from('jobs').delete().eq('id', job.id);
       return NextResponse.json({ error: 'The job questions could not be saved.' }, { status: 500 });
     }
   }
 
   const screening = input?.screening ?? {};
-  const { error: screeningError } = await supabaseAdmin.schema('ondwira').from('job_screening_profiles').insert({
+  const { error: screeningError } = await supabaseAdmin.schema('profcaria').from('job_screening_profiles').insert({
     job_id: job.id,
     mode: ['off', 'assist', 'triage'].includes(screening.mode) ? screening.mode : 'assist',
     minimum_review_score: Number.isInteger(screening.minimumReviewScore) ? Math.max(0, Math.min(100, screening.minimumReviewScore)) : 45,
@@ -152,14 +152,14 @@ export async function POST(request: Request) {
     configured_by: session.uid,
   });
   if (screeningError) {
-    await supabaseAdmin.schema('ondwira').from('jobs').delete().eq('id', job.id);
+    await supabaseAdmin.schema('profcaria').from('jobs').delete().eq('id', job.id);
     return NextResponse.json({ error: 'The screening policy could not be saved.' }, { status: 500 });
   }
   await Promise.all([
-    supabaseAdmin.schema('ondwira').from('job_collaborators').insert({
+    supabaseAdmin.schema('profcaria').from('job_collaborators').insert({
       job_id: job.id, user_id: session.uid, access_level: 'owner', added_by: session.uid,
     }),
-    supabaseAdmin.schema('ondwira').from('job_events').insert({
+    supabaseAdmin.schema('profcaria').from('job_events').insert({
       job_id: job.id, organization_id: organizationId, actor_id: session.uid,
       event_type: status === 'published' ? 'published' : 'created', metadata: { jobCode },
     }),

@@ -1,46 +1,21 @@
 # Profcaria
 
-> The exclusive professional network tailored for your growth. No ghosting, just results.
+> Applying for jobs, made simple.
 
-## About
+Profcaria is a Kenya-only jobs platform. Public pages contain currently open vacancies; jobs automatically disappear when their closing time or application limit is reached.
 
-Profcaria is a premium professional networking platform that connects job seekers with top employers through verified smart matching. Unlike traditional job boards, Profcaria focuses on quality connections over quantity.
+## Machine-readable jobs
 
-## What Makes Profcaria Different
+- JSON feed: https://www.profcaria.com/api/jobs
+- Job pages: https://www.profcaria.com/jobs/{job-id}
+- Sitemap: https://www.profcaria.com/sitemap.xml
 
-### Instant Work History Verification
-Employers on Profcaria can instantly verify their current and past employees. When you apply for a job, employers see a verified badge confirming "This person truly worked here" - eliminating resume fraud and building trust from the first interaction.
+Each job page includes Schema.org JobPosting JSON-LD. Locations are in Kenya, including Kenya-restricted remote work. Currency is Kenyan shillings (KES).
 
-### Smart AI Matching
-Our AI-powered matching algorithm connects professionals with opportunities that truly fit their skills, experience, and career goals - not just keyword matches.
+## Application rules
 
-### No Ghosting Guarantee
-Every application gets a response. We believe job seekers deserve respect and transparency throughout the hiring process.
+Job seekers may apply without creating an account. An account is required only to track applications or reply to a company in Profcaria chat. Closed, paused, filled, cancelled, expired, link-only and full jobs are excluded from the public feed.
 
-### Verified Profiles
-Both professionals and companies go through verification, ensuring authentic connections and reducing spam.
+## Safety
 
-## Target Users
-
-**Professionals**: Job seekers, career changers, and executives looking for verified opportunities with real responses.
-
-**Employers**: Companies and recruiters seeking pre-verified, quality candidates with authentic work histories.
-
-## Key Features
-
-- Instant employee verification by employers
-- AI-powered smart matching algorithm
-- Verified badges for companies and professionals
-- Professional feed and networking
-- AI resume analysis and optimization
-- Secure document sharing with permission controls
-- Subscription-based premium features
-
-## Platform
-
-- Website: https://www.profcaria.com
-- Type: Professional networking and job matching platform
-
-## Contact
-
-For business inquiries and support, visit: https://www.profcaria.com
+Company accounts are required to publish. Links and documents are inspected before release. Reports may be filed against jobs, companies, accounts, messages and documents.

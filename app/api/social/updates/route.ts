@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { getOndwiraContacts, resolveOndwiraPeople } from '@/lib/ondwira-contacts';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
+import { getProfcariaContacts, resolveProfcariaPeople } from '@/lib/profcaria-contacts';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData, encryptData } from '@/lib/security';
 
@@ -24,22 +24,22 @@ const textStyles = new Set(['editorial', 'modern', 'heritage', 'quiet', 'stateme
 const backgrounds = new Set(['parchment', 'terracotta', 'ink', 'olive', 'gold', 'rose']);
 
 async function signedUpdateUrl(path: string) {
-  const { data } = await supabaseAdmin.storage.from('ondwira-updates').createSignedUrl(path, 60 * 20);
+  const { data } = await supabaseAdmin.storage.from('profcaria-updates').createSignedUrl(path, 60 * 20);
   return data?.signedUrl ?? null;
 }
 
 async function visibleUpdateRows(userId: string, contactIds: string[]) {
   const now = new Date().toISOString();
-  const { data: selectedRows } = await supabaseAdmin.schema('ondwira').from('social_update_audience').select('update_id').eq('user_id', userId);
+  const { data: selectedRows } = await supabaseAdmin.schema('profcaria').from('social_update_audience').select('update_id').eq('user_id', userId);
   const selectedIds = (selectedRows ?? []).map((row: { update_id: string }) => row.update_id);
   const select = 'id, author_id, author_type, enc_body, enc_prompt, mood_emoji, content_type, text_style, background_style, audience_mode, allow_replies, expires_at, created_at';
   const queries = [
-    supabaseAdmin.schema('ondwira').from('social_updates').select(select).eq('author_id', userId).gt('expires_at', now).is('deleted_at', null),
+    supabaseAdmin.schema('profcaria').from('social_updates').select(select).eq('author_id', userId).gt('expires_at', now).is('deleted_at', null),
     selectedIds.length
-      ? supabaseAdmin.schema('ondwira').from('social_updates').select(select).in('id', selectedIds).gt('expires_at', now).is('deleted_at', null)
+      ? supabaseAdmin.schema('profcaria').from('social_updates').select(select).in('id', selectedIds).gt('expires_at', now).is('deleted_at', null)
       : Promise.resolve({ data: [], error: null }),
     contactIds.length
-      ? supabaseAdmin.schema('ondwira').from('social_updates').select(select).eq('audience_mode', 'all_contacts').in('author_id', contactIds).gt('expires_at', now).is('deleted_at', null)
+      ? supabaseAdmin.schema('profcaria').from('social_updates').select(select).eq('audience_mode', 'all_contacts').in('author_id', contactIds).gt('expires_at', now).is('deleted_at', null)
       : Promise.resolve({ data: [], error: null }),
   ];
   const results = await Promise.all(queries);
@@ -50,24 +50,24 @@ async function visibleUpdateRows(userId: string, contactIds: string[]) {
 }
 
 export async function GET() {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
-    const contacts = await getOndwiraContacts(session);
+    const contacts = await getProfcariaContacts(session);
     const updates = await visibleUpdateRows(session.uid, contacts.map(contact => contact.id));
     const updateIds = updates.map((update: any) => update.id);
     if (!updateIds.length) return NextResponse.json({ viewerId: session.uid, updates: [] });
 
     const [mediaResult, reactionResult, viewResult, replyResult] = await Promise.all([
-      supabaseAdmin.schema('ondwira').from('social_update_media').select('id, update_id, storage_path, media_type, mime_type, byte_size, width, height, duration_seconds, position').in('update_id', updateIds).order('position'),
-      supabaseAdmin.schema('ondwira').from('social_update_reactions').select('update_id, user_id, emoji').in('update_id', updateIds),
-      supabaseAdmin.schema('ondwira').from('social_update_views').select('update_id, viewer_id, completion_percent, last_viewed_at').in('update_id', updateIds),
-      supabaseAdmin.schema('ondwira').from('social_update_replies').select('id, update_id, author_id, enc_body, created_at').in('update_id', updateIds).is('deleted_at', null).order('created_at', { ascending: false }),
+      supabaseAdmin.schema('profcaria').from('social_update_media').select('id, update_id, storage_path, media_type, mime_type, byte_size, width, height, duration_seconds, position').in('update_id', updateIds).order('position'),
+      supabaseAdmin.schema('profcaria').from('social_update_reactions').select('update_id, user_id, emoji').in('update_id', updateIds),
+      supabaseAdmin.schema('profcaria').from('social_update_views').select('update_id, viewer_id, completion_percent, last_viewed_at').in('update_id', updateIds),
+      supabaseAdmin.schema('profcaria').from('social_update_replies').select('id, update_id, author_id, enc_body, created_at').in('update_id', updateIds).is('deleted_at', null).order('created_at', { ascending: false }),
     ]);
     const media = await Promise.all((mediaResult.data ?? []).map(async (item: any) => ({ ...item, url: await signedUpdateUrl(item.storage_path) })));
     const authorRows = updates.map((update: any) => ({ user_id: update.author_id, account_type: update.author_type }));
     const replyAuthorRows = (replyResult.data ?? []).map((reply: any) => ({ user_id: reply.author_id, account_type: contacts.find(contact => contact.id === reply.author_id)?.type || session.schema }));
-    const people = await resolveOndwiraPeople([...authorRows, ...replyAuthorRows]);
+    const people = await resolveProfcariaPeople([...authorRows, ...replyAuthorRows]);
 
     return NextResponse.json({
       viewerId: session.uid,
@@ -79,7 +79,7 @@ export async function GET() {
           id: reply.id,
           body: decryptData(reply.enc_body),
           authorId: reply.author_id,
-          authorName: people.get(reply.author_id)?.name || 'Ondwira member',
+          authorName: people.get(reply.author_id)?.name || 'Profcaria member',
           createdAt: reply.created_at,
         })) : [];
         const reactionCounts = updateReactions.reduce((counts: Record<string, number>, reaction: any) => {
@@ -89,7 +89,7 @@ export async function GET() {
         return {
           id: update.id,
           authorId: update.author_id,
-          authorName: people.get(update.author_id)?.name || (mine ? 'You' : 'Ondwira member'),
+          authorName: people.get(update.author_id)?.name || (mine ? 'You' : 'Profcaria member'),
           authorAvatar: people.get(update.author_id)?.avatarUrl || null,
           isMine: mine,
           body: decryptData(update.enc_body),
@@ -120,13 +120,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const input = await request.json().catch(() => null) as UpdateInput | null;
   const body = input?.body?.trim();
   if (!body || body.length > 4000) return NextResponse.json({ error: 'Write between 1 and 4,000 characters' }, { status: 400 });
 
-  const contacts = await getOndwiraContacts(session).catch(() => []);
+  const contacts = await getProfcariaContacts(session).catch(() => []);
   const contactIds = new Set(contacts.map(contact => contact.id));
   const mode = input?.audienceMode === 'selected' ? 'selected' : 'all_contacts';
   const audienceIds = [...new Set(input?.audienceIds ?? [])].filter(id => id !== session.uid && contactIds.has(id)).slice(0, 500);
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
   const textStyle = textStyles.has(input?.textStyle || '') ? input!.textStyle : 'editorial';
   const backgroundStyle = backgrounds.has(input?.backgroundStyle || '') ? input!.backgroundStyle : 'parchment';
 
-  const { data: update, error } = await supabaseAdmin.schema('ondwira').from('social_updates').insert({
+  const { data: update, error } = await supabaseAdmin.schema('profcaria').from('social_updates').insert({
     author_id: session.uid,
     author_type: session.schema,
     enc_body: encryptData(body),
@@ -150,9 +150,9 @@ export async function POST(request: Request) {
   }).select('id, author_id, expires_at, created_at').single();
   if (error || !update) return NextResponse.json({ error: 'Unable to publish update' }, { status: 500 });
   if (mode === 'selected') {
-    const { error: audienceError } = await supabaseAdmin.schema('ondwira').from('social_update_audience').insert(audienceIds.map(userId => ({ update_id: update.id, user_id: userId })));
+    const { error: audienceError } = await supabaseAdmin.schema('profcaria').from('social_update_audience').insert(audienceIds.map(userId => ({ update_id: update.id, user_id: userId })));
     if (audienceError) {
-      await supabaseAdmin.schema('ondwira').from('social_updates').delete().eq('id', update.id);
+      await supabaseAdmin.schema('profcaria').from('social_updates').delete().eq('id', update.id);
       return NextResponse.json({ error: 'Unable to save the private audience' }, { status: 500 });
     }
   }
@@ -160,14 +160,14 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const id = new URL(request.url).searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Update id required' }, { status: 400 });
-  const { data: owned } = await supabaseAdmin.schema('ondwira').from('social_updates').select('id').eq('id', id).eq('author_id', session.uid).maybeSingle();
+  const { data: owned } = await supabaseAdmin.schema('profcaria').from('social_updates').select('id').eq('id', id).eq('author_id', session.uid).maybeSingle();
   if (!owned) return NextResponse.json({ error: 'Update not found' }, { status: 404 });
-  const { data: media } = await supabaseAdmin.schema('ondwira').from('social_update_media').select('storage_path').eq('update_id', id);
-  await supabaseAdmin.schema('ondwira').from('social_updates').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('author_id', session.uid);
-  if (media?.length) await supabaseAdmin.storage.from('ondwira-updates').remove(media.map((item: { storage_path: string }) => item.storage_path));
+  const { data: media } = await supabaseAdmin.schema('profcaria').from('social_update_media').select('storage_path').eq('update_id', id);
+  await supabaseAdmin.schema('profcaria').from('social_updates').update({ deleted_at: new Date().toISOString() }).eq('id', id).eq('author_id', session.uid);
+  if (media?.length) await supabaseAdmin.storage.from('profcaria-updates').remove(media.map((item: { storage_path: string }) => item.storage_path));
   return NextResponse.json({ success: true });
 }

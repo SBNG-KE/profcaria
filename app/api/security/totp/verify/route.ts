@@ -6,7 +6,7 @@ import { jwtVerify, SignJWT } from 'jose';
 import { authenticator } from 'otplib';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
+import { syncProfcariaSecurity } from '@/lib/profcaria-identity';
 
 export const runtime = 'nodejs';
 
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
         }
 
-        await syncOndwiraSecurity(uid, { hasTotp: true, requires2fa: true });
+        await syncProfcariaSecurity(uid, { hasTotp: true, requires2fa: true });
 
         // 5. Upgrade Session (AAL 2)
         const newPayload = {

@@ -1,8 +1,8 @@
 {
-  "name": "Ondwira",
-  "short_name": "Ondwira",
-  "description": "Social communication and work, together.",
-  "start_url": "/social",
+  "name": "Profcaria",
+  "short_name": "Profcaria",
+  "description": "Applying for jobs, made simple.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#111214",
   "theme_color": "#111214",
@@ -14,7 +14,7 @@
       "purpose": "any"
     },
     {
-      "src": "/ondwira.png?v=20260716c",
+      "src": "/profcaria.png?v=20260803",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

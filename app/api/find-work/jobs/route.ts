@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
-import { decryptJob } from '@/lib/ondwira-recruitment';
+import { decryptJob } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,7 +23,7 @@ function matchJob(job: any, evidence: string) {
 }
 
 export async function GET(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const url = new URL(request.url);
   const search = (url.searchParams.get('q') || '').trim().toLowerCase().slice(0, 120);
@@ -31,11 +31,11 @@ export async function GET(request: Request) {
   const employmentType = url.searchParams.get('employmentType');
 
   const [{ data: memberships }, { data: history }, { data: documents }] = await Promise.all([
-    supabaseAdmin.schema('ondwira').from('organization_members')
+    supabaseAdmin.schema('profcaria').from('organization_members')
       .select('organization_id').eq('user_id', session.uid).eq('status', 'active'),
-    supabaseAdmin.schema('ondwira').from('employment_records')
+    supabaseAdmin.schema('profcaria').from('employment_records')
       .select('title, verification_status').eq('user_id', session.uid),
-    supabaseAdmin.schema('ondwira').from('documents')
+    supabaseAdmin.schema('profcaria').from('documents')
       .select('enc_title, enc_content, document_kind').eq('owner_id', session.uid).is('archived_at', null).limit(50),
   ]);
   const organizationIds = new Set((memberships ?? []).map((row: any) => row.organization_id));
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
     ...(documents ?? []).flatMap((row: any) => [decryptData(row.enc_title), decryptData(row.enc_content), row.document_kind]),
   ].filter(Boolean).join(' ').toLowerCase();
 
-  let query = supabaseAdmin.schema('ondwira').from('jobs')
+  let query = supabaseAdmin.schema('profcaria').from('jobs')
     .select('*, organizations(id, name)')
     .eq('status', 'published').order('published_at', { ascending: false }).limit(100);
   if (locationType) query = query.eq('location_type', locationType);
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
   });
   const jobIds = visible.map((row: any) => row.id);
   const { data: applications } = jobIds.length
-    ? await supabaseAdmin.schema('ondwira').from('applications')
+    ? await supabaseAdmin.schema('profcaria').from('applications')
       .select('job_id, status, submitted_at').eq('applicant_id', session.uid).in('job_id', jobIds)
     : { data: [] };
   const applicationMap = new Map((applications ?? []).map((row: any) => [row.job_id, row]));

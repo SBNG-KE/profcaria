@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '../context/ThemeContext';
 import { PixelBackground } from './PixelBackground';
-import OndwiraLogo, { OndwiraMark } from './brand/OndwiraLogo';
+import ProfcariaLogo, { ProfcariaMark } from './brand/ProfcariaLogo';
 import HangingSecurityCard from './HangingSecurityCard';
-import { validateOndwiraUsername } from '@/lib/ondwira-username';
+import { validateProfcariaUsername } from '@/lib/profcaria-username';
 
 const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -62,7 +62,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
     return <HangingSecurityCard isOpen onClose={onClose} initialMode={screen === 'security_setup' ? 'setup' : 'verify'} />;
   }
 
-  const usernameCheck = validateOndwiraUsername(username);
+  const usernameCheck = validateProfcariaUsername(username);
   const valid = mode === 'login'
     ? Boolean(email.trim() && password)
     : Boolean(firstName.trim() && lastName.trim() && email.trim() && password.length >= 8 && usernameCheck.valid);
@@ -95,7 +95,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
       if (mode === 'signup') {
         await fetch('/api/settings/appearance', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ theme: preference, fontFamily: fontPreference }) }).catch(() => undefined);
       }
-      const redirect = data.redirect || (mode === 'signup' ? '/?mode=setup&redirect=/social' : '/social');
+      const redirect = data.redirect || (mode === 'signup' ? '/?mode=setup&redirect=/find-work' : '/find-work');
       if (redirect.includes('mode=verify')) setScreen('security_verify');
       else if (redirect.includes('mode=setup')) setScreen('security_setup');
       else window.location.assign(redirect);
@@ -124,19 +124,19 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
   }
 
   return (
-    <div className="ondwira-scrollbar fixed inset-0 z-[100] flex touch-pan-y items-start justify-center overflow-y-scroll overscroll-contain bg-black/55 p-0 backdrop-blur-sm sm:p-4 lg:p-6" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel role="dialog" aria-modal="true" aria-label={mode === 'login' ? 'Sign in to Ondwira' : 'Create an Ondwira account'} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="profcaria-scrollbar fixed inset-0 z-[100] flex touch-pan-y items-start justify-center overflow-y-scroll overscroll-contain bg-black/55 p-0 backdrop-blur-sm sm:p-4 lg:p-6" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel role="dialog" aria-modal="true" aria-label={mode === 'login' ? 'Sign in to Profcaria' : 'Create an Profcaria account'} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="relative my-auto grid min-h-full w-full max-w-5xl overflow-hidden border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-2xl sm:min-h-0 lg:h-[calc(100dvh-3rem)] lg:max-h-[900px] lg:grid-cols-[0.9fr_1.1fr]">
         <PixelBackground isDark={theme === 'dark'} className="absolute inset-0 z-0 pointer-events-none" />
         <button onClick={onClose} className="absolute right-5 top-5 z-20 h-9 w-9 border border-[var(--border-primary)] text-lg text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]" aria-label="Close">×</button>
 
         <aside className="relative z-10 hidden min-h-0 flex-col justify-between overflow-hidden border-r border-[var(--border-primary)] bg-[var(--accent-primary)] p-10 text-[var(--text-inverse)] lg:flex xl:p-12">
-          <OndwiraMark className="h-24 w-20" />
+          <ProfcariaMark className="h-24 w-20" />
           <div><p className="font-editorial text-6xl leading-[0.88]">One entrance.<br /><span className="italic">Every chapter.</span></p><p className="mt-7 max-w-xs text-sm leading-7 opacity-80">Your social life and work life remain clearly separated by permissions, while the account always remains yours.</p></div>
           <p className="text-[9px] font-bold uppercase tracking-[0.28em] opacity-65">Private by structure · continuous by design</p>
         </aside>
 
-        <div className="ondwira-scrollbar relative z-10 flex min-h-full touch-pan-y flex-col overflow-y-scroll overscroll-y-contain bg-[var(--surface-raised)]/82 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10 lg:h-full lg:min-h-0 lg:px-12 lg:py-10 xl:px-14" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel tabIndex={0} aria-label="Scrollable sign in form">
-          <div className="pr-12"><OndwiraLogo className="text-xl" markClassName="text-[var(--accent-primary)]" /><p className="mt-3 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">One account</p></div>
+        <div className="profcaria-scrollbar relative z-10 flex min-h-full touch-pan-y flex-col overflow-y-scroll overscroll-y-contain bg-[var(--surface-raised)]/82 px-6 py-8 backdrop-blur-sm sm:px-10 sm:py-10 lg:h-full lg:min-h-0 lg:px-12 lg:py-10 xl:px-14" data-lenis-prevent data-lenis-prevent-touch data-lenis-prevent-wheel tabIndex={0} aria-label="Scrollable sign in form">
+          <div className="pr-12"><ProfcariaLogo className="text-xl" markClassName="text-[var(--accent-primary)]" /><p className="mt-3 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--text-muted)]">One account</p></div>
 
           <div className="my-auto py-9 sm:py-10">
             <div className="mb-10 flex border-b border-[var(--border-primary)]">
@@ -151,16 +151,16 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
 
             <form onSubmit={(event) => { event.preventDefault(); submit(); }} className="space-y-5">
               {mode === 'signup' && <div className="grid gap-5 sm:grid-cols-2"><Field label="First name" value={firstName} onChange={setFirstName} autoComplete="given-name" /><Field label="Last name" value={lastName} onChange={setLastName} autoComplete="family-name" /></div>}
-              {mode === 'signup' && <div><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><span className="py-3 pr-1 text-[15px] text-[var(--accent-primary)]">@</span><input aria-label="Unique username" value={username} onChange={(event) => setUsername(event.target.value.replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))} autoComplete="username" placeholder="your_unique_name" className="min-w-0 flex-1 bg-transparent py-3 text-[15px] outline-none placeholder:text-[var(--text-muted)]" /></div><p className={`mt-2 text-[10px] leading-4 ${username && !usernameCheck.valid ? 'text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'}`}>{username && !usernameCheck.valid ? usernameCheck.error : 'Your unique Ondwira name. People can find you without seeing your phone number.'}</p></div>}
+              {mode === 'signup' && <div><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><span className="py-3 pr-1 text-[15px] text-[var(--accent-primary)]">@</span><input aria-label="Unique username" value={username} onChange={(event) => setUsername(event.target.value.replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))} autoComplete="username" placeholder="your_unique_name" className="min-w-0 flex-1 bg-transparent py-3 text-[15px] outline-none placeholder:text-[var(--text-muted)]" /></div><p className={`mt-2 text-[10px] leading-4 ${username && !usernameCheck.valid ? 'text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'}`}>{username && !usernameCheck.valid ? usernameCheck.error : 'Your unique Profcaria name. People can find you without seeing your phone number.'}</p></div>}
               <Field label="Email address" type="email" value={email} onChange={setEmail} autoComplete="email" />
               <Field label={mode === 'signup' ? 'Password · 8 characters minimum' : 'Password'} type="password" value={password} onChange={setPassword} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
               {mode === 'signup' && <div><span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--text-muted)]">Phone number · optional on web</span><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} className="bg-transparent py-3 pr-3 text-sm outline-none"><option value="+254">KE +254</option><option value="+256">UG +256</option><option value="+255">TZ +255</option><option value="+250">RW +250</option><option value="+234">NG +234</option><option value="+27">ZA +27</option><option value="+1">US/CA +1</option><option value="+44">UK +44</option></select><input value={phone} onChange={(event) => setPhone(event.target.value.replace(/[^0-9 ]/g, ''))} inputMode="tel" autoComplete="tel" placeholder="Add now or later in Settings" className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[var(--text-muted)]" /></div></div>}
               {error && <p className="border-l-2 border-[var(--accent-primary)] pl-3 text-sm text-[var(--accent-strong)]" role="alert">{error}</p>}
-              <button type="submit" disabled={!valid || busy} className="w-full bg-[var(--accent-primary)] px-5 py-4 text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--text-inverse)] transition-opacity disabled:cursor-not-allowed disabled:opacity-45">{busy ? 'Please wait…' : mode === 'login' ? 'Enter Ondwira' : 'Create one account'}</button>
+              <button type="submit" disabled={!valid || busy} className="w-full bg-[var(--accent-primary)] px-5 py-4 text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--text-inverse)] transition-opacity disabled:cursor-not-allowed disabled:opacity-45">{busy ? 'Please wait…' : mode === 'login' ? 'Enter Profcaria' : 'Create one account'}</button>
             </form>
           </div>
 
-          <p className="text-center text-[9px] uppercase tracking-[0.2em] text-[var(--text-muted)]">By continuing, you accept Ondwira’s terms and privacy commitments.</p>
+          <p className="text-center text-[9px] uppercase tracking-[0.2em] text-[var(--text-muted)]">By continuing, you accept Profcaria’s terms and privacy commitments.</p>
         </div>
       </section>
     </div>

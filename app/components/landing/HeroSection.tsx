@@ -4,7 +4,7 @@ import React from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
-import OndwiraLogo, { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
+import ProfcariaLogo, { ProfcariaBadge } from '@/app/components/brand/ProfcariaLogo';
 
 export default function HeroSection() {
     const { theme } = useTheme();
@@ -22,7 +22,7 @@ export default function HeroSection() {
                     className={`text-5xl md:text-8xl lg:text-9xl
                         ${isDark ? 'text-white text-glow' : 'text-black'}`}
                 >
-                    <OndwiraLogo markClassName="text-[var(--accent-primary)]" />
+                    <ProfcariaLogo markClassName="text-[var(--accent-primary)]" />
                 </motion.div>
             </div>
 
@@ -33,7 +33,7 @@ export default function HeroSection() {
                 transition={{ duration: 1.2, ease: "circOut", delay: 1.5 }}
                 className="relative overflow-hidden rounded-3xl border border-[var(--border-primary)] bg-[var(--surface-raised)] p-3 shadow-[var(--shadow-glow)]"
             >
-                <OndwiraBadge className="h-16 w-16 rounded-2xl md:h-20 md:w-20" />
+                <ProfcariaBadge className="h-16 w-16 rounded-2xl md:h-20 md:w-20" />
             </motion.div>
 
             {/* Downward Arrow */}

@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { jwtVerify } from 'jose';
-import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
+import { syncProfcariaSecurity } from '@/lib/profcaria-identity';
 
 export const runtime = 'nodejs';
 
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
                 })
                 .eq('id', uid);
 
-            await syncOndwiraSecurity(uid, { hasPasskey: true, requires2fa: true });
+            await syncProfcariaSecurity(uid, { hasPasskey: true, requires2fa: true });
 
             // Cleanup challenge
             const response = NextResponse.json({ success: true, verified: true });

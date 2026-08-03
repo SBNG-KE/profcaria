@@ -23,7 +23,7 @@ export default function JobsSection() {
                         <br /> Not Noise.
                     </h2>
                     <p className={`text-lg md:text-2xl font-light max-w-5xl mx-auto leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                        Stop losing time to irrelevant listings, unclear requirements, and scattered applications. Ondwira uses your chosen preferences, verified experience, and skills to rank roles that fit, while keeping every application and conversation in the same account. It is not about applying everywhere; it is about finding work that makes sense for you.
+                        Stop losing time to irrelevant listings, unclear requirements, and scattered applications. Profcaria uses your chosen preferences, verified experience, and skills to rank roles that fit, while keeping every application and conversation in the same account. It is not about applying everywhere; it is about finding work that makes sense for you.
                     </p>
                 </motion.div>
 

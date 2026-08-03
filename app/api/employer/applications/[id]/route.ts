@@ -276,8 +276,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         if (status === 'employed' || status === 'terminated') {
             try {
-                const { syncOndwiraEmployment } = await import('@/lib/ondwira-work');
-                await syncOndwiraEmployment({
+                const { syncProfcariaEmployment } = await import('@/lib/profcaria-work');
+                await syncProfcariaEmployment({
                     applicationId,
                     companyId: companyId as string,
                     companyName: companyName || 'Organisation',
@@ -287,8 +287,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
                     status,
                 });
             } catch (syncError) {
-                console.error('[ONDWIRA] Employment sync failed', syncError);
-                return NextResponse.json({ error: 'Employment changed, but Ondwira workspace sync failed. Please retry.' }, { status: 500 });
+                console.error('[PROFCARIA] Employment sync failed', syncError);
+                return NextResponse.json({ error: 'Employment changed, but Profcaria workspace sync failed. Please retry.' }, { status: 500 });
             }
         }
 

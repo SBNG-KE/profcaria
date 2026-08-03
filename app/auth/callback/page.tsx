@@ -13,9 +13,9 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '@/app/context/ThemeContext';
 import { AtSign, Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
-import { OndwiraBadge } from '@/app/components/brand/OndwiraLogo';
+import { ProfcariaBadge } from '@/app/components/brand/ProfcariaLogo';
 import { PixelBackground } from '@/app/components/PixelBackground';
-import { validateOndwiraUsername } from '@/lib/ondwira-username';
+import { validateProfcariaUsername } from '@/lib/profcaria-username';
 
 // Create a client-side Supabase client for reading the OAuth session
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -149,8 +149,8 @@ export default function AuthCallbackPage() {
                 }
 
                 // Carry the device's chosen appearance into the new account.
-                const savedTheme = localStorage.getItem('ondwira-theme');
-                const savedFont = localStorage.getItem('ondwira-font');
+                const savedTheme = localStorage.getItem('profcaria-theme');
+                const savedFont = localStorage.getItem('profcaria-font');
                 if (savedTheme || savedFont) {
                     await fetch('/api/settings/appearance', {
                         method: 'PATCH',
@@ -158,7 +158,7 @@ export default function AuthCallbackPage() {
                         body: JSON.stringify({ ...(savedTheme ? { theme: savedTheme } : {}), ...(savedFont ? { fontFamily: savedFont } : {}) }),
                     }).catch(() => undefined);
                 }
-                router.push(data.redirect || '/social');
+                router.push(data.redirect || '/find-work');
 
             } catch (err) {
                 console.error('OAuth Callback Error:', err);
@@ -170,7 +170,7 @@ export default function AuthCallbackPage() {
         handleCallback();
     }, [router]);
 
-    const oauthUsernameResult = validateOndwiraUsername(oauthUsername);
+    const oauthUsernameResult = validateProfcariaUsername(oauthUsername);
 
     // Finish identity details that Google cannot choose for the person.
     const handleOAuthComplete = async () => {
@@ -198,7 +198,7 @@ export default function AuthCallbackPage() {
                 return;
             }
 
-            router.push(data.redirect || '/social');
+            router.push(data.redirect || '/find-work');
         } catch (err) {
             console.error('OAuth Completion Error:', err);
             setErrorMessage('Something went wrong. Please try again.');
@@ -213,7 +213,7 @@ export default function AuthCallbackPage() {
             <div className="relative flex min-h-dvh overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
                 <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
                 <div className="relative z-10 m-auto flex flex-col items-center rounded-[28px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/86 px-10 py-9 shadow-[var(--shadow-glow)] backdrop-blur-sm">
-                    <OndwiraBadge className="mb-5 h-12 w-12 rounded-2xl" />
+                    <ProfcariaBadge className="mb-5 h-12 w-12 rounded-2xl" />
                     <Loader2 className="mb-4 animate-spin text-[var(--accent-primary)]" size={32} />
                     <p className="text-sm font-bold uppercase tracking-widest text-[var(--text-secondary)]">Authenticating...</p>
                 </div>
@@ -227,7 +227,7 @@ export default function AuthCallbackPage() {
             <div className="relative flex min-h-dvh overflow-hidden bg-[var(--bg-primary)] p-4 text-[var(--text-primary)]">
                 <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
                 <div className="relative z-10 m-auto flex max-w-md flex-col items-center gap-4 rounded-[28px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/90 p-8 text-center shadow-[var(--shadow-glow)] backdrop-blur-sm">
-                    <OndwiraBadge className="h-12 w-12 rounded-2xl" />
+                    <ProfcariaBadge className="h-12 w-12 rounded-2xl" />
                     <p className="text-lg font-bold">{errorMessage}</p>
                     <button onClick={() => router.push('/')} className="rounded-xl bg-[var(--accent-primary)] px-6 py-3 text-sm font-bold uppercase tracking-widest text-[var(--text-inverse)] transition hover:brightness-105">
                         Back to Home
@@ -242,7 +242,7 @@ export default function AuthCallbackPage() {
         <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[var(--bg-primary)] px-4 py-8 text-[var(--text-primary)]">
             <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
             <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-[var(--border-primary)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-glow)] backdrop-blur-sm">
-                <OndwiraBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
+                <ProfcariaBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
                 <h2 className="text-2xl font-black tracking-tight text-center mb-2">{needsCompany ? 'Complete your account' : 'Choose your username'}</h2>
                 <p className={`text-center text-sm mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                     {needsCompany ? 'Choose how people find you, then add the organisation details.' : 'This unique name lets people find you without seeing your phone number.'}
@@ -263,7 +263,7 @@ export default function AuthCallbackPage() {
                             placeholder="your_unique_name"
                             className={`w-full border-b-2 bg-transparent py-3 pl-8 pr-4 text-sm outline-none transition-all ${isDark ? 'border-neutral-800 text-white placeholder-neutral-600 focus:border-white' : 'border-neutral-200 text-black placeholder-neutral-400 focus:border-black'}`}
                         />
-                        <p className={`mt-2 text-xs ${oauthUsername && !oauthUsernameResult.valid ? 'text-[var(--accent-primary)]' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{oauthUsername && !oauthUsernameResult.valid ? oauthUsernameResult.error : 'Unique across Ondwira. You can change it later in Settings.'}</p>
+                        <p className={`mt-2 text-xs ${oauthUsername && !oauthUsernameResult.valid ? 'text-[var(--accent-primary)]' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{oauthUsername && !oauthUsernameResult.valid ? oauthUsernameResult.error : 'Unique across Profcaria. You can change it later in Settings.'}</p>
                     </div>}
 
                     {needsCompany && <>

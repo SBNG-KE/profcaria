@@ -7,8 +7,8 @@ import { encryptData, hashForIndex } from '@/lib/security';
 import { checkRateLimit, getClientIdentifier, rateLimitedResponse } from '@/lib/rate-limit';
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
-import { ensureOndwiraAccount } from '@/lib/ondwira-identity';
-import { validateOndwiraPhone, validateOndwiraUsername } from '@/lib/ondwira-username';
+import { ensureProfcariaAccount } from '@/lib/profcaria-identity';
+import { validateProfcariaPhone, validateProfcariaUsername } from '@/lib/profcaria-username';
 
 // Force Node.js runtime for Argon2 support
 export const runtime = 'nodejs';
@@ -38,11 +38,11 @@ export async function POST(req: Request) {
     if (!email || !password || !firstName || !lastName || password.length < 8) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-    const usernameResult = validateOndwiraUsername(requestedUsername);
+    const usernameResult = validateProfcariaUsername(requestedUsername);
     if (!usernameResult.valid) {
       return NextResponse.json({ error: usernameResult.error }, { status: 400 });
     }
-    const phoneResult = validateOndwiraPhone(phoneNumber);
+    const phoneResult = validateProfcariaPhone(phoneNumber);
     if (!phoneResult.valid) {
       return NextResponse.json({ error: phoneResult.error }, { status: 400 });
     }
@@ -55,11 +55,11 @@ export async function POST(req: Request) {
     const emailIndex = hashForIndex(email);
     const phoneIndex = phoneResult.phone ? hashForIndex(phoneResult.phone) : null;
 
-    // 3. One email can own only one Ondwira login, including legacy accounts.
+    // 3. One email can own only one Profcaria login, including legacy accounts.
     const [{ data: existingUser }, { data: existingCompany }, { data: existingUsername }] = await Promise.all([
       supabaseAdmin.schema('professional').from('users').select('id').eq('email_index', emailIndex).maybeSingle(),
       supabaseAdmin.schema('employer').from('companies').select('id').eq('work_email_index', emailIndex).maybeSingle(),
-      supabaseAdmin.schema('ondwira').from('accounts').select('id').eq('username', usernameResult.username).maybeSingle(),
+      supabaseAdmin.schema('profcaria').from('accounts').select('id').eq('username', usernameResult.username).maybeSingle(),
     ]);
 
     if (existingUser || existingCompany) {
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      await ensureOndwiraAccount({
+      await ensureProfcariaAccount({
         id: data.id,
         identityType: 'professional',
         emailIndex,
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
 
     // 7. Set Cookie & Return
     const has2fa = data.has_totp || data.has_passkey || data.has_phone_otp || data.has_email_otp;
-    const redirectPath = has2fa ? '/?mode=verify&redirect=/social' : '/?mode=setup&redirect=/social';
+    const redirectPath = has2fa ? '/?mode=verify&redirect=/find-work' : '/?mode=setup&redirect=/find-work';
     const response = NextResponse.json({ success: true, user_id: data.id, redirect: redirectPath });
 
     response.cookies.set('profcaria_session', token, {

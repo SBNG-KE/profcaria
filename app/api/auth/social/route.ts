@@ -1,4 +1,4 @@
-// app/api/auth/social/route.ts
+// app/api/auth/find-work/route.ts
 // Handles OAuth user data after Supabase Auth callback.
 // Finds or creates user in custom schema, issues profcaria_session JWT.
 
@@ -7,8 +7,8 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData, hashForIndex } from '@/lib/security';
 import { SignJWT } from 'jose';
 import { createClient } from '@supabase/supabase-js';
-import { ensureOndwiraAccount } from '@/lib/ondwira-identity';
-import { validateOndwiraUsername } from '@/lib/ondwira-username';
+import { ensureProfcariaAccount } from '@/lib/profcaria-identity';
+import { validateProfcariaUsername } from '@/lib/profcaria-username';
 
 export const runtime = 'nodejs';
 
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
                         .eq('id', existingUser.id);
                 }
 
-                await ensureOndwiraAccount({
+                await ensureProfcariaAccount({
                     id: existingUser.id,
                     identityType: 'professional',
                     emailIndex,
@@ -115,8 +115,8 @@ export async function POST(req: Request) {
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
                 // Direct to homepage mode to avoid redirects
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/social')}`
-                    : '/social';
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/find-work')}`
+                    : '/find-work';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -154,7 +154,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Failed to create account' }, { status: 500 });
             }
 
-            await ensureOndwiraAccount({
+            await ensureProfcariaAccount({
                 id: newUser.id,
                 identityType: 'professional',
                 emailIndex,
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
                         .eq('id', existingCompany.id);
                 }
 
-                await ensureOndwiraAccount({
+                await ensureProfcariaAccount({
                     id: existingCompany.id,
                     identityType: 'employer',
                     emailIndex,
@@ -241,8 +241,8 @@ export async function POST(req: Request) {
                 const has2fa = existingCompany.has_totp || existingCompany.has_passkey || existingCompany.has_phone_otp;
                 // Direct to homepage mode
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/social')}`
-                    : '/social';
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/find-work')}`
+                    : '/find-work';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -306,7 +306,7 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Failed to create company account' }, { status: 500 });
             }
 
-            await ensureOndwiraAccount({
+            await ensureProfcariaAccount({
                 id: newCompany.id,
                 identityType: 'employer',
                 emailIndex,
@@ -327,7 +327,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newCompany.id, 'employer', false);
             // New employer needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/social' });
+            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/find-work' });
             setSessionCookie(response, token);
             return response;
         }
@@ -340,7 +340,7 @@ export async function POST(req: Request) {
     }
 }
 
-const GENERATED_USERNAME = /^ondwira_[a-f0-9]{12}$/;
+const GENERATED_USERNAME = /^profcaria_[a-f0-9]{12}$/;
 
 function usernameCompletionResponse(extra: Record<string, unknown> = {}) {
     return NextResponse.json({
@@ -355,14 +355,14 @@ async function chooseUsernameForNewOAuthAccount(input: unknown): Promise<{ usern
     if (typeof input !== 'string' || !input.trim()) {
         return { response: usernameCompletionResponse() };
     }
-    const result = validateOndwiraUsername(input);
+    const result = validateProfcariaUsername(input);
     if (!result.valid) {
         return { response: NextResponse.json({ error: result.error }, { status: 400 }) };
     }
-    const { data, error } = await supabaseAdmin.schema('ondwira').from('accounts')
+    const { data, error } = await supabaseAdmin.schema('profcaria').from('accounts')
         .select('id').eq('username', result.username).maybeSingle();
     if (error) {
-        console.error('[ONDWIRA] OAuth username availability check failed', error);
+        console.error('[PROFCARIA] OAuth username availability check failed', error);
         return { response: NextResponse.json({ error: 'Unable to check that username.' }, { status: 500 }) };
     }
     if (data) {
@@ -372,31 +372,31 @@ async function chooseUsernameForNewOAuthAccount(input: unknown): Promise<{ usern
 }
 
 async function chooseUsernameForExistingOAuthAccount(accountId: string, input: unknown): Promise<NextResponse | null> {
-    const { data: account, error: readError } = await supabaseAdmin.schema('ondwira').from('accounts')
+    const { data: account, error: readError } = await supabaseAdmin.schema('profcaria').from('accounts')
         .select('username').eq('id', accountId).maybeSingle();
     if (readError) {
-        console.error('[ONDWIRA] OAuth username read failed', readError);
+        console.error('[PROFCARIA] OAuth username read failed', readError);
         return NextResponse.json({ error: 'Unable to read the account username.' }, { status: 500 });
     }
     if (account?.username && !GENERATED_USERNAME.test(account.username)) return null;
     if (typeof input !== 'string' || !input.trim()) return usernameCompletionResponse();
 
-    const result = validateOndwiraUsername(input);
+    const result = validateProfcariaUsername(input);
     if (!result.valid) return NextResponse.json({ error: result.error }, { status: 400 });
-    const { data: owner, error: lookupError } = await supabaseAdmin.schema('ondwira').from('accounts')
+    const { data: owner, error: lookupError } = await supabaseAdmin.schema('profcaria').from('accounts')
         .select('id').eq('username', result.username).neq('id', accountId).maybeSingle();
     if (lookupError) {
-        console.error('[ONDWIRA] OAuth username availability check failed', lookupError);
+        console.error('[PROFCARIA] OAuth username availability check failed', lookupError);
         return NextResponse.json({ error: 'Unable to check that username.' }, { status: 500 });
     }
     if (owner) return NextResponse.json({ error: 'That username is already taken.' }, { status: 409 });
 
-    const { error: updateError } = await supabaseAdmin.schema('ondwira').from('accounts')
+    const { error: updateError } = await supabaseAdmin.schema('profcaria').from('accounts')
         .update({ username: result.username, username_updated_at: new Date().toISOString(), updated_at: new Date().toISOString() })
         .eq('id', accountId);
     if (updateError) {
         if (updateError.code === '23505') return NextResponse.json({ error: 'That username is already taken.' }, { status: 409 });
-        console.error('[ONDWIRA] OAuth username update failed', updateError);
+        console.error('[PROFCARIA] OAuth username update failed', updateError);
         return NextResponse.json({ error: 'Unable to save that username.' }, { status: 500 });
     }
     return null;

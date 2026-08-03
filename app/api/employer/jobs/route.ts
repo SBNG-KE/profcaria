@@ -6,6 +6,7 @@ import { encryptData, decryptData } from '@/lib/security';
 import { checkLimit, incrementUsage } from '@/lib/billing';
 import { generateEmbedding } from '@/lib/embeddings';
 import { validateJobCategory } from '@/lib/ai-moderation';
+import { makeJobCode, makeShareCode } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 
@@ -129,6 +130,82 @@ export async function POST(req: Request) {
         if (error) {
             console.error('Job Creation Error:', error);
             return NextResponse.json({ error: 'Failed to create job' }, { status: 500 });
+        }
+
+        // Publish into the focused Profcaria jobs inventory used by the public
+        // home page and machine-readable feed. The legacy row remains during
+        // the transition so existing company dashboards keep their history.
+        const { data: company } = await supabaseAdmin.schema('employer').from('companies')
+            .select('enc_company_name').eq('id', uid).maybeSingle();
+        const companyName = decryptData(company?.enc_company_name) || 'Verified company';
+        const { error: organizationError } = await supabaseAdmin.schema('profcaria').from('organizations').upsert({
+            id: uid,
+            legacy_company_id: uid,
+            name: companyName,
+            created_by: uid,
+            updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' });
+        if (organizationError) {
+            await supabaseAdmin.schema('employer').from('jobs').delete().eq('id', data.id);
+            return NextResponse.json({ error: 'The company job inventory is not ready for publishing.' }, { status: 503 });
+        }
+        const { error: membershipError } = await supabaseAdmin.schema('profcaria').from('organization_members').upsert({
+            organization_id: uid,
+            user_id: uid,
+            account_type: 'employer',
+            role: 'owner',
+            status: 'active',
+            joined_at: new Date().toISOString(),
+            ended_at: null,
+        }, { onConflict: 'organization_id,user_id' });
+        if (membershipError) {
+            await supabaseAdmin.schema('employer').from('jobs').delete().eq('id', data.id);
+            return NextResponse.json({ error: 'The company owner membership could not be prepared.' }, { status: 503 });
+        }
+
+        const { error: focusedJobError } = await supabaseAdmin.schema('profcaria').from('jobs').insert({
+            id: data.id,
+            legacy_job_id: data.id,
+            organization_id: uid,
+            created_by: uid,
+            job_code: makeJobCode(),
+            share_slug: makeShareCode(),
+            enc_title: encTitle,
+            enc_summary: encryptData(String(description).slice(0, 280)),
+            enc_description: encDescription,
+            enc_location: encLocation,
+            role_category: role_category || null,
+            skill_tags: Array.isArray(body.skills) ? body.skills.slice(0, 30) : [],
+            employment_type: String(employment_type || 'full-time').replaceAll('-', '_'),
+            location_type: location_type || 'remote',
+            seniority: body.seniority || 'not_specified',
+            status: 'published',
+            visibility: 'public',
+            application_mode: Array.isArray(formSchema) && formSchema.length ? 'structured' : 'simple',
+            application_limit: appsCap,
+            country_code: 'KE',
+            currency: 'KES',
+            remote_kenya_only: true,
+            document_limit: Math.max(0, Math.min(20, Number(body.document_limit || 1))),
+            ai_screening_mode: body.ai_screening_mode || 'off',
+            ai_rank_percentage: body.ai_rank_percentage || null,
+            published_at: new Date().toISOString(),
+            closes_at: body.closes_at || null,
+        });
+        if (focusedJobError) {
+            await supabaseAdmin.schema('employer').from('jobs').delete().eq('id', data.id);
+            return NextResponse.json({ error: 'The public job could not be published.' }, { status: 500 });
+        }
+
+        if (Array.isArray(formSchema) && formSchema.length) {
+            await supabaseAdmin.schema('profcaria').from('job_questions').insert(formSchema.slice(0, 100).map((question: any, position: number) => ({
+                job_id: data.id,
+                enc_prompt: encryptData(String(question.label || question.question || question.prompt || 'Application question').slice(0, 500)),
+                question_type: ['short_text','long_text','yes_no','single_choice','multi_choice','number','date'].includes(question.type) ? question.type : 'short_text',
+                enc_options: Array.isArray(question.options) ? encryptData(JSON.stringify(question.options.slice(0, 30))) : null,
+                required: Boolean(question.required),
+                position,
+            })));
         }
 
         // Asynchronously update usage

@@ -42,7 +42,7 @@ export default function MessagingSection() {
                             One place. <br /> <span className="font-pixel text-4xl text-[var(--accent-primary)] md:text-6xl">Two clear modes.</span>
                         </h2>
                         <p className={`text-lg md:text-xl font-light leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
-                            Ondwira brings everyday conversations and work collaboration into one account without mixing their permissions. Switch between Social and Work whenever you need, while your private chats remain yours and organisation data stays governed by its workspace.
+                            Profcaria brings everyday conversations and work collaboration into one account without mixing their permissions. Switch between Social and Work whenever you need, while your private chats remain yours and organisation data stays governed by its workspace.
                         </p>
                     </motion.div>
 

@@ -1,489 +1,65 @@
-"use client"
+'use client';
 
-import React, { useState, useRef, useEffect, ReactNode, useCallback } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-    Home, FileText, Bell, Settings, ChevronLeft, ChevronRight,
-    Briefcase, Users, Building2, Plus, Power, Menu, X, HelpCircle, Rss, MessageCircle, Bot, MessageSquare
-} from 'lucide-react';
-import ImageCropper from '@/app/components/ImageCropper';
-import { useNotificationContext } from '@/app/context/NotificationContext';
-import { useTheme } from '@/app/context/ThemeContext';
-import EmployerAlertsSidebar from '@/app/components/employer/AlertsSidebar';
+import { BarChart3, BriefcaseBusiness, Building2, ChevronLeft, ChevronRight, CreditCard, FilePlus2, LayoutDashboard, LogOut, Menu, MessageSquareText, Settings, ShieldCheck, Users, X } from 'lucide-react';
 import ThemeToggle from '@/app/components/ThemeToggle';
-import GlobalSearch from '@/app/components/shared/GlobalSearch';
-import TermsOfService from '@/app/components/TermsOfService';
-import { PixelBackground } from '@/app/components/PixelBackground';
+import { useNotificationContext } from '@/app/context/NotificationContext';
 
-export default function EmployerLayoutContent({ children }: { children: React.ReactNode }) {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [showAlertsMobile, setShowAlertsMobile] = useState(false);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    const pathname = usePathname();
-    const router = useRouter();
-    const [employerData, setEmployerData] = useState<any>(null);
-    const [applicationCount, setApplicationCount] = useState(0);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [cropSource, setCropSource] = useState<File | string | null>(null);
-    const [currentPlan, setCurrentPlan] = useState<string | null>(null);
-    const [tosAccepted, setTosAccepted] = useState(true);
-    const [tosChecked, setTosChecked] = useState(false);
+const sections = [
+  { label: 'Workspace', items: [
+    { href: '/employer/home', label: 'Overview', icon: LayoutDashboard },
+    { href: '/employer/jobs', label: 'Jobs', icon: BriefcaseBusiness },
+    { href: '/employer/jobs/create', label: 'Create job', icon: FilePlus2 },
+    { href: '/employer/applications', label: 'Applicants', icon: Users },
+  ]},
+  { label: 'Decide', items: [
+    { href: '/employer/messages', label: 'Messages', icon: MessageSquareText },
+    { href: '/employer/analytics', label: 'Insights', icon: BarChart3 },
+    { href: '/employer/recruiter-ai', label: 'ATS & AI', icon: ShieldCheck },
+  ]},
+  { label: 'Company', items: [
+    { href: '/employer/billing', label: 'Billing & wallet', icon: CreditCard },
+    { href: '/employer/settings', label: 'Settings', icon: Settings },
+  ]},
+];
 
-    // Theme
-    const { theme, toggleTheme } = useTheme();
-    const isDark = theme === 'dark';
+export default function EmployerLayoutContent({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { unreadCount } = useNotificationContext();
+  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [company, setCompany] = useState('Company workspace');
 
-    // Consume Context
-    const { unreadCount, applications } = useNotificationContext();
+  useEffect(() => {
+    const saved = localStorage.getItem('profcaria-company-sidebar');
+    setCollapsed(saved === 'collapsed');
+    fetch('/api/auth/me').then(response => response.ok ? response.json() : null).then(body => {
+      if (!body?.uid) return router.replace('/?auth=company');
+      setCompany(body.profile?.companyName || body.profile?.name || body.name || 'Company workspace');
+    }).catch(() => undefined);
+  }, [router]);
 
-    // Check ToS acceptance status
-    useEffect(() => {
-        const checkTos = async () => {
-            try {
-                const res = await fetch('/api/tos');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.banned) {
-                        await fetch('/api/auth/logout', { method: 'POST' });
-                        router.push('/');
-                        return;
-                    }
-                    setTosAccepted(data.accepted);
-                }
-            } catch (e) {
-                console.error('ToS check error:', e);
-            } finally {
-                setTosChecked(true);
-            }
-        };
-        checkTos();
-    }, [router]);
+  function toggleCollapsed() {
+    setCollapsed(value => { const next = !value; localStorage.setItem('profcaria-company-sidebar', next ? 'collapsed' : 'open'); return next; });
+  }
+  async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); router.replace('/'); }
 
-    // Fetch current billing plan
-    useEffect(() => {
-        const fetchPlan = async () => {
-            try {
-                const res = await fetch('/api/employer/billing');
-                if (res.ok) {
-                    const data = await res.json();
-                    setCurrentPlan(data.plan || 'free');
-                }
-            } catch (error) {
-                console.error('Error fetching plan:', error);
-            }
-        };
-        fetchPlan();
-    }, []);
+  const sidebar = <aside className={`flex h-full flex-col border-r-2 border-[var(--text-primary)] bg-[var(--surface-raised)] transition-[width] ${collapsed ? 'w-[76px]' : 'w-[264px]'}`}>
+    <div className="flex h-16 items-center justify-between border-b-2 border-[var(--text-primary)] px-4"><Link href="/" className="flex items-center gap-2 overflow-hidden font-mono font-black uppercase"><span className="grid h-8 w-8 shrink-0 place-items-center border-2 border-[var(--text-primary)] bg-[var(--accent-primary)] text-[10px] text-[var(--text-inverse)]">PC</span>{!collapsed && <span>Profcaria</span>}</Link><button onClick={toggleCollapsed} className="hidden lg:block" aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>{collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}</button></div>
+    {!collapsed && <div className="border-b border-[var(--border-primary)] px-5 py-4"><p className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">Company</p><p className="mt-1 truncate text-sm font-black">{company}</p></div>}
+    <nav className="profcaria-scrollbar flex-1 overflow-y-auto px-3 py-4">{sections.map(section => <div key={section.label} className="mb-6">{!collapsed && <p className="mb-2 px-2 font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">{section.label}</p>}{section.items.map(item => { const active = pathname === item.href || (item.href !== '/employer/home' && pathname.startsWith(item.href)); const Icon = item.icon; return <Link key={item.href} href={item.href} onClick={() => setOpen(false)} title={collapsed ? item.label : undefined} className={`mb-1 flex h-11 items-center gap-3 border-2 px-3 text-sm font-bold ${active ? 'border-[var(--text-primary)] bg-[var(--text-primary)] text-[var(--bg-primary)] shadow-[3px_3px_0_var(--accent-primary)]' : 'border-transparent hover:border-[var(--border-primary)] hover:bg-[var(--surface-muted)]'}`}><Icon size={17} className="shrink-0" />{!collapsed && <span>{item.label}</span>}{!collapsed && item.label === 'Messages' && unreadCount > 0 && <span className="ml-auto bg-[var(--accent-primary)] px-1.5 py-0.5 font-mono text-[9px] text-white">{unreadCount}</span>}</Link>; })}</div>)}</nav>
+    <div className="border-t-2 border-[var(--text-primary)] p-3"><button onClick={logout} className="flex h-11 w-full items-center gap-3 px-3 text-sm font-bold hover:bg-red-500/10 hover:text-red-600"><LogOut size={17} />{!collapsed && 'Sign out'}</button></div>
+  </aside>;
 
-    // Initialize sidebar state
-    useEffect(() => {
-        const saved = localStorage.getItem('profcaria_sidebar_open');
-        if (saved !== null) {
-            setSidebarOpen(saved === 'true');
-        } else if (window.innerWidth >= 768) {
-            setSidebarOpen(true);
-        }
-    }, []);
-
-    const toggleSidebar = () => {
-        const newVal = !sidebarOpen;
-        setSidebarOpen(newVal);
-        localStorage.setItem('profcaria_sidebar_open', String(newVal));
-    };
-
-    const activeTab = pathname.split('/').pop() || 'feed';
-    const showBackButton = pathname !== '/employer/feed' && !pathname.endsWith('/view');
-
-    const [hasNewPosts, setHasNewPosts] = useState(false);
-
-    // Simulate checking for new posts
-    useEffect(() => {
-        const checkNewPosts = () => {
-            if (Math.random() > 0.7) {
-                setHasNewPosts(true);
-            }
-        };
-
-        const interval = setInterval(checkNewPosts, 60000); // Check every minute
-        return () => clearInterval(interval);
-    }, []);
-
-    const handleFeedClick = () => {
-        if (hasNewPosts) {
-            setHasNewPosts(false);
-            if (pathname === '/employer/feed') {
-                window.location.reload(); // Force reload if already on feed
-            } else {
-                router.push('/employer/feed');
-            }
-        } else {
-            router.push('/employer/feed');
-        }
-    };
-
-    useEffect(() => {
-        const fetchMe = async () => {
-            try {
-                const res = await fetch('/api/auth/me');
-                if (res.ok) {
-                    const data = await res.json();
-                    setEmployerData(data);
-                }
-            } catch (error) {
-                console.error("Layout fetch me error", error);
-            }
-        };
-        fetchMe();
-    }, []);
-
-    // Auto-close sidebar on mobile when navigating
-    useEffect(() => {
-        if (window.innerWidth < 768) {
-            setSidebarOpen(false);
-        }
-    }, [pathname]);
-
-    useEffect(() => {
-        if (applications) {
-            const activeApps = applications.filter((app: any) => app.status === 'pending') || [];
-            setApplicationCount(activeApps.length);
-        }
-    }, [applications]);
-
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return;
-        setCropSource(e.target.files[0]);
-    }
-
-    const handleEditCurrent = () => {
-        if (employerData?.profile?.logoUrl) {
-            setCropSource(employerData.profile.logoUrl);
-        }
-    };
-
-    const handleCropSave = async (blob: Blob) => {
-        setIsUploading(true);
-        setCropSource(null);
-
-        try {
-            const res = await fetch(`/api/employer/profile/image?filename=logo.jpg`, {
-                method: 'POST',
-                body: blob
-            });
-            if (res.ok) {
-                const { url } = await res.json();
-                setEmployerData((prev: any) => ({
-                    ...prev,
-                    profile: { ...prev.profile, logoUrl: url }
-                }));
-            }
-        } catch (error) {
-            console.error("Upload failed", error);
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    const handleImageDelete = useCallback(async () => {
-        if (!confirm("Are you sure you want to remove your company logo?")) return;
-        try {
-            const res = await fetch('/api/employer/profile/image', { method: 'DELETE' });
-            if (res.ok) {
-                setEmployerData((prev: any) => ({
-                    ...prev,
-                    profile: { ...prev.profile, logoUrl: null }
-                }));
-            }
-        } catch (error) {
-            console.error("Delete failed", error);
-        }
-    }, []);
-
-    // Compact NavItem - Theme aware
-    const NavItem = React.memo(({ id, href, icon: Icon, label, badgeCount, comingSoon, hasUpdate, onClick }: { id: string; href: string; icon: React.ElementType; label: string; badgeCount?: number; comingSoon?: boolean, hasUpdate?: boolean, onClick?: () => void }) => (
-        <button
-            onClick={() => {
-                if (onClick) onClick();
-                else if (!comingSoon) router.push(href);
-            }}
-            className={`
-                w-full flex items-center gap-3 p-2 rounded-lg transition-all duration-200 group relative z-10
-                ${activeTab === id
-                    ? (isDark ? 'bg-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ring-1 ring-white/20' : 'bg-black/5 text-black shadow-sm ring-1 ring-black/10')
-                    : (isDark ? 'text-neutral-400 hover:bg-white/5 hover:text-white border border-transparent' : 'text-neutral-500 hover:bg-black/5 hover:text-black border border-transparent')}
-                ${!sidebarOpen ? 'justify-center' : ''}
-                ${comingSoon ? 'cursor-default opacity-70' : ''}
-            `}
-        >
-            <div className="relative">
-                <Icon size={18} />
-                {comingSoon && (
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#3B5998] text-[6px] font-bold text-white">✨</span>
-                )}
-                {(badgeCount && badgeCount > 0) || (id === 'notifications' && unreadCount > 0) ? (
-                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                        {id === 'notifications' ? unreadCount : badgeCount}
-                    </span>
-                ) : hasUpdate ? (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-blue-500 ring-2 ring-white dark:ring-black"></span>
-                ) : null}
-            </div>
-            {sidebarOpen && (
-                <span className="font-medium text-xs flex items-center gap-2 flex-1">
-                    {label}
-                    {comingSoon && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-[#3B5998]/20 text-[#6B8CD5] font-bold uppercase">Soon</span>}
-                    {hasUpdate && <span className="ml-auto text-[8px] px-1.5 py-0.5 rounded-full bg-blue-500 text-white font-bold uppercase">New</span>}
-                </span>
-            )}
-        </button>
-    ));
-
-    // Show ToS if not accepted
-    if (tosChecked && !tosAccepted) {
-        return <TermsOfService onAccepted={() => setTosAccepted(true)} />;
-    }
-
-    return (
-        <div className={`employer-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 relative ${isDark ? 'bg-[#0A0F1A] text-neutral-200 selection:bg-white/30' : 'bg-white text-neutral-900 selection:bg-black/20'}`}>
-            <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none opacity-40" />
-
-            {/* SIDEBAR BACKDROP (Mobile) - disabled, now using bottom taskbar */}
-
-            {/* SIDEBAR - COMPACT */}
-            <aside className={`
-                hidden md:flex md:relative inset-y-0 left-0 h-full
-                flex-col border-r transition-all duration-300 ease-in-out z-[100]
-                ${isDark ? 'bg-black/20 backdrop-blur-md border-neutral-800' : 'bg-white/50 backdrop-blur-md border-neutral-200'}
-                ${sidebarOpen ? 'w-52' : 'md:w-16'}
-            `}>
-                {/* Toggle Button */}
-                <button
-                    onClick={toggleSidebar}
-                    className={`absolute -right-3 top-6 z-40 rounded-full p-1 hidden md:flex border ${isDark ? 'bg-neutral-800 border-neutral-700 text-neutral-400 hover:text-white' : 'bg-white border-neutral-200 text-neutral-400 hover:text-black shadow-sm'}`}
-                >
-                    {sidebarOpen ? <ChevronLeft size={12} /> : <ChevronRight size={12} />}
-                </button>
-
-                {/* Mobile Close - disabled, using bottom taskbar */}
-
-                {/* Logo Section - COMPACT */}
-                <div className="flex flex-col items-center pt-6 px-3 shrink-0">
-                    <button
-                        onClick={() => setIsImageModalOpen(true)}
-                        className={`
-                            group relative overflow-hidden rounded-xl shadow-lg border transition-all duration-300 hover:scale-105
-                            ${isDark ? 'bg-neutral-800 border-neutral-700' : 'bg-neutral-100 border-neutral-200'}
-                            ${sidebarOpen ? 'w-16 h-16 mb-3' : 'w-10 h-10 mb-3'}
-                        `}
-                    >
-                        {employerData?.profile?.logoUrl ? (
-                            <img src={employerData.profile.logoUrl} className="w-full h-full object-cover" alt="Logo" />
-                        ) : (
-                            <div className={`absolute inset-0 flex items-center justify-center ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                                <Building2 size={sidebarOpen ? 28 : 20} />
-                            </div>
-                        )}
-                    </button>
-                    {sidebarOpen && (
-                        <div className="w-full text-center mb-4">
-                            <h2 className="text-sm font-bold truncate">
-                                {employerData?.profile?.companyName || '...'}
-                            </h2>
-                            <p className={`text-[10px] ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                                {currentPlan ? `${currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} Plan` : '---'}
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Navigation - COMPACT */}
-                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Main</div>
-                    <NavItem id="notifications" href="/employer/notifications" icon={MessageSquare} label="Chats" />
-                    <NavItem id="feed" href="/employer/feed" icon={Rss} label="Feed" hasUpdate={hasNewPosts} onClick={handleFeedClick} />
-                    <NavItem id="profile" href="/employer/profile" icon={Building2} label="Profile" />
-                    <NavItem id="recruiter-ai" href="/employer/recruiter-ai" icon={Bot} label="Recruiter AI" />
-                    <NavItem id="home" href="/employer/home" icon={Home} label="Dashboard" />
-                    <NavItem id="jobs" href="/employer/jobs" icon={Briefcase} label="Jobs" badgeCount={applicationCount} />
-
-                    <div className={`text-[10px] font-bold uppercase tracking-wider mt-4 mb-2 px-2 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>Account</div>
-                    <NavItem id="settings" href="/employer/settings" icon={Settings} label="Settings" />
-                </div>
-            </aside>
-
-            {/* MAIN CONTENT */}
-            <main className="flex-1 relative flex flex-col h-full overflow-hidden">
-                {/* Top Bar - Desktop & Mobile */}
-                <div className={`w-full px-4 py-3 z-50 shrink-0 flex items-center justify-between`}>
-                    {/* LEFT SIDE */}
-                    <div className="flex items-center gap-3">
-                        {/* Mobile Logo */}
-                        <div className={`md:hidden flex items-center gap-2`}>
-                            <span className="font-black text-sm tracking-tight">Profcaria</span>
-                        </div>
-
-                        {/* Desktop Back */}
-                        {showBackButton && (
-                            <button
-                                onClick={() => router.back()}
-                                className={`hidden md:flex items-center gap-2 transition-colors group ${isDark ? 'text-neutral-400 hover:text-white' : 'text-neutral-500 hover:text-black'}`}
-                            >
-                                <div className={`p-1.5 rounded-full ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                                    <ChevronLeft size={14} />
-                                </div>
-                                <span className="text-xs font-medium">Back</span>
-                            </button>
-                        )}
-                    </div>
-
-                    {/* RIGHT SIDE - THEME TOGGLE (GLOBAL) */}
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <GlobalSearch />
-                        <ThemeToggle theme={theme} onToggle={toggleTheme} />
-
-                        {/* Mobile Alerts - hidden, using bottom taskbar */}
-                    </div>
-                </div>
-
-                {/* Main + Right Panel Container */}
-                <div className="flex-1 flex min-h-0 overflow-hidden">
-                    {/* Main Content */}
-                    <div className={`flex-1 overflow-y-auto ${pathname === '/employer/notifications' ? 'px-0 pb-20 md:pb-0' : 'px-4 md:px-6 pb-20 md:pb-6'}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                        {children}
-                    </div>
-
-                    {/* Right Panel - commented out */}
-                    {/* <aside className={`hidden lg:flex flex-col w-64 shrink-0 border-l p-4 overflow-y-auto ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                        <EmployerAlertsSidebar />
-                    </aside> */}
-                </div>
-            </main>
-
-            {/* LOGO IMAGE MODAL */}
-            {isImageModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setIsImageModalOpen(false)}></div>
-                    <div className={`relative w-full max-w-md aspect-square rounded-3xl shadow-2xl overflow-hidden flex flex-col ${isDark ? 'bg-neutral-900 border border-neutral-800' : 'bg-white border border-neutral-200'}`}>
-
-                        {/* Close Button */}
-                        <button
-                            onClick={() => setIsImageModalOpen(false)}
-                            className={`absolute top-4 right-4 z-20 p-2 rounded-full ${isDark ? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white' : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-500 hover:text-black'}`}
-                        >
-                            <X size={18} />
-                        </button>
-
-                        <div className={`flex-1 relative overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
-                            {employerData?.profile?.logoUrl ? (
-                                <img
-                                    src={employerData.profile.logoUrl}
-                                    alt="Company Logo"
-                                    className="w-full h-full object-contain"
-                                />
-                            ) : (
-                                <div className={`absolute inset-0 flex flex-col items-center justify-center gap-3 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`}>
-                                    <Building2 size={60} />
-                                    <p className="font-medium text-sm">No company logo</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Controls */}
-                        <div className={`p-4 flex items-center gap-3 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-200'}`}>
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploading}
-                                className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-neutral-200' : 'bg-black text-white hover:bg-neutral-800'}`}
-                            >
-                                {isUploading ? 'Uploading...' : employerData?.profile?.logoUrl ? 'Replace' : 'Upload'}
-                            </button>
-
-                            {employerData?.profile?.logoUrl && (
-                                <>
-                                    <button
-                                        onClick={handleEditCurrent}
-                                        className={`px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all ${isDark ? 'bg-neutral-800 text-white hover:bg-neutral-700' : 'bg-neutral-100 text-black hover:bg-neutral-200'}`}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={handleImageDelete}
-                                        className="px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
-                                    >
-                                        Remove
-                                    </button>
-                                </>
-                            )}
-                        </div>
-
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* CROPPER OVERLAY */}
-            {cropSource && (
-                <ImageCropper
-                    imageOrUrl={cropSource}
-                    onCrop={handleCropSave}
-                    onCancel={() => setCropSource(null)}
-                />
-            )}
-
-            {/* MOBILE BOTTOM TASKBAR */}
-            <nav className={`
-                fixed bottom-0 left-0 right-0 z-[100] flex md:hidden items-end justify-around
-                px-1 pt-2 pb-1 border-t backdrop-blur-xl
-                ${isDark ? 'bg-neutral-900/95 border-neutral-800' : 'bg-white/95 border-neutral-200'}
-            `}>
-                {[
-                    { id: 'notifications', href: '/employer/notifications', icon: MessageSquare, label: 'Chats' },
-                    { id: 'feed', href: '/employer/feed', icon: Rss, label: 'Feed' },
-                    { id: 'profile', href: '/employer/profile', icon: Building2, label: 'Profile' },
-                    { id: 'recruiter-ai', href: '/employer/recruiter-ai', icon: Bot, label: 'AI' },
-                    { id: 'home', href: '/employer/home', icon: Home, label: 'Home' },
-                    { id: 'jobs', href: '/employer/jobs', icon: Briefcase, label: 'Jobs' },
-                    { id: 'settings', href: '/employer/settings', icon: Settings, label: 'Settings' },
-                ].map(item => {
-                    const isActive = activeTab === item.id;
-                    const Icon = item.icon;
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                if (item.id === 'feed') handleFeedClick();
-                                else router.push(item.href);
-                            }}
-                            className={`flex flex-col items-center gap-0.5 py-1 px-1.5 rounded-lg transition-all min-w-0 ${
-                                isActive
-                                    ? (isDark ? 'text-white' : 'text-black')
-                                    : (isDark ? 'text-neutral-500' : 'text-neutral-400')
-                            }`}
-                        >
-                            <div className="relative">
-                                <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
-                                {item.id === 'notifications' && unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[7px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>
-                                )}
-                                {item.id === 'jobs' && applicationCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-[7px] font-bold text-white">{applicationCount > 9 ? '9+' : applicationCount}</span>
-                                )}
-                                {item.id === 'feed' && hasNewPosts && (
-                                    <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2 rounded-full bg-blue-500" />
-                                )}
-                            </div>
-                            <span className={`text-[9px] font-bold leading-none ${isActive ? 'opacity-100' : 'opacity-70'}`}>{item.label}</span>
-                        </button>
-                    );
-                })}
-            </nav>
-        </div>
-    );
+  return <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <div className="fixed inset-y-0 left-0 z-50 hidden lg:block">{sidebar}</div>
+    {open && <div className="fixed inset-0 z-50 lg:hidden"><button className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} aria-label="Close navigation" /><div className="relative h-full w-[264px]">{sidebar}</div></div>}
+    <div className={`transition-[padding] ${collapsed ? 'lg:pl-[76px]' : 'lg:pl-[264px]'}`}>
+      <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b-2 border-[var(--text-primary)] bg-[var(--bg-primary)]/95 px-4 backdrop-blur sm:px-6"><div className="flex items-center gap-3"><button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu /></button><div><p className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-[var(--accent-primary)]">Company console</p><p className="text-sm font-black">{sections.flatMap(s => s.items).find(item => pathname === item.href || (item.href !== '/employer/home' && pathname.startsWith(item.href)))?.label || 'Workspace'}</p></div></div><div className="flex items-center gap-3"><Link href="/" className="hidden font-mono text-[10px] font-black uppercase sm:block">View public jobs</Link><ThemeToggle showSystem={false} /></div></header>
+      <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+    </div>
+  </div>;
 }

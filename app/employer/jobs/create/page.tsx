@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
     Plus, X, GripVertical, Type, Hash, List, CheckSquare,
-    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText, MapPin, Clock, Search, Check
+    ChevronUp, ChevronDown, Save, Trash2, Layout, Briefcase, FileText, MapPin, Clock, Search, Check, ShieldCheck
 } from 'lucide-react';
 
 interface FormField {
@@ -22,10 +22,15 @@ function CreateJobPageContent() {
     const [title, setTitle] = useState('');
     const [roleCategories, setRoleCategories] = useState<string[]>([]);
     const [description, setDescription] = useState('');
-    const [maxApplications, setMaxApplications] = useState<number | ''>('');
+    const [maxApplications, setMaxApplications] = useState<number>(20);
     const [locationType, setLocationType] = useState<'remote' | 'onsite' | 'hybrid'>('remote');
     const [employmentType, setEmploymentType] = useState<'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'>('full-time');
     const [location, setLocation] = useState('');
+    const [seniority, setSeniority] = useState('not_specified');
+    const [closesAt, setClosesAt] = useState('');
+    const [documentLimit, setDocumentLimit] = useState(1);
+    const [aiScreeningMode, setAiScreeningMode] = useState('off');
+    const [aiRankPercentage, setAiRankPercentage] = useState(25);
     const [isRestricted, setIsRestricted] = useState(false);
     const [targetLocations, setTargetLocations] = useState<string[]>([]);
     const [targetLocInput, setTargetLocInput] = useState('');
@@ -180,8 +185,8 @@ function CreateJobPageContent() {
     };
 
     const handleSave = async () => {
-        if (!title || !description || fields.length === 0) {
-            alert("Please fill in the job title, description, and at least one form field.");
+        if (!title || !description || maxApplications < 1) {
+            alert("Please add a title, description and valid application limit.");
             return;
         }
 
@@ -203,7 +208,12 @@ function CreateJobPageContent() {
                     location: location,
                     is_restricted: isRestricted,
                     target_locations: targetLocations,
-                    formSchema: fields
+                    formSchema: fields,
+                    seniority,
+                    closes_at: closesAt || null,
+                    document_limit: documentLimit,
+                    ai_screening_mode: aiScreeningMode,
+                    ai_rank_percentage: aiScreeningMode === 'rank_percentage' ? aiRankPercentage : null,
                 })
             });
 
@@ -408,17 +418,33 @@ function CreateJobPageContent() {
             <div className="bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800 p-8 rounded-[32px] space-y-6">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2">
-                        <Hash size={14} /> Max Applications (Optional)
+                        <Hash size={14} /> Maximum applications
                     </label>
-                    <p className="text-xs text-neutral-500">Auto-close the job after this many applications. Leave empty for unlimited.</p>
+                    <p className="text-xs text-neutral-500">Required. The job automatically closes and disappears publicly when this number is reached. The first 20 places are free.</p>
                     <input
                         type="number"
                         min="1"
+                        required
                         value={maxApplications}
-                        onChange={(e) => setMaxApplications(e.target.value ? parseInt(e.target.value) : '')}
+                        onChange={(e) => setMaxApplications(Math.max(1, parseInt(e.target.value || '1')))}
                         placeholder="e.g. 100"
                         className="w-full bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-xl px-4 py-3 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-200 dark:focus:ring-neutral-500/50 transition-all font-bold text-lg"
                     />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                <div className="space-y-5 border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-6 shadow-[5px_5px_0_var(--border-primary)]">
+                    <h2 className="font-mono text-xs font-black uppercase tracking-wider">Role controls</h2>
+                    <label className="block text-xs font-black">Seniority<select value={seniority} onChange={(e) => setSeniority(e.target.value)} className="mt-2 w-full border-2 border-[var(--text-primary)] bg-[var(--bg-primary)] p-3 font-normal">{['not_specified','entry','junior','mid','senior','lead','executive'].map(value => <option key={value} value={value}>{value.replaceAll('_',' ')}</option>)}</select></label>
+                    <label className="block text-xs font-black">Closing date and time<input type="datetime-local" value={closesAt} onChange={(e) => setClosesAt(e.target.value)} className="mt-2 w-full border-2 border-[var(--text-primary)] bg-[var(--bg-primary)] p-3 font-normal" /></label>
+                    <label className="block text-xs font-black">Documents allowed per applicant<input type="number" min="0" max="20" value={documentLimit} onChange={(e) => setDocumentLimit(Math.max(0, Math.min(20, Number(e.target.value))))} className="mt-2 w-full border-2 border-[var(--text-primary)] bg-[var(--bg-primary)] p-3 font-normal" /></label>
+                </div>
+                <div className="space-y-5 border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-6 shadow-[5px_5px_0_var(--accent-primary)]">
+                    <div><h2 className="font-mono text-xs font-black uppercase tracking-wider">Optional ATS AI</h2><p className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">No AI is required. Usage is charged from your wallet by provider and model.</p></div>
+                    <label className="block text-xs font-black">Evaluation mode<select value={aiScreeningMode} onChange={(e) => setAiScreeningMode(e.target.value)} className="mt-2 w-full border-2 border-[var(--text-primary)] bg-[var(--bg-primary)] p-3 font-normal"><option value="off">Off — receive everyone</option><option value="rank_all">Rank all applications</option><option value="rank_percentage">Rank a percentage</option><option value="qualified_only">Surface qualified applications</option></select></label>
+                    {aiScreeningMode === 'rank_percentage' && <label className="block text-xs font-black">Percentage to rank<input type="number" min="1" max="100" value={aiRankPercentage} onChange={(e) => setAiRankPercentage(Math.max(1, Math.min(100, Number(e.target.value))))} className="mt-2 w-full border-2 border-[var(--text-primary)] bg-[var(--bg-primary)] p-3 font-normal" /></label>}
+                    <p className="flex items-start gap-2 text-xs leading-5 text-[var(--text-secondary)]"><ShieldCheck size={15} className="mt-0.5 shrink-0" />Every candidate is evaluated separately against this job's explicit criteria. Protected attributes are excluded and humans retain the final decision.</p>
                 </div>
             </div>
 

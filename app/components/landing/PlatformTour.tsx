@@ -24,7 +24,7 @@ const features: Feature[] = [
     },
     {
         title: "Verified Employment",
-        description: "Your employment history can update from real organisation lifecycle events. When work begins or ends in Ondwira, the verified record stays with your account while company access follows its permissions.",
+        description: "Your employment history can update from real organisation lifecycle events. When work begins or ends in Profcaria, the verified record stays with your account while company access follows its permissions.",
         images: [
             "/landing/verified-2.png",
             "/landing/verified-1.png",
@@ -40,7 +40,7 @@ const features: Feature[] = [
     },
     {
         title: "The AI Career OS",
-        description: "Traditional CVs still work. Ondwira keeps versions, writing, uploads, certificates, and sharing choices together so you decide what a job or connected agent may read.",
+        description: "Traditional CVs still work. Profcaria keeps versions, writing, uploads, certificates, and sharing choices together so you decide what a job or connected agent may read.",
         id: "ai-agents",
         customVisual: true
     }
@@ -67,7 +67,7 @@ export default function PlatformTour() {
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="mb-4 md:mb-8 text-left">
                     <div className={`text-xs font-bold uppercase tracking-[0.3em] pl-1 ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                        See how Ondwira brings conversations and work into one account.
+                        See how Profcaria brings conversations and work into one account.
                     </div>
                 </div>
 

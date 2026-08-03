@@ -1,28 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData, encryptData } from '@/lib/security';
-import { cleanTags, cleanText, decryptJob, requireOrganizationManager } from '@/lib/ondwira-recruitment';
+import { cleanTags, cleanText, decryptJob, requireOrganizationManager } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 async function loadJob(id: string) {
-  const { data } = await supabaseAdmin.schema('ondwira').from('jobs')
+  const { data } = await supabaseAdmin.schema('profcaria').from('jobs')
     .select('*, organizations(id, name), job_screening_profiles(*)').eq('id', id).maybeSingle();
   return data;
 }
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const job = await loadJob(id);
   if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
   const manager = await requireOrganizationManager(job.organization_id, session.uid);
   if (!manager) return NextResponse.json({ error: 'Job not found' }, { status: 404 });
-  const { data: questions } = await supabaseAdmin.schema('ondwira').from('job_questions')
+  const { data: questions } = await supabaseAdmin.schema('profcaria').from('job_questions')
     .select('*').eq('job_id', id).order('position');
   return NextResponse.json({
     job: {
@@ -43,7 +43,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const job = await loadJob(id);
@@ -77,12 +77,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (['closed', 'filled', 'cancelled'].includes(input.status)) update.closed_at = new Date().toISOString();
   }
   if (!Object.keys(update).length) return NextResponse.json({ error: 'Nothing to update.' }, { status: 400 });
-  const { data, error } = await supabaseAdmin.schema('ondwira').from('jobs').update(update)
+  const { data, error } = await supabaseAdmin.schema('profcaria').from('jobs').update(update)
     .eq('id', id).select('*, organizations(id, name)').single();
   if (error || !data) return NextResponse.json({ error: 'Job could not be updated.' }, { status: 500 });
   const eventType = update.status && ['published', 'paused', 'closed', 'filled', 'cancelled'].includes(String(update.status))
     ? String(update.status) : 'updated';
-  await supabaseAdmin.schema('ondwira').from('job_events').insert({
+  await supabaseAdmin.schema('profcaria').from('job_events').insert({
     job_id: id, organization_id: job.organization_id, actor_id: session.uid,
     event_type: eventType, metadata: { changed: Object.keys(update).filter(key => key !== 'updated_at') },
   });
@@ -90,7 +90,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { id } = await params;
   const job = await loadJob(id);
@@ -100,7 +100,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ id: str
   if (job.status !== 'draft' || job.application_count > 0) {
     return NextResponse.json({ error: 'Published jobs and jobs with applications must be closed, not deleted.' }, { status: 409 });
   }
-  const { error } = await supabaseAdmin.schema('ondwira').from('jobs').delete().eq('id', id);
+  const { error } = await supabaseAdmin.schema('profcaria').from('jobs').delete().eq('id', id);
   if (error) return NextResponse.json({ error: 'Job could not be deleted.' }, { status: 500 });
   return NextResponse.json({ success: true });
 }

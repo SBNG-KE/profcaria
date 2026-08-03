@@ -196,16 +196,16 @@ export async function GET() {
             }
         }
 
-        // Canonical Ondwira identity is shared by Social and Work. Legacy
+        // Canonical Profcaria identity is shared by Social and Work. Legacy
         // profile fields remain migration sources, not separate account names.
-        const { data: ondwiraAccount } = await supabaseAdmin.schema('ondwira').from('accounts')
+        const { data: profcariaAccount } = await supabaseAdmin.schema('profcaria').from('accounts')
             .select('username, enc_phone_number, phone_verified_at')
             .eq('id', uid)
             .maybeSingle();
-        if (ondwiraAccount) {
-            profile.username = ondwiraAccount.username;
-            profile.phone = decryptData(ondwiraAccount.enc_phone_number) || profile.phone || '';
-            profile.phoneVerified = Boolean(ondwiraAccount.phone_verified_at);
+        if (profcariaAccount) {
+            profile.username = profcariaAccount.username;
+            profile.phone = decryptData(profcariaAccount.enc_phone_number) || profile.phone || '';
+            profile.phoneVerified = Boolean(profcariaAccount.phone_verified_at);
         }
 
         const res = NextResponse.json({

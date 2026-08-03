@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const organizationId = new URL(request.url).searchParams.get('organizationId');
-  const { data: memberships } = await supabaseAdmin.schema('ondwira').from('organization_members')
+  const { data: memberships } = await supabaseAdmin.schema('profcaria').from('organization_members')
     .select('organization_id, role, organizations!inner(id, name)').eq('user_id', session.uid).eq('status', 'active')
     .in('role', ['owner', 'admin', 'manager']);
   const allowed = (memberships ?? []).filter((row: any) => !organizationId || row.organization_id === organizationId);
@@ -18,13 +18,13 @@ export async function GET(request: Request) {
   if (!ids.length) return NextResponse.json({ organizations: [], metrics: {}, funnel: [], jobs: [] });
 
   const [{ data: jobs }, { data: applications }, { data: events }, { data: interviews }] = await Promise.all([
-    supabaseAdmin.schema('ondwira').from('jobs')
+    supabaseAdmin.schema('profcaria').from('jobs')
       .select('id, enc_title, status, application_count, hired_count, published_at, closed_at').in('organization_id', ids),
-    supabaseAdmin.schema('ondwira').from('applications')
+    supabaseAdmin.schema('profcaria').from('applications')
       .select('id, job_id, status, submitted_at, first_reviewed_at, hired_at, screening_score').in('organization_id', ids),
-    supabaseAdmin.schema('ondwira').from('job_events')
+    supabaseAdmin.schema('profcaria').from('job_events')
       .select('job_id, event_type, created_at').in('organization_id', ids),
-    supabaseAdmin.schema('ondwira').from('recruitment_interviews')
+    supabaseAdmin.schema('profcaria').from('recruitment_interviews')
       .select('id, status, starts_at').in('organization_id', ids),
   ]);
   const allApplications = applications ?? [];

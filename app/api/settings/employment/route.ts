@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createHash, randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData, encryptData } from '@/lib/security';
-import { cleanText } from '@/lib/ondwira-recruitment';
+import { cleanText } from '@/lib/profcaria-recruitment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const { data, error } = await supabaseAdmin.schema('ondwira').from('employment_records')
+  const { data, error } = await supabaseAdmin.schema('profcaria').from('employment_records')
     .select('id, title, employment_type, status, started_at, ended_at, end_reason, source, enc_organization_name, verification_status, verification_method, verified_at, evidence_document_id, external_reference, source_details, organizations(name)')
     .eq('user_id', session.uid).order('started_at', { ascending: false });
   if (error) return NextResponse.json({ error: 'Unable to load job history.' }, { status: 500 });
   const ids = (data ?? []).map((record: any) => record.id);
   const { data: requests } = ids.length
-    ? await supabaseAdmin.schema('ondwira').from('employment_verification_requests')
+    ? await supabaseAdmin.schema('profcaria').from('employment_verification_requests')
       .select('id, employment_record_id, status, requested_at, expires_at, responded_at').in('employment_record_id', ids)
       .order('requested_at', { ascending: false })
     : { data: [] };
@@ -33,7 +33,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const input = await request.json().catch(() => null) as any;
   const title = cleanText(input?.title, 180);
@@ -48,12 +48,12 @@ export async function POST(request: Request) {
   }
   let evidenceDocumentId = null;
   if (input?.evidenceDocumentId) {
-    const { data: evidence } = await supabaseAdmin.schema('ondwira').from('documents').select('id')
+    const { data: evidence } = await supabaseAdmin.schema('profcaria').from('documents').select('id')
       .eq('id', input.evidenceDocumentId).eq('owner_id', session.uid).is('archived_at', null).maybeSingle();
     if (!evidence) return NextResponse.json({ error: 'Evidence document was not found.' }, { status: 404 });
     evidenceDocumentId = evidence.id;
   }
-  const { data, error } = await supabaseAdmin.schema('ondwira').from('employment_records').insert({
+  const { data, error } = await supabaseAdmin.schema('profcaria').from('employment_records').insert({
     user_id: session.uid,
     title,
     enc_organization_name: encryptData(organizationName),
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     status: endedAt ? 'ended' : 'active',
     started_at: startedAt,
     ended_at: endedAt,
-    end_reason: endedAt ? cleanText(input?.endReason, 1000) || 'left before Ondwira verification' : null,
+    end_reason: endedAt ? cleanText(input?.endReason, 1000) || 'left before Profcaria verification' : null,
     source: 'manual',
     verification_status: evidenceDocumentId ? 'pending' : 'self_declared',
     verification_method: evidenceDocumentId ? 'document' : null,
@@ -74,12 +74,12 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const input = await request.json().catch(() => null) as any;
   const recordId = cleanText(input?.recordId, 80);
   const action = cleanText(input?.action, 40);
-  const { data: record } = await supabaseAdmin.schema('ondwira').from('employment_records')
+  const { data: record } = await supabaseAdmin.schema('profcaria').from('employment_records')
     .select('*').eq('id', recordId).eq('user_id', session.uid).maybeSingle();
   if (!record) return NextResponse.json({ error: 'Employment record not found.' }, { status: 404 });
 
@@ -95,7 +95,7 @@ export async function PATCH(request: Request) {
       update.status = input.endedAt ? 'ended' : 'active';
     }
     if (!Object.keys(update).length) return NextResponse.json({ error: 'Nothing to update.' }, { status: 400 });
-    const { error } = await supabaseAdmin.schema('ondwira').from('employment_records').update(update).eq('id', recordId);
+    const { error } = await supabaseAdmin.schema('profcaria').from('employment_records').update(update).eq('id', recordId);
     if (error) return NextResponse.json({ error: 'Employment record could not be updated.' }, { status: 500 });
     return NextResponse.json({ success: true });
   }
@@ -109,14 +109,14 @@ export async function PATCH(request: Request) {
     }
     let evidenceDocumentId = record.evidence_document_id;
     if (input.evidenceDocumentId) {
-      const { data: evidence } = await supabaseAdmin.schema('ondwira').from('documents').select('id')
+      const { data: evidence } = await supabaseAdmin.schema('profcaria').from('documents').select('id')
         .eq('id', input.evidenceDocumentId).eq('owner_id', session.uid).is('archived_at', null).maybeSingle();
       if (!evidence) return NextResponse.json({ error: 'Evidence document not found.' }, { status: 404 });
       evidenceDocumentId = evidence.id;
     }
     const token = randomBytes(32).toString('base64url');
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: verification, error } = await supabaseAdmin.schema('ondwira').from('employment_verification_requests').insert({
+    const { data: verification, error } = await supabaseAdmin.schema('profcaria').from('employment_verification_requests').insert({
       employment_record_id: recordId, requested_by: session.uid,
       enc_target_name: encryptData(targetName), enc_target_email: encryptData(targetEmail),
       evidence_document_id: evidenceDocumentId,
@@ -125,10 +125,10 @@ export async function PATCH(request: Request) {
     }).select('id, status, expires_at').single();
     if (error || !verification) return NextResponse.json({ error: 'Verification request could not be created.' }, { status: 500 });
     await Promise.all([
-      supabaseAdmin.schema('ondwira').from('employment_records').update({
+      supabaseAdmin.schema('profcaria').from('employment_records').update({
         verification_status: 'pending', evidence_document_id: evidenceDocumentId, last_event_at: new Date().toISOString(),
       }).eq('id', recordId),
-      supabaseAdmin.schema('ondwira').from('employment_events').insert({
+      supabaseAdmin.schema('profcaria').from('employment_events').insert({
         employment_record_id: recordId, worker_id: session.uid, actor_id: session.uid,
         event_type: 'verification_requested', metadata: { verificationId: verification.id },
       }),

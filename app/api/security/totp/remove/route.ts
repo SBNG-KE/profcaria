@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { encryptData } from '@/lib/security';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
-import { syncOndwiraSecurity } from '@/lib/ondwira-identity';
+import { syncProfcariaSecurity } from '@/lib/profcaria-identity';
 
 export const runtime = 'nodejs';
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Failed to remove TOTP' }, { status: 500 });
         }
 
-        await syncOndwiraSecurity(uid, { hasTotp: false });
+        await syncProfcariaSecurity(uid, { hasTotp: false });
 
         // Log
         const ip = req.headers.get('x-forwarded-for') || 'Unknown IP';

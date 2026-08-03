@@ -1,27 +1,27 @@
 import { NextResponse } from 'next/server';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { resolveOndwiraAccounts } from '@/lib/ondwira-contacts';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
+import { resolveProfcariaAccounts } from '@/lib/profcaria-contacts';
 import { supabaseAdmin } from '@/lib/supabase';
-import { normalizeOndwiraUsername, validateOndwiraPhone } from '@/lib/ondwira-username';
+import { normalizeProfcariaUsername, validateProfcariaPhone } from '@/lib/profcaria-username';
 import { hashForIndex } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const rawQuery = new URL(request.url).searchParams.get('query')?.trim() || '';
   const phoneSearch = /^[+\d][\d\s()-]+$/.test(rawQuery) && rawQuery.replace(/\D/g, '').length >= 8;
-  const usernameQuery = normalizeOndwiraUsername(rawQuery);
-  let accountsQuery = supabaseAdmin.schema('ondwira').from('accounts')
+  const usernameQuery = normalizeProfcariaUsername(rawQuery);
+  let accountsQuery = supabaseAdmin.schema('profcaria').from('accounts')
     .select('id, username')
     .eq('status', 'active')
     .neq('id', session.uid);
 
   if (phoneSearch) {
-    const phone = validateOndwiraPhone(rawQuery);
+    const phone = validateProfcariaPhone(rawQuery);
     if (!phone.valid || !phone.phone) return NextResponse.json({ people: [] });
     accountsQuery = accountsQuery.eq('phone_index', hashForIndex(phone.phone)).limit(1);
   } else {
@@ -37,18 +37,18 @@ export async function GET(request: Request) {
 
   const { data: accounts, error } = await accountsQuery;
   if (error) {
-    console.error('[ONDWIRA] account discovery failed', error);
+    console.error('[PROFCARIA] account discovery failed', error);
     return NextResponse.json({ error: 'Unable to search accounts.' }, { status: 500 });
   }
 
   const ids = (accounts ?? []).map((account: { id: string; username: string }) => account.id);
   if (!ids.length) return NextResponse.json({ people: [] });
   const [{ data: identities }, profiles] = await Promise.all([
-    supabaseAdmin.schema('ondwira').from('account_identities')
+    supabaseAdmin.schema('profcaria').from('account_identities')
       .select('account_id, identity_type')
       .in('account_id', ids)
       .in('identity_type', ['professional', 'employer']),
-    resolveOndwiraAccounts(ids),
+    resolveProfcariaAccounts(ids),
   ]);
 
   const identityTypes = new Map<string, 'professional' | 'employer'>();
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       id: account.id,
       type,
       username: account.username,
-      name: profile?.name || 'Ondwira member',
+      name: profile?.name || 'Profcaria member',
       avatarUrl: profile?.avatarUrl || null,
     }];
   });

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { getOndwiraSession } from '@/lib/ondwira-auth';
-import { resolveOndwiraAccounts } from '@/lib/ondwira-contacts';
+import { getProfcariaSession } from '@/lib/profcaria-auth';
+import { resolveProfcariaAccounts } from '@/lib/profcaria-contacts';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,11 +17,11 @@ type ConversationListRow = {
 };
 
 export async function GET() {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { data, error } = await supabaseAdmin
-    .schema('ondwira')
+    .schema('profcaria')
     .from('conversation_members')
     .select('conversation_id, role, membership_status, archived_at, locked_at, muted_until, conversations!inner(id, kind, title, created_at, updated_at, disappearing_seconds)')
     .eq('user_id', session.uid)
@@ -30,7 +30,7 @@ export async function GET() {
     .order('joined_at', { ascending: false });
 
   if (error) {
-    console.error('[ONDWIRA] conversation list failed', error);
+    console.error('[PROFCARIA] conversation list failed', error);
     return NextResponse.json({ error: 'Unable to load conversations' }, { status: 500 });
   }
 
@@ -40,23 +40,23 @@ export async function GET() {
     .map(item => item.conversation_id);
   if (!directIds.length) return NextResponse.json({ conversations });
 
-  const { data: directMembers, error: membersError } = await supabaseAdmin.schema('ondwira')
+  const { data: directMembers, error: membersError } = await supabaseAdmin.schema('profcaria')
     .from('conversation_members')
     .select('conversation_id, user_id')
     .in('conversation_id', directIds)
     .eq('membership_status', 'accepted')
     .neq('user_id', session.uid);
   if (membersError) {
-    console.error('[ONDWIRA] direct conversation members failed', membersError);
+    console.error('[PROFCARIA] direct conversation members failed', membersError);
     return NextResponse.json({ error: 'Unable to resolve conversation members' }, { status: 500 });
   }
 
   const directMemberRows = (directMembers ?? []) as unknown as Array<{ conversation_id: string; user_id: string }>;
   const peerIds = [...new Set<string>(directMemberRows.map(member => member.user_id))];
   const [profiles, accountsResult] = await Promise.all([
-    resolveOndwiraAccounts(peerIds),
+    resolveProfcariaAccounts(peerIds),
     peerIds.length
-      ? supabaseAdmin.schema('ondwira').from('accounts').select('id, username').in('id', peerIds)
+      ? supabaseAdmin.schema('profcaria').from('accounts').select('id, username').in('id', peerIds)
       : Promise.resolve({ data: [] }),
   ]);
   const usernames = new Map<string, string>(((accountsResult.data ?? []) as Array<{ id: string; username: string }>).map(account => [account.id, account.username]));
@@ -69,7 +69,7 @@ export async function GET() {
       const username = peerId ? usernames.get(peerId) : null;
       return {
         ...item,
-        displayTitle: item.conversations?.kind === 'group' ? item.conversations.title || 'Untitled group' : profile?.name || username || 'Ondwira member',
+        displayTitle: item.conversations?.kind === 'group' ? item.conversations.title || 'Untitled group' : profile?.name || username || 'Profcaria member',
         displaySubtitle: item.conversations?.kind === 'group' ? 'Social group' : username ? `@${username}` : 'Direct conversation',
         avatarUrl: profile?.avatarUrl || null,
         peerUsername: username || null,
@@ -79,7 +79,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getOndwiraSession();
+  const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const input = await request.json().catch(() => null) as { kind?: string; title?: string; members?: Array<{ id: string; type: 'professional' | 'employer' }> } | null;
@@ -93,10 +93,10 @@ export async function POST(request: Request) {
   const requestedIds = [...new Set(input.members.map(member => member.id).filter(id => typeof id === 'string' && id !== session.uid))];
   const [{ data: activeAccounts }, { data: identities }] = await Promise.all([
     requestedIds.length
-      ? supabaseAdmin.schema('ondwira').from('accounts').select('id').in('id', requestedIds).eq('status', 'active')
+      ? supabaseAdmin.schema('profcaria').from('accounts').select('id').in('id', requestedIds).eq('status', 'active')
       : Promise.resolve({ data: [] }),
     requestedIds.length
-      ? supabaseAdmin.schema('ondwira').from('account_identities').select('account_id, identity_type').in('account_id', requestedIds).in('identity_type', ['professional', 'employer'])
+      ? supabaseAdmin.schema('profcaria').from('account_identities').select('account_id, identity_type').in('account_id', requestedIds).in('identity_type', ['professional', 'employer'])
       : Promise.resolve({ data: [] }),
   ]);
   const activeIds = new Set((activeAccounts ?? []).map((account: { id: string }) => account.id));
@@ -117,14 +117,14 @@ export async function POST(request: Request) {
   }
 
   const { data: conversation, error: conversationError } = await supabaseAdmin
-    .schema('ondwira')
+    .schema('profcaria')
     .from('conversations')
     .insert({ kind: input.kind, context: 'social', title: input.kind === 'group' ? input.title?.trim().slice(0, 120) || null : null, created_by: session.uid })
     .select('id, kind, title, created_at')
     .single();
 
   if (conversationError || !conversation) {
-    console.error('[ONDWIRA] conversation creation failed', conversationError);
+    console.error('[PROFCARIA] conversation creation failed', conversationError);
     return NextResponse.json({ error: 'Unable to create conversation' }, { status: 500 });
   }
 
@@ -135,10 +135,10 @@ export async function POST(request: Request) {
     role: member.id === session.uid ? 'owner' : 'member',
     membership_status: member.id === session.uid ? 'accepted' : input.kind === 'group' ? 'pending' : 'accepted',
   }));
-  const { error: membersError } = await supabaseAdmin.schema('ondwira').from('conversation_members').insert(members);
+  const { error: membersError } = await supabaseAdmin.schema('profcaria').from('conversation_members').insert(members);
   if (membersError) {
-    await supabaseAdmin.schema('ondwira').from('conversations').delete().eq('id', conversation.id);
-    console.error('[ONDWIRA] conversation members failed', membersError);
+    await supabaseAdmin.schema('profcaria').from('conversations').delete().eq('id', conversation.id);
+    console.error('[PROFCARIA] conversation members failed', membersError);
     return NextResponse.json({ error: 'Unable to add conversation members' }, { status: 500 });
   }
 
