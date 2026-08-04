@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //lib/supabase.ts
 
 import { createClient } from '@supabase/supabase-js';
@@ -7,8 +8,13 @@ import { cookies } from 'next/headers';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Updated Key Name per your request
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
-// The Secret Service Role Key (Server-side only)
-const supabaseSecret = process.env.SUPABASE_SECRET_KEY!;
+// The product was renamed before the database schema. Keep application code on
+// the Profcaria name while routing it to the deployed legacy schema until a
+// controlled database rename is completed.
+export function resolveSupabaseSchema(schema: string) {
+  if (schema !== 'profcaria') return schema;
+  return process.env.NEXT_PUBLIC_SUPABASE_APP_SCHEMA || 'ondwira';
+}
 
 // 1. CLIENT-SIDE CLIENT (Safe for public usage)
 // Initialized lazily to prevent build-time crashes if env vars are missing
@@ -30,7 +36,9 @@ export const supabase = new Proxy({} as any, {
     }
 
     const client = createClient(url, key);
-    return (client as any)[prop];
+    if (prop === 'schema') return (schema: string) => client.schema(resolveSupabaseSchema(schema));
+    const value = (client as any)[prop];
+    return typeof value === 'function' ? value.bind(client) : value;
   }
 });
 
@@ -40,7 +48,11 @@ export const supabase = new Proxy({} as any, {
 let cachedAdmin: any = null;
 export const supabaseAdmin = new Proxy({} as any, {
   get(target, prop) {
-    if (cachedAdmin) return cachedAdmin[prop];
+    if (cachedAdmin) {
+      if (prop === 'schema') return (schema: string) => cachedAdmin.schema(resolveSupabaseSchema(schema));
+      const value = cachedAdmin[prop];
+      return typeof value === 'function' ? value.bind(cachedAdmin) : value;
+    }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const secret = process.env.SUPABASE_SECRET_KEY;
@@ -48,7 +60,7 @@ export const supabaseAdmin = new Proxy({} as any, {
     if (!url || !secret) {
       // During build, just return a dummy proxy or throw informative error
       // if someone actually tries to call a method like .from()
-      return (...args: any[]) => {
+      return () => {
         throw new Error(`Supabase Admin client method "${String(prop)}" called without environment variables (URL/SECRET). If this happened during build, ensure your API routes are marked dynamic.`);
       };
     }
@@ -59,7 +71,9 @@ export const supabaseAdmin = new Proxy({} as any, {
         persistSession: false
       }
     });
-    return cachedAdmin[prop];
+    if (prop === 'schema') return (schema: string) => cachedAdmin.schema(resolveSupabaseSchema(schema));
+    const value = cachedAdmin[prop];
+    return typeof value === 'function' ? value.bind(cachedAdmin) : value;
   }
 });
 

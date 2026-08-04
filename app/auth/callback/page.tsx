@@ -22,6 +22,43 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+type OAuthIntent = 'individual' | 'company';
+
+function getOAuthIntent(): OAuthIntent {
+    return localStorage.getItem('profcariaOAuthIntent') === 'company' ? 'company' : 'individual';
+}
+
+function getOAuthDestination() {
+    return getOAuthIntent() === 'company' ? '/work' : '/find-work';
+}
+
+function getOAuthRedirect(serverRedirect?: string) {
+    const destination = getOAuthDestination();
+    const intent = getOAuthIntent();
+    if (serverRedirect?.includes('mode=verify')) return `/?mode=verify&intent=${intent}&redirect=${encodeURIComponent(destination)}`;
+    if (serverRedirect?.includes('mode=setup')) return `/?mode=setup&intent=${intent}&redirect=${encodeURIComponent(destination)}`;
+    return destination;
+}
+
+function clearOAuthIntent() {
+    localStorage.removeItem('profcariaOAuthIntent');
+    localStorage.removeItem('profcariaOAuthMode');
+    localStorage.removeItem('profcariaOAuthOrganization');
+}
+
+async function createPendingCompanyWorkspace() {
+    const isCompanySignup = getOAuthIntent() === 'company' && localStorage.getItem('profcariaOAuthMode') === 'signup';
+    const organizationName = localStorage.getItem('profcariaOAuthOrganization')?.trim();
+    if (!isCompanySignup || !organizationName) return;
+    const response = await fetch('/api/work/organizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: organizationName }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Your account is ready, but the company workspace could not be created.');
+}
+
 export default function AuthCallbackPage() {
     const router = useRouter();
     const { theme } = useTheme();
@@ -158,7 +195,9 @@ export default function AuthCallbackPage() {
                         body: JSON.stringify({ ...(savedTheme ? { theme: savedTheme } : {}), ...(savedFont ? { fontFamily: savedFont } : {}) }),
                     }).catch(() => undefined);
                 }
-                router.push(data.redirect || '/find-work');
+                const destination = getOAuthRedirect(data.redirect);
+                clearOAuthIntent();
+                router.push(destination);
 
             } catch (err) {
                 console.error('OAuth Callback Error:', err);
@@ -198,10 +237,13 @@ export default function AuthCallbackPage() {
                 return;
             }
 
-            router.push(data.redirect || '/find-work');
+            await createPendingCompanyWorkspace();
+            const destination = getOAuthRedirect(data.redirect);
+            clearOAuthIntent();
+            router.push(destination);
         } catch (err) {
             console.error('OAuth Completion Error:', err);
-            setErrorMessage('Something went wrong. Please try again.');
+            setErrorMessage(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
         } finally {
             setSubmitting(false);
         }

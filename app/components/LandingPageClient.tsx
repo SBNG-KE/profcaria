@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowDown, ArrowRight, BriefcaseBusiness, MapPin, Search, X } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/next';
 import ThemeToggle from './ThemeToggle';
@@ -29,13 +30,27 @@ export type PublicJob = {
 const pretty = (value: string) => value?.replaceAll('_', ' ').replaceAll('-', ' ').replace(/\b\w/g, letter => letter.toUpperCase()) || 'Not specified';
 
 export default function LandingPageClient() {
+  const searchParams = useSearchParams();
+  const requestedAuth = searchParams.get('auth');
+  const requestedSecurityMode = searchParams.get('mode');
+  const requestedIntent = requestedAuth === 'company' || searchParams.get('intent') === 'company' ? 'company' : 'individual';
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [query, setQuery] = useState('');
   const [locationType, setLocationType] = useState('all');
   const [employmentType, setEmploymentType] = useState('all');
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState('');
-  const [authOpen, setAuthOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(() => requestedAuth === 'signup' || requestedAuth === 'company' || requestedAuth === 'login' || requestedSecurityMode === 'setup' || requestedSecurityMode === 'verify');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>(() => requestedAuth === 'signup' || requestedAuth === 'company' ? 'signup' : 'login');
+  const [authIntent, setAuthIntent] = useState<'individual' | 'company'>(requestedIntent);
+  const [authScreen, setAuthScreen] = useState<'auth' | 'security_setup' | 'security_verify'>(() => requestedSecurityMode === 'setup' ? 'security_setup' : requestedSecurityMode === 'verify' ? 'security_verify' : 'auth');
+
+  function openAuth(mode: 'login' | 'signup', intent: 'individual' | 'company' = 'individual') {
+    setAuthScreen('auth');
+    setAuthMode(mode);
+    setAuthIntent(intent);
+    setAuthOpen(true);
+  }
 
   useEffect(() => {
     fetch('/api/jobs', { cache: 'no-store' })
@@ -67,7 +82,7 @@ export default function LandingPageClient() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
-      <HangingAuthCard isOpen={authOpen} onClose={() => setAuthOpen(false)} initialScreen="auth" />
+      <HangingAuthCard isOpen={authOpen} onClose={() => setAuthOpen(false)} initialScreen={authScreen} initialMode={authMode} initialTab={authIntent} />
 
       <header className="relative z-40 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
         <div className="mx-auto flex h-[76px] max-w-[1600px] items-center justify-between px-5 sm:px-9 lg:px-14">
@@ -76,9 +91,10 @@ export default function LandingPageClient() {
             <span className="font-editorial text-[1.75rem] font-semibold tracking-[-0.045em]">Profcaria</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-6" aria-label="Main navigation">
-            <Link href="/employer/home" className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] sm:block">For companies</Link>
+            <button onClick={() => openAuth('signup', 'company')} className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] sm:block">For companies</button>
             <ThemeToggle showSystem={false} />
-            <button onClick={() => setAuthOpen(true)} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>
+            <button onClick={() => openAuth('signup')} className="hidden text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)] transition hover:text-[var(--accent-primary)] md:block">Join</button>
+            <button onClick={() => openAuth('login')} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>
           </nav>
         </div>
       </header>
@@ -168,7 +184,7 @@ export default function LandingPageClient() {
 
       <footer className="mx-auto flex max-w-[1600px] flex-col gap-7 px-5 py-10 text-xs text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between sm:px-9 lg:px-14">
         <p>&copy; {new Date().getFullYear()} Profcaria, Kenya.</p>
-        <div className="flex flex-wrap gap-x-7 gap-y-3"><Link href="/pricing">Company pricing</Link><button onClick={() => setAuthOpen(true)}>Sign up or log in</button><a href="mailto:hello@profcaria.com">Report a problem</a></div>
+        <div className="flex flex-wrap gap-x-7 gap-y-3"><Link href="/pricing">Company pricing</Link><button onClick={() => openAuth('signup')}>Create an individual account</button><button onClick={() => openAuth('signup', 'company')}>Create a company workspace</button><a href="mailto:hello@profcaria.com">Report a problem</a></div>
       </footer>
       <Analytics />
     </main>

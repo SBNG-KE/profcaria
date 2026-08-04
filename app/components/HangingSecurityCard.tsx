@@ -50,9 +50,10 @@ interface HangingSecurityCardProps {
     isOpen: boolean;
     onClose: () => void;
     initialMode?: 'setup' | 'verify';
+    redirectTo?: string;
 }
 
-export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'setup' }: HangingSecurityCardProps) {
+export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'setup', redirectTo }: HangingSecurityCardProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { theme } = useTheme();
@@ -315,7 +316,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
 
             router.refresh();
             const redirectUrl = searchParams.get('redirect');
-            router.push(data.redirect || redirectUrl || '/');
+            router.push(redirectTo || redirectUrl || data.redirect || '/');
         } catch (err: any) {
             setError(err.message || 'Invalid code');
         } finally {
@@ -367,7 +368,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
 
             router.refresh();
             const redirectUrl = searchParams.get('redirect');
-            router.push(verificationJSON.redirect || redirectUrl || '/');
+            router.push(redirectTo || redirectUrl || verificationJSON.redirect || '/');
         } catch (err: any) {
             console.error('Passkey Auth Error:', err);
             setError(err.message || 'Passkey authentication failed');
@@ -399,7 +400,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
 
             router.refresh();
             const redirectUrl = searchParams.get('redirect');
-            router.push(data.redirect || redirectUrl || '/');
+            router.push(redirectTo || redirectUrl || data.redirect || '/');
         } catch (err: any) {
             setError(err.message || 'Invalid code');
             setVerifying(false);
