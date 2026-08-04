@@ -239,10 +239,10 @@ function ApplicationsPageContent() {
                                             </p>
                                         </div>
                                         <div className="shrink-0 flex flex-col items-end gap-1">
-                                            <span className={`w-2 h-2 rounded-full ${app.status === 'pending' ? 'bg-[#3B5998]' :
-                                                app.status === 'pending_verification' ? 'bg-[#3B5998] animate-pulse' :
+                                            <span className={`w-2 h-2 rounded-full ${app.status === 'pending' ? 'bg-[#ED3EB3]' :
+                                                app.status === 'pending_verification' ? 'bg-[#ED3EB3] animate-pulse' :
                                                     app.status === 'shortlisted' ? 'bg-blue-500' :
-                                                        app.status === 'employed' ? 'bg-[#3B5998]' : (isDark ? 'bg-neutral-500' : 'bg-neutral-300')
+                                                        app.status === 'employed' ? 'bg-[#ED3EB3]' : (isDark ? 'bg-neutral-500' : 'bg-neutral-300')
                                                 }`} />
                                         </div>
                                     </div>
@@ -280,9 +280,9 @@ function ApplicationsPageContent() {
                                             <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 ${isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-white text-neutral-600 border border-neutral-200'}`}>
                                                 <Briefcase size={12} /> {selectedApp.job.title}
                                             </span>
-                                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${selectedApp.status === 'pending' ? 'bg-[#3B5998]/10 text-[#3B5998] border-[#3B5998]/20' :
+                                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest border ${selectedApp.status === 'pending' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3] border-[#ED3EB3]/20' :
                                                 selectedApp.status === 'shortlisted' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                                                    selectedApp.status === 'employed' ? 'bg-[#3B5998]/10 text-[#3B5998] border-[#3B5998]/20' :
+                                                    selectedApp.status === 'employed' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3] border-[#ED3EB3]/20' :
                                                         (isDark ? 'bg-neutral-800 text-neutral-500 border-neutral-700' : 'bg-neutral-100 text-neutral-500 border-neutral-200')
                                                 }`}>
                                                 {selectedApp.status.replace('_', ' ')}
@@ -382,7 +382,7 @@ function ApplicationsPageContent() {
                                                     <>
                                                         <button
                                                             onClick={() => updateStatus(selectedApp.id, 'shortlisted')}
-                                                            className="px-6 py-3 bg-[#3B5998] hover:bg-[#3B5998] text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-[#3B5998]/20 active:scale-95 flex items-center gap-2"
+                                                            className="px-6 py-3 bg-[#ED3EB3] hover:bg-[#ED3EB3] text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-[#ED3EB3]/20 active:scale-95 flex items-center gap-2"
                                                         >
                                                             <CheckCircle2 size={16} /> Shortlist
                                                         </button>
@@ -396,14 +396,14 @@ function ApplicationsPageContent() {
                                                 )}
                                                 {selectedApp.status === 'pending_verification' && (
                                                     <div className="w-full space-y-3">
-                                                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${isDark ? 'bg-[#3B5998]/10 border-[#3B5998]/20' : 'bg-[#3B5998]/5 border-[#3B5998]/20'}`}>
+                                                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${isDark ? 'bg-[#ED3EB3]/10 border-[#ED3EB3]/20' : 'bg-[#ED3EB3]/5 border-[#ED3EB3]/20'}`}>
                                                             <div className="relative flex h-3 w-3 shrink-0">
-                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#6B8CD5] opacity-75"></span>
-                                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#3B5998]"></span>
+                                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#35D7DC] opacity-75"></span>
+                                                                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#ED3EB3]"></span>
                                                             </div>
                                                             <div>
-                                                                <p className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'}`}>Awaiting Identity Verification</p>
-                                                                <p className={`text-[10px] font-medium mt-1 ${isDark ? 'text-[#6B8CD5]/60' : 'text-[#3B5998]/70'}`}>
+                                                                <p className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-[#35D7DC]' : 'text-[#ED3EB3]'}`}>Awaiting Identity Verification</p>
+                                                                <p className={`text-[10px] font-medium mt-1 ${isDark ? 'text-[#35D7DC]/60' : 'text-[#ED3EB3]/70'}`}>
                                                                     The candidate has been sent a secure KYC link. They must verify their identity before being officially shortlisted.
                                                                 </p>
                                                             </div>
@@ -414,7 +414,7 @@ function ApplicationsPageContent() {
                                                     <>
                                                         <button
                                                             onClick={() => updateStatus(selectedApp.id, 'employed')}
-                                                            className="px-6 py-3 bg-[#3B5998] hover:bg-[#3B5998] text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-[#3B5998]/20 active:scale-95 flex items-center gap-2"
+                                                            className="px-6 py-3 bg-[#ED3EB3] hover:bg-[#ED3EB3] text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-[#ED3EB3]/20 active:scale-95 flex items-center gap-2"
                                                         >
                                                             <Briefcase size={16} /> Employ Candidate
                                                         </button>
@@ -427,7 +427,7 @@ function ApplicationsPageContent() {
                                                     </>
                                                 )}
                                                 {selectedApp.status === 'employed' && (
-                                                    <div className="w-full flex items-center justify-center gap-2 text-[#3B5998] text-sm font-black uppercase tracking-widest py-2">
+                                                    <div className="w-full flex items-center justify-center gap-2 text-[#ED3EB3] text-sm font-black uppercase tracking-widest py-2">
                                                         <CheckCircle2 size={18} />
                                                         Candidate Employed
                                                     </div>
@@ -491,16 +491,16 @@ function ApplicationsPageContent() {
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmModal({ isOpen: false, type: null, appId: null })} />
                     <div className={`relative border rounded-[32px] p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="text-center mb-6">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#3B5998]/10 border border-[#3B5998]/20 flex items-center justify-center">
-                                <XCircle className="text-[#3B5998]" size={32} />
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ED3EB3]/10 border border-[#ED3EB3]/20 flex items-center justify-center">
+                                <XCircle className="text-[#ED3EB3]" size={32} />
                             </div>
                             <h3 className={`text-xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>
                                 {confirmModal.type === 'reject' ? 'Reject Application?' : 'Decline Candidate?'}
                             </h3>
                         </div>
 
-                        <div className="bg-[#3B5998]/10 border border-[#3B5998]/20 rounded-xl p-4 mb-6">
-                            <p className="text-[#3B5998] text-sm text-center font-medium">
+                        <div className="bg-[#ED3EB3]/10 border border-[#ED3EB3]/20 rounded-xl p-4 mb-6">
+                            <p className="text-[#ED3EB3] text-sm text-center font-medium">
                                 ⚠️ <strong>Important:</strong> Please make sure you have written a message to the applicant explaining why you have {confirmModal.type === 'reject' ? 'rejected' : 'declined'} them.
                             </p>
                         </div>

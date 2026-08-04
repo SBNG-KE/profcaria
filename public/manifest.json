@@ -4,23 +4,23 @@
   "description": "Applying for jobs, made simple.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111214",
-  "theme_color": "#111214",
+  "background_color": "#061416",
+  "theme_color": "#ED3EB3",
   "icons": [
     {
-      "src": "/icon.png?v=20260716c",
+      "src": "/icon.png?v=20260804",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/profcaria.png?v=20260803",
+      "src": "/profcaria.png?v=20260804",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/apple-touch-icon.png?v=20260716c",
+      "src": "/apple-touch-icon.png?v=20260804",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"

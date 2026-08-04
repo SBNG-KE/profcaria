@@ -32,7 +32,7 @@ const InterviewCard = ({ interview, onEdit, onJoin, onConnect }: { interview: In
     const isPast = new Date() > scheduledDate;
 
     return (
-        <div className="bg-[#0f172a]/50 border border-white/5 rounded-[32px] p-6 hover:border-violet-500/30 transition-all group relative overflow-hidden">
+        <div className="bg-[#061D20]/50 border border-white/5 rounded-[32px] p-6 hover:border-violet-500/30 transition-all group relative overflow-hidden">
             <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center text-violet-400">
@@ -70,7 +70,7 @@ const InterviewCard = ({ interview, onEdit, onJoin, onConnect }: { interview: In
 
             <div className="flex items-center justify-between pt-6 border-t border-white/5">
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${interview.status === 'scheduled' ? 'bg-violet-500/10 text-violet-400 border border-violet-500/20' :
-                    interview.status === 'completed' ? 'bg-[#3B5998]/10 text-[#6B8CD5] border border-[#3B5998]/20' :
+                    interview.status === 'completed' ? 'bg-[#ED3EB3]/10 text-[#35D7DC] border border-[#ED3EB3]/20' :
                         'bg-slate-800 text-slate-400'
                     }`}>
                     {isPast ? 'Ready to Connect' : interview.status}
@@ -79,7 +79,7 @@ const InterviewCard = ({ interview, onEdit, onJoin, onConnect }: { interview: In
                 {isPast ? (
                     <button
                         onClick={onConnect}
-                        className="px-4 py-2 bg-[#3B5998] hover:bg-[#3B5998] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#3B5998]/20 transition-all flex items-center gap-2 animate-pulse"
+                        className="px-4 py-2 bg-[#ED3EB3] hover:bg-[#ED3EB3] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-[#ED3EB3]/20 transition-all flex items-center gap-2 animate-pulse"
                     >
                         <Users size={12} />
                         Connect Now
@@ -282,7 +282,7 @@ export default function InterviewsPage() {
                         <p className="font-bold text-xs text-slate-500 uppercase tracking-widest">Loading interviews...</p>
                     </div>
                 ) : interviews.length === 0 ? (
-                    <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4 bg-[#0f172a]/30 border border-white/5 rounded-[40px]">
+                    <div className="py-32 flex flex-col items-center justify-center text-slate-600 space-y-4 bg-[#061D20]/30 border border-white/5 rounded-[40px]">
                         <Video size={64} className="opacity-20" />
                         <p className="font-bold text-sm uppercase tracking-widest">No interviews scheduled</p>
                         <p className="text-xs text-slate-500 max-w-md text-center">Click "Schedule New" to set up interviews with your candidates.</p>
@@ -302,7 +302,7 @@ export default function InterviewsPage() {
                 )}
 
                 {/* Calendar View */}
-                <div className="bg-[#0f172a]/20 border border-white/5 rounded-[40px] p-8">
+                <div className="bg-[#061D20]/20 border border-white/5 rounded-[40px] p-8">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-sm font-black text-white uppercase tracking-widest">Calendar View</h3>
                         <div className="flex items-center gap-4 text-slate-500">
@@ -314,7 +314,7 @@ export default function InterviewsPage() {
 
                     <div className="grid grid-cols-7 gap-px bg-white/5 border border-white/5 rounded-2xl overflow-hidden">
                         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                            <div key={day} className="bg-[#050b14] p-4 text-[10px] font-black text-slate-600 uppercase text-center tracking-widest">{day}</div>
+                            <div key={day} className="bg-[#061D20] p-4 text-[10px] font-black text-slate-600 uppercase text-center tracking-widest">{day}</div>
                         ))}
                         {Array.from({ length: 35 }).map((_, i) => {
                             const dayInterviews = interviews.filter(interview => {
@@ -322,7 +322,7 @@ export default function InterviewsPage() {
                                 return date.getDate() === i + 1 && date.getMonth() === 11;
                             });
                             return (
-                                <div key={i} className="bg-[#050b14]/50 h-32 p-4 border-t border-white/5 hover:bg-white/[0.02] transition-colors relative">
+                                <div key={i} className="bg-[#061D20]/50 h-32 p-4 border-t border-white/5 hover:bg-white/[0.02] transition-colors relative">
                                     <span className="text-[10px] font-mono text-slate-700">{i + 1}</span>
                                     {dayInterviews.slice(0, 2).map((interview, idx) => (
                                         <div key={interview.id} className="mt-1 p-2 bg-violet-500/20 border border-violet-500/30 rounded-lg text-violet-400 text-[8px] font-bold truncate">
@@ -344,7 +344,7 @@ export default function InterviewsPage() {
             {showScheduleModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowScheduleModal(false)}></div>
-                    <div className="relative w-full max-w-2xl bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95">
+                    <div className="relative w-full max-w-2xl bg-[#061D20] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95">
                         <div className="p-8 border-b border-white/5 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-violet-600/10 border border-violet-500/20 flex items-center justify-center text-violet-400">

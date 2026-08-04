@@ -54,12 +54,12 @@ type BackgroundStyle = 'parchment' | 'terracotta' | 'ink' | 'olive' | 'gold' | '
 type ComposerMode = 'text' | 'media';
 
 const backgrounds: Record<BackgroundStyle, { background: string; color: string; label: string }> = {
-  parchment: { background: 'linear-gradient(145deg, #efe6d6, #d8c7ae)', color: '#2c2422', label: 'Parchment' },
-  terracotta: { background: 'linear-gradient(145deg, #b86242, #7e3828)', color: '#fff8ef', label: 'Terracotta' },
-  ink: { background: 'linear-gradient(145deg, #202126, #0e0f12)', color: '#f7f1e9', label: 'Midnight ink' },
-  olive: { background: 'linear-gradient(145deg, #59614b, #30372b)', color: '#f7f1e9', label: 'Old olive' },
-  gold: { background: 'linear-gradient(145deg, #d1a363, #936738)', color: '#241b17', label: 'Muted gold' },
-  rose: { background: 'linear-gradient(145deg, #b97c75, #744b4c)', color: '#fff8ef', label: 'Dusty rose' },
+  parchment: { background: 'linear-gradient(145deg, #F8C9E9, #F49BD5)', color: '#10282B', label: 'Parchment' },
+  terracotta: { background: 'linear-gradient(145deg, #ED3EB3, #A40B72)', color: '#FFF0FB', label: 'Terracotta' },
+  ink: { background: 'linear-gradient(145deg, #061416, #061416)', color: '#FFF0FB', label: 'Midnight ink' },
+  olive: { background: 'linear-gradient(145deg, #006B76, #10282B)', color: '#FFF0FB', label: 'Old olive' },
+  gold: { background: 'linear-gradient(145deg, #ED3EB3, #A40B72)', color: '#061416', label: 'Muted gold' },
+  rose: { background: 'linear-gradient(145deg, #ED3EB3, #A40B72)', color: '#FFF0FB', label: 'Dusty rose' },
 };
 const reactions = ['\u{2764}\u{FE0F}', '\u{1F602}', '\u{1F60D}', '\u{1F44F}', '\u{1F525}', '\u{1F917}'];
 const moods = ['', '\u{1F60C}', '\u{1F604}', '\u{1F973}', '\u{1F914}', '\u{1F4AA}', '\u{1F31A}', '\u{2728}'];
@@ -274,7 +274,7 @@ function MomentViewer({ update, index, total, onClose, onPrevious, onNext, onRef
     setBusy(false); if (response.ok) setReply('');
   }
 
-  return <div className="fixed inset-0 z-[100] grid bg-[#09090b] text-white lg:grid-cols-[1fr_350px]" role="dialog" aria-modal="true" aria-label={`${update.authorName}'s update`}>
+  return <div className="fixed inset-0 z-[100] grid bg-[#061416] text-white lg:grid-cols-[1fr_350px]" role="dialog" aria-modal="true" aria-label={`${update.authorName}'s update`}>
     <div className="relative flex min-h-0 items-center justify-center overflow-hidden p-3 sm:p-7">
       <div className="absolute inset-x-3 top-3 z-30 flex gap-1 sm:inset-x-7 sm:top-5">{Array.from({ length: total }).map((_, itemIndex) => <span key={itemIndex} className={`h-1 flex-1 rounded-full ${itemIndex <= index ? 'bg-white' : 'bg-white/25'}`} />)}</div>
       <div className="absolute inset-x-4 top-9 z-30 flex items-center justify-between sm:inset-x-8"><div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-white/15 font-editorial">{update.authorAvatar ? <Image src={update.authorAvatar} alt="" width={40} height={40} unoptimized className="h-full w-full object-cover" /> : update.authorName.slice(0, 1)}</span><div><p className="text-sm font-black">{update.isMine ? 'Your moment' : update.authorName}</p><p className="text-[10px] text-white/55">{timeAgo(update.createdAt)} · ends {remaining(update.expiresAt)}</p></div></div><button onClick={onClose} className="grid h-10 w-10 place-items-center rounded-full bg-black/25"><X /></button></div>
@@ -293,7 +293,7 @@ function MomentViewer({ update, index, total, onClose, onPrevious, onNext, onRef
       {index > 0 && <button onClick={onPrevious} className="absolute left-2 top-1/2 z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/35 sm:left-8" aria-label="Previous update"><ArrowLeft /></button>}
       {index < total - 1 && <button onClick={onNext} className="absolute right-2 top-1/2 z-30 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/35 lg:right-8" aria-label="Next update"><ArrowRight /></button>}
     </div>
-    <aside className="profcaria-scrollbar min-h-0 overflow-y-auto border-l border-white/10 bg-[#151519] p-5 pt-7">
+    <aside className="profcaria-scrollbar min-h-0 overflow-y-auto border-l border-white/10 bg-[#061416] p-5 pt-7">
       <p className="text-[10px] font-black uppercase tracking-[0.24em] text-white/45">Private response room</p>
       <div className="mt-5 grid grid-cols-6 gap-1">{reactions.map(emoji => <button key={emoji} onClick={() => react(emoji)} className={`grid h-10 place-items-center rounded-xl text-xl ${update.reaction === emoji ? 'bg-white/20' : 'hover:bg-white/10'}`}>{emoji}</button>)}</div>
       {update.isMine ? <div className="mt-7">

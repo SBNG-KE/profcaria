@@ -33,7 +33,7 @@ export default function WhyUsPage() {
     ];
 
     return (
-        <div className={`min-h-screen ${isDark ? 'bg-[#050b14] text-slate-200' : 'bg-white text-black'} font-sans selection:bg-amber-500/30`}>
+        <div className={`min-h-screen ${isDark ? 'bg-[#061D20] text-slate-200' : 'bg-white text-black'} font-sans selection:bg-amber-500/30`}>
             {/* Background Glows */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[10%] left-[20%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full" />
@@ -41,7 +41,7 @@ export default function WhyUsPage() {
             </div>
 
             {/* Navigation */}
-            <nav className={`fixed top-0 left-0 right-0 z-50 ${isDark ? 'bg-[#050b14]/80 border-white/5' : 'bg-white/80 border-black/5'} backdrop-blur-xl border-b`}>
+            <nav className={`fixed top-0 left-0 right-0 z-50 ${isDark ? 'bg-[#061D20]/80 border-white/5' : 'bg-white/80 border-black/5'} backdrop-blur-xl border-b`}>
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2">
                         <h1 className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight">
@@ -166,7 +166,7 @@ export default function WhyUsPage() {
                         <h2 className="text-4xl font-black text-white">Ready to join the modern era?</h2>
                         <Link
                             href="/?auth=signup"
-                            className="inline-block px-12 py-6 bg-white text-black hover:bg-amber-500 hover:text-white rounded-full text-lg font-black uppercase tracking-[0.2em] transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(245,158,11,0.3)] hover:scale-105"
+                            className="inline-block px-12 py-6 bg-white text-black hover:bg-amber-500 hover:text-white rounded-full text-lg font-black uppercase tracking-[0.2em] transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(237,62,179,0.3)] hover:scale-105"
                         >
                             Get Started
                         </Link>

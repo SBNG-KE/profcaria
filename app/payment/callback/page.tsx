@@ -41,8 +41,8 @@ function CallbackContent() {
     }, [reference, router]);
 
     return (
-        <div className="min-h-screen bg-[#020617] flex items-center justify-center p-4">
-            <div className="bg-[#0f172a] border border-slate-800 p-8 rounded-3xl max-w-sm w-full text-center space-y-6 shadow-2xl">
+        <div className="min-h-screen bg-[#061D20] flex items-center justify-center p-4">
+            <div className="bg-[#061D20] border border-slate-800 p-8 rounded-3xl max-w-sm w-full text-center space-y-6 shadow-2xl">
                 {status === 'verifying' && (
                     <>
                         <Loader2 className="animate-spin text-emerald-500 mx-auto" size={48} />
@@ -72,7 +72,7 @@ function CallbackContent() {
 
 export default function PaymentCallbackPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-[#020617]" />}>
+        <Suspense fallback={<div className="min-h-screen bg-[#061D20]" />}>
             <CallbackContent />
         </Suspense>
     );

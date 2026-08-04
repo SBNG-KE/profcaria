@@ -186,14 +186,14 @@ export default async function ViewCandidatePage({ params }: { params: Promise<{ 
     const tier = tierConfig[careerScore.tier] || tierConfig.newcomer;
 
     return (
-        <div className="min-h-screen bg-[#fafbfd] dark:bg-black pb-20">
+        <div className="min-h-screen bg-[#F7FCFC] dark:bg-black pb-20">
             <ProfileViewTracker targetId={id} targetType="professional" />
 
             {/* ── Hero Banner ── */}
             <div className="relative h-56 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900" />
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-amber-600/10" />
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#fafbfd] dark:from-black to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#F7FCFC] dark:from-black to-transparent" />
             </div>
 
             <div className="max-w-5xl mx-auto px-4 sm:px-6 relative -mt-24 space-y-6">

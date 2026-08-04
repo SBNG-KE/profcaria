@@ -143,7 +143,7 @@ export default function ProfessionalSettingsPage() {
             </div>
 
             {message && (
-                <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                <div className={`p-4 rounded-2xl text-center font-bold text-sm animate-in fade-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3] border border-[#ED3EB3]/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                     {message.text}
                 </div>
             )}
@@ -153,7 +153,7 @@ export default function ProfessionalSettingsPage() {
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                            <Lock className="text-[#3B5998]" size={24} /> Change Password
+                            <Lock className="text-[#ED3EB3]" size={24} /> Change Password
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {[
@@ -164,7 +164,7 @@ export default function ProfessionalSettingsPage() {
                                     <label className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{field.label}</label>
                                     <div className="relative">
                                         <input type={field.show ? 'text' : 'password'} value={field.value} onChange={(e) => field.setter(e.target.value)}
-                                            className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-[#3B5998]/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
+                                            className={`w-full border rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all font-bold ${isDark ? 'bg-neutral-900/50 border-neutral-700/50 text-white focus:ring-[#ED3EB3]/50' : 'bg-neutral-50 border-neutral-200 text-black focus:ring-black/20'}`}
                                         />
                                         <button type="button" onClick={() => field.setShow(!field.show)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-colors ${isDark ? 'text-neutral-500 hover:text-white' : 'text-neutral-400 hover:text-black'}`}>
                                             {field.show ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -184,9 +184,9 @@ export default function ProfessionalSettingsPage() {
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="flex items-center justify-between">
                             <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                                <Smartphone className="text-[#3B5998]" size={24} /> Multi-Factor Authentication
+                                <Smartphone className="text-[#ED3EB3]" size={24} /> Multi-Factor Authentication
                             </h3>
-                            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20">
+                            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-[#ED3EB3]/10 text-[#ED3EB3] border border-[#ED3EB3]/20">
                                 Verified
                             </span>
                         </div>
@@ -199,33 +199,33 @@ export default function ProfessionalSettingsPage() {
                             <button
                                 onClick={() => setMfaMethod('email')}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${mfaMethod === 'email'
-                                    ? (isDark ? 'border-[#3B5998] bg-[#3B5998]/10' : 'border-[#3B5998] bg-[#3B5998]/5')
+                                    ? (isDark ? 'border-[#ED3EB3] bg-[#ED3EB3]/10' : 'border-[#ED3EB3] bg-[#ED3EB3]/5')
                                     : (isDark ? 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700' : 'border-neutral-200 bg-neutral-50 hover:border-neutral-300')}`}
                             >
                                 <div className="flex items-center gap-3 mb-2">
-                                    <Mail size={20} className={mfaMethod === 'email' ? 'text-[#3B5998]' : isDark ? 'text-neutral-500' : 'text-neutral-400'} />
+                                    <Mail size={20} className={mfaMethod === 'email' ? 'text-[#ED3EB3]' : isDark ? 'text-neutral-500' : 'text-neutral-400'} />
                                     <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Email OTP</span>
-                                    {mfaMethod === 'email' && <CheckCircle size={16} className="text-[#3B5998] ml-auto" />}
+                                    {mfaMethod === 'email' && <CheckCircle size={16} className="text-[#ED3EB3] ml-auto" />}
                                 </div>
                                 <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>A 6-digit code is sent to your email when signing in</p>
                             </button>
                             <button
                                 onClick={() => setMfaMethod('authenticator')}
                                 className={`p-4 rounded-xl border-2 text-left transition-all ${mfaMethod === 'authenticator'
-                                    ? (isDark ? 'border-[#3B5998] bg-[#3B5998]/10' : 'border-[#3B5998] bg-[#3B5998]/5')
+                                    ? (isDark ? 'border-[#ED3EB3] bg-[#ED3EB3]/10' : 'border-[#ED3EB3] bg-[#ED3EB3]/5')
                                     : (isDark ? 'border-neutral-800 bg-neutral-900/50 hover:border-neutral-700' : 'border-neutral-200 bg-neutral-50 hover:border-neutral-300')}`}
                             >
                                 <div className="flex items-center gap-3 mb-2">
-                                    <Smartphone size={20} className={mfaMethod === 'authenticator' ? 'text-[#3B5998]' : isDark ? 'text-neutral-500' : 'text-neutral-400'} />
+                                    <Smartphone size={20} className={mfaMethod === 'authenticator' ? 'text-[#ED3EB3]' : isDark ? 'text-neutral-500' : 'text-neutral-400'} />
                                     <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>Authenticator App</span>
-                                    {mfaMethod === 'authenticator' && <CheckCircle size={16} className="text-[#3B5998] ml-auto" />}
+                                    {mfaMethod === 'authenticator' && <CheckCircle size={16} className="text-[#ED3EB3] ml-auto" />}
                                 </div>
                                 <p className={`text-xs ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>Use Google Authenticator or similar app for codes</p>
                             </button>
                         </div>
 
-                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${isDark ? 'border-[#3B5998]/30 bg-[#3B5998]/5' : 'border-[#3B5998]/20 bg-[#3B5998]/5'}`}>
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#3B5998]/20 text-[#3B5998]">
+                        <div className={`flex items-center gap-3 p-4 rounded-xl border ${isDark ? 'border-[#ED3EB3]/30 bg-[#ED3EB3]/5' : 'border-[#ED3EB3]/20 bg-[#ED3EB3]/5'}`}>
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#ED3EB3]/20 text-[#ED3EB3]">
                                 <Shield size={20} />
                             </div>
                             <div className="flex-1">
@@ -241,11 +241,11 @@ export default function ProfessionalSettingsPage() {
                     <div className={`border p-8 rounded-[32px] space-y-6 ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'}`}>
                         <div className="flex items-center justify-between">
                             <h3 className={`text-xl font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
-                                <Mail className="text-[#3B5998]" size={24} /> Email Login Approval
+                                <Mail className="text-[#ED3EB3]" size={24} /> Email Login Approval
                             </h3>
                             <button
                                 onClick={() => setEmailApprovalEnabled(!emailApprovalEnabled)}
-                                className={`relative w-12 h-6 rounded-full transition-all duration-300 ${emailApprovalEnabled ? 'bg-[#3B5998]' : isDark ? 'bg-neutral-700' : 'bg-neutral-300'}`}
+                                className={`relative w-12 h-6 rounded-full transition-all duration-300 ${emailApprovalEnabled ? 'bg-[#ED3EB3]' : isDark ? 'bg-neutral-700' : 'bg-neutral-300'}`}
                             >
                                 <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 ${emailApprovalEnabled ? 'left-[26px]' : 'left-0.5'}`} />
                             </button>
@@ -268,7 +268,7 @@ export default function ProfessionalSettingsPage() {
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => setPendingLogins(prev => prev.filter(l => l.id !== login.id))}
-                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#3B5998] text-white hover:bg-[#2A4170] transition-all"
+                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#ED3EB3] text-white hover:bg-[#006B76] transition-all"
                                             >
                                                 Approve
                                             </button>
@@ -329,40 +329,40 @@ export default function ProfessionalSettingsPage() {
                                     </div>
                                 </div>
                                 <div className={`mt-8 pt-6 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
-                                    <div className={`w-full py-3 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default ${isDark ? 'bg-[#3B5998]/20 text-[#6B8CD5]' : 'bg-[#3B5998]/10 text-[#3B5998]'}`}>
+                                    <div className={`w-full py-3 font-bold rounded-xl text-center text-[10px] uppercase tracking-widest cursor-default ${isDark ? 'bg-[#ED3EB3]/20 text-[#35D7DC]' : 'bg-[#ED3EB3]/10 text-[#ED3EB3]'}`}>
                                         Current Plan
                                     </div>
                                 </div>
                             </div>
 
                             {/* Plus Tier */}
-                            <div className={`border-2 p-6 rounded-[24px] flex flex-col relative overflow-hidden group transition-all duration-300 transform md:-translate-y-2 shadow-lg ${isDark ? 'bg-gradient-to-b from-neutral-900 to-black border-[#3B5998]/50' : 'bg-white border-[#3B5998]'}`}>
-                                <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#3B5998] to-[#6B8CD5]`} />
-                                <div className="absolute top-4 right-4 bg-gradient-to-r from-[#3B5998] to-[#6B8CD5] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md">
+                            <div className={`border-2 p-6 rounded-[24px] flex flex-col relative overflow-hidden group transition-all duration-300 transform md:-translate-y-2 shadow-lg ${isDark ? 'bg-gradient-to-b from-neutral-900 to-black border-[#ED3EB3]/50' : 'bg-white border-[#ED3EB3]'}`}>
+                                <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#ED3EB3] to-[#35D7DC]`} />
+                                <div className="absolute top-4 right-4 bg-gradient-to-r from-[#ED3EB3] to-[#35D7DC] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md">
                                     Popular
                                 </div>
                                 <div className="space-y-4 flex-1 mt-2">
-                                    <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#3B5998]'}`}>
+                                    <h4 className={`font-black text-xl flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#ED3EB3]'}`}>
                                         Plus
                                     </h4>
-                                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-[#3B5998]'}`}>
+                                    <div className={`text-3xl font-black ${isDark ? 'text-white' : 'text-[#ED3EB3]'}`}>
                                         {formatCurrency(pricing.plus)}
-                                        <span className={`text-xs font-bold ml-1 ${isDark ? 'text-neutral-400' : 'text-[#3B5998]/70'}`}>/mo</span>
+                                        <span className={`text-xs font-bold ml-1 ${isDark ? 'text-neutral-400' : 'text-[#ED3EB3]/70'}`}>/mo</span>
                                     </div>
                                     <div className="pt-2 space-y-3">
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-white' : 'text-black'}`}>
-                                            <CheckCircle size={14} className="text-[#3B5998] shrink-0" /> Unlimited Career AI
+                                            <CheckCircle size={14} className="text-[#ED3EB3] shrink-0" /> Unlimited Career AI
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-white' : 'text-black'}`}>
-                                            <CheckCircle size={14} className="text-[#3B5998] shrink-0" /> Basic Interview Prep
+                                            <CheckCircle size={14} className="text-[#ED3EB3] shrink-0" /> Basic Interview Prep
                                         </div>
                                         <div className={`flex items-center gap-2 text-xs font-medium ${isDark ? 'text-white' : 'text-black'}`}>
-                                            <CheckCircle size={14} className="text-[#3B5998] shrink-0" /> Resume Analyzer
+                                            <CheckCircle size={14} className="text-[#ED3EB3] shrink-0" /> Resume Analyzer
                                         </div>
                                     </div>
                                 </div>
                                 <div className={`mt-8 pt-6 border-t ${isDark ? 'border-neutral-800' : 'border-neutral-100'}`}>
-                                    <button className="w-full py-3 bg-[#3B5998] hover:bg-[#2A4170] text-white font-bold rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-md active:scale-95">
+                                    <button className="w-full py-3 bg-[#ED3EB3] hover:bg-[#006B76] text-white font-bold rounded-xl text-center text-[10px] uppercase tracking-widest transition-all shadow-md active:scale-95">
                                         Upgrade to Plus
                                     </button>
                                 </div>
@@ -448,7 +448,7 @@ export default function ProfessionalSettingsPage() {
                                     <span className={`text-xs font-bold ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{formatNumber(followerCount)} / {formatNumber(nextTier.min)}</span>
                                 </div>
                                 <div className={`w-full h-3 rounded-full overflow-hidden ${isDark ? 'bg-neutral-800' : 'bg-neutral-200'}`}>
-                                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${nextTier.key === 'gold' ? 'bg-gradient-to-r from-[#3B5998] to-[#6B8CD5]' : nextTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`} style={{ width: `${progressPercent}%` }} />
+                                    <div className={`h-full rounded-full transition-all duration-1000 ease-out ${nextTier.key === 'gold' ? 'bg-gradient-to-r from-[#ED3EB3] to-[#35D7DC]' : nextTier.key === 'blue' ? 'bg-gradient-to-r from-blue-500 to-blue-400' : 'bg-gradient-to-r from-neutral-500 to-neutral-400'}`} style={{ width: `${progressPercent}%` }} />
                                 </div>
                                 <p className={`mt-2 text-sm ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>
                                     <TrendingUp size={14} className="inline mr-1" />{formatNumber(nextTier.min - followerCount)} more followers to unlock the <strong>{nextTier.label}</strong> badge
@@ -468,7 +468,7 @@ export default function ProfessionalSettingsPage() {
                             const activeRing = isCurrent ? (tier.key === 'gold' ? 'ring-2 ring-yellow-400/40' : tier.key === 'blue' ? 'ring-2 ring-blue-400/40' : 'ring-2 ring-neutral-400/40') : '';
                             return (
                                 <div key={tier.key} className={`relative p-6 rounded-3xl border ${isDark ? `bg-neutral-900/50 ${borderColor}` : `bg-white border-neutral-200`} ${activeRing} transition-all`}>
-                                    {isCurrent && <div className="absolute top-0 right-0 bg-[#3B5998] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">Current</div>}
+                                    {isCurrent && <div className="absolute top-0 right-0 bg-[#ED3EB3] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-bl-xl rounded-tr-3xl">Current</div>}
                                     <div className="flex items-center gap-3 mb-4">
                                         <VerificationBadge tier={tier.key} size={32} showTooltip={false} />
                                         <div>
@@ -476,7 +476,7 @@ export default function ProfessionalSettingsPage() {
                                             <p className={`text-xs font-bold ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{formatNumber(tier.min)}+ followers</p>
                                         </div>
                                     </div>
-                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-[#3B5998]/10 text-[#3B5998] border border-[#3B5998]/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
+                                    <div className={`mt-4 py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest ${isUnlocked ? 'bg-[#ED3EB3]/10 text-[#ED3EB3] border border-[#ED3EB3]/20' : isDark ? 'bg-neutral-800 text-neutral-600' : 'bg-neutral-100 text-neutral-400'}`}>
                                         {isUnlocked ? '✓ Unlocked' : `${formatNumber(tier.min - followerCount)} to go`}
                                     </div>
                                 </div>

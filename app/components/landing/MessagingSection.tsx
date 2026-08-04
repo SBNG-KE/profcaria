@@ -57,7 +57,7 @@ export default function MessagingSection() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.6, delay: idx * 0.2 }}
-                                className={`p-6 rounded-3xl border backdrop-blur-xl transition-all ${isDark ? 'bg-[#111827]/80 border-[#1B2A4A] hover:bg-[#111827]' : 'bg-neutral-50 border-neutral-200 hover:bg-neutral-100'}`}
+                                className={`p-6 rounded-3xl border backdrop-blur-xl transition-all ${isDark ? 'bg-[#061D20]/80 border-[#104B52] hover:bg-[#061D20]' : 'bg-neutral-50 border-neutral-200 hover:bg-neutral-100'}`}
                             >
                                 <h3 className={`text-xl font-bold mb-3 font-pixel tracking-wider ${isDark ? 'text-white' : 'text-black'}`}>{feature.title}</h3>
                                 <p className={`text-sm leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>{feature.desc}</p>
@@ -69,7 +69,7 @@ export default function MessagingSection() {
                 {/* Animated Diagram: Real Encryption Simulation */}
                 <div className="relative h-[600px] flex items-center justify-center z-20">
                     <div className={`relative w-full max-w-md p-8 rounded-[2rem] border overflow-hidden
-                        ${isDark ? 'bg-[#0A0F1A] border-[#3B5998] shadow-[0_0_50px_rgba(59,89,152,0.15)]' : 'bg-white border-[#1B2A4A]/20 shadow-2xl'}
+                        ${isDark ? 'bg-[#061D20] border-[#ED3EB3] shadow-[0_0_50px_rgba(237,62,179,0.15)]' : 'bg-white border-[#104B52]/20 shadow-2xl'}
                     `}>
                         {/* Status Header */}
                         <div className="flex justify-between items-center mb-12 border-b pb-4 border-inherit">
@@ -95,20 +95,20 @@ export default function MessagingSection() {
                                 >
                                     {/* Icon Indicator */}
                                     <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 border-2 
-                                        ${isDark ? 'bg-[#1B2A4A] border-[#3B5998] text-white' : 'bg-neutral-100 border-[#1B2A4A] text-black'}`}
+                                        ${isDark ? 'bg-[#104B52] border-[#ED3EB3] text-white' : 'bg-neutral-100 border-[#104B52] text-black'}`}
                                     >
                                         {React.createElement(messageStates[activeIndex].icon, { size: 28 })}
                                     </div>
 
                                     {/* Stage Label */}
-                                    <h4 className={`text-[10px] md:text-xs font-pixel uppercase tracking-widest mb-4 opacity-70 ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}`}>
+                                    <h4 className={`text-[10px] md:text-xs font-pixel uppercase tracking-widest mb-4 opacity-70 ${isDark ? 'text-[#ED3EB3]' : 'text-[#104B52]'}`}>
                                         {messageStates[activeIndex].label}
                                     </h4>
 
                                     {/* The Payload */}
                                     <div className={`w-full p-4 rounded-xl border text-center font-mono text-sm break-all
                                         ${[1, 2].includes(activeIndex) ? "tracking-widest" : "text-lg"}
-                                        bg-[#0A0F1A] border-[#1B2A4A]/50 text-green-400 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]
+                                        bg-[#061D20] border-[#104B52]/50 text-green-400 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]
                                     `}>
                                         {messageStates[activeIndex].content}
                                     </div>
@@ -119,7 +119,7 @@ export default function MessagingSection() {
                                             initial={{ width: 0 }}
                                             animate={{ width: "100%" }}
                                             transition={{ duration: 2, ease: "linear" }}
-                                            className={`h-1 mt-6 rounded-full ${isDark ? 'bg-[#3B5998]' : 'bg-[#1B2A4A]'}`}
+                                            className={`h-1 mt-6 rounded-full ${isDark ? 'bg-[#ED3EB3]' : 'bg-[#104B52]'}`}
                                         />
                                     ) : (
                                         <div className="h-1 mt-6" /> // spacer

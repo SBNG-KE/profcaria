@@ -16,7 +16,7 @@ function escapeHtml(text: string): string {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;')
+        .replace(/'/g, '&#006B76;')
         .replace(/\n/g, '<br/>'); // Preserve line breaks
 }
 
@@ -35,7 +35,7 @@ export default async function SharedDocPage({ params }: { params: Promise<{ toke
 
     if (!payload) {
         return (
-            <div className="min-h-screen bg-[#020617] flex items-center justify-center p-8 text-center">
+            <div className="min-h-screen bg-[#061D20] flex items-center justify-center p-8 text-center">
                 <div className="space-y-4">
                     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
                         <Lock className="text-red-500" size={32} />
@@ -49,7 +49,7 @@ export default async function SharedDocPage({ params }: { params: Promise<{ toke
 
     if (payload.exp < Date.now()) {
         return (
-            <div className="min-h-screen bg-[#020617] flex items-center justify-center p-8 text-center">
+            <div className="min-h-screen bg-[#061D20] flex items-center justify-center p-8 text-center">
                 <div className="space-y-4">
                     <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto border border-amber-500/20">
                         <Lock className="text-amber-500" size={32} />
@@ -114,8 +114,8 @@ export default async function SharedDocPage({ params }: { params: Promise<{ toke
 
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-slate-300 font-sans py-12 px-4 md:px-0">
-            <div className="max-w-2xl mx-auto bg-[#020617] border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">
+        <div className="min-h-screen bg-[#061D20] text-slate-300 font-sans py-12 px-4 md:px-0">
+            <div className="max-w-2xl mx-auto bg-[#061D20] border border-slate-800 rounded-[32px] overflow-hidden shadow-2xl">
                 {/* Header */}
                 <div className="bg-slate-900/50 p-8 border-b border-slate-800 text-center">
                     <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">

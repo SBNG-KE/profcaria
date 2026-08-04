@@ -58,7 +58,7 @@ export default function ViewReferenceResponseModal({
     const getStatusInfo = (status: string) => {
         switch (status) {
             case 'responded':
-                return { icon: <Check size={14} />, label: 'Responded', color: isDark ? 'text-[#6B8CD5] bg-[#3B5998]/20 border-[#3B5998]/30' : 'text-[#3B5998] bg-[#3B5998]/5 border-[#3B5998]/20' };
+                return { icon: <Check size={14} />, label: 'Responded', color: isDark ? 'text-[#35D7DC] bg-[#ED3EB3]/20 border-[#ED3EB3]/30' : 'text-[#ED3EB3] bg-[#ED3EB3]/5 border-[#ED3EB3]/20' };
             case 'viewed':
                 return { icon: <Eye size={14} />, label: 'Viewed', color: isDark ? 'text-blue-400 bg-blue-500/20 border-blue-500/30' : 'text-blue-600 bg-blue-50 border-blue-200' };
             case 'sent':

@@ -168,7 +168,7 @@ export default function EmployerProfileViewModal({
 
     if (loading) return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="w-12 h-12 border-4 border-[#3B5998]/20 border-t-[#3B5998] rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-[#ED3EB3]/20 border-t-[#ED3EB3] rounded-full animate-spin"></div>
         </div>
     );
 
@@ -216,7 +216,7 @@ export default function EmployerProfileViewModal({
         <div className="fixed inset-0 z-[150] flex h-screen w-screen bg-black/80 backdrop-blur-sm overflow-hidden animate-in fade-in duration-300">
 
             {/* Modal Container - Full Screen Overlay Matches Professional Layout */}
-            <div className={`relative w-full h-full flex flex-col md:flex-row ${isDark ? 'bg-black text-white' : 'bg-[#f8fafe] text-black'}`}>
+            <div className={`relative w-full h-full flex flex-col md:flex-row ${isDark ? 'bg-black text-white' : 'bg-[#F7FCFC] text-black'}`}>
 
                 {/* --- MOBILE HEADER (Visible on small screens only) --- */}
                 <div className={`md:hidden flex items-center gap-4 p-4 border-b ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200'}`}>
@@ -293,16 +293,16 @@ export default function EmployerProfileViewModal({
 
                     {/* Intent Mode */}
                     {intentMode && intentMode !== 'not_looking' && (
-                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-2 ${intentMode === 'actively_looking' ? 'bg-[#3B5998]/10 border border-[#3B5998]/20' :
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-xl mb-2 ${intentMode === 'actively_looking' ? 'bg-[#ED3EB3]/10 border border-[#ED3EB3]/20' :
                                 'bg-blue-500/10 border border-blue-500/20'
                             }`}>
                             <div className="relative flex h-2 w-2">
-                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${intentMode === 'actively_looking' ? 'bg-[#6B8CD5]' : 'bg-blue-400'
+                                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${intentMode === 'actively_looking' ? 'bg-[#35D7DC]' : 'bg-blue-400'
                                     }`}></span>
-                                <span className={`relative inline-flex rounded-full h-2 w-2 ${intentMode === 'actively_looking' ? 'bg-[#3B5998]' : 'bg-blue-500'
+                                <span className={`relative inline-flex rounded-full h-2 w-2 ${intentMode === 'actively_looking' ? 'bg-[#ED3EB3]' : 'bg-blue-500'
                                     }`}></span>
                             </div>
-                            <span className={`text-[10px] font-black uppercase tracking-widest ${intentMode === 'actively_looking' ? 'text-[#3B5998]' : 'text-blue-500'
+                            <span className={`text-[10px] font-black uppercase tracking-widest ${intentMode === 'actively_looking' ? 'text-[#ED3EB3]' : 'text-blue-500'
                                 }`}>
                                 {intentMode === 'actively_looking' ? 'Actively Looking' :
                                     intentMode === 'open_to_freelance' ? 'Open to Freelance' :
@@ -401,26 +401,26 @@ export default function EmployerProfileViewModal({
                                     {verification ? (
                                         <div className="space-y-3">
                                             {verification.checks.map((check, i) => (
-                                                <div key={i} className={`flex items-center gap-4 p-3 sm:p-4 rounded-2xl border transition-all ${check.status === 'verified' ? (isDark ? 'border-[#3B5998]/30 bg-[#3B5998]/10' : 'border-[#6B8CD5] bg-[#3B5998]/5') :
-                                                        check.status === 'partial' ? (isDark ? 'border-[#3B5998]/30 bg-[#3B5998]/10' : 'border-[#6B8CD5] bg-[#3B5998]/5') :
+                                                <div key={i} className={`flex items-center gap-4 p-3 sm:p-4 rounded-2xl border transition-all ${check.status === 'verified' ? (isDark ? 'border-[#ED3EB3]/30 bg-[#ED3EB3]/10' : 'border-[#35D7DC] bg-[#ED3EB3]/5') :
+                                                        check.status === 'partial' ? (isDark ? 'border-[#ED3EB3]/30 bg-[#ED3EB3]/10' : 'border-[#35D7DC] bg-[#ED3EB3]/5') :
                                                             isDark ? 'border-neutral-800 bg-neutral-800/50' : 'border-neutral-200 bg-neutral-50'
                                                     }`}>
                                                     {check.status === 'verified' ? (
-                                                        <CheckCircle2 size={20} className="text-[#3B5998] shrink-0" />
+                                                        <CheckCircle2 size={20} className="text-[#ED3EB3] shrink-0" />
                                                     ) : check.status === 'partial' ? (
-                                                        <Clock size={20} className="text-[#3B5998] shrink-0" />
+                                                        <Clock size={20} className="text-[#ED3EB3] shrink-0" />
                                                     ) : (
                                                         <Circle size={20} className={`shrink-0 ${isDark ? 'text-neutral-600' : 'text-neutral-400'}`} />
                                                     )}
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-black'}`}>{check.label}</h4>
-                                                        <p className={`text-xs ${check.status === 'verified' ? (isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]') :
-                                                                check.status === 'partial' ? (isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]') :
+                                                        <p className={`text-xs ${check.status === 'verified' ? (isDark ? 'text-[#35D7DC]' : 'text-[#ED3EB3]') :
+                                                                check.status === 'partial' ? (isDark ? 'text-[#35D7DC]' : 'text-[#ED3EB3]') :
                                                                     isDark ? 'text-neutral-500' : 'text-neutral-400'
                                                             }`}>{check.detail}</p>
                                                     </div>
-                                                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${check.status === 'verified' ? 'bg-[#3B5998]/10 text-[#3B5998]' :
-                                                            check.status === 'partial' ? 'bg-[#3B5998]/10 text-[#3B5998]' :
+                                                    <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shrink-0 ${check.status === 'verified' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' :
+                                                            check.status === 'partial' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' :
                                                                 isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-400'
                                                         }`}>{check.status}</span>
                                                 </div>
@@ -488,7 +488,7 @@ export default function EmployerProfileViewModal({
                                                     </a>
                                                     <button
                                                         onClick={() => handleCopy(data.profile.email, 'email')}
-                                                        className={`p-1.5 rounded-lg transition-all ${copiedField === 'email' ? 'bg-[#3B5998]/10 text-[#3B5998]' : 'hover:bg-neutral-800 text-neutral-500 hover:text-white'}`}
+                                                        className={`p-1.5 rounded-lg transition-all ${copiedField === 'email' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' : 'hover:bg-neutral-800 text-neutral-500 hover:text-white'}`}
                                                         title="Copy Email"
                                                     >
                                                         {copiedField === 'email' ? <Check size={14} /> : <Copy size={14} />}
@@ -504,7 +504,7 @@ export default function EmployerProfileViewModal({
                                                     {data.profile.phone && (
                                                         <button
                                                             onClick={() => handleCopy(data.profile.phone!, 'phone')}
-                                                            className={`p-1.5 rounded-lg transition-all ${copiedField === 'phone' ? 'bg-[#3B5998]/10 text-[#3B5998]' : 'hover:bg-neutral-800 text-neutral-500 hover:text-white'}`}
+                                                            className={`p-1.5 rounded-lg transition-all ${copiedField === 'phone' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' : 'hover:bg-neutral-800 text-neutral-500 hover:text-white'}`}
                                                             title="Copy Phone"
                                                         >
                                                             {copiedField === 'phone' ? <Check size={14} /> : <Copy size={14} />}
@@ -518,15 +518,15 @@ export default function EmployerProfileViewModal({
 
                                 {/* KYC Verification Section */}
                                 {data.kycData && (data.kycData.imageUrl || data.kycData.videoUrl) && (
-                                    <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] border-2 ${isDark ? 'bg-[#3B5998]/5 border-[#3B5998]/20' : 'bg-[#3B5998]/5 border-[#3B5998]/20 shadow-sm'}`}>
-                                        <h3 className={`text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isDark ? 'text-[#3B5998]' : 'text-[#3B5998]'}`}>
+                                    <div className={`p-6 sm:p-10 rounded-[24px] sm:rounded-[40px] border-2 ${isDark ? 'bg-[#ED3EB3]/5 border-[#ED3EB3]/20' : 'bg-[#ED3EB3]/5 border-[#ED3EB3]/20 shadow-sm'}`}>
+                                        <h3 className={`text-xs font-black uppercase tracking-widest mb-4 sm:mb-6 flex items-center gap-2 ${isDark ? 'text-[#ED3EB3]' : 'text-[#ED3EB3]'}`}>
                                             <BadgeCheck size={14} /> Identity Successfully Verified
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {data.kycData.imageUrl && (
                                                 <div className="space-y-2">
                                                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>ID Snapshot</p>
-                                                    <div className="rounded-2xl overflow-hidden border border-[#3B5998]/30 aspect-[4/3] bg-black">
+                                                    <div className="rounded-2xl overflow-hidden border border-[#ED3EB3]/30 aspect-[4/3] bg-black">
                                                         <img src={data.kycData.imageUrl} alt="KYC Snapshot" className="w-full h-full object-contain" />
                                                     </div>
                                                 </div>
@@ -534,7 +534,7 @@ export default function EmployerProfileViewModal({
                                             {data.kycData.videoUrl && (
                                                 <div className="space-y-2">
                                                     <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>Liveness Video</p>
-                                                    <div className="rounded-2xl overflow-hidden border border-[#3B5998]/30 aspect-[4/3] bg-black">
+                                                    <div className="rounded-2xl overflow-hidden border border-[#ED3EB3]/30 aspect-[4/3] bg-black">
                                                         <video src={data.kycData.videoUrl} controls className="w-full h-full object-contain" />
                                                     </div>
                                                 </div>
@@ -618,7 +618,7 @@ export default function EmployerProfileViewModal({
                                                                             <h5 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-black'}`}>{job.title}</h5>
                                                                         </div>
                                                                         {job.source === 'automatic' && (
-                                                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-[#3B5998]/10 border-[#3B5998]/20 text-[#3B5998]' : 'bg-[#3B5998]/5 border-[#3B5998]/20 text-[#3B5998]'}`} title="Verified via Profcaria Connection">
+                                                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${isDark ? 'bg-[#ED3EB3]/10 border-[#ED3EB3]/20 text-[#ED3EB3]' : 'bg-[#ED3EB3]/5 border-[#ED3EB3]/20 text-[#ED3EB3]'}`} title="Verified via Profcaria Connection">
                                                                                 <BadgeCheck size={14} className="fill-current" />
                                                                                 <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
                                                                             </div>
@@ -794,7 +794,7 @@ export default function EmployerProfileViewModal({
                                                 {showUploaded ? 'Uploaded files shared by the candidate.' : 'These are the documents the candidate has shared specifically with you.'}
                                             </p>
                                         </div>
-                                        <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${showUploaded ? (isDark ? 'bg-[#3B5998]/10 text-[#3B5998]' : 'bg-[#3B5998]/5 text-[#3B5998]') : (isDark ? 'bg-[#3B5998]/10 text-[#3B5998]' : 'bg-[#3B5998]/5 text-[#3B5998]')}`}>
+                                        <div className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-[8px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${showUploaded ? (isDark ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' : 'bg-[#ED3EB3]/5 text-[#ED3EB3]') : (isDark ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' : 'bg-[#ED3EB3]/5 text-[#ED3EB3]')}`}>
                                             {showUploaded ? 'Uploaded Files' : 'Verified Access'}
                                         </div>
                                     </div>
@@ -959,7 +959,7 @@ export default function EmployerProfileViewModal({
                                                 const getStatusBadge = () => {
                                                     switch (req.status) {
                                                         case 'responded':
-                                                            return { label: 'Responded', color: isDark ? 'text-[#6B8CD5] bg-[#3B5998]/20' : 'text-[#3B5998] bg-[#3B5998]/5' };
+                                                            return { label: 'Responded', color: isDark ? 'text-[#35D7DC] bg-[#ED3EB3]/20' : 'text-[#ED3EB3] bg-[#ED3EB3]/5' };
                                                         case 'viewed':
                                                             return { label: 'Viewed', color: isDark ? 'text-blue-400 bg-blue-500/20' : 'text-blue-600 bg-blue-50' };
                                                         case 'sent':
@@ -1004,7 +1004,7 @@ export default function EmployerProfileViewModal({
                                             const getTerminationInfo = () => {
                                                 switch (emp.terminationType) {
                                                     case 'resignation':
-                                                        return { icon: <LogOut size={14} />, label: 'Resigned', color: isDark ? 'text-[#6B8CD5] bg-[#3B5998]/10 border-[#3B5998]/20' : 'text-[#3B5998] bg-[#3B5998]/5 border-[#3B5998]/20' };
+                                                        return { icon: <LogOut size={14} />, label: 'Resigned', color: isDark ? 'text-[#35D7DC] bg-[#ED3EB3]/10 border-[#ED3EB3]/20' : 'text-[#ED3EB3] bg-[#ED3EB3]/5 border-[#ED3EB3]/20' };
                                                     case 'involuntary':
                                                         return { icon: <UserX size={14} />, label: 'Terminated', color: isDark ? 'text-red-400 bg-red-500/10 border-red-500/20' : 'text-red-600 bg-red-50 border-red-200' };
                                                     case 'mutual':
@@ -1076,7 +1076,7 @@ export default function EmployerProfileViewModal({
 
                                                             {/* Ask for Reference Button */}
                                                             {emp.companyEmail && (
-                                                                <div className="mt-4 pt-4 border-t flex justify-end" style={{ borderColor: isDark ? '#262626' : '#e5e5e5' }}>
+                                                                <div className="mt-4 pt-4 border-t flex justify-end" style={{ borderColor: isDark ? '#10282B' : '#E8F1F2' }}>
                                                                     <button
                                                                         onClick={() => {
                                                                             setSelectedEmploymentForRef(emp);

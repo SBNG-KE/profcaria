@@ -191,7 +191,7 @@ export default function JobApplyPage() {
             <div className="flex flex-col lg:flex-row gap-12 text-left">
                 {/* APPLICATION FORM - Second on mobile, first on desktop */}
                 <div className="lg:w-2/3 order-2 lg:order-1">
-                    <form onSubmit={handleSubmit} className={`border rounded-[40px] p-10 space-y-8 shadow-2xl ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200'}`}>
+                    <form onSubmit={handleSubmit} className={`border rounded-[40px] p-10 space-y-8 shadow-2xl ${isDark ? 'bg-[#061D20] border-slate-800' : 'bg-white border-neutral-200'}`}>
                         <div className={`space-y-2 border-b pb-6 mb-8 ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
                             <h3 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-black'}`}>Application Questionnaire</h3>
                             <p className={`text-xs font-bold uppercase ${isDark ? 'text-slate-500' : 'text-neutral-500'}`}>Please answer the following questions to help us evaluate your fit.</p>

@@ -122,7 +122,7 @@ export default function HangingContactCard({
                     rounded-[2rem] p-6 md:p-8 overflow-hidden
                     transform transition-all duration-500 origin-top
                     ${isDark
-                        ? 'bg-[#0A0F1A] shadow-2xl border-neutral-700/50 glow-white'
+                        ? 'bg-[#061D20] shadow-2xl border-neutral-700/50 glow-white'
                         : 'bg-white shadow-2xl border-neutral-200'}
                 `}
                 style={{

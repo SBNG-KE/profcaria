@@ -21,10 +21,10 @@ export default function VerificationBadge({ tier, size = 24, className = '', sho
         case 'gray':
         case 'basic':
             colors = {
-                primary: '#9CA3AF',
-                secondary: '#6B7280',
-                glow: '0 0 8px rgba(156, 163, 175, 0.7), 0 0 16px rgba(156, 163, 175, 0.3)',
-                checkColor: '#FFFFFF',
+                primary: '#64E5E8',
+                secondary: '#00A7B5',
+                glow: '0 0 8px rgba(111, 135, 138, 0.7), 0 0 16px rgba(111, 135, 138, 0.3)',
+                checkColor: '#F7FCFC',
                 label: 'Verified Business'
             };
             break;
@@ -32,10 +32,10 @@ export default function VerificationBadge({ tier, size = 24, className = '', sho
         case 'pro':
         case 'verified':
             colors = {
-                primary: '#60A5FA',
-                secondary: '#3B82F6',
-                glow: '0 0 12px rgba(96, 165, 250, 0.8), 0 0 24px rgba(59, 130, 246, 0.4)',
-                checkColor: '#FFFFFF',
+                primary: '#64E5E8',
+                secondary: '#00A7B5',
+                glow: '0 0 12px rgba(53, 215, 220, 0.8), 0 0 24px rgba(0, 167, 181, 0.4)',
+                checkColor: '#F7FCFC',
                 label: 'Pro Verified'
             };
             break;
@@ -43,10 +43,10 @@ export default function VerificationBadge({ tier, size = 24, className = '', sho
         case 'premium':
         case 'enterprise':
             colors = {
-                primary: '#FCD34D',
-                secondary: '#F59E0B',
-                glow: '0 0 12px rgba(252, 211, 77, 0.8), 0 0 24px rgba(245, 158, 11, 0.4)',
-                checkColor: '#1F2937',
+                primary: '#F49BD5',
+                secondary: '#ED3EB3',
+                glow: '0 0 12px rgba(255, 99, 202, 0.8), 0 0 24px rgba(237, 62, 179, 0.4)',
+                checkColor: '#104B52',
                 label: 'Premium Verified'
             };
             break;
@@ -80,7 +80,7 @@ export default function VerificationBadge({ tier, size = 24, className = '', sho
                 {/* Starburst Badge Shape */}
                 <path
                     d="M11 0C11.7 0 12.3 0.4 12.6 1L14.4 4.2C14.7 4.7 15.3 5 15.9 5L19.5 5.3C20.2 5.4 20.8 5.9 21 6.5C21.2 7.2 21 7.9 20.5 8.4L17.9 11C17.5 11.4 17.3 12 17.4 12.6L18.1 16.2C18.2 16.9 17.9 17.6 17.3 18C16.7 18.4 15.9 18.4 15.3 18L12.1 16C11.6 15.7 11 15.7 10.5 16L7.3 18C6.7 18.4 5.9 18.4 5.3 18C4.7 17.6 4.4 16.9 4.5 16.2L5.2 12.6C5.3 12 5.1 11.4 4.7 11L2.1 8.4C1.6 7.9 1.4 7.2 1.6 6.5C1.8 5.9 2.4 5.4 3.1 5.3L6.7 5C7.3 5 7.9 4.7 8.2 4.2L10 1C10.3 0.4 10.9 0 11.6 0H11Z"
-                    fill={`url(#badge-grad-${tierLower})`}
+                    fill={`url(#F49BD5ge-grad-${tierLower})`}
                 />
 
                 {/* Inner highlight for 3D effect */}

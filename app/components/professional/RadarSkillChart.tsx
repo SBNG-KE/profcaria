@@ -99,7 +99,7 @@ export default function RadarSkillChart({
                     y={y + yOffset}
                     dy={4} // Vertically center the text
                     textAnchor={textAnchor}
-                    fill={isDark ? '#f8fafc' : '#0f172a'}
+                    fill={isDark ? '#F7FCFC' : '#061D20'}
                     fontSize={12}
                     fontWeight={800}
                     fontFamily="inherit"
@@ -192,7 +192,7 @@ export default function RadarSkillChart({
                     <Radar
                         name="AI Career Score"
                         dataKey="score"
-                        stroke="#3b82f6"
+                        stroke="#00A7B5"
                         strokeWidth={4}
                         fill="url(#colorScore)"
                         fillOpacity={1}
@@ -200,13 +200,13 @@ export default function RadarSkillChart({
                         animationBegin={200}
                         animationDuration={1500}
                         animationEasing="ease-out"
-                        activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: '#00A7B5', stroke: '#F7FCFC', strokeWidth: 2 }}
                     />
 
                     <defs>
                         <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.6} />
-                            <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.1} />
+                            <stop offset="0%" stopColor="#00A7B5" stopOpacity={0.6} />
+                            <stop offset="100%" stopColor="#ED3EB3" stopOpacity={0.1} />
                         </linearGradient>
                     </defs>
                 </RadarChart>

@@ -1,15 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Profcaria detached D">
-  <defs>
-    <clipPath id="tile"><rect width="512" height="512" rx="116"/></clipPath>
-    <pattern id="pixels" width="77" height="157" patternUnits="userSpaceOnUse">
-      <image href="/profcaria-pixel-background.png" width="77" height="157"/>
-    </pattern>
-  </defs>
-  <rect width="512" height="512" rx="116" fill="#111214"/>
-  <rect width="512" height="512" fill="url(#pixels)" clip-path="url(#tile)"/>
-  <g fill="none" stroke="#C56F4A">
-    <path d="M124 90V422" stroke-width="48" stroke-linecap="square"/>
-    <path d="M226 111H258C363 111 421 166.5 421 256C421 345.5 363 401 258 401H226" stroke-width="48" stroke-linecap="square"/>
-    <path d="M124 256H194" stroke-width="22"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Profcaria PC mark">
+  <rect width="512" height="512" rx="104" fill="#061416"/>
+  <circle cx="348" cy="162" r="118" fill="none" stroke="#00A7B5" stroke-width="10"/>
+  <circle cx="348" cy="162" r="74" fill="none" stroke="#ED3EB3" stroke-width="8" stroke-dasharray="16 12"/>
+  <path d="M72 404V108h118c85 0 139 43 139 112 0 70-54 113-139 113h-48v71H72zm70-132h43c46 0 72-18 72-52 0-33-26-51-72-51h-43v103z" fill="#E8F1F2"/>
+  <path d="M440 352c-18 35-51 56-96 56-69 0-117-47-117-116 0-68 48-116 117-116 45 0 78 21 96 56l-59 32c-8-17-20-25-38-25-28 0-46 21-46 53 0 33 18 54 46 54 18 0 30-8 38-26l59 32z" fill="#ED3EB3"/>
+  <circle cx="432" cy="80" r="14" fill="#00A7B5"/>
 </svg>

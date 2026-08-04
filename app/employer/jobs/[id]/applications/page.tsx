@@ -188,7 +188,7 @@ export default function ViewApplicationsPage() {
         <div className="p-8 max-w-7xl mx-auto space-y-8 pb-32">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-800 pb-8">
                 <div className="text-left">
-                    <div className="flex items-center gap-2 text-[#6B8CD5] mb-2">
+                    <div className="flex items-center gap-2 text-[#35D7DC] mb-2">
                         <Users size={16} />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Talent Pool</span>
                     </div>
@@ -209,8 +209,8 @@ export default function ViewApplicationsPage() {
                         <button
                             onClick={() => setFilterType('starred')}
                             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${filterType === 'starred'
-                                ? 'bg-[#3B5998] text-black'
-                                : 'text-slate-400 hover:text-[#6B8CD5]'
+                                ? 'bg-[#ED3EB3] text-black'
+                                : 'text-slate-400 hover:text-[#35D7DC]'
                                 }`}
                         >
                             <Star size={12} className={filterType === 'starred' ? 'fill-black' : ''} />
@@ -219,8 +219,8 @@ export default function ViewApplicationsPage() {
                         <button
                             onClick={() => setFilterType('employed')}
                             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1 ${filterType === 'employed'
-                                ? 'bg-[#3B5998] text-black'
-                                : 'text-slate-400 hover:text-[#6B8CD5]'
+                                ? 'bg-[#ED3EB3] text-black'
+                                : 'text-slate-400 hover:text-[#35D7DC]'
                                 }`}
                         >
                             <CheckCircle2 size={12} className={filterType === 'employed' ? 'text-black' : ''} />
@@ -264,7 +264,7 @@ export default function ViewApplicationsPage() {
                                     role="button"
                                     tabIndex={0}
                                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedApp(app); }}
-                                    className={`w-full text-left p-6 rounded-[32px] border transition-all duration-300 flex items-center justify-between group cursor-pointer ${selectedApp?.id === app.id ? 'bg-blue-600/10 border-blue-500/50 shadow-2xl' : 'bg-[#0f172a] border-slate-800 hover:border-slate-700'}`}
+                                    className={`w-full text-left p-6 rounded-[32px] border transition-all duration-300 flex items-center justify-between group cursor-pointer ${selectedApp?.id === app.id ? 'bg-blue-600/10 border-blue-500/50 shadow-2xl' : 'bg-[#061D20] border-slate-800 hover:border-slate-700'}`}
                                 >
                                     <div className="flex items-center gap-5">
                                         {/* Star Button */}
@@ -272,11 +272,11 @@ export default function ViewApplicationsPage() {
                                             onClick={(e) => handleToggleStar(e, app)}
                                             disabled={togglingStarId === app.id}
                                             className={`p-2 rounded-xl transition-all active:scale-90 ${app.is_starred
-                                                ? 'bg-[#3B5998]/20 text-[#6B8CD5] border border-[#3B5998]/30'
-                                                : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-[#6B8CD5] hover:border-[#3B5998]/30'
+                                                ? 'bg-[#ED3EB3]/20 text-[#35D7DC] border border-[#ED3EB3]/30'
+                                                : 'bg-slate-800 text-slate-600 border border-slate-700 hover:text-[#35D7DC] hover:border-[#ED3EB3]/30'
                                                 } ${togglingStarId === app.id ? 'opacity-50 animate-pulse' : ''}`}
                                         >
-                                            <Star size={16} className={app.is_starred ? 'fill-[#6B8CD5]' : ''} />
+                                            <Star size={16} className={app.is_starred ? 'fill-[#35D7DC]' : ''} />
                                         </button>
                                         <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 overflow-hidden">
                                             {app.applicant.profileImageUrl ? (
@@ -289,18 +289,18 @@ export default function ViewApplicationsPage() {
                                             <div className="flex items-center gap-2">
                                                 <h3 className="text-xl font-bold text-white uppercase tracking-tighter">{app.applicant.firstName} {app.applicant.lastName}</h3>
                                                 {app.wasInvited && (
-                                                    <span className="px-2 py-0.5 bg-[#3B5998]/10 border border-[#3B5998]/20 rounded text-[8px] font-black text-[#6B8CD5] uppercase tracking-widest flex items-center gap-1">
+                                                    <span className="px-2 py-0.5 bg-[#ED3EB3]/10 border border-[#ED3EB3]/20 rounded text-[8px] font-black text-[#35D7DC] uppercase tracking-widest flex items-center gap-1">
                                                         <CheckCircle2 size={10} /> Was Invited
                                                     </span>
                                                 )}
                                                 {app.is_starred && (
-                                                    <span className="px-2 py-0.5 bg-[#3B5998]/10 border border-[#3B5998]/20 rounded text-[8px] font-black text-[#6B8CD5] uppercase tracking-widest">
+                                                    <span className="px-2 py-0.5 bg-[#ED3EB3]/10 border border-[#ED3EB3]/20 rounded text-[8px] font-black text-[#35D7DC] uppercase tracking-widest">
                                                         Starred
                                                     </span>
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-[#3B5998]/10 text-[#6B8CD5]' : 'bg-blue-500/10 text-blue-400'}`}>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${app.status === 'interview_scheduled' ? 'bg-[#ED3EB3]/10 text-[#35D7DC]' : 'bg-blue-500/10 text-blue-400'}`}>
                                                     {app.status.replace('_', ' ')}
                                                 </span>
                                                 <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
@@ -326,7 +326,7 @@ export default function ViewApplicationsPage() {
                     </div>
 
                     {/* DETAIL AREA */}
-                    <div className="sticky top-8 bg-[#0f172a] border border-slate-800 rounded-[40px] p-8 min-h-[600px] flex flex-col overflow-hidden">
+                    <div className="sticky top-8 bg-[#061D20] border border-slate-800 rounded-[40px] p-8 min-h-[600px] flex flex-col overflow-hidden">
                         {selectedApp ? (
                             <div className="space-y-8 animate-in fade-in duration-300 flex-1 overflow-y-auto">
                                 <div className="flex flex-col gap-4">
@@ -337,7 +337,7 @@ export default function ViewApplicationsPage() {
                                     <div className="flex flex-wrap items-center gap-2">
                                         <button
                                             onClick={() => openChat(selectedApp)}
-                                            className="px-4 py-2.5 bg-[#3B5998]/10 border border-[#3B5998]/20 text-[#6B8CD5] text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#3B5998]/20 transition-all whitespace-nowrap"
+                                            className="px-4 py-2.5 bg-[#ED3EB3]/10 border border-[#ED3EB3]/20 text-[#35D7DC] text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-[#ED3EB3]/20 transition-all whitespace-nowrap"
                                         >
                                             <Send size={12} className="inline mr-1.5" />
                                             Message
@@ -364,19 +364,19 @@ export default function ViewApplicationsPage() {
                                 <div className="space-y-6 text-left">
                                     {selectedApp.status === 'employed' && selectedApp.progression && selectedApp.progression.length > 0 && (
                                         <div className="mb-8 space-y-4">
-                                            <h3 className="text-sm font-black text-[#6B8CD5] uppercase tracking-widest border-b border-[#3B5998]/20 pb-2 flex items-center gap-2">
+                                            <h3 className="text-sm font-black text-[#35D7DC] uppercase tracking-widest border-b border-[#ED3EB3]/20 pb-2 flex items-center gap-2">
                                                 <CheckCircle2 size={16} />
                                                 Career Progression
                                             </h3>
                                             <div className="relative pl-4 space-y-6 before:absolute before:inset-y-0 before:left-0 before:w-px before:bg-slate-800">
                                                 {selectedApp.progression.map((role: any, idx: number) => (
                                                     <div key={role.id || idx} className="relative">
-                                                        <div className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-[#3B5998] ring-4 ring-[#0f172a]"></div>
+                                                        <div className="absolute -left-[21px] top-1.5 w-2 h-2 rounded-full bg-[#ED3EB3] ring-4 ring-[#061D20]"></div>
                                                         <div className="space-y-1">
                                                             <div className="flex items-center gap-2">
                                                                 <h4 className="text-lg font-bold text-white leading-none">{role.title}</h4>
                                                                 {role.isCurrent && (
-                                                                    <span className="px-2 py-0.5 bg-[#3B5998]/10 text-[#6B8CD5] text-[8px] font-black uppercase tracking-widest rounded">Current</span>
+                                                                    <span className="px-2 py-0.5 bg-[#ED3EB3]/10 text-[#35D7DC] text-[8px] font-black uppercase tracking-widest rounded">Current</span>
                                                                 )}
                                                             </div>
                                                             <p className="text-xs font-bold text-slate-400 tracking-wider">
@@ -438,7 +438,7 @@ export default function ViewApplicationsPage() {
             {showChat && selectedApp && (
                 <div className="fixed inset-0 z-[120] flex items-center justify-end p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowChat(false)}></div>
-                    <div className="relative w-full max-w-lg h-[90vh] bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right-10 duration-500">
+                    <div className="relative w-full max-w-lg h-[90vh] bg-[#061D20] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-right-10 duration-500">
                         <div className="p-8 border-b border-white/5 flex items-center justify-between bg-slate-900/80 backdrop-blur-md">
                             <div className="flex items-center gap-4 text-left">
                                 <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
@@ -505,7 +505,7 @@ export default function ViewApplicationsPage() {
             {showInterviewModal && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowInterviewModal(false)}></div>
-                    <div className="relative w-full max-w-lg bg-[#0f172a] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="relative w-full max-w-lg bg-[#061D20] border border-slate-700 rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="p-8 border-b border-white/5 flex items-center justify-between">
                             <h3 className="text-xl font-black text-white uppercase tracking-tight">Schedule Interview</h3>
                             <button onClick={() => setShowInterviewModal(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors"><X size={20} /></button>

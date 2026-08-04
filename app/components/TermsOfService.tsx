@@ -118,7 +118,7 @@ export default function TermsOfService({ onAccepted }: TermsOfServiceProps) {
                 <div
                     ref={scrollContainerRef}
                     className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6"
-                    style={{ scrollbarWidth: 'thin', scrollbarColor: isDark ? '#333 #111' : '#ccc #f5f5f5' }}
+                    style={{ scrollbarWidth: 'thin', scrollbarColor: isDark ? '#10282B #061416' : '#D6E4E6 #F7FCFC' }}
                 >
                     <div className={`prose prose-sm max-w-none ${isDark ? 'prose-invert' : ''}`}>
 

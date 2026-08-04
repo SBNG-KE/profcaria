@@ -77,14 +77,14 @@ export default function CareerScorePage() {
                     <div className="relative w-40 h-40 shrink-0">
                         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                             {/* Track */}
-                            <circle cx="50" cy="50" r="42" fill="none" stroke={isDark ? '#262626' : '#e5e5e5'} strokeWidth="6" />
+                            <circle cx="50" cy="50" r="42" fill="none" stroke={isDark ? '#10282B' : '#E8F1F2'} strokeWidth="6" />
                             {/* Score Arc */}
                             <circle
                                 cx="50" cy="50" r="42" fill="none"
                                 strokeWidth="6" strokeLinecap="round"
                                 className="transition-all duration-1000"
                                 style={{
-                                    stroke: isDark ? '#ffffff' : '#000000',
+                                    stroke: isDark ? '#F7FCFC' : '#061416',
                                     strokeDasharray: `${score.overall * 2.64} 264`,
                                 }}
                             />

@@ -152,7 +152,7 @@ export default function InterviewPage() {
                         <p className={`font-bold text-xs uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-neutral-400'}`}>Loading interviews...</p>
                     </div>
                 ) : interviews.length === 0 ? (
-                    <div className={`border rounded-[40px] overflow-hidden ${isDark ? 'bg-[#0f172a] border-slate-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
+                    <div className={`border rounded-[40px] overflow-hidden ${isDark ? 'bg-[#061D20] border-slate-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
                         <div className={`p-8 border-b flex items-center justify-between ${isDark ? 'border-slate-800' : 'border-neutral-200'}`}>
                             <h2 className={`text-2xl font-black uppercase tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>Your Interviews</h2>
                             <Clock className={isDark ? 'text-slate-500' : 'text-neutral-400'} />
@@ -216,7 +216,7 @@ export default function InterviewPage() {
             {selectedInterview && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setSelectedInterview(null)}></div>
-                    <div className={`relative w-full max-w-2xl border rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 ${isDark ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-neutral-200'}`}>
+                    <div className={`relative w-full max-w-2xl border rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 ${isDark ? 'bg-[#061D20] border-slate-700' : 'bg-white border-neutral-200'}`}>
                         <div className={`p-8 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br border overflow-hidden flex items-center justify-center shadow-lg ${isDark ? 'from-slate-700 to-slate-800 border-slate-700' : 'from-neutral-100 to-neutral-200 border-neutral-200'}`}>
@@ -331,7 +331,7 @@ export default function InterviewPage() {
             {showJoinConfirm && interviewToJoin && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setShowJoinConfirm(false)}></div>
-                    <div className={`relative w-full max-w-md border rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 ${isDark ? 'bg-[#0f172a] border-slate-700' : 'bg-white border-neutral-200'}`}>
+                    <div className={`relative w-full max-w-md border rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 ${isDark ? 'bg-[#061D20] border-slate-700' : 'bg-white border-neutral-200'}`}>
                         <div className={`p-8 border-b flex items-center justify-between ${isDark ? 'border-white/5' : 'border-neutral-200'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${isDark ? 'bg-white/10 border-white/20 text-white' : 'bg-black/5 border-black/10 text-black'}`}>

@@ -148,42 +148,42 @@ export async function POST(request: NextRequest) {
                 subject: `Reference Request for ${professionalName}`,
                 html: `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
-                            <h1 style="color: #ffffff; font-size: 24px; margin: 0 0 8px 0;">Reference Request</h1>
-                            <p style="color: #a0a0a0; font-size: 14px; margin: 0;">via Profcaria Employment Network</p>
+                        <div style="background: linear-gradient(135deg, #061416 0%, #10282B 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                            <h1 style="color: #F7FCFC; font-size: 24px; margin: 0 0 8px 0;">Reference Request</h1>
+                            <p style="color: #AFC9CD; font-size: 14px; margin: 0;">via Profcaria Employment Network</p>
                         </div>
                         
-                        <div style="background: #f8f8f8; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
+                        <div style="background: #F7FCFC; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                            <p style="color: #10282B; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0;">
                                 <strong>${requestingCompanyName}</strong> is requesting a reference for <strong>${professionalName}</strong>, 
                                 who previously worked at your organization.
                             </p>
                             
                             ${customMessage ? `
-                                <div style="background: #fff; border-left: 4px solid #3b82f6; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
-                                    <p style="color: #666; font-size: 14px; margin: 0; font-style: italic;">"${customMessage}"</p>
+                                <div style="background: #F7FCFC; border-left: 4px solid #00A7B5; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0;">
+                                    <p style="color: #6F878A; font-size: 14px; margin: 0; font-style: italic;">"${customMessage}"</p>
                                 </div>
                             ` : ''}
                         </div>
                         
-                        <div style="background: #ffffff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-                            <h2 style="color: #1a1a1a; font-size: 16px; font-weight: 600; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <div style="background: #F7FCFC; border: 1px solid #E8F1F2; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                            <h2 style="color: #061416; font-size: 16px; font-weight: 600; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;">
                                 Questions They'd Like Answered
                             </h2>
-                            <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                            <ul style="color: #3B575B; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
                                 ${selectedQuestions.map(q => `<li>${q}</li>`).join('')}
                             </ul>
                         </div>
                         
                         <div style="text-align: center; margin-bottom: 24px;">
                             <a href="${process.env.NEXT_PUBLIC_APP_URL}/employer/references/${refRequest.id}" 
-                               style="display: inline-block; background: #000; color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                               style="display: inline-block; background: #061416; color: #F7FCFC; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                                 Respond to Request
                             </a>
                         </div>
                         
-                        <div style="border-top: 1px solid #e5e5e5; padding-top: 24px;">
-                            <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+                        <div style="border-top: 1px solid #E8F1F2; padding-top: 24px;">
+                            <p style="color: #6F878A; font-size: 12px; text-align: center; margin: 0;">
                                 This reference request was sent through Profcaria. 
                                 If you have questions, contact ${requestingCompanyEmail}.
                             </p>
@@ -213,25 +213,25 @@ export async function POST(request: NextRequest) {
                     subject: `Reference Request Sent for ${professionalName}`,
                     html: `
                     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                        <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
-                            <h1 style="color: #ffffff; font-size: 24px; margin: 0 0 8px 0;">Reference Request Sent ✓</h1>
+                        <div style="background: linear-gradient(135deg, #006B76 0%, #00A7B5 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                            <h1 style="color: #F7FCFC; font-size: 24px; margin: 0 0 8px 0;">Reference Request Sent ✓</h1>
                             <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0;">Your request has been delivered</p>
                         </div>
                         
-                        <div style="background: #f8f8f8; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-                            <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0;">
+                        <div style="background: #F7FCFC; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                            <p style="color: #10282B; font-size: 16px; line-height: 1.6; margin: 0;">
                                 Your reference request for <strong>${professionalName}</strong> has been sent to 
                                 <strong>${targetCompanyName}</strong> at ${targetCompanyEmail}.
                             </p>
                         </div>
                         
-                        <div style="background: #fffbeb; border: 1px solid #fbbf24; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-                            <p style="color: #92400e; font-size: 14px; margin: 0;">
+                        <div style="background: #FFF0FB; border: 1px solid #ED3EB3; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                            <p style="color: #A40B72; font-size: 14px; margin: 0;">
                                 <strong>Note:</strong> You'll receive a notification when they respond. Most references are completed within 3-5 business days.
                             </p>
                         </div>
                         
-                        <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+                        <p style="color: #6F878A; font-size: 12px; text-align: center; margin: 0;">
                             Sent via Profcaria Employment Network
                         </p>
                     </div>

@@ -727,7 +727,7 @@ function ChatContent() {
     // ─── RENDER ──────────────────────────────────────────────
     return (
         <div className="h-full w-full p-1.5 md:p-3 pb-24 md:pb-3">
-            <div className={`flex h-full w-full overflow-hidden font-sans rounded-3xl border shadow-2xl ${isDark ? 'bg-[#0A0F1A]/90 backdrop-blur-2xl border-neutral-800/50 text-neutral-200' : 'bg-white/90 backdrop-blur-2xl border-neutral-200/50 text-neutral-800'}`}>
+            <div className={`flex h-full w-full overflow-hidden font-sans rounded-3xl border shadow-2xl ${isDark ? 'bg-[#061D20]/90 backdrop-blur-2xl border-neutral-800/50 text-neutral-200' : 'bg-white/90 backdrop-blur-2xl border-neutral-200/50 text-neutral-800'}`}>
                 {/* ── LEFT SIDEBAR ── */}
             <aside className={`md:w-[380px] h-full border-r flex-col backdrop-blur-xl shrink-0 w-full ${isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-white'} ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 {/* Header */}
@@ -853,7 +853,7 @@ function ChatContent() {
                                                         <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{conn.company?.name || 'Company'}</p>
                                                         <p className={`text-xs truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{conn.job?.title || 'Connection'}</p>
                                                     </div>
-                                                    <div className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase ${conn.status === 'active' ? 'bg-[#3B5998]/10 text-[#3B5998]' : isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
+                                                    <div className={`px-2 py-1 rounded-full text-[9px] font-bold uppercase ${conn.status === 'active' ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' : isDark ? 'bg-neutral-800 text-neutral-500' : 'bg-neutral-100 text-neutral-500'}`}>
                                                         {conn.status}
                                                     </div>
                                                 </button>
@@ -1003,7 +1003,7 @@ function ChatContent() {
                                                             )}
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                                 <span className={`text-[10px] ${isMe ? (isDark ? 'text-neutral-500' : 'text-neutral-400') : (isDark ? 'text-neutral-500' : 'text-neutral-400')}`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-[#3B5998]" : (isDark ? 'text-neutral-400' : 'text-neutral-300')} />}
+                                                                {isMe && <CheckCheck size={12} className={msg.is_read ? "text-[#ED3EB3]" : (isDark ? 'text-neutral-400' : 'text-neutral-300')} />}
                                                             </div>
                                                         </div>
                                                     </div>

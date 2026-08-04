@@ -252,7 +252,7 @@ export default function ProfessionalLayoutContent({ children }: { children: Reac
     }
 
     return (
-        <div className={`professional-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 relative ${isDark ? 'bg-[#0A0F1A] text-neutral-200 selection:bg-white/30' : 'bg-white text-neutral-900 selection:bg-black/20'}`}>
+        <div className={`professional-scope flex h-screen font-sans overflow-hidden transition-colors duration-300 relative ${isDark ? 'bg-[#061D20] text-neutral-200 selection:bg-white/30' : 'bg-white text-neutral-900 selection:bg-black/20'}`}>
             <PixelBackground isDark={isDark} className="absolute inset-0 z-0 pointer-events-none opacity-40" />
 
             {/* SIDEBAR BACKDROP (Mobile) - disabled, now using bottom taskbar */}

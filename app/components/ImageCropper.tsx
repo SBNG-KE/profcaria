@@ -85,7 +85,7 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Fill background (safe zone)
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#061D20';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Save context state
@@ -167,7 +167,7 @@ export default function ImageCropper({ imageOrUrl, onCrop, onCancel }: ImageCrop
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-[#0f172a] border border-slate-700 rounded-3xl p-6 shadow-2xl max-w-md w-full flex flex-col gap-6 relative max-h-[90vh] overflow-y-auto">
+            <div className="bg-[#061D20] border border-slate-700 rounded-3xl p-6 shadow-2xl max-w-md w-full flex flex-col gap-6 relative max-h-[90vh] overflow-y-auto">
                 <button
                     onClick={onCancel}
                     className="absolute top-4 right-4 p-2 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors"

@@ -407,7 +407,7 @@ export default function AnalyticsDashboard({ employerData, isDark }: { employerD
 
                     <div className={`mt-10 p-4 rounded-xl border ${isDark ? 'bg-neutral-900/50 border-neutral-800' : 'bg-neutral-50 border-neutral-200'}`}>
                         <div className="flex items-start gap-3">
-                            <Zap className="shrink-0 mt-0.5" size={16} color={isDark ? '#94a3b8' : '#737373'} />
+                            <Zap className="shrink-0 mt-0.5" size={16} color={isDark ? '#64E5E8' : '#6F878A'} />
                             <div>
                                 <h4 className={`font-bold text-xs uppercase tracking-wide ${isDark ? 'text-white' : 'text-black'}`}>Insight</h4>
                                 <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-neutral-500' : 'text-neutral-500'}`}>
@@ -428,13 +428,13 @@ export default function AnalyticsDashboard({ employerData, isDark }: { employerD
                     <AreaChart data={data.trendData}>
                         <defs>
                             <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={isDark ? "#ffffff" : "#000000"} stopOpacity={0.3} />
-                                <stop offset="95%" stopColor={isDark ? "#ffffff" : "#000000"} stopOpacity={0} />
+                                <stop offset="5%" stopColor={isDark ? "#F7FCFC" : "#061416"} stopOpacity={0.3} />
+                                <stop offset="95%" stopColor={isDark ? "#F7FCFC" : "#061416"} stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: isDark ? '#64748b' : '#a3a3a3', fontSize: 10 }} />
-                        <Tooltip contentStyle={{ backgroundColor: isDark ? '#171717' : '#ffffff', border: isDark ? '1px solid #262626' : '1px solid #e5e5e5', borderRadius: '12px', color: isDark ? '#fff' : '#000' }} />
-                        <Area type="monotone" dataKey="count" stroke={isDark ? "#ffffff" : "#000000"} strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: isDark ? '#00A7B5' : '#AFC9CD', fontSize: 10 }} />
+                        <Tooltip contentStyle={{ backgroundColor: isDark ? '#061416' : '#F7FCFC', border: isDark ? '1px solid #10282B' : '1px solid #E8F1F2', borderRadius: '12px', color: isDark ? '#F7FCFC' : '#061416' }} />
+                        <Area type="monotone" dataKey="count" stroke={isDark ? "#F7FCFC" : "#061416"} strokeWidth={3} fillOpacity={1} fill="url(#colorCount)" />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
@@ -495,10 +495,10 @@ export default function AnalyticsDashboard({ employerData, isDark }: { employerD
                             <div className="flex items-center gap-8">
                                 <div className="relative w-32 h-32">
                                     <svg className="w-full h-full -rotate-90">
-                                        <circle cx="64" cy="64" r="56" fill="none" stroke={isDark ? '#262626' : '#e5e5e5'} strokeWidth="12" />
+                                        <circle cx="64" cy="64" r="56" fill="none" stroke={isDark ? '#10282B' : '#E8F1F2'} strokeWidth="12" />
                                         <circle
                                             cx="64" cy="64" r="56" fill="none"
-                                            stroke={isDark ? '#ffffff' : '#000000'} strokeWidth="12"
+                                            stroke={isDark ? '#F7FCFC' : '#061416'} strokeWidth="12"
                                             strokeDasharray={`${(data.completionStats.completionRate / 100) * 352} 352`}
                                             strokeLinecap="round"
                                         />

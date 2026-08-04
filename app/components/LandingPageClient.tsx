@@ -67,10 +67,10 @@ export default function LandingPageClient() {
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <HangingAuthCard isOpen={authOpen} onClose={() => setAuthOpen(false)} initialScreen="auth" />
-      <header className="sticky top-0 z-40 border-b-2 border-[var(--text-primary)] bg-[var(--bg-primary)]/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-7">
           <Link href="/" className="flex items-center gap-3 font-mono text-lg font-black uppercase tracking-[-0.05em]" aria-label="Profcaria home">
-            <span className="grid h-8 w-8 place-items-center border-2 border-[var(--text-primary)] bg-[var(--accent-primary)] text-xs text-[var(--text-inverse)] shadow-[3px_3px_0_var(--text-primary)]">PC</span>
+            <span className="apex-mark grid h-9 w-9 place-items-center border-2 border-[var(--text-primary)] text-xs text-[var(--text-inverse)]">PC</span>
             Profcaria
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3" aria-label="Main navigation">
@@ -81,18 +81,17 @@ export default function LandingPageClient() {
         </div>
       </header>
 
-      <section className="relative border-b-2 border-[var(--text-primary)]">
-        <div className="profcaria-matrix absolute inset-0 opacity-35" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1440px] gap-10 px-4 py-16 sm:px-7 sm:py-24 lg:grid-cols-[1fr_360px] lg:items-end">
+      <section className="apex-hero relative border-b-2 border-[var(--text-primary)]">
+        <div className="apex-field absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="relative mx-auto grid min-h-[690px] max-w-[1440px] gap-12 px-4 py-16 sm:px-7 sm:py-24 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center">
           <div>
-            <p className="mb-6 font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--accent-primary)]">Kenya's simple jobs platform / No ads / No stale jobs</p>
-            <h1 className="max-w-5xl text-[clamp(3.4rem,9vw,8.8rem)] font-black leading-[0.82] tracking-[-0.075em]">Applying for jobs,<br /><span className="text-[var(--accent-primary)]">made simple.</span></h1>
+            <div className="mb-8 flex items-center gap-4"><span className="h-px w-14 bg-[var(--accent-secondary)]" /><p className="font-mono text-[10px] font-black uppercase tracking-[0.28em] text-[var(--accent-secondary-strong)]">Kenya / Open work / Verified limits</p></div>
+            <h1 className="max-w-5xl text-[clamp(3.7rem,9vw,9.4rem)] font-black leading-[0.79] tracking-[-0.08em]">Applying for jobs,<br /><span className="apex-spectrum-text">made simple.</span></h1>
             <p className="mt-8 max-w-2xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg">See a role. Open it. Answer only what the company needs. Submit. An account is optional until you need to reply to a company.</p>
           </div>
-          <div className="border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-5 font-mono shadow-[8px_8px_0_var(--text-primary)]">
-            <div className="mb-8 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em]"><span>Live vacancy rule</span><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" /></div>
-            <p className="text-4xl font-black tracking-[-0.08em]">{jobs.length.toString().padStart(2, '0')}</p>
-            <p className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">Open Kenyan roles. A vacancy disappears automatically when its application limit or closing time is reached.</p>
+          <div className="apex-command-card border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-6 font-mono sm:p-8">
+            <div className="flex items-start justify-between gap-6"><div><p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--accent-primary)]">Vacancy truth protocol</p><p className="mt-4 text-6xl font-black tracking-[-0.1em]">{jobs.length.toString().padStart(2, '0')}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Open Kenyan roles</p></div><div className="apex-orbit shrink-0" aria-hidden="true" /></div>
+            <div className="mt-12 grid grid-cols-[10px_1fr] gap-4 border-t border-[var(--border-primary)] pt-5"><span className="mt-1 h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--accent-secondary)] shadow-[0_0_18px_var(--accent-secondary)]" /><p className="text-xs leading-5 text-[var(--text-secondary)]">Every vacancy disappears automatically when its application limit or closing time is reached.</p></div>
           </div>
         </div>
       </section>
@@ -125,15 +124,15 @@ export default function LandingPageClient() {
         </div>
       </section>
 
-      <section className="border-y-2 border-[var(--text-primary)] bg-[var(--text-primary)] text-[var(--bg-primary)]">
-        <div className="mx-auto grid max-w-[1440px] gap-px bg-[var(--bg-primary)] sm:grid-cols-3">
+      <section className="relative border-y-2 border-[var(--text-primary)] bg-[var(--bg-tertiary)] text-[var(--text-primary)] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-[var(--accent-primary)]">
+        <div className="mx-auto grid max-w-[1440px] gap-px bg-[var(--text-primary)] sm:grid-cols-3">
           {[
             [ShieldCheck, 'Safer evidence', 'Links and documents are held for security inspection before they reach a conversation.'],
             [Clock3, 'Honest availability', 'Jobs close automatically at their date or application cap—whichever comes first.'],
             [Building2, 'Company accountability', 'Companies sign in to publish, manage candidates, reply, pay and respond to reports.'],
           ].map(([Icon, title, body]) => {
             const FeatureIcon = Icon as typeof ShieldCheck;
-            return <article key={String(title)} className="bg-[var(--text-primary)] p-7 sm:p-9"><FeatureIcon size={22} className="text-[var(--accent-strong)]" /><h3 className="mt-8 text-xl font-black">{String(title)}</h3><p className="mt-3 text-sm leading-6 opacity-70">{String(body)}</p></article>;
+            return <article key={String(title)} className="bg-[var(--bg-tertiary)] p-7 sm:p-9"><FeatureIcon size={22} className="text-[var(--accent-secondary-strong)]" /><p className="mt-12 font-mono text-[9px] font-black uppercase tracking-[0.22em] text-[var(--accent-primary)]">0{['Safer evidence','Honest availability','Company accountability'].indexOf(String(title)) + 1}</p><h3 className="mt-3 text-xl font-black">{String(title)}</h3><p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{String(body)}</p></article>;
           })}
         </div>
       </section>
@@ -153,7 +152,7 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
 
 function JobCard({ job }: { job: PublicJob }) {
   const remaining = job.applicationLimit == null ? null : Math.max(0, job.applicationLimit - job.applicationCount);
-  return <Link href={`/jobs/${job.id}`} className="group flex min-h-64 flex-col border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-5 shadow-[5px_5px_0_var(--border-primary)] transition hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--accent-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-soft)] sm:p-6">
+  return <Link href={`/jobs/${job.id}`} className="apex-job-card group flex min-h-64 flex-col border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-5 shadow-[5px_5px_0_var(--border-primary)] transition hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--accent-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-soft)] sm:p-6">
     <div className="flex items-start justify-between gap-5"><div className="grid h-10 w-10 place-items-center border-2 border-[var(--text-primary)] bg-[var(--surface-muted)] font-mono text-xs font-black">{job.organization.name.slice(0, 2).toUpperCase()}</div><ArrowUpRight className="transition group-hover:translate-x-1 group-hover:-translate-y-1" /></div>
     <div className="mt-6"><p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[var(--accent-primary)]">{job.organization.name}</p><h3 className="mt-2 text-2xl font-black leading-tight tracking-[-0.04em]">{job.title}</h3><p className="mt-3 line-clamp-2 text-sm leading-6 text-[var(--text-secondary)]">{job.summary || 'Open the role to see the work, requirements and application questions.'}</p></div>
     <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border-primary)] pt-5 font-mono text-[10px] font-bold uppercase text-[var(--text-muted)]"><span className="flex items-center gap-1.5"><MapPin size={12} />{job.location || pretty(job.locationType)}</span><span className="flex items-center gap-1.5"><BriefcaseBusiness size={12} />{pretty(job.employmentType)}</span>{remaining != null && <span>{remaining} application {remaining === 1 ? 'place' : 'places'} left</span>}</div>

@@ -20,7 +20,7 @@ export default function AIHouseSection() {
                     whileInView={{ height: '100%' }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 1.5, ease: "easeInOut" }}
-                    className={`w-1 origin-top ${isDark ? 'bg-gradient-to-b from-[#3B5998]/0 via-[#3B5998] to-[#3B5998]' : 'bg-gradient-to-b from-[#1B2A4A]/0 via-[#1B2A4A] to-[#1B2A4A]'}`}
+                    className={`w-1 origin-top ${isDark ? 'bg-gradient-to-b from-[#ED3EB3]/0 via-[#ED3EB3] to-[#ED3EB3]' : 'bg-gradient-to-b from-[#104B52]/0 via-[#104B52] to-[#104B52]'}`}
                 />
                 {/* Left Stream */}
                 <motion.div 
@@ -28,7 +28,7 @@ export default function AIHouseSection() {
                     whileInView={{ height: '100%', x: -10 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
-                    className={`absolute top-0 w-[2px] origin-top skew-x-[-15deg] ${isDark ? 'bg-gradient-to-b from-[#3B5998]/0 to-[#3B5998]' : 'bg-gradient-to-b from-[#1B2A4A]/0 to-[#1B2A4A]'}`}
+                    className={`absolute top-0 w-[2px] origin-top skew-x-[-15deg] ${isDark ? 'bg-gradient-to-b from-[#ED3EB3]/0 to-[#ED3EB3]' : 'bg-gradient-to-b from-[#104B52]/0 to-[#104B52]'}`}
                 />
                 {/* Right Stream */}
                 <motion.div 
@@ -36,7 +36,7 @@ export default function AIHouseSection() {
                     whileInView={{ height: '100%', x: 10 }}
                     viewport={{ once: true, margin: "-100px" }}
                     transition={{ duration: 1.5, ease: "easeInOut", delay: 0.4 }}
-                    className={`absolute top-0 w-[2px] origin-top skew-x-[15deg] ${isDark ? 'bg-gradient-to-b from-[#3B5998]/0 to-[#3B5998]' : 'bg-gradient-to-b from-[#1B2A4A]/0 to-[#1B2A4A]'}`}
+                    className={`absolute top-0 w-[2px] origin-top skew-x-[15deg] ${isDark ? 'bg-gradient-to-b from-[#ED3EB3]/0 to-[#ED3EB3]' : 'bg-gradient-to-b from-[#104B52]/0 to-[#104B52]'}`}
                 />
             </div>
 
@@ -49,12 +49,12 @@ export default function AIHouseSection() {
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1, delay: 1 }}
-                    className={`relative w-40 h-40 rounded-full border-4 flex items-center justify-center mb-16 shadow-[0_0_80px_rgba(59,89,152,0.6)]
-                        ${isDark ? 'bg-[#0A0F1A] border-white' : 'bg-white border-[#1B2A4A]'}
+                    className={`relative w-40 h-40 rounded-full border-4 flex items-center justify-center mb-16 shadow-[0_0_80px_rgba(237,62,179,0.6)]
+                        ${isDark ? 'bg-[#061D20] border-white' : 'bg-white border-[#104B52]'}
                     `}
                 >
                     <div className="absolute inset-2 rounded-full border border-dashed animate-spin-slow opacity-50" />
-                    <Cpu size={56} className={isDark ? 'text-white' : 'text-[#1B2A4A]'} />
+                    <Cpu size={56} className={isDark ? 'text-white' : 'text-[#104B52]'} />
                 </motion.div>
 
                 {/* Content */}
@@ -66,7 +66,7 @@ export default function AIHouseSection() {
                     className="mb-16"
                 >
                     <h2 className={`text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none mb-8 ${isDark ? 'text-white' : 'text-black'}`}>
-                        The <span className={`font-pixel ${isDark ? 'text-white' : 'text-[#1B2A4A]'}`}>Overseer</span> AI.
+                        The <span className={`font-pixel ${isDark ? 'text-white' : 'text-[#104B52]'}`}>Overseer</span> AI.
                     </h2>
                     <p className={`text-xl md:text-2xl font-light max-w-5xl mx-auto leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
                         Think of Profcaria as a living digital workspace where connected agents operate only within the permissions you grant. They can help organise timelines, prepare documents, and surface opportunities without silently crossing the boundaries between your personal and work data.
@@ -100,12 +100,12 @@ export default function AIHouseSection() {
                             transition={{ duration: 0.6, delay: 2 + (idx * 0.2) }}
                             className={`p-10 rounded-3xl border transition-all hover:-translate-y-2
                                 ${isDark 
-                                    ? 'bg-[#111827]/80 border-[#1B2A4A] hover:bg-[#111827] hover:shadow-[0_20px_40px_rgba(59,89,152,0.15)]' 
+                                    ? 'bg-[#061D20]/80 border-[#104B52] hover:bg-[#061D20] hover:shadow-[0_20px_40px_rgba(237,62,179,0.15)]'
                                     : 'bg-neutral-50 border-neutral-200 hover:shadow-2xl hover:bg-white'
                                 }
                             `}
                         >
-                            <feature.icon className={`mb-8 ${isDark ? 'text-white' : 'text-[#1B2A4A]'}`} size={40} />
+                            <feature.icon className={`mb-8 ${isDark ? 'text-white' : 'text-[#104B52]'}`} size={40} />
                             <h3 className={`text-xl font-bold font-pixel uppercase tracking-widest mb-6 ${isDark ? 'text-white' : 'text-black'}`}>
                                 {feature.title}
                             </h3>

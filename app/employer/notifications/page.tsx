@@ -417,7 +417,7 @@ function ChatContent() {
                     return <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="block mt-2"><img src={part} alt="attachment" className="max-w-full rounded-lg border border-white/10" /></a>
                 }
                 const displayUrl = part.startsWith('http') ? part : 'https://' + part;
-                const linkClass = isSenderMessage ? 'text-[#6B8CD5] underline hover:text-white break-all font-medium' : (isDark ? 'text-neutral-300 underline hover:text-white break-all' : 'text-neutral-600 underline hover:text-black break-all');
+                const linkClass = isSenderMessage ? 'text-[#35D7DC] underline hover:text-white break-all font-medium' : (isDark ? 'text-neutral-300 underline hover:text-white break-all' : 'text-neutral-600 underline hover:text-black break-all');
                 return <a key={i} href={displayUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>{part}</a>;
             }
             return part;
@@ -442,7 +442,7 @@ function ChatContent() {
                     if (linkMatch) {
                         return (
                             <a key={index} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className={`flex items-center gap-2 p-3 my-1 rounded-xl transition-colors border ${isDark ? 'bg-neutral-800 border-neutral-700 hover:bg-neutral-700' : 'bg-white border-neutral-200 hover:bg-neutral-50'}`}>
-                                <div className={`p-2 rounded-full ${isDark ? 'bg-neutral-700' : 'bg-[#3B5998]/10'}`}><FileText size={16} className={isDark ? 'text-neutral-300' : 'text-[#3B5998]'} /></div>
+                                <div className={`p-2 rounded-full ${isDark ? 'bg-neutral-700' : 'bg-[#ED3EB3]/10'}`}><FileText size={16} className={isDark ? 'text-neutral-300' : 'text-[#ED3EB3]'} /></div>
                                 <div className="flex-1 min-w-0">
                                     <p className={`text-sm font-medium truncate ${isDark ? 'text-white' : 'text-black'}`}>{linkMatch[1]}</p>
                                     <p className={`text-xs ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>Click to download</p>
@@ -499,13 +499,13 @@ function ChatContent() {
     // ─── RENDER ──────────────────────────────────────────────
     return (
         <div className="h-full w-full p-1.5 md:p-3 pb-24 md:pb-3">
-            <div className={`flex h-full w-full overflow-hidden font-sans rounded-3xl border shadow-2xl ${isDark ? 'bg-[#0A0F1A]/90 backdrop-blur-2xl border-neutral-800/50 text-white' : 'bg-white/90 backdrop-blur-2xl border-neutral-200/50 text-neutral-800'}`}>
+            <div className={`flex h-full w-full overflow-hidden font-sans rounded-3xl border shadow-2xl ${isDark ? 'bg-[#061D20]/90 backdrop-blur-2xl border-neutral-800/50 text-white' : 'bg-white/90 backdrop-blur-2xl border-neutral-200/50 text-neutral-800'}`}>
                 {/* ── LEFT SIDEBAR ── */}
             <aside className={`md:w-[380px] h-full border-r flex-col backdrop-blur-xl shrink-0 w-full ${isDark ? 'border-white/10 bg-neutral-900/50' : 'border-neutral-200 bg-white'} ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
                 {/* Header */}
                 <header className={`p-5 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-white/10 bg-neutral-900/80' : 'border-neutral-200 bg-white'}`}>
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-[#3B5998]/10 text-[#3B5998]' : 'bg-[#3B5998]/10 text-[#3B5998]'}`}><MessageSquare size={20} /></div>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isDark ? 'bg-[#ED3EB3]/10 text-[#ED3EB3]' : 'bg-[#ED3EB3]/10 text-[#ED3EB3]'}`}><MessageSquare size={20} /></div>
                         <h2 className={`text-sm font-black uppercase tracking-wider ${isDark ? 'text-white' : 'text-black'}`}>Chat</h2>
                     </div>
                     <div className="flex items-center gap-1">
@@ -524,7 +524,7 @@ function ChatContent() {
                             value={searchQuery}
                             onChange={(e) => handleSearchInput(e.target.value)}
                             onFocus={() => { if (searchQuery.trim().length >= 2) setShowSearchResults(true); }}
-                            className={`w-full border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 transition-all ${isDark ? 'bg-neutral-900/50 border-white/10 focus:ring-[#3B5998]/50' : 'bg-white border-neutral-200 focus:ring-[#3B5998]/20'}`}
+                            className={`w-full border rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 transition-all ${isDark ? 'bg-neutral-900/50 border-white/10 focus:ring-[#ED3EB3]/50' : 'bg-white border-neutral-200 focus:ring-[#ED3EB3]/20'}`}
                         />
                     </div>
 
@@ -553,7 +553,7 @@ function ChatContent() {
                                                 <p className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{result.name}</p>
                                                 <p className={`text-xs truncate ${isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{result.type === 'employer' ? 'Company' : 'Professional'} · {result.followers} followers</p>
                                             </div>
-                                            <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${isDark ? 'bg-[#3B5998] text-white' : 'bg-[#3B5998] text-white'}`}>Chat</div>
+                                            <div className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${isDark ? 'bg-[#ED3EB3] text-white' : 'bg-[#ED3EB3] text-white'}`}>Chat</div>
                                         </button>
                                     ))}
                                 </div>
@@ -593,18 +593,18 @@ function ChatContent() {
                                 const name = app.user?.name || app.companyName || 'Candidate';
                                 const unreadCount = notifications.filter(n => !n.is_read && (n.application_id === app.id || n.sender_id === app.otherPartyId)).length;
                                 return (
-                                    <button key={app.id} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? (isDark ? 'bg-white/5' : 'bg-[#3B5998]/5 border-[#3B5998]/10') : (isDark ? 'hover:bg-white/5' : 'hover:bg-neutral-100')}`}>
-                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.id === app.id ? (isDark ? 'bg-[#3B5998] text-white' : 'bg-[#3B5998] text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-200 text-neutral-500')}`}>
+                                    <button key={app.id} onClick={() => setActiveConversation(app)} className={`w-full px-3 py-3 flex items-center gap-3 transition-all ${activeConversation?.id === app.id ? (isDark ? 'bg-white/5' : 'bg-[#ED3EB3]/5 border-[#ED3EB3]/10') : (isDark ? 'hover:bg-white/5' : 'hover:bg-neutral-100')}`}>
+                                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 relative overflow-hidden ${activeConversation?.id === app.id ? (isDark ? 'bg-[#ED3EB3] text-white' : 'bg-[#ED3EB3] text-white') : (isDark ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-200 text-neutral-500')}`}>
                                             {(app.user?.profileImageUrl || app.companyLogoUrl) ? <img src={app.user?.profileImageUrl || app.companyLogoUrl} alt="" className="w-full h-full object-cover" /> : <UserCircle size={24} />}
                                             {unreadCount > 0 && <div className="absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full border-2 border-neutral-900 flex items-center justify-center animate-pulse"><span className="text-[9px] font-bold text-white">{unreadCount > 9 ? '9+' : unreadCount}</span></div>}
                                         </div>
                                         <div className="text-left flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                                 <h4 className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-black'}`}>{name}</h4>
-                                                {activeConversation?.id === app.id && <div className="w-2 h-2 rounded-full bg-[#3B5998]" />}
+                                                {activeConversation?.id === app.id && <div className="w-2 h-2 rounded-full bg-[#ED3EB3]" />}
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-xs truncate ${isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'}`}>{app.job?.title || app.jobTitle}</span>
+                                                <span className={`text-xs truncate ${isDark ? 'text-[#35D7DC]' : 'text-[#ED3EB3]'}`}>{app.job?.title || app.jobTitle}</span>
                                                 {app.status && <span className="px-1.5 py-0.5 rounded text-[9px] bg-white/10 text-neutral-400 uppercase font-bold tracking-wider">{app.status}</span>}
                                             </div>
                                         </div>
@@ -649,7 +649,7 @@ function ChatContent() {
                                 <div>
                                     <h2 className={`text-base font-bold ${isDark ? 'text-white' : 'text-black'}`}>{activeConversation.user?.name || activeConversation.companyName || 'Candidate'}</h2>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-xs ${isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'} font-medium`}>{activeConversation.job?.title || activeConversation.jobTitle}</span>
+                                        <span className={`text-xs ${isDark ? 'text-[#35D7DC]' : 'text-[#ED3EB3]'} font-medium`}>{activeConversation.job?.title || activeConversation.jobTitle}</span>
                                         {activeConversation.status && <span className="px-2 py-0.5 rounded text-[10px] bg-white/10 text-white uppercase font-bold tracking-wider">{activeConversation.status}</span>}
                                     </div>
                                 </div>
@@ -679,10 +679,10 @@ function ChatContent() {
                                             return (
                                                 <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                     <div className={`max-w-[85%] md:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
-                                                        <div className={`px-4 py-3 rounded-2xl relative ${isMe ? 'bg-[#3B5998] text-white rounded-br-sm' : (isDark ? 'bg-neutral-800 text-neutral-200 rounded-bl-sm' : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-sm shadow-sm')}`}>
+                                                        <div className={`px-4 py-3 rounded-2xl relative ${isMe ? 'bg-[#ED3EB3] text-white rounded-br-sm' : (isDark ? 'bg-neutral-800 text-neutral-200 rounded-bl-sm' : 'bg-white border border-neutral-200 text-neutral-800 rounded-bl-sm shadow-sm')}`}>
                                                             {renderMessageContent(msg.content, isMe)}
                                                             {extractFirstUrl(msg.content) && !extractFirstUrl(msg.content)?.includes('public.blob.vercel-storage.com') && (
-                                                                <div className="mt-2"><InlineLinkPreview url={extractFirstUrl(msg.content)!} className={isMe ? 'text-[#6B8CD5]' : (isDark ? 'text-neutral-200' : 'text-neutral-800')} /></div>
+                                                                <div className="mt-2"><InlineLinkPreview url={extractFirstUrl(msg.content)!} className={isMe ? 'text-[#35D7DC]' : (isDark ? 'text-neutral-200' : 'text-neutral-800')} /></div>
                                                             )}
                                                             <div className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
                                                                 <span className={`text-[10px] ${isMe ? 'text-white/60' : 'text-neutral-400'}`}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -741,7 +741,7 @@ function ChatContent() {
                                 <button
                                     onClick={() => { closeLinkPreview(); sendMessage(); }}
                                     disabled={(!newMessage.trim() && !selectedFile) || isSending}
-                                    className={`w-10 h-10 flex items-center justify-center rounded-full transition-all shrink-0 mb-0.5 ${isDark ? 'bg-[#3B5998] text-white hover:bg-[#4A6BB5] disabled:bg-neutral-800 disabled:text-neutral-600' : 'bg-[#3B5998] text-white hover:bg-[#4A6BB5] disabled:bg-neutral-200 disabled:text-neutral-400'}`}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-full transition-all shrink-0 mb-0.5 ${isDark ? 'bg-[#ED3EB3] text-white hover:bg-[#00A7B5] disabled:bg-neutral-800 disabled:text-neutral-600' : 'bg-[#ED3EB3] text-white hover:bg-[#00A7B5] disabled:bg-neutral-200 disabled:text-neutral-400'}`}
                                 >
                                     {isUploading || isSending ? <div className="animate-spin w-4 h-4 border-2 border-t-transparent border-current rounded-full" /> : <Send size={18} />}
                                 </button>
@@ -788,7 +788,7 @@ function ChatContent() {
                             </div>
                         </div>
                         <div className={`p-4 border-t flex items-center justify-between ${isDark ? 'border-neutral-800 bg-neutral-900/50' : 'border-neutral-200 bg-neutral-50'}`}>
-                            <button className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all ${isDark ? 'bg-[#3B5998] text-white hover:bg-[#4A6BB5]' : 'bg-[#3B5998] text-white hover:bg-[#4A6BB5]'}`}><UserPlus size={14} /> Add Member</button>
+                            <button className={`flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl transition-all ${isDark ? 'bg-[#ED3EB3] text-white hover:bg-[#00A7B5]' : 'bg-[#ED3EB3] text-white hover:bg-[#00A7B5]'}`}><UserPlus size={14} /> Add Member</button>
                         </div>
                     </div>
                 </div>
@@ -800,7 +800,7 @@ function ChatContent() {
 
 export default function EmployerChatPage() {
     return (
-        <React.Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin w-8 h-8 border-2 border-t-transparent border-[#3B5998] rounded-full" /></div>}>
+        <React.Suspense fallback={<div className="flex items-center justify-center h-screen"><div className="animate-spin w-8 h-8 border-2 border-t-transparent border-[#ED3EB3] rounded-full" /></div>}>
             <ChatContent />
         </React.Suspense>
     );

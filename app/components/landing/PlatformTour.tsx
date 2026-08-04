@@ -124,7 +124,7 @@ function FeatureSection({ feature, index, isDark }: { feature: Feature, index: n
                         </div>
 
                         {/* Center Agent Icon */}
-                        <div className={`absolute p-6 md:p-8 rounded-full shadow-[0_0_30px_rgba(245,158,11,0.2)] border z-10 ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200'}`}>
+                        <div className={`absolute p-6 md:p-8 rounded-full shadow-[0_0_30px_rgba(237,62,179,0.2)] border z-10 ${isDark ? 'bg-black border-neutral-800' : 'bg-white border-neutral-200'}`}>
                             <Bot className="w-16 h-16 md:w-20 md:h-20 text-amber-500 animate-[pulse_3s_ease-in-out_infinite]" />
                         </div>
 
