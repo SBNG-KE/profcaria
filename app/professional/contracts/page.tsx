@@ -107,7 +107,7 @@ export default function ProfessionalContractsPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto pb-20">
                         {contracts.map(contract => (
-                            <div key={contract.id} className="group bg-[#0f172a] border border-slate-800 rounded-[32px] p-6 hover:border-blue-500/30 transition-all relative overflow-hidden flex flex-col cursor-default">
+                            <div key={contract.id} className="group bg-[#0D211A] border border-slate-800 rounded-[32px] p-6 hover:border-blue-500/30 transition-all relative overflow-hidden flex flex-col cursor-default">
                                 <div className="absolute top-0 right-0 p-4">
                                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${contract.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                                         contract.status === 'terminated' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
@@ -166,7 +166,7 @@ export default function ProfessionalContractsPage() {
             {isUploadModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsUploadModalOpen(false)}></div>
-                    <div className="relative w-full max-w-lg bg-[#0f172a] border border-slate-700 rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                    <div className="relative w-full max-w-lg bg-[#0D211A] border border-slate-700 rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                             <h3 className="text-xl font-bold text-white uppercase tracking-tight">Upload Contract</h3>
                             <button onClick={() => setIsUploadModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors">

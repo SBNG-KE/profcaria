@@ -87,12 +87,12 @@ export default function PublicProfilePage() {
     // I will write a basic layout.
 
     if (loading) {
-        return <div className="min-h-screen bg-[#020617] flex items-center justify-center"><Loader2 className="text-white animate-spin" size={48} /></div>;
+        return <div className="min-h-screen bg-[#0D211A] flex items-center justify-center"><Loader2 className="text-white animate-spin" size={48} /></div>;
     }
 
     if (error || !profile) {
         return (
-            <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center text-center p-4">
+            <div className="min-h-screen bg-[#0D211A] flex flex-col items-center justify-center text-center p-4">
                 <h1 className="text-2xl font-bold text-white mb-2">Profile Not Found</h1>
                 <p className="text-neutral-400 mb-6">The profile you are looking for does not exist or has been removed.</p>
                 <Link href="/" className="px-6 py-3 bg-white text-black rounded-full font-bold uppercase tracking-widest text-sm hover:bg-neutral-200 transition-colors">
@@ -103,10 +103,10 @@ export default function PublicProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#020617] text-white">
+        <div className="min-h-screen bg-[#0D211A] text-white">
             {/* Simple Header */}
-            <nav className="fixed top-0 inset-x-0 z-50 bg-[#020617]/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center justify-between px-6">
-                <Link href="/" aria-label="Profcaria home"><ProfcariaLogo className="text-xl" markClassName="text-[#C56F4A]" /></Link>
+            <nav className="fixed top-0 inset-x-0 z-50 bg-[#0D211A]/80 backdrop-blur-md border-b border-white/5 h-16 flex items-center justify-between px-6">
+                <Link href="/" aria-label="Profcaria home"><ProfcariaLogo className="text-xl" markClassName="text-[#738D7D]" /></Link>
                 <Link href="/auth" className="text-xs font-bold uppercase tracking-widest px-4 py-2 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all">
                     Log In
                 </Link>

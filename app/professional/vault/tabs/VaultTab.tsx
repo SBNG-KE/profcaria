@@ -228,7 +228,7 @@ export default function CareerVaultPage() {
         <div className="max-w-5xl mx-auto space-y-6 py-4 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Header */}
             <div className={`p-6 md:p-8 rounded-[32px] border relative overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-10" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7)' }} />
+                <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-10" style={{ background: 'linear-gradient(135deg, #587565, #738D7D, #738D7D)' }} />
                 <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-2">
                         <div className={`p-2.5 rounded-xl ${isDark ? 'bg-neutral-800' : 'bg-neutral-100'}`}>

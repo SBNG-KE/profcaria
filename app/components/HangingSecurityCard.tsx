@@ -436,7 +436,7 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                     rounded-[2rem] p-6 md:p-8 shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] custom-scrollbar
                     transform transition-all duration-500 origin-top
                     ${isDark
-                        ? 'bg-[#0A0F1A] shadow-2xl border-neutral-700/50 glow-white'
+                        ? 'bg-[#0D211A] shadow-2xl border-neutral-700/50 glow-white'
                         : 'bg-white shadow-2xl border-neutral-200'}
                 `}
                 style={{

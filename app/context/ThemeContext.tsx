@@ -17,7 +17,7 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light', preference: 'system', fontPreference: 'modern', toggleTheme: () => {}, setTheme: () => {}, setPreference: () => {}, setFontPreference: () => {},
+  theme: 'light', preference: 'light', fontPreference: 'modern', toggleTheme: () => {}, setTheme: () => {}, setPreference: () => {}, setFontPreference: () => {},
 });
 
 const STORAGE_KEY = 'profcaria-theme';
@@ -27,9 +27,9 @@ const fonts: FontPreference[] = ['modern', 'heritage', 'editorial', 'accessible'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
     const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
-    return stored && themes.includes(stored) ? stored : 'system';
+    return stored && themes.includes(stored) ? stored : 'light';
   });
   const [fontPreference, setFontPreferenceState] = useState<FontPreference>(() => {
     if (typeof window === 'undefined') return 'modern';

@@ -137,8 +137,8 @@ export default function HangingDocsCard({
                             rounded-[2rem] p-6 md:p-10 pb-10 md:pb-14
                             transform transition-all duration-500 origin-top
                             ${isDark
-                                ? 'bg-[#0A0F1A] shadow-2xl border-[#1B2A4A]/50 text-white'
-                                : 'bg-white shadow-2xl border-[#1B2A4A]/20 text-[#0A0F1A]'}
+                                ? 'bg-[#0D211A] shadow-2xl border-[#143D33]/50 text-white'
+                                : 'bg-white shadow-2xl border-[#143D33]/20 text-[#0D211A]'}
                         `}
                         style={{
                             animation: 'swing 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
@@ -151,7 +151,7 @@ export default function HangingDocsCard({
                             onClick={onClose}
                             className={`
                                 absolute top-6 right-6 p-2 rounded-full transition-all duration-300 z-10
-                                ${isDark ? 'bg-[#111827] hover:bg-[#1B2A4A] text-white' : 'bg-[#F0F2F5] hover:bg-[#E8EBF0] text-[#0A0F1A]'}
+                                ${isDark ? 'bg-[#0D211A] hover:bg-[#143D33] text-white' : 'bg-[#FBF8F0] hover:bg-[#F4F0E6] text-[#0D211A]'}
                             `}
                         >
                             <X size={18} />
@@ -162,24 +162,24 @@ export default function HangingDocsCard({
                             {/* Header */}
                             <div className="text-center">
                                 <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tight leading-none mb-4">
-                                    <span className={`font-pixel ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}`}>Profcaria</span>{' '}
+                                    <span className={`font-pixel ${isDark ? 'text-[#738D7D]' : 'text-[#143D33]'}`}>Profcaria</span>{' '}
                                     <span className="opacity-40">Docs</span>
                                 </h2>
-                                <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-[#4A5568]'}`}>
+                                <p className={`text-sm font-medium ${isDark ? 'text-neutral-400' : 'text-[#3D6254]'}`}>
                                     Everything you need to know about the platform
                                 </p>
-                                <div className={`w-16 h-1 mt-6 mx-auto ${isDark ? 'bg-[#3B5998]' : 'bg-[#1B2A4A]'}`}></div>
+                                <div className={`w-16 h-1 mt-6 mx-auto ${isDark ? 'bg-[#738D7D]' : 'bg-[#143D33]'}`}></div>
                             </div>
 
                             {/* Sections */}
                             {sections.map((section, idx) => (
                                 <div key={idx} className="space-y-5">
-                                    <h3 className={`text-xl md:text-2xl font-black uppercase tracking-wide font-pixel ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]'}`}>
+                                    <h3 className={`text-xl md:text-2xl font-black uppercase tracking-wide font-pixel ${isDark ? 'text-[#738D7D]' : 'text-[#143D33]'}`}>
                                         {section.title}
                                     </h3>
 
                                     {section.content && (
-                                        <p className={`text-sm md:text-base leading-relaxed font-medium ${isDark ? 'text-neutral-300' : 'text-[#4A5568]'}`}>
+                                        <p className={`text-sm md:text-base leading-relaxed font-medium ${isDark ? 'text-neutral-300' : 'text-[#3D6254]'}`}>
                                             {section.content}
                                         </p>
                                     )}
@@ -188,8 +188,8 @@ export default function HangingDocsCard({
                                         <ul className="space-y-3">
                                             {section.items.map((item, i) => (
                                                 <li key={i} className="flex items-start gap-3">
-                                                    <div className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${isDark ? 'bg-[#3B5998]' : 'bg-[#1B2A4A]'}`} />
-                                                    <span className={`text-sm md:text-base leading-relaxed ${isDark ? 'text-neutral-400' : 'text-[#4A5568]'}`}>
+                                                    <div className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${isDark ? 'bg-[#738D7D]' : 'bg-[#143D33]'}`} />
+                                                    <span className={`text-sm md:text-base leading-relaxed ${isDark ? 'text-neutral-400' : 'text-[#3D6254]'}`}>
                                                         {item}
                                                     </span>
                                                 </li>
@@ -198,7 +198,7 @@ export default function HangingDocsCard({
                                     )}
 
                                     {idx < sections.length - 1 && (
-                                        <div className={`h-px mt-8 ${isDark ? 'bg-[#1B2A4A]/30' : 'bg-[#1B2A4A]/10'}`} />
+                                        <div className={`h-px mt-8 ${isDark ? 'bg-[#143D33]/30' : 'bg-[#143D33]/10'}`} />
                                     )}
                                 </div>
                             ))}

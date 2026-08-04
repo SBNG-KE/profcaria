@@ -69,7 +69,7 @@ export function escapeHtml(text: string | null | undefined): string {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/'/g, '&#3D6254;');
 }
 
 /**

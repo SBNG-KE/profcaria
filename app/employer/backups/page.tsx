@@ -10,7 +10,7 @@ const TableRow = ({ data }: { data: any }) => (
     <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors group">
         <td className="py-4 px-6">
             <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#3B5998]/10 border border-[#3B5998]/20 flex items-center justify-center text-[#6B8CD5] font-bold text-xs">
+                <div className="w-8 h-8 rounded-lg bg-[#738D7D]/10 border border-[#738D7D]/20 flex items-center justify-center text-[#9FB5A8] font-bold text-xs">
                     {data.name.charAt(0)}
                 </div>
                 <span className="text-sm font-medium text-slate-200">{data.name}</span>
@@ -18,7 +18,7 @@ const TableRow = ({ data }: { data: any }) => (
         </td>
         <td className="py-4 px-6 text-sm text-slate-400">{data.role}</td>
         <td className="py-4 px-6">
-            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${data.status === 'Active' ? 'bg-[#3B5998]/10 text-[#6B8CD5] border border-[#3B5998]/20' :
+            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${data.status === 'Active' ? 'bg-[#738D7D]/10 text-[#9FB5A8] border border-[#738D7D]/20' :
                     data.status === 'Shortlisted' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
                         'bg-slate-800 text-slate-500'
                 }`}>
@@ -46,13 +46,13 @@ export default function BackupsPage() {
     ];
 
     return (
-        <div className="p-8 h-full flex flex-col bg-[#050b14]">
+        <div className="p-8 h-full flex flex-col bg-[#0D211A]">
             <div className="max-w-7xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
                 {/* Header */}
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="text-left">
-                        <div className="flex items-center gap-2 text-[#6B8CD5] mb-2">
+                        <div className="flex items-center gap-2 text-[#9FB5A8] mb-2">
                             <Database size={16} />
                             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Data Vault</span>
                         </div>
@@ -62,7 +62,7 @@ export default function BackupsPage() {
 
                     <div className="flex items-center gap-3">
                         <button className="p-2.5 bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl border border-slate-700/50 transition-all"><Printer size={18} /></button>
-                        <button className="flex items-center gap-2 px-6 py-2.5 bg-[#3B5998] hover:bg-[#3B5998] text-white text-xs font-bold rounded-xl shadow-lg shadow-[#3B5998]/20 transition-all active:scale-95">
+                        <button className="flex items-center gap-2 px-6 py-2.5 bg-[#738D7D] hover:bg-[#738D7D] text-white text-xs font-bold rounded-xl shadow-lg shadow-[#738D7D]/20 transition-all active:scale-95">
                             <Download size={16} />
                             <span>Export XLSX</span>
                         </button>
@@ -70,13 +70,13 @@ export default function BackupsPage() {
                 </header>
 
                 {/* Toolbar */}
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 bg-[#0f172a]/50 border border-white/5 rounded-2xl backdrop-blur-md">
+                <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 bg-[#0D211A]/50 border border-white/5 rounded-2xl backdrop-blur-md">
                     <div className="relative w-full md:w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                         <input
                             type="text"
                             placeholder="Search data records..."
-                            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3B5998]/50 transition-all"
+                            className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#738D7D]/50 transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -88,7 +88,7 @@ export default function BackupsPage() {
                 </div>
 
                 {/* Table Area */}
-                <div className="bg-[#0f172a]/30 border border-white/5 rounded-[32px] overflow-hidden flex-1 shadow-2xl">
+                <div className="bg-[#0D211A]/30 border border-white/5 rounded-[32px] overflow-hidden flex-1 shadow-2xl">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead className="bg-white/[0.02] border-b border-white/5">
@@ -120,9 +120,9 @@ export default function BackupsPage() {
 
                 {/* Legend / Info */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-6 bg-[#3B5998]/5 border border-[#3B5998]/10 rounded-[24px]">
+                    <div className="p-6 bg-[#738D7D]/5 border border-[#738D7D]/10 rounded-[24px]">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2 bg-[#3B5998]/20 rounded-lg text-[#6B8CD5]"><FileSpreadsheet size={20} /></div>
+                            <div className="p-2 bg-[#738D7D]/20 rounded-lg text-[#9FB5A8]"><FileSpreadsheet size={20} /></div>
                             <h4 className="text-sm font-bold text-white uppercase tracking-tight">Structured Exports</h4>
                         </div>
                         <p className="text-xs text-slate-500 leading-relaxed">All backups are exported in 64-bit precision XLSX format with recursive relational data mapping.</p>

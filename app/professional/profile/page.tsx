@@ -42,11 +42,11 @@ const FONTS = [
 ];
 
 const COLORS = [
-  "#cbd5e1", // Default Slate 300
-  "#000000", "#444444", "#666666", "#999999", "#CCCCCC", "#FFFFFF",
-  "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e",
-  "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1",
-  "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#713f12"
+  "#D5DFD7", // Default Slate 300
+  "#081812", "#486058", "#77877F", "#CFC4B3", "#E8E0D2", "#FBF8F0",
+  "#738D7D", "#738D7D", "#738D7D", "#738D7D", "#3D6254", "#587565",
+  "#587565", "#3D6254", "#3D6254", "#587565", "#587565", "#587565",
+  "#738D7D", "#738D7D", "#738D7D", "#738D7D", "#738D7D", "#741051"
 ];
 
 const FONT_SIZES = [
@@ -1344,7 +1344,7 @@ export default function ProfessionalHome() {
       anchor.href = fullUrl;
       anchor.target = '_blank';
       anchor.rel = 'noopener noreferrer';
-      anchor.style.color = '#60a5fa';
+      anchor.style.color = '#64E5E8';
       anchor.style.textDecoration = 'underline';
       anchor.style.cursor = 'pointer';
       anchor.textContent = displayText;
@@ -2544,7 +2544,7 @@ export default function ProfessionalHome() {
         className={`
                 fixed inset-0 z-[105] h-[100dvh] border-l backdrop-blur-2xl flex flex-col
                 transition-all duration-500 ease-in-out
-                ${isDark ? 'bg-black border-neutral-800' : 'bg-[#f8fafe] border-neutral-200'}
+                ${isDark ? 'bg-black border-neutral-800' : 'bg-[#FBF8F0] border-neutral-200'}
                 ${activeDocument ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}
             `}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}

@@ -247,7 +247,7 @@ function VerificationContent() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans">
+        <div className="min-h-screen bg-[#081812] text-white flex flex-col font-sans">
             {/* Header */}
             <header className="px-6 py-6 border-b border-neutral-900 flex justify-center">
                 <span className="text-xl font-black uppercase tracking-[0.2em] text-white">profcaria</span>

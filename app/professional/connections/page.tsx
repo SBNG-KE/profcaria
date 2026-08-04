@@ -223,8 +223,8 @@ export default function ConnectionsPage() {
                 {hasCompanies && (
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-[#3B5998]/20' : 'bg-[#3B5998]/10'}`}>
-                                <Building2 size={14} className={isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'} />
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-[#738D7D]/20' : 'bg-[#738D7D]/10'}`}>
+                                <Building2 size={14} className={isDark ? 'text-[#9FB5A8]' : 'text-[#738D7D]'} />
                             </div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
                                 Companies to Subscribe
@@ -251,8 +251,8 @@ export default function ConnectionsPage() {
                 {hasProfessionals && (
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-[#3B5998]/20' : 'bg-[#3B5998]/10'}`}>
-                                <Users size={14} className={isDark ? 'text-[#6B8CD5]' : 'text-[#3B5998]'} />
+                            <div className={`p-1.5 rounded-lg ${isDark ? 'bg-[#738D7D]/20' : 'bg-[#738D7D]/10'}`}>
+                                <Users size={14} className={isDark ? 'text-[#9FB5A8]' : 'text-[#738D7D]'} />
                             </div>
                             <h3 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-neutral-300' : 'text-neutral-700'}`}>
                                 People to Follow
@@ -282,9 +282,9 @@ export default function ConnectionsPage() {
     return (
         <div className="max-w-7xl mx-auto w-full p-4 md:p-8 space-y-8 pb-32">
             {!hasSyncedContacts && (
-                <div className={`p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 border ${isDark ? 'bg-[#3B5998]/10 border-[#3B5998]/30' : 'bg-[#3B5998]/5 border-[#3B5998]/20'}`}>
+                <div className={`p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 border ${isDark ? 'bg-[#738D7D]/10 border-[#738D7D]/30' : 'bg-[#738D7D]/5 border-[#738D7D]/20'}`}>
                     <div className="flex items-center gap-4">
-                        <div className={`p-3 rounded-full ${isDark ? 'bg-[#3B5998]/20 text-[#6B8CD5]' : 'bg-[#3B5998]/10 text-[#3B5998]'}`}>
+                        <div className={`p-3 rounded-full ${isDark ? 'bg-[#738D7D]/20 text-[#9FB5A8]' : 'bg-[#738D7D]/10 text-[#738D7D]'}`}>
                             <Users size={24} />
                         </div>
                         <div>
@@ -294,7 +294,7 @@ export default function ConnectionsPage() {
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                         <button onClick={() => setHasSyncedContacts(true)} className={`flex-1 md:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors ${isDark ? 'text-neutral-400 hover:text-white hover:bg-white/5' : 'text-neutral-500 hover:text-black hover:bg-black/5'}`}>Not Now</button>
-                        <button onClick={() => { localStorage.setItem('contacts_synced', 'true'); setHasSyncedContacts(true); }} className={`flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded-xl transition-all shadow-lg ${isDark ? 'bg-[#3B5998] text-white hover:bg-[#4A6BB5] shadow-[#3B5998]/20' : 'bg-[#3B5998] text-white hover:bg-[#2A437C] shadow-[#3B5998]/30'}`}>Sync Contacts</button>
+                        <button onClick={() => { localStorage.setItem('contacts_synced', 'true'); setHasSyncedContacts(true); }} className={`flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded-xl transition-all shadow-lg ${isDark ? 'bg-[#738D7D] text-white hover:bg-[#587565] shadow-[#738D7D]/20' : 'bg-[#738D7D] text-white hover:bg-[#3D6254] shadow-[#738D7D]/30'}`}>Sync Contacts</button>
                     </div>
                 </div>
             )}

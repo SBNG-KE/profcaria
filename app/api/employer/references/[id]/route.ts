@@ -244,13 +244,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                     subject: `Reference Received for ${professionalName}`,
                     html: `
                         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                            <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
-                                <h1 style="color: #ffffff; font-size: 24px; margin: 0 0 8px 0;">Reference Received ✓</h1>
+                            <div style="background: linear-gradient(135deg, #3D6254 0%, #587565 100%); border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                                <h1 style="color: #FBF8F0; font-size: 24px; margin: 0 0 8px 0;">Reference Received ✓</h1>
                                 <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 0;">A reference has been submitted</p>
                             </div>
                             
-                            <div style="background: #f8f8f8; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-                                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0;">
+                            <div style="background: #FBF8F0; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                                <p style="color: #153027; font-size: 16px; line-height: 1.6; margin: 0;">
                                     <strong>${targetCompanyName}</strong> has submitted a reference for 
                                     <strong>${professionalName}</strong>.
                                 </p>
@@ -258,12 +258,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                             
                             <div style="text-align: center; margin-bottom: 24px;">
                                 <a href="${process.env.NEXT_PUBLIC_APP_URL}/employer/applications" 
-                                   style="display: inline-block; background: #000; color: #fff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+                                   style="display: inline-block; background: #081812; color: #FBF8F0; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
                                     View Reference
                                 </a>
                             </div>
                             
-                            <p style="color: #888; font-size: 12px; text-align: center; margin: 0;">
+                            <p style="color: #77877F; font-size: 12px; text-align: center; margin: 0;">
                                 Sent via Profcaria Employment Network
                             </p>
                         </div>

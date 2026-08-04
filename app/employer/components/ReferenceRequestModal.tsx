@@ -153,8 +153,8 @@ export default function ReferenceRequestModal({
                 {/* Success State */}
                 {sent ? (
                     <div className="p-10 flex flex-col items-center justify-center text-center">
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${isDark ? 'bg-[#3B5998]/20' : 'bg-[#3B5998]/5'}`}>
-                            <Check size={40} className="text-[#3B5998]" />
+                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 ${isDark ? 'bg-[#738D7D]/20' : 'bg-[#738D7D]/5'}`}>
+                            <Check size={40} className="text-[#738D7D]" />
                         </div>
                         <h3 className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-black'}`}>Request Sent!</h3>
                         <p className={`text-sm ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>

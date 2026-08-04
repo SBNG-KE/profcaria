@@ -70,7 +70,7 @@ export default function CareerAIGroupPage() {
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all border ${isDark ? 'bg-neutral-900 border-neutral-800 text-white hover:bg-neutral-800' : 'bg-white border-neutral-200 text-black hover:bg-neutral-50'}`}
                     >
-                        <div className={`w-2 h-2 rounded-full ${selectedModel === 'gemini-1.5-pro' ? 'bg-[#3B5998]' : 'bg-yellow-500'}`} />
+                        <div className={`w-2 h-2 rounded-full ${selectedModel === 'gemini-1.5-pro' ? 'bg-[#738D7D]' : 'bg-yellow-500'}`} />
                         {models.find(m => m.id === selectedModel)?.name || 'Select Model'}
                     </button>
 
@@ -94,7 +94,7 @@ export default function CareerAIGroupPage() {
                                                     <span>{model.name}</span>
                                                     {isLocked && <Lock size={14} className="text-neutral-500" />}
                                                 </div>
-                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${model.badge === 'Standard' ? (isDark ? 'bg-[#3B5998]/20 text-[#6B8CD5]' : 'bg-[#3B5998]/10 text-[#3B5998]') : (isDark ? 'bg-yellow-500/10 text-yellow-500' : 'bg-yellow-50 text-yellow-600')}`}>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${model.badge === 'Standard' ? (isDark ? 'bg-[#738D7D]/20 text-[#9FB5A8]' : 'bg-[#738D7D]/10 text-[#738D7D]') : (isDark ? 'bg-yellow-500/10 text-yellow-500' : 'bg-yellow-50 text-yellow-600')}`}>
                                                     {model.badge}
                                                 </span>
                                             </button>

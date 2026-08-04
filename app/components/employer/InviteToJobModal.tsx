@@ -193,7 +193,7 @@ export default function InviteToJobModal({ isOpen, onClose, professionalId, prof
                         <button
                             onClick={handleInvite}
                             disabled={sending || jobs.length === 0 || !selectedJobId}
-                            className="px-5 py-2 rounded-lg text-sm font-bold bg-[#1e293b] text-white hover:bg-[#334155] dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all shadow-lg shadow-black/10 dark:shadow-none disabled:opacity-50 flex items-center gap-2"
+                            className="px-5 py-2 rounded-lg text-sm font-bold bg-[#143D33] text-white hover:bg-[#143D33] dark:bg-white dark:text-black dark:hover:bg-neutral-200 transition-all shadow-lg shadow-black/10 dark:shadow-none disabled:opacity-50 flex items-center gap-2"
                         >
                             {sending && <Loader2 size={16} className="animate-spin" />}
                             {sending ? 'Sending...' : 'Send Invite'}

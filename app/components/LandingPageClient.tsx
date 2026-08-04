@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, BriefcaseBusiness, Building2, Clock3, MapPin, Search, ShieldCheck, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowDown, ArrowRight, BriefcaseBusiness, MapPin, Search, X } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/next';
 import ThemeToggle from './ThemeToggle';
 import HangingAuthCard from './HangingAuthCard';
+import { ProfcariaMark } from './brand/ProfcariaLogo';
 
 export type PublicJob = {
   id: string;
@@ -40,7 +41,7 @@ export default function LandingPageClient() {
     fetch('/api/jobs', { cache: 'no-store' })
       .then(async response => {
         const body = await response.json();
-        if (!response.ok) throw new Error(body.error || 'Jobs are temporarily unavailable.');
+        if (!response.ok) throw new Error(body.error || 'The open register is temporarily unavailable.');
         return body;
       })
       .then(body => setJobs(body.jobs || []))
@@ -61,86 +62,113 @@ export default function LandingPageClient() {
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
     jobs.forEach(job => counts.set(job.roleCategory || 'Other', (counts.get(job.roleCategory || 'Other') || 0) + 1));
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
   }, [jobs]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <HangingAuthCard isOpen={authOpen} onClose={() => setAuthOpen(false)} initialScreen="auth" />
-      <header className="sticky top-0 z-40 border-b-2 border-[var(--text-primary)] bg-[var(--bg-primary)]/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between px-4 sm:px-7">
-          <Link href="/" className="flex items-center gap-3 font-mono text-lg font-black uppercase tracking-[-0.05em]" aria-label="Profcaria home">
-            <span className="grid h-8 w-8 place-items-center border-2 border-[var(--text-primary)] bg-[var(--accent-primary)] text-xs text-[var(--text-inverse)] shadow-[3px_3px_0_var(--text-primary)]">PC</span>
-            Profcaria
+
+      <header className="relative z-40 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
+        <div className="mx-auto flex h-[76px] max-w-[1600px] items-center justify-between px-5 sm:px-9 lg:px-14">
+          <Link href="/" className="flex items-center gap-3" aria-label="Profcaria home">
+            <ProfcariaMark labelled={false} className="h-10 text-[var(--accent-primary)]" />
+            <span className="font-editorial text-[1.75rem] font-semibold tracking-[-0.045em]">Profcaria</span>
           </Link>
-          <nav className="flex items-center gap-2 sm:gap-3" aria-label="Main navigation">
-            <Link href="/employer/home" className="hidden px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--surface-muted)] sm:block">For companies</Link>
+          <nav className="flex items-center gap-2 sm:gap-6" aria-label="Main navigation">
+            <Link href="/employer/home" className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] sm:block">For companies</Link>
             <ThemeToggle showSystem={false} />
-            <button onClick={() => setAuthOpen(true)} className="border-2 border-[var(--text-primary)] bg-[var(--text-primary)] px-3 py-2 font-mono text-[11px] font-bold uppercase tracking-wider text-[var(--bg-primary)] shadow-[3px_3px_0_var(--accent-primary)] transition hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_var(--accent-primary)] sm:px-5">Sign in</button>
+            <button onClick={() => setAuthOpen(true)} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>
           </nav>
         </div>
       </header>
 
-      <section className="relative border-b-2 border-[var(--text-primary)]">
-        <div className="profcaria-matrix absolute inset-0 opacity-35" aria-hidden="true" />
-        <div className="relative mx-auto grid max-w-[1440px] gap-10 px-4 py-16 sm:px-7 sm:py-24 lg:grid-cols-[1fr_360px] lg:items-end">
-          <div>
-            <p className="mb-6 font-mono text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--accent-primary)]">Kenya's simple jobs platform / No ads / No stale jobs</p>
-            <h1 className="max-w-5xl text-[clamp(3.4rem,9vw,8.8rem)] font-black leading-[0.82] tracking-[-0.075em]">Applying for jobs,<br /><span className="text-[var(--accent-primary)]">made simple.</span></h1>
-            <p className="mt-8 max-w-2xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg">See a role. Open it. Answer only what the company needs. Submit. An account is optional until you need to reply to a company.</p>
+      <section className="border-b border-[var(--border-primary)]">
+        <div className="mx-auto grid max-w-[1600px] lg:min-h-[700px] lg:grid-cols-[minmax(0,1.42fr)_minmax(360px,.58fr)]">
+          <div className="flex flex-col justify-between px-5 py-16 sm:px-9 sm:py-20 lg:px-14 lg:py-24">
+            <div>
+              <p className="mb-10 flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-secondary)]">
+                <span className="h-px w-10 bg-current" /> Kenya&rsquo;s open job register
+              </p>
+              <h1 className="font-editorial max-w-[980px] text-[clamp(4.4rem,9.2vw,10.4rem)] font-medium leading-[0.78] tracking-[-0.07em]">
+                Applying for jobs,<br /><span className="italic">made simple.</span>
+              </h1>
+              <p className="mt-10 max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg sm:leading-8">
+                Find current work in Kenya, answer only what the company needs, and submit. No adverts. No account required until you need to continue a conversation.
+              </p>
+            </div>
+            <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-[var(--border-primary)] pt-6">
+              <a href="#jobs" className="group inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em]">Browse open roles <ArrowDown size={15} className="transition group-hover:translate-y-1" /></a>
+              <span className="text-sm text-[var(--text-muted)]">Only genuinely open vacancies appear.</span>
+            </div>
           </div>
-          <div className="border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-5 font-mono shadow-[8px_8px_0_var(--text-primary)]">
-            <div className="mb-8 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em]"><span>Live vacancy rule</span><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" /></div>
-            <p className="text-4xl font-black tracking-[-0.08em]">{jobs.length.toString().padStart(2, '0')}</p>
-            <p className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">Open Kenyan roles. A vacancy disappears automatically when its application limit or closing time is reached.</p>
-          </div>
-        </div>
-      </section>
 
-      <section id="jobs" className="mx-auto max-w-[1440px] px-4 py-10 sm:px-7 sm:py-14">
-        <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <aside className="h-fit border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-5 lg:sticky lg:top-24">
-            <div className="flex items-center gap-2 border-b border-[var(--border-primary)] pb-4 font-mono text-xs font-black uppercase"><SlidersHorizontal size={15} /> Narrow the list</div>
-            <FilterSelect label="Work setting" value={locationType} onChange={setLocationType} options={['all', 'onsite', 'hybrid', 'remote']} />
-            <FilterSelect label="Job type" value={employmentType} onChange={setEmploymentType} options={['all', 'full_time', 'part_time', 'contract', 'internship', 'apprenticeship', 'freelance']} />
-            <div className="mt-7 border-t border-[var(--border-primary)] pt-5">
-              <p className="font-mono text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)]">Most requested</p>
-              <div className="mt-3 space-y-2 text-sm">
-                {categories.length ? categories.map(([name, count]) => <button key={name} onClick={() => setQuery(name === 'Other' ? '' : name)} className="flex w-full justify-between text-left hover:text-[var(--accent-primary)]"><span>{pretty(name)}</span><span className="font-mono text-xs">{count}</span></button>) : <p className="text-xs leading-5 text-[var(--text-muted)]">Category demand appears as companies publish roles.</p>}
+          <aside className="register-panel relative min-h-[500px] overflow-hidden bg-[var(--accent-primary)] px-8 py-12 text-[var(--text-inverse)] sm:px-12 lg:min-h-full lg:px-14 lg:py-16" aria-label="Open job count">
+            <div className="relative z-10 flex h-full flex-col justify-between">
+              <div className="flex items-center justify-between border-b border-current/20 pb-5 text-[10px] font-semibold uppercase tracking-[0.24em]">
+                <span>Current register</span><span>Kenya</span>
               </div>
+              <div className="relative flex min-h-[320px] flex-1 items-center justify-center py-14">
+                <div className="register-arch" aria-hidden="true" />
+                <div className="relative z-10 text-center">
+                  <p className="font-editorial text-[clamp(7rem,13vw,12rem)] font-medium leading-none tracking-[-0.08em]">{loading ? '—' : jobs.length.toString().padStart(2, '0')}</p>
+                  <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.23em] opacity-70">Open roles</p>
+                </div>
+              </div>
+              <p className="max-w-sm border-t border-current/20 pt-6 text-sm leading-6 opacity-80">A vacancy leaves the public register when its closing time or application limit is reached.</p>
             </div>
           </aside>
+        </div>
+      </section>
 
+      <section id="jobs" className="mx-auto max-w-[1600px] px-5 py-20 sm:px-9 sm:py-24 lg:px-14 lg:py-28">
+        <div className="grid gap-10 border-b border-[var(--border-primary)] pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.58fr)] lg:items-end">
           <div>
-            <div className="flex flex-col gap-4 border-b-2 border-[var(--text-primary)] pb-5 sm:flex-row sm:items-center sm:justify-between">
-              <div><p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--accent-primary)]">All open work</p><h2 className="mt-1 text-3xl font-black tracking-[-0.04em]">Jobs in Kenya</h2></div>
-              <label className="flex min-w-0 items-center gap-3 border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] px-4 py-3 sm:w-[360px]"><Search size={17} /><span className="sr-only">Search jobs</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Role, skill, company or place" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-muted)]" />{query && <button onClick={() => setQuery('')} aria-label="Clear search"><X size={15} /></button>}</label>
-            </div>
-
-            {loading ? <div className="grid gap-4 py-7 sm:grid-cols-2">{[0, 1, 2, 3].map(i => <div key={i} className="h-64 animate-pulse border-2 border-[var(--border-primary)] bg-[var(--surface-muted)]" />)}</div>
-              : notice ? <EmptyState title="Jobs could not load" body={notice} />
-              : filtered.length === 0 ? <EmptyState title="No matching open jobs" body="Remove a filter or try a broader search. Closed and full vacancies never appear here." />
-              : <div className="grid gap-4 py-7 sm:grid-cols-2">{filtered.map(job => <JobCard key={job.id} job={job} />)}</div>}
+            <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[var(--text-muted)]">Available now</p>
+            <h2 className="font-editorial mt-3 text-[clamp(3.4rem,6vw,6.5rem)] font-medium leading-none tracking-[-0.055em]">The open register</h2>
           </div>
+          <p className="max-w-xl text-sm leading-7 text-[var(--text-secondary)] lg:justify-self-end">Search by role, skill, company or place. Every result below remains open to applications at the moment it is shown.</p>
         </div>
+
+        <div className="grid border-b border-[var(--border-primary)] lg:grid-cols-[minmax(0,1fr)_190px_190px]">
+          <label className="flex min-w-0 items-center gap-4 border-b border-[var(--border-primary)] py-5 lg:border-b-0 lg:border-r lg:pr-6">
+            <Search size={18} strokeWidth={1.5} />
+            <span className="sr-only">Search jobs</span>
+            <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search the register" className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-[var(--text-muted)]" />
+            {query && <button onClick={() => setQuery('')} aria-label="Clear search"><X size={16} /></button>}
+          </label>
+          <FilterSelect label="Work setting" value={locationType} onChange={setLocationType} options={['all', 'onsite', 'hybrid', 'remote']} />
+          <FilterSelect label="Job type" value={employmentType} onChange={setEmploymentType} options={['all', 'full_time', 'part_time', 'contract', 'internship', 'apprenticeship', 'freelance']} />
+        </div>
+
+        {categories.length > 0 && <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-[var(--border-secondary)] py-5 text-xs text-[var(--text-secondary)]">
+          <span className="font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">In demand</span>
+          {categories.map(([name, count]) => <button key={name} onClick={() => setQuery(name === 'Other' ? '' : name)} className="border-b border-transparent pb-0.5 transition hover:border-current hover:text-[var(--text-primary)]">{pretty(name)} <span className="ml-1 opacity-55">{count}</span></button>)}
+        </div>}
+
+        {loading ? <div className="divide-y divide-[var(--border-secondary)] border-b border-[var(--border-primary)]">{[0, 1, 2, 3].map(i => <div key={i} className="h-36 animate-pulse bg-[var(--surface-muted)]/35" />)}</div>
+          : notice ? <EmptyState title="The register is being prepared" body="Open roles are temporarily unavailable. Please return shortly." />
+          : filtered.length === 0 ? <EmptyState title="No open roles match this search" body="Try a broader word or remove a filter. Full and closed vacancies are never kept in the register." />
+          : <div className="border-b border-[var(--border-primary)]">{filtered.map((job, index) => <JobRow key={job.id} job={job} index={index + 1} />)}</div>}
       </section>
 
-      <section className="border-y-2 border-[var(--text-primary)] bg-[var(--text-primary)] text-[var(--bg-primary)]">
-        <div className="mx-auto grid max-w-[1440px] gap-px bg-[var(--bg-primary)] sm:grid-cols-3">
+      <section className="border-y border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+        <div className="mx-auto grid max-w-[1600px] lg:grid-cols-3">
           {[
-            [ShieldCheck, 'Safer evidence', 'Links and documents are held for security inspection before they reach a conversation.'],
-            [Clock3, 'Honest availability', 'Jobs close automatically at their date or application cap—whichever comes first.'],
-            [Building2, 'Company accountability', 'Companies sign in to publish, manage candidates, reply, pay and respond to reports.'],
-          ].map(([Icon, title, body]) => {
-            const FeatureIcon = Icon as typeof ShieldCheck;
-            return <article key={String(title)} className="bg-[var(--text-primary)] p-7 sm:p-9"><FeatureIcon size={22} className="text-[var(--accent-strong)]" /><h3 className="mt-8 text-xl font-black">{String(title)}</h3><p className="mt-3 text-sm leading-6 opacity-70">{String(body)}</p></article>;
-          })}
+            ['01', 'Current by design', 'Jobs leave the public register automatically when their closing date or application limit is reached.'],
+            ['02', 'Apply without ceremony', 'Open a role, provide the requested details and submit. Creating an account is optional at first.'],
+            ['03', 'Continue privately', 'If a company responds, sign in to exchange text, trusted links and screened documents in one place.'],
+          ].map(([number, title, body], index) => <article key={number} className={`px-5 py-12 sm:px-9 lg:px-14 lg:py-16 ${index > 0 ? 'border-t border-[var(--border-primary)] lg:border-l lg:border-t-0' : ''}`}>
+            <p className="font-editorial text-2xl italic text-[var(--text-muted)]">{number}</p>
+            <h3 className="font-editorial mt-12 text-3xl font-medium tracking-[-0.035em]">{title}</h3>
+            <p className="mt-4 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">{body}</p>
+          </article>)}
         </div>
       </section>
 
-      <footer className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 py-10 font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between sm:px-7">
-        <p>Profcaria / Kenya / {new Date().getFullYear()}</p>
-        <div className="flex flex-wrap gap-5"><Link href="/pricing">Company pricing</Link><button onClick={() => setAuthOpen(true)}>Sign up or log in</button><a href="mailto:hello@profcaria.com">Report a problem</a></div>
+      <footer className="mx-auto flex max-w-[1600px] flex-col gap-7 px-5 py-10 text-xs text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between sm:px-9 lg:px-14">
+        <p>&copy; {new Date().getFullYear()} Profcaria, Kenya.</p>
+        <div className="flex flex-wrap gap-x-7 gap-y-3"><Link href="/pricing">Company pricing</Link><button onClick={() => setAuthOpen(true)}>Sign up or log in</button><a href="mailto:hello@profcaria.com">Report a problem</a></div>
       </footer>
       <Analytics />
     </main>
@@ -148,18 +176,20 @@ export default function LandingPageClient() {
 }
 
 function FilterSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: string[] }) {
-  return <label className="mt-5 block"><span className="font-mono text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)]">{label}</span><select value={value} onChange={event => onChange(event.target.value)} className="mt-2 w-full border-2 border-[var(--text-primary)] bg-[var(--bg-primary)] px-3 py-2.5 text-sm outline-none">{options.map(option => <option key={option} value={option}>{option === 'all' ? 'All' : pretty(option)}</option>)}</select></label>;
+  return <label className="flex items-center justify-between gap-3 border-b border-[var(--border-primary)] py-5 lg:border-b-0 lg:border-r lg:px-6 last:lg:border-r-0"><span className="sr-only">{label}</span><select aria-label={label} value={value} onChange={event => onChange(event.target.value)} className="w-full appearance-none bg-transparent text-xs font-semibold uppercase tracking-[0.12em] outline-none">{options.map(option => <option key={option} value={option}>{option === 'all' ? label : pretty(option)}</option>)}</select><span aria-hidden="true" className="text-[10px]">⌄</span></label>;
 }
 
-function JobCard({ job }: { job: PublicJob }) {
+function JobRow({ job, index }: { job: PublicJob; index: number }) {
   const remaining = job.applicationLimit == null ? null : Math.max(0, job.applicationLimit - job.applicationCount);
-  return <Link href={`/jobs/${job.id}`} className="group flex min-h-64 flex-col border-2 border-[var(--text-primary)] bg-[var(--surface-raised)] p-5 shadow-[5px_5px_0_var(--border-primary)] transition hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--accent-primary)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-soft)] sm:p-6">
-    <div className="flex items-start justify-between gap-5"><div className="grid h-10 w-10 place-items-center border-2 border-[var(--text-primary)] bg-[var(--surface-muted)] font-mono text-xs font-black">{job.organization.name.slice(0, 2).toUpperCase()}</div><ArrowUpRight className="transition group-hover:translate-x-1 group-hover:-translate-y-1" /></div>
-    <div className="mt-6"><p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[var(--accent-primary)]">{job.organization.name}</p><h3 className="mt-2 text-2xl font-black leading-tight tracking-[-0.04em]">{job.title}</h3><p className="mt-3 line-clamp-2 text-sm leading-6 text-[var(--text-secondary)]">{job.summary || 'Open the role to see the work, requirements and application questions.'}</p></div>
-    <div className="mt-auto flex flex-wrap gap-x-4 gap-y-2 border-t border-[var(--border-primary)] pt-5 font-mono text-[10px] font-bold uppercase text-[var(--text-muted)]"><span className="flex items-center gap-1.5"><MapPin size={12} />{job.location || pretty(job.locationType)}</span><span className="flex items-center gap-1.5"><BriefcaseBusiness size={12} />{pretty(job.employmentType)}</span>{remaining != null && <span>{remaining} application {remaining === 1 ? 'place' : 'places'} left</span>}</div>
+  return <Link href={`/jobs/${job.id}`} className="group grid gap-6 border-t border-[var(--border-primary)] py-8 transition first:border-t-0 hover:bg-[var(--surface-muted)]/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent-primary)] sm:px-4 lg:grid-cols-[50px_minmax(0,1.4fr)_minmax(200px,.62fr)_minmax(180px,.5fr)_40px] lg:items-center lg:px-0">
+    <span className="hidden font-editorial text-lg italic text-[var(--text-muted)] lg:block">{String(index).padStart(2, '0')}</span>
+    <div><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">{job.organization.name}</p><h3 className="font-editorial mt-2 text-[clamp(1.9rem,3vw,2.8rem)] font-medium leading-none tracking-[-0.04em]">{job.title}</h3></div>
+    <div className="text-sm leading-6 text-[var(--text-secondary)]"><span className="flex items-center gap-2"><MapPin size={14} strokeWidth={1.5} />{job.location || pretty(job.locationType)}</span><span className="mt-1 flex items-center gap-2"><BriefcaseBusiness size={14} strokeWidth={1.5} />{pretty(job.employmentType)}</span></div>
+    <div className="text-xs leading-5 text-[var(--text-muted)]">{remaining != null ? <><span className="block text-[var(--text-primary)]">{remaining} {remaining === 1 ? 'place' : 'places'} left</span>Application limit applies</> : <><span className="block text-[var(--text-primary)]">Applications open</span>{job.closesAt ? `Closes ${new Date(job.closesAt).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}` : 'No public limit shown'}</>}</div>
+    <ArrowRight size={20} strokeWidth={1.4} className="transition group-hover:translate-x-2" />
   </Link>;
 }
 
 function EmptyState({ title, body }: { title: string; body: string }) {
-  return <div className="my-7 border-2 border-dashed border-[var(--text-primary)] p-10 text-center"><BriefcaseBusiness className="mx-auto text-[var(--accent-primary)]" /><h3 className="mt-5 text-xl font-black">{title}</h3><p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[var(--text-secondary)]">{body}</p></div>;
+  return <div className="border-b border-[var(--border-primary)] py-16 sm:py-20"><p className="font-editorial text-4xl font-medium tracking-[-0.035em]">{title}</p><p className="mt-4 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">{body}</p></div>;
 }

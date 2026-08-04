@@ -19,7 +19,7 @@ export default function JobsSection() {
                     transition={{ duration: 0.8 }}
                 >
                     <h2 className={`text-4xl md:text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-none mb-8 ${isDark ? 'text-white' : 'text-black'}`}>
-                        Find <span className="font-pixel text-[#3B5998]">Work.</span>
+                        Find <span className="font-pixel text-[#738D7D]">Work.</span>
                         <br /> Not Noise.
                     </h2>
                     <p className={`text-lg md:text-2xl font-light max-w-5xl mx-auto leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
@@ -50,7 +50,7 @@ export default function JobsSection() {
                             transition={{ duration: 0.5, delay: idx * 0.2 }}
                             className={`p-10 rounded-3xl border transition-all hover:-translate-y-2
                                 ${isDark 
-                                    ? 'bg-[#111827]/80 border-[#1B2A4A] hover:bg-[#111827] hover:shadow-[0_20px_40px_rgba(59,89,152,0.15)]' 
+                                    ? 'bg-[#0D211A]/80 border-[#143D33] hover:bg-[#0D211A] hover:shadow-[0_20px_40px_rgba(20,61,51,0.15)]'
                                     : 'bg-neutral-50 border-neutral-200 hover:shadow-2xl hover:bg-white'
                                 }
                             `}

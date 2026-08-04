@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 type LogoProps = { className?: string; markClassName?: string; compact?: boolean; variant?: 'display' | 'lowercase'; style?: CSSProperties };
 
 export function ProfcariaMark({ className = '', style, labelled = true }: Pick<LogoProps, 'className' | 'style'> & { labelled?: boolean }) {
-  return <span role={labelled ? 'img' : undefined} aria-label={labelled ? 'Profcaria PC mark' : undefined} aria-hidden={labelled ? undefined : true} className={`grid aspect-square place-items-center border-[0.12em] border-current bg-[var(--accent-primary)] font-mono text-[0.32em] font-black tracking-[-0.08em] text-[var(--text-inverse)] shadow-[0.11em_0.11em_0_currentColor] ${className}`} style={style}>PC</span>;
+  return <span role={labelled ? 'img' : undefined} aria-label={labelled ? 'Profcaria PC mark' : undefined} aria-hidden={labelled ? undefined : true} className={`profcaria-mark grid aspect-square place-items-center font-editorial text-[0.42em] font-semibold tracking-[-0.06em] text-[var(--accent-primary)] ${className}`} style={style}><span className="relative z-10 text-[var(--text-inverse)]">PC</span></span>;
 }
 
 export function ProfcariaBadge({ className = '', markClassName = '' }: Pick<LogoProps, 'className' | 'markClassName'>) {
@@ -12,5 +12,5 @@ export function ProfcariaBadge({ className = '', markClassName = '' }: Pick<Logo
 
 export default function ProfcariaLogo({ className = '', markClassName = '', compact = false, variant = 'display', style }: LogoProps) {
   if (compact) return <ProfcariaMark className={markClassName || className} style={style} />;
-  return <span className={`inline-flex items-center gap-[0.38em] whitespace-nowrap font-mono font-black ${variant === 'lowercase' ? 'lowercase' : 'uppercase'} ${className}`} style={style} role="img" aria-label="Profcaria"><ProfcariaMark labelled={false} className={`h-[1.2em] ${markClassName}`} /><span>Profcaria</span></span>;
+  return <span className={`inline-flex items-center gap-[0.42em] whitespace-nowrap font-editorial font-semibold tracking-[-0.035em] ${variant === 'lowercase' ? 'lowercase' : ''} ${className}`} style={style} role="img" aria-label="Profcaria"><ProfcariaMark labelled={false} className={`h-[1.2em] ${markClassName}`} /><span>Profcaria</span></span>;
 }

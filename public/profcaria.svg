@@ -1,15 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Profcaria detached D">
-  <defs>
-    <clipPath id="tile"><rect width="512" height="512" rx="116"/></clipPath>
-    <pattern id="pixels" width="77" height="157" patternUnits="userSpaceOnUse">
-      <image href="/profcaria-pixel-background.png" width="77" height="157"/>
-    </pattern>
-  </defs>
-  <rect width="512" height="512" rx="116" fill="#111214"/>
-  <rect width="512" height="512" fill="url(#pixels)" clip-path="url(#tile)"/>
-  <g fill="none" stroke="#C56F4A">
-    <path d="M124 90V422" stroke-width="48" stroke-linecap="square"/>
-    <path d="M226 111H258C363 111 421 166.5 421 256C421 345.5 363 401 258 401H226" stroke-width="48" stroke-linecap="square"/>
-    <path d="M124 256H194" stroke-width="22"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Profcaria PC mark">
+  <rect width="512" height="512" fill="#F4F0E6"/>
+  <path d="M72 440V214C72 92 152 36 256 36s184 56 184 178v226H72Z" fill="#143D33"/>
+  <path d="M98 414V218C98 112 164 64 256 64s158 48 158 154v196H98Z" fill="none" stroke="#F4F0E6" stroke-opacity=".46" stroke-width="5"/>
+  <text x="256" y="313" fill="#F4F0E6" font-family="Georgia, 'Times New Roman', serif" font-size="132" font-weight="600" letter-spacing="-12" text-anchor="middle">PC</text>
+  <path d="M161 355h190" stroke="#F4F0E6" stroke-opacity=".55" stroke-width="4"/>
 </svg>

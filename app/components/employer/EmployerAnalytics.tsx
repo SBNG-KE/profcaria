@@ -139,48 +139,48 @@ const EmployerAnalytics = ({ isDark }: AnalyticsProps) => {
                         <AreaChart data={viewData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor={isDark ? '#3b82f6' : '#2563eb'} stopOpacity={0} />
+                                    <stop offset="5%" stopColor={isDark ? '#587565' : '#3D6254'} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={isDark ? '#587565' : '#3D6254'} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#262626' : '#e5e5e5'} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#153027' : '#F4F0E6'} />
                             <XAxis
                                 dataKey="name"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: isDark ? '#525252' : '#a3a3a3', fontSize: 10, fontWeight: 600 }}
+                                tick={{ fill: isDark ? '#486058' : '#CFC4B3', fontSize: 10, fontWeight: 600 }}
                                 dy={10}
                             />
                             <YAxis
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: isDark ? '#525252' : '#a3a3a3', fontSize: 10, fontWeight: 600 }}
+                                tick={{ fill: isDark ? '#486058' : '#CFC4B3', fontSize: 10, fontWeight: 600 }}
                                 dx={-10}
                             />
                             <Tooltip
-                                cursor={{ stroke: isDark ? '#3f3f46' : '#e4e4e7', strokeWidth: 1, strokeDasharray: '3 3' }}
+                                cursor={{ stroke: isDark ? '#486058' : '#F4F0E6', strokeWidth: 1, strokeDasharray: '3 3' }}
                                 contentStyle={{
-                                    backgroundColor: isDark ? '#171717' : '#ffffff',
-                                    borderColor: isDark ? '#262626' : '#e5e5e5',
+                                    backgroundColor: isDark ? '#081812' : '#FBF8F0',
+                                    borderColor: isDark ? '#153027' : '#F4F0E6',
                                     borderRadius: '12px',
                                     fontSize: '12px',
                                     fontWeight: 'bold',
-                                    color: isDark ? '#ffffff' : '#000000',
+                                    color: isDark ? '#FBF8F0' : '#081812',
                                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
                                 }}
                                 itemStyle={{
-                                    color: isDark ? '#3b82f6' : '#2563eb',
+                                    color: isDark ? '#587565' : '#3D6254',
                                     fontWeight: '900'
                                 }}
                             />
                             <Area
                                 type="monotone"
                                 dataKey="views"
-                                stroke={isDark ? '#3b82f6' : '#2563eb'}
+                                stroke={isDark ? '#587565' : '#3D6254'}
                                 strokeWidth={2}
                                 fillOpacity={1}
                                 fill="url(#colorViews)"
-                                activeDot={{ r: 5, fill: isDark ? '#3b82f6' : '#2563eb', stroke: isDark ? '#171717' : '#ffffff', strokeWidth: 2 }}
+                                activeDot={{ r: 5, fill: isDark ? '#587565' : '#3D6254', stroke: isDark ? '#081812' : '#FBF8F0', strokeWidth: 2 }}
                             />
                         </AreaChart>
                     </ResponsiveContainer>

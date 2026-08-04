@@ -95,15 +95,15 @@ export default function VerificationPage() {
         <div className="max-w-5xl mx-auto space-y-6 py-4 animate-in fade-in slide-in-from-bottom-8 duration-500">
             {/* Header with Score Ring */}
             <div className={`p-6 md:p-8 rounded-[32px] border relative overflow-hidden ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200 shadow-sm'}`}>
-                <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-5" style={{ background: isDark ? 'linear-gradient(135deg, #404040, #171717)' : 'linear-gradient(135deg, #e5e5e5, #ffffff)' }} />
+                <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-5" style={{ background: isDark ? 'linear-gradient(135deg, #153027, #081812)' : 'linear-gradient(135deg, #F4F0E6, #FBF8F0)' }} />
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
                     {/* Score Ring */}
                     <div className="relative w-32 h-32 shrink-0">
                         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-                            <circle cx="50" cy="50" r="42" fill="none" stroke={isDark ? '#262626' : '#e5e5e5'} strokeWidth="8" />
+                            <circle cx="50" cy="50" r="42" fill="none" stroke={isDark ? '#153027' : '#F4F0E6'} strokeWidth="8" />
                             <circle
                                 cx="50" cy="50" r="42" fill="none"
-                                stroke={graph.overallTier === 'gold' ? (isDark ? '#fafafa' : '#171717') : graph.overallTier === 'blue' ? (isDark ? '#e5e5e5' : '#404040') : graph.overallTier === 'gray' ? (isDark ? '#a3a3a3' : '#737373') : (isDark ? '#525252' : '#d4d4d4')}
+                                stroke={graph.overallTier === 'gold' ? (isDark ? '#FBF8F0' : '#081812') : graph.overallTier === 'blue' ? (isDark ? '#F4F0E6' : '#153027') : graph.overallTier === 'gray' ? (isDark ? '#CFC4B3' : '#77877F') : (isDark ? '#486058' : '#E8E0D2')}
                                 strokeWidth="8" strokeLinecap="round"
                                 strokeDasharray={`${graph.overallScore * 2.64} 264`}
                                 className="transition-all duration-1000"

@@ -412,7 +412,7 @@ export default function ConnectionsPage() {
                         </div>
                         <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                             <button onClick={() => setHasSyncedContacts(true)} className="flex-1 md:flex-none px-4 py-2 text-sm font-bold rounded-xl transition-colors text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-neutral-200 dark:hover:bg-white/5">Not Now</button>
-                            <button onClick={() => { localStorage.setItem('contacts_synced', 'true'); setHasSyncedContacts(true); }} className="flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded-xl transition-all shadow-lg bg-[#3B5998] text-white hover:bg-[#4A6BB5] shadow-[#3B5998]/20">Sync Contacts</button>
+                            <button onClick={() => { localStorage.setItem('contacts_synced', 'true'); setHasSyncedContacts(true); }} className="flex-1 md:flex-none px-6 py-2 text-sm font-bold rounded-xl transition-all shadow-lg bg-[#738D7D] text-white hover:bg-[#587565] shadow-[#738D7D]/20">Sync Contacts</button>
                         </div>
                     </div>
                 )}

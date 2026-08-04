@@ -24,7 +24,7 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
     });
 
     // White for dark mode (blending with other sections), dark navy for light mode
-    const primaryColor = isDark ? '#FFFFFF' : '#0A0F1A';
+    const primaryColor = isDark ? '#FBF8F0' : '#0D211A';
 
     return (
         <section ref={containerRef} className={`relative -mt-16 md:-mt-24 h-[110vh] flex flex-col justify-end items-center pb-8 overflow-hidden`}>
@@ -36,7 +36,7 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                 <div className="absolute top-1/2 inset-x-0 h-[600px] -translate-y-1/2 flex justify-center pointer-events-none z-10">
                     <svg width="2560" height="600" viewBox="0 0 2560 600" className="absolute top-0 pointer-events-none">
                         <defs>
-                            <filter id="gold-glow-arcs" x="-20%" y="-20%" width="140%" height="140%">
+                            <filter id="imperial-glow-arcs" x="-20%" y="-20%" width="140%" height="140%">
                                 <feGaussianBlur stdDeviation="3" result="blur" />
                                 <feComposite in="SourceGraphic" in2="blur" operator="over" />
                             </filter>
@@ -46,14 +46,14 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                         <motion.path 
                             d="M 1100 300 C 1200 300, 1168 188, 1280 188" 
                             fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
+                            filter={isDark ? "url(#imperial-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
                         />
                         {/* Bottom Left S-Curve */}
                         <motion.path 
                             d="M 1100 300 C 1200 300, 1168 412, 1280 412" 
                             fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
+                            filter={isDark ? "url(#imperial-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
                         />
                         
@@ -61,14 +61,14 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                         <motion.path 
                             d="M 1460 300 C 1360 300, 1392 188, 1280 188" 
                             fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
+                            filter={isDark ? "url(#imperial-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
                         />
                         {/* Bottom Right S-Curve */}
                         <motion.path 
                             d="M 1460 300 C 1360 300, 1392 412, 1280 412" 
                             fill="none" stroke={primaryColor} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" 
-                            filter={isDark ? "url(#gold-glow-arcs)" : "none"}
+                            filter={isDark ? "url(#imperial-glow-arcs)" : "none"}
                             style={{ pathLength: arcLength }} 
                         />
                     </svg>
@@ -88,7 +88,7 @@ export default function FooterActionSection({ onJoin, onContact }: { onJoin: () 
                     <span 
                         style={{ 
                             color: primaryColor, 
-                            textShadow: isDark ? '0 0 12px rgba(255,215,0,0.8)' : 'none' 
+                            textShadow: isDark ? '0 0 12px rgba(20,61,51,0.8)' : 'none'
                         }}
                         className="font-black uppercase tracking-widest font-pixel text-lg md:text-xl text-center leading-snug transition-transform duration-200 group-active:scale-[0.80]"
                     >

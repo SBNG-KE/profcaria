@@ -10,7 +10,7 @@ export default function CareerSection() {
 
     return (
         <section className={`relative min-h-screen py-32 flex flex-col justify-center px-4 sm:px-8 md:px-24 z-10`}>
-            <div className={`absolute inset-0 z-0 ${isDark ? 'bg-[radial-gradient(circle_at_center,rgba(59,89,152,0.05)_0%,transparent_70%)]' : 'bg-[radial-gradient(circle_at_center,rgba(27,42,74,0.03)_0%,transparent_70%)]'}`} />
+            <div className={`absolute inset-0 z-0 ${isDark ? 'bg-[radial-gradient(circle_at_center,rgba(20,61,51,0.05)_0%,transparent_70%)]' : 'bg-[radial-gradient(circle_at_center,rgba(88,117,101,0.05)_0%,transparent_70%)]'}`} />
             
             <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col lg:flex-row items-center gap-20">
                 
@@ -23,7 +23,7 @@ export default function CareerSection() {
                 >
                     <h2 className={`text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none ${isDark ? 'text-white' : 'text-black'}`}>
                         Career<br />
-                        <span className="font-pixel text-[#3B5998]">Management.</span><br />
+                        <span className="font-pixel text-[#738D7D]">Management.</span><br />
                         Evolved.
                     </h2>
                     <p className={`text-xl leading-relaxed ${isDark ? 'text-neutral-400' : 'text-neutral-600'}`}>
@@ -48,10 +48,10 @@ export default function CareerSection() {
                         { num: '04', title: 'Growth', tag: 'TRACKED & GUIDED', desc: 'Automated milestone tracking that identifies what you need to learn next to bridge the gap between your current position and your absolute dream role.' }
                     ].map((item, idx) => (
                         <div key={idx} className={`p-8 rounded-3xl border flex flex-col justify-between transition-all
-                            ${isDark ? 'bg-[#111827]/50 border-[#1B2A4A] hover:bg-[#1B2A4A]/40 hover:-translate-y-1' : 'bg-neutral-50/80 border-neutral-200 hover:bg-white hover:-translate-y-1 hover:shadow-xl'}
+                            ${isDark ? 'bg-[#0D211A]/50 border-[#143D33] hover:bg-[#143D33]/40 hover:-translate-y-1' : 'bg-neutral-50/80 border-neutral-200 hover:bg-white hover:-translate-y-1 hover:shadow-xl'}
                         `}>
                             <div className="mb-8">
-                                <span className={`text-[10px] md:text-xs font-pixel uppercase tracking-[0.2em] ${isDark ? 'text-[#3B5998]' : 'text-[#1B2A4A]/50'}`}>
+                                <span className={`text-[10px] md:text-xs font-pixel uppercase tracking-[0.2em] ${isDark ? 'text-[#738D7D]' : 'text-[#143D33]/50'}`}>
                                     {item.num} {'//'} {item.tag}
                                 </span>
                             </div>

@@ -25,29 +25,29 @@ const EmailWrapper = (content: string) => `
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { margin: 0; padding: 0; background-color: #000000; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: #081812; color: #FBF8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         ${getBaseStyles()}
     </style>
 </head>
-<body style="margin: 0; padding: 0; background-color: #000000;">
-    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #000000;">
+<body style="margin: 0; padding: 0; background-color: #081812;">
+    <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #081812;">
         <tr>
             <td align="center" style="padding: 40px 0;">
                 <div class="container" style="max-width: 600px; width: 100%; margin: 0 auto;">
                     <!-- Logo -->
                     <div style="text-align: center; margin-bottom: 32px;">
-                        <span style="font-size: 24px; font-weight: 900; color: #ffffff; letter-spacing: -1px; text-transform: uppercase;">profcaria</span>
+                        <span style="font-size: 24px; font-weight: 900; color: #FBF8F0; letter-spacing: -1px; text-transform: uppercase;">profcaria</span>
                     </div>
                     
                     <!-- Content Card (Black with Subtle Border) -->
-                    <div class="content" style="background-color: #000000; border: 1px solid #333333; border-radius: 24px; overflow: hidden;">
+                    <div class="content" style="background-color: #081812; border: 1px solid #153027; border-radius: 24px; overflow: hidden;">
                         <div class="card" style="padding: 48px;">
                             ${content}
                         </div>
                     </div>
 
                     <!-- Footer -->
-                <div style="text-align: center; margin-top: 32px; color: #525252; font-size: 12px; font-weight: 500;">
+                <div style="text-align: center; margin-top: 32px; color: #486058; font-size: 12px; font-weight: 500;">
                     <p style="margin: 0 0 8px 0; letter-spacing: 1px; text-transform: uppercase;">&copy; ${new Date().getFullYear()} Profcaria</p>
                     <p style="margin: 0;">All rights reserved</p>
                 </div>
@@ -66,14 +66,14 @@ export async function sendEmailOTP(to: string, code: string) {
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Verification Code</h1>
-        <p style="margin: 0 0 32px 0; color: #a3a3a3; font-size: 15px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Verification Code</h1>
+        <p style="margin: 0 0 32px 0; color: #CFC4B3; font-size: 15px; line-height: 1.6; text-align: center;">
             Please use the code below to verify your account. It will expire in 10 minutes.
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
-            <span class="code" style="font-family: monospace; font-size: 42px; font-weight: 700; color: #ffffff; letter-spacing: 12px; display: block;">${code}</span>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <span class="code" style="font-family: monospace; font-size: 42px; font-weight: 700; color: #FBF8F0; letter-spacing: 12px; display: block;">${code}</span>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center;">If you didn't request this, you can safely ignore this email.</p>
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center;">If you didn't request this, you can safely ignore this email.</p>
     `;
 
     try {
@@ -97,17 +97,17 @@ export async function sendJobInvite(to: string, jobTitle: string, companyName: s
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">You're Invited</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">You're Invited</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${companyName}</strong> has invited you to apply for their open role:
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
-            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #FBF8F0;">${jobTitle}</p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${link}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">View Job & Apply</a>
+            <a href="${link}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">View Job & Apply</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             Click the button above to view the full job details. <br>To ensure security, this link is unique to you.
         </p>
     `;
@@ -137,19 +137,19 @@ export async function sendUnreadMessageNotification(to: string, senderName: stri
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Message</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">New Message</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             You have a new message from <strong>${senderName}</strong> regarding <strong>${jobTitle}</strong>.
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
-            <p style="margin: 0; color: #a3a3a3; font-size: 14px; font-style: italic;">
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0; color: #CFC4B3; font-size: 14px; font-style: italic;">
                 "They are waiting for your reply..."
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Messages</a>
+            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Messages</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             We sent this because you haven't been active recently.
         </p>
     `;
@@ -196,23 +196,23 @@ export async function sendShortlistedNotification(to: string, jobTitle: string, 
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Great News!</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Great News!</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             You've been <strong>shortlisted</strong> for a position at <strong>${companyName}</strong>!
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
-            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #FBF8F0;">${jobTitle}</p>
         </div>
-        <div style="background-color: #ffffff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-            <p style="margin: 0; color: #000000; font-size: 14px; text-align: center;">
+        <div style="background-color: #FBF8F0; border: 1px solid #F4F0E6; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #081812; font-size: 14px; text-align: center;">
                 <strong>Stay Alert!</strong><br>
                 The employer may reach out with messages soon. Please check your inbox and notifications regularly.
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #e5e5e5;">Check Your Dashboard</a>
+            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; border: 1px solid #F4F0E6;">Check Your Dashboard</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             This is an important step forward. Keep your profile updated and be ready to respond promptly!
         </p>
     `;
@@ -242,21 +242,21 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         <div style="text-align: center; margin-bottom: 24px;">
             <span style="font-size: 48px;"></span>
         </div>
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #ffffff; text-align: center; letter-spacing: -1px;">Congratulations!</h1>
-        <p style="margin: 0 0 8px 0; color: #10b981; font-size: 18px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #FBF8F0; text-align: center; letter-spacing: -1px;">Congratulations!</h1>
+        <p style="margin: 0 0 8px 0; color: #587565; font-size: 18px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
             You're Officially Employed!
         </p>
-        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p style="margin: 0 0 32px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${companyName}</strong> has hired you for the position of:
         </p>
         
         <!-- Semantic Green preserved for critical success state -->
-        <div style="background-color: #064e3b; border: 1px solid #10b981; border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center; box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.2);">
-            <p style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">${jobTitle}</p>
+        <div style="background-color: #143D33; border: 1px solid #587565; border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center; box-shadow: 0 0 40px -10px rgba(88, 117, 101, 0.2);">
+            <p style="margin: 0; font-size: 22px; font-weight: 800; color: #FBF8F0; text-transform: uppercase; letter-spacing: 1px;">${jobTitle}</p>
         </div>
         
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; font-weight: 500;">
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #CFC4B3; font-size: 14px; text-align: center; font-weight: 500;">
                 <strong>⚠️ IMPORTANT</strong><br><br>
                 Please check your emails and Profcaria notifications regularly!<br>
                 The employer will be sending important onboarding information, contracts, and next steps.
@@ -264,10 +264,10 @@ export async function sendEmployedNotification(to: string, jobTitle: string, com
         </div>
         
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
+            <a href="https://www.profcaria.com/" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
         </div>
         
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.6;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.6;">
             Your journey with <strong>${companyName}</strong> begins now.<br>
             We wish you all the best in your new role!
         </p>
@@ -298,20 +298,20 @@ export async function sendNewFollowerNotification(to: string, followerName: stri
     const actionText = followerType === 'company' ? 'subscribed to' : 'started following';
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">${title}</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">${title}</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${followerName}</strong> has ${actionText} your profile!
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
-            <div style="width: 64px; height: 64px; background-color: #262626; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <div style="width: 64px; height: 64px; background-color: #153027; border-radius: 50%; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                 <span style="font-size: 24px;">👤</span> 
             </div>
-            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${followerName}</p>
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #FBF8F0;">${followerName}</p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${link}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">View Profile</a>
+            <a href="${link}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">View Profile</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             Expand your network by checking out their profile.
         </p>
     `;
@@ -340,22 +340,22 @@ export async function sendApplicationReceivedEmail(to: string, applicantName: st
     const link = `https://www.profcaria.com/employer/jobs/${jobId}/applications`;
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Application</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">New Application</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             Someone has applied to your open position!
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
-            <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px;">Applicant</p>
-            <p style="margin: 0; font-size: 20px; font-weight: 700; color: #ffffff;">${applicantName}</p>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #CFC4B3; text-transform: uppercase; letter-spacing: 1px;">Applicant</p>
+            <p style="margin: 0; font-size: 20px; font-weight: 700; color: #FBF8F0;">${applicantName}</p>
         </div>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
-            <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px;">Position</p>
-            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #ffffff;">${jobTitle}</p>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 32px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #CFC4B3; text-transform: uppercase; letter-spacing: 1px;">Position</p>
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: #FBF8F0;">${jobTitle}</p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${link}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Review Application</a>
+            <a href="${link}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Review Application</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             We recommend reviewing applications promptly to find the best candidates.
         </p>
     `;
@@ -391,24 +391,24 @@ export async function sendJobRecommendationEmail(to: string, recipientName: stri
     const jobCards = jobs.slice(0, 5).map(job => {
         const link = `https://www.profcaria.com/professional/find?ref=email&job=${job.id}`;
         return `
-            <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
-                <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #ffffff;">${job.title}</p>
-                <p style="margin: 0 0 12px 0; font-size: 14px; color: #a3a3a3;">${job.companyName}${job.location ? ` • ${job.location}` : ''}</p>
-                <a href="${link}" style="display: inline-block; background-color: #262626; color: #ffffff; font-weight: 700; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">View & Apply</a>
+            <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #FBF8F0;">${job.title}</p>
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #CFC4B3;">${job.companyName}${job.location ? ` • ${job.location}` : ''}</p>
+                <a href="${link}" style="display: inline-block; background-color: #153027; color: #FBF8F0; font-weight: 700; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">View & Apply</a>
             </div>
         `;
     }).join('');
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Jobs For You ✨</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Jobs For You ✨</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             Hi ${recipientName}, here are some opportunities tailored just for you:
         </p>
         ${jobCards}
         <div style="text-align: center; margin-top: 32px; margin-bottom: 24px;">
-            <a href="https://www.profcaria.com/professional/find" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Browse All Jobs</a>
+            <a href="https://www.profcaria.com/professional/find" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Browse All Jobs</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             These recommendations are powered by our AI matching algorithm based on your profile and preferences.
         </p>
     `;
@@ -445,59 +445,59 @@ export async function sendWelcomeEmail(
 
     const content = entityType === 'professional'
         ? `
-        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Welcome to Profcaria, ${recipientName}</h1>
-        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Welcome to Profcaria, ${recipientName}</h1>
+        <p style="margin: 0 0 20px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             Thank you for joining Profcaria. We are glad to have you here.
         </p>
-        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <p style="margin: 0 0 20px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             Profcaria is built to help professionals like you find the right opportunities, connect with employers, and grow your career. Everything on the platform is designed with your success in mind.
         </p>
-        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <p style="margin: 0 0 20px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             Here is what you can do to get started:
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-            <p style="margin: 0 0 12px 0; color: #ffffff; font-size: 14px; line-height: 1.8;">
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <p style="margin: 0 0 12px 0; color: #FBF8F0; font-size: 14px; line-height: 1.8;">
                 1. Complete your profile so employers can find you.<br/>
                 2. Browse open jobs that match your skills.<br/>
                 3. Set up your security settings to protect your account.
             </p>
         </div>
-        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <p style="margin: 0 0 32px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             If you ever need help with anything, feel free to reach out through our support page. We are always happy to assist.
         </p>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${dashboardUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Feed</a>
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Feed</a>
         </div>
-        <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: left; line-height: 1.6;">
+        <p style="margin: 0; color: #CFC4B3; font-size: 14px; text-align: left; line-height: 1.6;">
             Welcome aboard,<br/>
             The Profcaria Team
         </p>
     `
         : `
-        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Welcome to Profcaria, ${recipientName}</h1>
-        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <h1 class="title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Welcome to Profcaria, ${recipientName}</h1>
+        <p style="margin: 0 0 20px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             Thank you for creating your company account on Profcaria. We are glad to have you here.
         </p>
-        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <p style="margin: 0 0 20px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             Profcaria helps employers like you find the right talent, manage applications, and hire faster. Our platform is built to make your recruitment process simple and effective.
         </p>
-        <p style="margin: 0 0 20px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <p style="margin: 0 0 20px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             Here is what you can do to get started:
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
-            <p style="margin: 0 0 12px 0; color: #ffffff; font-size: 14px; line-height: 1.8;">
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+            <p style="margin: 0 0 12px 0; color: #FBF8F0; font-size: 14px; line-height: 1.8;">
                 1. Set up your company profile so candidates can learn about you.<br/>
                 2. Post your first job to start receiving applications.<br/>
                 3. Use AI Top Matches to discover the best candidates for your roles.
             </p>
         </div>
-        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 15px; line-height: 1.8; text-align: left;">
+        <p style="margin: 0 0 32px 0; color: #E8E0D2; font-size: 15px; line-height: 1.8; text-align: left;">
             If you ever need help with anything, feel free to reach out through our support page. We are always happy to assist.
         </p>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${dashboardUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Go to Your Dashboard</a>
         </div>
-        <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: left; line-height: 1.6;">
+        <p style="margin: 0; color: #CFC4B3; font-size: 14px; text-align: left; line-height: 1.6;">
             Welcome aboard,<br/>
             The Profcaria Team
         </p>
@@ -544,33 +544,33 @@ export async function sendPromoWelcomeEmail(
         <div style="text-align: center; margin-bottom: 24px;">
             <span style="font-size: 48px;"></span>
         </div>
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #ffffff; text-align: center; letter-spacing: -1px;">Welcome, Early Adopter!</h1>
-        <p style="margin: 0 0 8px 0; color: #a855f7; font-size: 16px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 28px; font-weight: 900; color: #FBF8F0; text-align: center; letter-spacing: -1px;">Welcome, Early Adopter!</h1>
+        <p style="margin: 0 0 8px 0; color: #738D7D; font-size: 16px; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
             You're One of Our First Users
         </p>
-        <p style="margin: 0 0 32px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <p style="margin: 0 0 32px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             Hi ${recipientName}, thank you for being an early adopter of Profcaria!
         </p>
         
-        <div style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
+        <div style="background: linear-gradient(135deg, #738D7D 0%, #738D7D 100%); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center;">
             <p style="margin: 0 0 8px 0; font-size: 14px; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 1px;">Your Free Premium Access</p>
-            <p style="margin: 0 0 12px 0; font-size: 24px; font-weight: 800; color: #ffffff; text-transform: uppercase;">${planName} Plan</p>
+            <p style="margin: 0 0 12px 0; font-size: 24px; font-weight: 800; color: #FBF8F0; text-transform: uppercase;">${planName} Plan</p>
             <p style="margin: 0; font-size: 14px; color: rgba(255,255,255,0.9);">Valid until <strong>${formattedExpiry}</strong></p>
         </div>
         
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; line-height: 1.6;">
-                <strong style="color: #ffffff;">What's Included:</strong><br/>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+            <p style="margin: 0; color: #CFC4B3; font-size: 14px; text-align: center; line-height: 1.6;">
+                <strong style="color: #FBF8F0;">What's Included:</strong><br/>
                 ✓ All premium features unlocked<br/>
                 ✓ Cancel anytime
             </p>
         </div>
         
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${dashboardUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Start Using Premium</a>
+            <a href="${dashboardUrl}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 18px 40px; border-radius: 14px; text-decoration: none; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;">Start Using Premium</a>
         </div>
         
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.6;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.6;">
             We're thrilled to have you as part of our founding community.<br/>
             Your feedback helps shape the future of Profcaria!
         </p>
@@ -598,20 +598,20 @@ export async function sendKYCRequiredNotification(to: string, jobTitle: string, 
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Action Required: Identity Verification</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Action Required: Identity Verification</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${companyName}</strong> wants to shortlist you for the <strong>${jobTitle}</strong> position!
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #eab308; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
-            <p style="margin: 0 0 12px 0; color: #eab308; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">⚠️ Verification Pending</p>
-            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; font-weight: 500;">
+        <div style="background-color: #081812; border: 1px solid #738D7D; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 12px 0; color: #738D7D; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">⚠️ Verification Pending</p>
+            <p style="margin: 0; color: #CFC4B3; font-size: 14px; text-align: center; font-weight: 500;">
                 Before you can be officially shortlisted, you must complete a quick Video Identity Verification (KYC). This helps keep our platform secure and trusted.
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${verifyLink}" style="display: inline-block; background-color: #eab308; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">Start Verification</a>
+            <a href="${verifyLink}" style="display: inline-block; background-color: #738D7D; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;">Start Verification</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             Click the button above to securely record a 15-second video to verify your identity. This link is private and unique to your application.
         </p>
     `;
@@ -637,20 +637,20 @@ export async function sendKYCCompletedNotification(to: string, candidateName: st
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">Identity Verification Complete ✅</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">Identity Verification Complete ✅</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${candidateName}</strong> has successfully completed their Video Identity Verification for the <strong>${jobTitle}</strong> position.
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #10b981; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
-            <p style="margin: 0 0 12px 0; color: #10b981; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">✓ Verified & Shortlisted</p>
-            <p style="margin: 0; color: #a3a3a3; font-size: 14px; text-align: center; font-weight: 500;">
+        <div style="background-color: #081812; border: 1px solid #587565; border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 12px 0; color: #587565; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">✓ Verified & Shortlisted</p>
+            <p style="margin: 0; color: #CFC4B3; font-size: 14px; text-align: center; font-weight: 500;">
                 This candidate is now officially shortlisted. You can review their KYC snapshot and video recording in the applicant details on your dashboard.
             </p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/employer/applications" style="display: inline-block; background-color: #10b981; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">View Applicant</a>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/employer/applications" style="display: inline-block; background-color: #587565; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">View Applicant</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             You can proceed with the next steps in your recruitment pipeline for this candidate.
         </p>
     `;
@@ -677,18 +677,18 @@ export async function sendNewRoleNotification(to: string, professionalName: stri
     }
 
     const content = `
-        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #ffffff; text-align: center; letter-spacing: -0.5px;">New Team Member?</h1>
-        <p style="margin: 0 0 24px 0; color: #d4d4d4; font-size: 16px; line-height: 1.6; text-align: center;">
+        <h1 class="title" style="margin: 0 0 16px 0; font-size: 24px; font-weight: 700; color: #FBF8F0; text-align: center; letter-spacing: -0.5px;">New Team Member?</h1>
+        <p style="margin: 0 0 24px 0; color: #E8E0D2; font-size: 16px; line-height: 1.6; text-align: center;">
             <strong>${professionalName}</strong> has just added a new role on their profile indicating they work at your company.
         </p>
-        <div style="background-color: #0a0a0a; border: 1px solid #262626; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
-            <p style="margin: 0 0 8px 0; font-size: 14px; color: #a3a3a3; text-transform: uppercase; letter-spacing: 1px;">Role Title</p>
-            <p style="margin: 0; font-size: 20px; font-weight: 700; color: #ffffff;">${roleTitle}</p>
+        <div style="background-color: #081812; border: 1px solid #153027; border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 8px 0; font-size: 14px; color: #CFC4B3; text-transform: uppercase; letter-spacing: 1px;">Role Title</p>
+            <p style="margin: 0; font-size: 20px; font-weight: 700; color: #FBF8F0;">${roleTitle}</p>
         </div>
         <div style="text-align: center; margin-bottom: 32px;">
-            <a href="${profileLink}" style="display: inline-block; background-color: #ffffff; color: #000000; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">View Professional Profile</a>
+            <a href="${profileLink}" style="display: inline-block; background-color: #FBF8F0; color: #081812; font-weight: 800; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">View Professional Profile</a>
         </div>
-        <p style="margin: 0; color: #525252; font-size: 13px; text-align: center; line-height: 1.5;">
+        <p style="margin: 0; color: #486058; font-size: 13px; text-align: center; line-height: 1.5;">
             You can verify if this professional is indeed a part of your team.
         </p>
     `;
