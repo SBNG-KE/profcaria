@@ -7,7 +7,6 @@ import { useTheme } from '../context/ThemeContext';
 import { PixelBackground } from './PixelBackground';
 import ProfcariaLogo, { ProfcariaMark } from './brand/ProfcariaLogo';
 import HangingSecurityCard from './HangingSecurityCard';
-import { validateProfcariaUsername } from '@/lib/profcaria-username';
 
 const supabaseAuth = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,11 +18,11 @@ type AuthMode = 'login' | 'signup';
 type AccountIntent = 'individual' | 'company';
 
 function GoogleMark() {
-  return <svg aria-hidden="true" viewBox="0 0 48 48" className="h-5 w-5 shrink-0">
-    <path fill="#738D7D" d="M43.6 20.5H42V20H24v8h11.3A12 12 0 0 1 12.7 32l-6.6 5.1A20 20 0 0 0 44 24c0-1.2-.1-2.3-.4-3.5Z" />
-    <path fill="#738D7D" d="m6.1 10.9 6.6 4.8A12 12 0 0 1 32 12.1l5.8-5.7A20 20 0 0 0 6.1 10.9Z" />
-    <path fill="#3D6254" d="M24 44c5.4 0 10-1.8 13.4-4.9L31.2 34a12 12 0 0 1-18.5-6l-6.6 5.1A20 20 0 0 0 24 44Z" />
-    <path fill="#587565" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4.1 6l6.2 5.1C41 35.8 44 30.8 44 24c0-1.2-.1-2.3-.4-3.5Z" />
+  return <svg aria-hidden="true" viewBox="0 0 18 18" className="h-[18px] w-[18px] shrink-0">
+    <path fill="#4285F4" d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.797 2.716v2.259h2.909c1.702-1.567 2.684-3.875 2.684-6.615Z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.468-.806 5.956-2.18l-2.909-2.259c-.806.54-1.835.859-3.047.859-2.344 0-4.328-1.585-5.037-3.715H.956v2.332A9 9 0 0 0 9 18Z" />
+    <path fill="#FBBC05" d="M3.963 10.705A5.41 5.41 0 0 1 3.682 9c0-.592.102-1.168.281-1.705V4.963H.956A9 9 0 0 0 0 9c0 1.452.347 2.827.956 4.037l3.007-2.332Z" />
+    <path fill="#EA4335" d="M9 3.58c1.322 0 2.508.455 3.441 1.346l2.581-2.581C13.464.893 11.426 0 9 0A9 9 0 0 0 .956 4.963l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58Z" />
   </svg>;
 }
 
@@ -56,7 +55,6 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+254');
   const [busy, setBusy] = useState(false);
@@ -77,10 +75,9 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
     return <HangingSecurityCard isOpen onClose={onClose} initialMode={screen === 'security_setup' ? 'setup' : 'verify'} redirectTo={destination} />;
   }
 
-  const usernameCheck = validateProfcariaUsername(username);
   const valid = mode === 'login'
     ? Boolean(email.trim() && password)
-    : Boolean(firstName.trim() && lastName.trim() && email.trim() && password.length >= 8 && usernameCheck.valid && (intent === 'individual' || organizationName.trim().length >= 2));
+    : Boolean(firstName.trim() && lastName.trim() && email.trim() && password.length >= 8 && (intent === 'individual' || organizationName.trim().length >= 2));
 
   async function createOrganization() {
     const response = await fetch('/api/work/organizations', {
@@ -103,7 +100,6 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
         : {
             firstName: firstName.trim(),
             lastName: lastName.trim(),
-            username: usernameCheck.username,
             email: email.trim().toLowerCase(),
             password,
             phoneNumber: phone.trim() ? `${countryCode}${phone.replace(/\D/g, '')}` : null,
@@ -211,12 +207,11 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
 
             {mode === 'signup' && intent === 'company' && <div className="mt-7"><Field label="Organisation name" value={organizationName} onChange={setOrganizationName} autoComplete="organization" placeholder="The company or organisation you represent" /></div>}
 
-            <button onClick={continueWithGoogle} disabled={busy} className="mt-7 flex w-full items-center justify-center gap-3 border border-[var(--border-primary)] bg-[var(--bg-primary)] px-5 py-3.5 text-sm font-semibold transition-colors hover:border-[var(--accent-primary)] disabled:opacity-50"><GoogleMark />Continue with Google</button>
+            <button onClick={continueWithGoogle} disabled={busy} className="mt-7 flex w-full items-center justify-center gap-3 rounded-xl border border-[#dadce0] bg-white px-5 py-3.5 text-[15px] font-medium text-[#1f1f1f] shadow-[0_1px_2px_rgba(60,64,67,0.08)] transition hover:border-[#c7cacf] hover:bg-[#f8fafd] hover:shadow-[0_1px_3px_rgba(60,64,67,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4285f4]/40 disabled:cursor-not-allowed disabled:opacity-55"><GoogleMark />Continue with Google</button>
             <div className="my-6 flex items-center gap-4"><span className="h-px flex-1 bg-[var(--border-primary)]" /><span className="text-[9px] uppercase tracking-[0.24em] text-[var(--text-muted)]">or use email</span><span className="h-px flex-1 bg-[var(--border-primary)]" /></div>
 
             <form onSubmit={(event) => { event.preventDefault(); submit(); }} className="space-y-5">
               {mode === 'signup' && <div className="grid gap-5 sm:grid-cols-2"><Field label={intent === 'company' ? "Owner's first name" : 'First name'} value={firstName} onChange={setFirstName} autoComplete="given-name" /><Field label={intent === 'company' ? "Owner's last name" : 'Last name'} value={lastName} onChange={setLastName} autoComplete="family-name" /></div>}
-              {mode === 'signup' && <div><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><span className="py-3 pr-1 text-[15px] text-[var(--accent-primary)]">@</span><input aria-label="Unique username" value={username} onChange={(event) => setUsername(event.target.value.replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))} autoComplete="username" placeholder="your_unique_name" className="min-w-0 flex-1 bg-transparent py-3 text-[15px] outline-none placeholder:text-[var(--text-muted)]" /></div><p className={`mt-2 text-[10px] leading-4 ${username && !usernameCheck.valid ? 'text-[var(--accent-strong)]' : 'text-[var(--text-muted)]'}`}>{username && !usernameCheck.valid ? usernameCheck.error : intent === 'company' ? 'This identifies the account owner. The organisation keeps its own public name.' : 'People can find you without seeing your phone number.'}</p></div>}
               <Field label={intent === 'company' ? 'Work email address' : 'Email address'} type="email" value={email} onChange={setEmail} autoComplete="email" />
               <label className="block"><span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--text-muted)]">{mode === 'signup' ? 'Password · 8 characters minimum' : 'Password'}</span><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} className="min-w-0 flex-1 bg-transparent py-3 text-[15px] outline-none" /><button type="button" onClick={() => setShowPassword(current => !current)} className="px-2 text-[var(--text-muted)] hover:text-[var(--text-primary)]" aria-label={showPassword ? 'Hide password' : 'Show password'}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>
               {mode === 'signup' && <div><span className="mb-2 block text-[9px] font-bold uppercase tracking-[0.26em] text-[var(--text-muted)]">Phone number · optional on web</span><div className="flex border-b border-[var(--border-primary)] focus-within:border-[var(--accent-primary)]"><select value={countryCode} onChange={(event) => setCountryCode(event.target.value)} className="bg-transparent py-3 pr-3 text-sm outline-none"><option value="+254">KE +254</option><option value="+256">UG +256</option><option value="+255">TZ +255</option><option value="+250">RW +250</option><option value="+234">NG +234</option><option value="+27">ZA +27</option><option value="+1">US/CA +1</option><option value="+44">UK +44</option></select><input value={phone} onChange={(event) => setPhone(event.target.value.replace(/[^0-9 ]/g, ''))} inputMode="tel" autoComplete="tel" placeholder="Add now or later in Settings" className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none placeholder:text-[var(--text-muted)]" /></div></div>}

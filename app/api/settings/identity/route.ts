@@ -13,8 +13,10 @@ async function readIdentity(accountId: string) {
     .eq('id', accountId)
     .single();
   if (error) throw error;
+  const hasCustomUsername = !/^profcaria_[0-9a-f]{12}$/.test(data.username);
   return {
-    username: data.username,
+    username: hasCustomUsername ? data.username : '',
+    hasCustomUsername,
     phoneNumber: decryptData(data.enc_phone_number) || '',
     phoneVerified: Boolean(data.phone_verified_at),
   };
@@ -53,7 +55,7 @@ export async function PATCH(request: Request) {
     changes.phone_verified_at = null;
   }
   if (Object.keys(changes).length === 1) {
-    return NextResponse.json({ error: 'Choose a username or phone number to update.' }, { status: 400 });
+    return NextResponse.json({ error: 'Choose a public handle or phone number to update.' }, { status: 400 });
   }
 
   const { error } = await supabaseAdmin.schema('profcaria').from('accounts').update(changes).eq('id', session.uid);

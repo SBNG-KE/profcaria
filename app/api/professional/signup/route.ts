@@ -8,7 +8,7 @@ import { checkRateLimit, getClientIdentifier, rateLimitedResponse } from '@/lib/
 import * as argon2 from 'argon2';
 import { SignJWT } from 'jose';
 import { ensureProfcariaAccount } from '@/lib/profcaria-identity';
-import { validateProfcariaPhone, validateProfcariaUsername } from '@/lib/profcaria-username';
+import { validateProfcariaPhone } from '@/lib/profcaria-username';
 
 // Force Node.js runtime for Argon2 support
 export const runtime = 'nodejs';
@@ -30,7 +30,6 @@ export async function POST(req: Request) {
       lastName,
       role,
       phoneNumber,
-      username: requestedUsername,
       onboardingChannel = 'web',
       accountIntent = 'individual',
     } = body;
@@ -38,10 +37,6 @@ export async function POST(req: Request) {
     // 1. Input Validation
     if (!email || !password || !firstName || !lastName || password.length < 8) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-    const usernameResult = validateProfcariaUsername(requestedUsername);
-    if (!usernameResult.valid) {
-      return NextResponse.json({ error: usernameResult.error }, { status: 400 });
     }
     const phoneResult = validateProfcariaPhone(phoneNumber);
     if (!phoneResult.valid) {
@@ -61,17 +56,13 @@ export async function POST(req: Request) {
     const phoneIndex = phoneResult.phone ? hashForIndex(phoneResult.phone) : null;
 
     // 3. One email can own only one Profcaria login, including legacy accounts.
-    const [{ data: existingUser }, { data: existingCompany }, { data: existingUsername }] = await Promise.all([
+    const [{ data: existingUser }, { data: existingCompany }] = await Promise.all([
       supabaseAdmin.schema('professional').from('users').select('id').eq('email_index', emailIndex).maybeSingle(),
       supabaseAdmin.schema('employer').from('companies').select('id').eq('work_email_index', emailIndex).maybeSingle(),
-      supabaseAdmin.schema('profcaria').from('accounts').select('id').eq('username', usernameResult.username).maybeSingle(),
     ]);
 
     if (existingUser || existingCompany) {
       return NextResponse.json({ error: 'User already exists' }, { status: 409 });
-    }
-    if (existingUsername) {
-      return NextResponse.json({ error: 'That username is already taken.' }, { status: 409 });
     }
 
     // 4. Hash Password (Argon2id) - The Gold Standard
@@ -123,7 +114,6 @@ export async function POST(req: Request) {
         emailIndex,
         encryptedEmail: data.enc_email,
         displayName: `${firstName || ''} ${lastName || ''}`.trim(),
-        username: usernameResult.username,
         phoneIndex,
         encryptedPhone: phoneResult.phone ? encryptData(phoneResult.phone) : null,
         security: { requires2fa },
@@ -131,7 +121,7 @@ export async function POST(req: Request) {
     } catch (accountError: unknown) {
       await supabaseAdmin.schema('professional').from('users').delete().eq('id', data.id);
       if (typeof accountError === 'object' && accountError && 'code' in accountError && accountError.code === '23505') {
-        return NextResponse.json({ error: 'That username or phone number is already connected to another account.' }, { status: 409 });
+        return NextResponse.json({ error: 'That phone number is already connected to another account.' }, { status: 409 });
       }
       throw accountError;
     }
@@ -172,7 +162,7 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     console.error('Professional Signup Error:', error);
     if (typeof error === 'object' && error && 'code' in error && error.code === '23505') {
-      return NextResponse.json({ error: 'That email, username, or phone number is already in use.' }, { status: 409 });
+      return NextResponse.json({ error: 'That email or phone number is already in use.' }, { status: 409 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

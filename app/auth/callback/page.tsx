@@ -12,10 +12,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '@/app/context/ThemeContext';
-import { AtSign, Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
+import { Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
 import { ProfcariaBadge } from '@/app/components/brand/ProfcariaLogo';
 import { PixelBackground } from '@/app/components/PixelBackground';
-import { validateProfcariaUsername } from '@/lib/profcaria-username';
 
 // Create a client-side Supabase client for reading the OAuth session
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -74,8 +73,6 @@ export default function AuthCallbackPage() {
     const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
     const [industrySearch, setIndustrySearch] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [oauthUsername, setOauthUsername] = useState('');
-    const [needsUsername, setNeedsUsername] = useState(false);
     const [needsCompany, setNeedsCompany] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
@@ -164,7 +161,6 @@ export default function AuthCallbackPage() {
                         accountIntent: getOAuthIntent(),
                         token: session.access_token
                     });
-                    setNeedsUsername(Boolean(data.needsUsername));
                     setNeedsCompany(Boolean(data.needsCompany));
 
                     // Fetch industries for the dropdown
@@ -213,11 +209,9 @@ export default function AuthCallbackPage() {
         handleCallback();
     }, [router]);
 
-    const oauthUsernameResult = validateProfcariaUsername(oauthUsername);
-
     // Finish identity details that Google cannot choose for the person.
     const handleOAuthComplete = async () => {
-        if (!oauthData || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)) return;
+        if (!oauthData || (needsCompany && !companyName)) return;
 
         setSubmitting(true);
         try {
@@ -229,7 +223,6 @@ export default function AuthCallbackPage() {
                 },
                 body: JSON.stringify({
                     ...oauthData,
-                    ...(needsUsername ? { username: oauthUsernameResult.username } : {}),
                     ...(needsCompany ? { companyName, industry } : {}),
                 }),
             });
@@ -289,9 +282,9 @@ export default function AuthCallbackPage() {
             <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
             <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-[var(--border-primary)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-glow)] backdrop-blur-sm">
                 <ProfcariaBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
-                <h2 className="text-2xl font-black tracking-tight text-center mb-2">{needsCompany ? 'Complete your account' : 'Choose your username'}</h2>
+                <h2 className="text-2xl font-black tracking-tight text-center mb-2">Complete your company details</h2>
                 <p className={`text-center text-sm mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                    {needsCompany ? 'Choose how people find you, then add the organisation details.' : 'This unique name lets people find you without seeing your phone number.'}
+                    Add the organisation details candidates should recognise.
                 </p>
 
                 {errorMessage && (
@@ -299,19 +292,6 @@ export default function AuthCallbackPage() {
                 )}
 
                 <div className="space-y-6">
-                    {needsUsername && <div className="relative group">
-                        <AtSign size={18} className={`absolute left-0 top-3 ${isDark ? 'text-neutral-500 group-focus-within:text-white' : 'text-neutral-400 group-focus-within:text-black'}`} />
-                        <input
-                            aria-label="Unique username"
-                            value={oauthUsername}
-                            onChange={(event) => setOauthUsername(event.target.value.replace(/^@+/, '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30))}
-                            autoComplete="username"
-                            placeholder="your_unique_name"
-                            className={`w-full border-b-2 bg-transparent py-3 pl-8 pr-4 text-sm outline-none transition-all ${isDark ? 'border-neutral-800 text-white placeholder-neutral-600 focus:border-white' : 'border-neutral-200 text-black placeholder-neutral-400 focus:border-black'}`}
-                        />
-                        <p className={`mt-2 text-xs ${oauthUsername && !oauthUsernameResult.valid ? 'text-[var(--accent-primary)]' : isDark ? 'text-neutral-500' : 'text-neutral-400'}`}>{oauthUsername && !oauthUsernameResult.valid ? oauthUsernameResult.error : 'Unique across Profcaria. You can change it later in Settings.'}</p>
-                    </div>}
-
                     {needsCompany && <>
                     {/* Company Name */}
                     <div className="relative group">
@@ -393,8 +373,8 @@ export default function AuthCallbackPage() {
                     {/* Submit */}
                     <button
                         onClick={handleOAuthComplete}
-                        disabled={submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)}
-                        className={`w-full rounded-xl bg-[var(--accent-primary)] py-4 text-sm font-bold uppercase tracking-widest text-[var(--text-inverse)] transition hover:brightness-105 ${(submitting || (needsUsername && !oauthUsernameResult.valid) || (needsCompany && !companyName)) ? 'cursor-not-allowed opacity-50' : ''}`}
+                        disabled={submitting || (needsCompany && !companyName)}
+                        className={`w-full rounded-xl bg-[var(--accent-primary)] py-4 text-sm font-bold uppercase tracking-widest text-[var(--text-inverse)] transition hover:brightness-105 ${(submitting || (needsCompany && !companyName)) ? 'cursor-not-allowed opacity-50' : ''}`}
                     >
                         {submitting ? 'Saving…' : 'Continue'}
                     </button>
