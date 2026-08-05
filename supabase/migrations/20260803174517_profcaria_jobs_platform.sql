@@ -10,6 +10,13 @@ begin
   end if;
 end $$;
 
+-- The earlier unified foundation exposed the old schema name to PostgREST.
+-- Update the role setting in the same migration that performs the rename so a
+-- fresh database never enters a broken schema-cache loop.
+alter role authenticator set pgrst.db_schemas = 'public, professional, employer, profcaria';
+notify pgrst, 'reload config';
+notify pgrst, 'reload schema';
+
 alter table profcaria.jobs
   add column if not exists country_code text not null default 'KE',
   add column if not exists currency text not null default 'KES',

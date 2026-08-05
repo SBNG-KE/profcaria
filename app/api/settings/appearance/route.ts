@@ -8,7 +8,10 @@ const fonts = new Set(['modern', 'heritage', 'editorial', 'accessible', 'system'
 
 export async function GET() {
   const session = await getProfcariaSession();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Appearance is also used on the public landing and OAuth callback pages.
+  // Anonymous visitors keep their local browser preference without producing a
+  // noisy 401 in the console.
+  if (!session) return NextResponse.json({ authenticated: false });
   const { data, error } = await supabaseAdmin.schema('profcaria').from('account_preferences')
     .select('theme, font_family, text_scale, reduced_motion, compact_mode').eq('account_id', session.uid).maybeSingle();
   if (error) return NextResponse.json({ error: 'Unable to load appearance' }, { status: 500 });
@@ -17,7 +20,7 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   const session = await getProfcariaSession();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session) return NextResponse.json({ saved: false, authenticated: false });
   const input = await request.json().catch(() => null) as { theme?: string; fontFamily?: string } | null;
   const update: Record<string, unknown> = { account_id: session.uid, updated_at: new Date().toISOString() };
   if (input?.theme !== undefined) {

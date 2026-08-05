@@ -27,10 +27,17 @@ export async function POST(req: Request) {
         const companyOwnerIntent = accountIntent === 'company';
 
         const authHeader = req.headers.get('Authorization');
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return NextResponse.json({ error: 'Missing or invalid Authorization header' }, { status: 401 });
+        const headerToken = authHeader?.startsWith('Bearer ')
+            ? authHeader.slice('Bearer '.length).trim()
+            : '';
+        // Browsers remove Authorization when a request crosses the apex -> www
+        // redirect. The JSON fallback survives that redirect and is still
+        // cryptographically verified by Supabase below.
+        const bodyToken = typeof body.accessToken === 'string' ? body.accessToken.trim() : '';
+        const token = headerToken || bodyToken;
+        if (!token) {
+            return NextResponse.json({ error: 'Missing access token' }, { status: 401 });
         }
-        const token = authHeader.split(' ')[1];
 
         // Initialize a Supabase client to verify the token
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

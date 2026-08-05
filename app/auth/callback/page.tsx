@@ -85,7 +85,7 @@ export default function AuthCallbackPage() {
         providerId: string;
         role: string;
         accountIntent: OAuthIntent;
-        token: string;
+        accessToken: string;
     } | null>(null);
 
     // Close dropdown on outside click
@@ -136,6 +136,7 @@ export default function AuthCallbackPage() {
                     providerId,
                     role: pendingRole,
                     accountIntent: getOAuthIntent(),
+                    accessToken: session.access_token,
                 };
 
                 // Call our custom social auth API
@@ -159,7 +160,7 @@ export default function AuthCallbackPage() {
                         providerId,
                         role: pendingRole,
                         accountIntent: getOAuthIntent(),
-                        token: session.access_token
+                        accessToken: session.access_token
                     });
                     setNeedsCompany(Boolean(data.needsCompany));
 
@@ -219,7 +220,7 @@ export default function AuthCallbackPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${oauthData.token}`
+                    'Authorization': `Bearer ${oauthData.accessToken}`
                 },
                 body: JSON.stringify({
                     ...oauthData,

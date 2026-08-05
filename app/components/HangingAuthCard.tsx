@@ -15,6 +15,15 @@ const supabaseAuth = createClient(
 
 type AuthScreen = 'auth' | 'security_setup' | 'security_verify';
 type AuthMode = 'login' | 'signup';
+
+function getOAuthCallbackUrl() {
+  if (window.location.hostname === 'profcaria.com' || window.location.hostname === 'www.profcaria.com') {
+    return 'https://www.profcaria.com/auth/callback';
+  }
+  const configuredOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, '');
+  if (configuredOrigin) return `${configuredOrigin}/auth/callback`;
+  return `${window.location.origin}/auth/callback`;
+}
 type AccountIntent = 'individual' | 'company';
 
 function GoogleMark() {
@@ -147,7 +156,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
       else localStorage.removeItem('profcariaOAuthOrganization');
       const { error: oauthError } = await supabaseAuth.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth/callback`, queryParams: { prompt: 'select_account' } },
+        options: { redirectTo: getOAuthCallbackUrl(), queryParams: { prompt: 'select_account' } },
       });
       if (oauthError) throw oauthError;
     } catch (caught) {
