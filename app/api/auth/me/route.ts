@@ -11,12 +11,14 @@ import { getFollowerCount } from '@/lib/followers';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const optional = new URL(request.url).searchParams.get('optional') === '1';
         const cookieStore = await cookies();
         const token = cookieStore.get('profcaria_session')?.value;
 
         if (!token) {
+            if (optional) return NextResponse.json({ authenticated: false });
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -27,6 +29,7 @@ export async function GET() {
             const { payload: verifiedPayload } = await jwtVerify(token, secretKey);
             payload = verifiedPayload as { [key: string]: any };
         } catch {
+            if (optional) return NextResponse.json({ authenticated: false });
             return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
         }
 
@@ -54,6 +57,7 @@ export async function GET() {
 
         if (error || !user) {
             console.error('Fetch User Error:', error);
+            if (optional) return NextResponse.json({ authenticated: false });
             // Check if it's a 401/Auth issue implicitly
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
@@ -208,9 +212,18 @@ export async function GET() {
             profile.phoneVerified = Boolean(profcariaAccount.phone_verified_at);
         }
 
+        const { data: companyMembership } = await supabaseAdmin.schema('profcaria').from('organization_members')
+            .select('organization_id')
+            .eq('user_id', uid)
+            .eq('status', 'active')
+            .limit(1)
+            .maybeSingle();
+
         const res = NextResponse.json({
+            authenticated: true,
             id: uid,
             schema: schema,
+            hasCompanyWorkspace: Boolean(companyMembership),
             profile,
             security: {
                 hasPasskey: user.has_passkey,

@@ -119,8 +119,8 @@ security invoker
 set search_path = ''
 as $$
 begin
-  if new.message_type not in ('text','file','system') then
-    raise exception 'Profcaria job chat accepts only text, links in text, and inspected documents.';
+  if new.message_type not in ('text','file','image','system') then
+    raise exception 'Profcaria chat accepts only text, links, checked documents and checked pictures.';
   end if;
   return new;
 end;
@@ -136,11 +136,11 @@ security invoker
 set search_path = ''
 as $$
 begin
-  if new.attachment_type <> 'document' then
-    raise exception 'Only document attachments are allowed in Profcaria chat.';
+  if new.attachment_type not in ('document','image') then
+    raise exception 'Only documents and pictures are allowed in Profcaria chat.';
   end if;
   if new.scan_status <> 'passed' and new.released_at is not null then
-    raise exception 'Documents cannot be released before security inspection passes.';
+    raise exception 'Attachments cannot be released before security inspection passes.';
   end if;
   return new;
 end;
@@ -195,5 +195,5 @@ grant all on profcaria.guest_applications, profcaria.organization_wallets, profc
 -- candidates and companies never receive a bucket-wide public URL.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('profcaria-documents', 'profcaria-documents', false, 8388608,
-  array['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain'])
+  array['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain','image/jpeg','image/png','image/webp'])
 on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;

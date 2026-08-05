@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * HangingSecurityCard.tsx
@@ -13,7 +14,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import {
     ShieldCheck,
@@ -54,7 +55,6 @@ interface HangingSecurityCardProps {
 }
 
 export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'setup', redirectTo }: HangingSecurityCardProps) {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -314,9 +314,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                 }
             }
 
-            router.refresh();
             const redirectUrl = searchParams.get('redirect');
-            router.push(redirectTo || redirectUrl || data.redirect || '/');
+            window.location.assign(redirectTo || redirectUrl || data.redirect || '/');
         } catch (err: any) {
             setError(err.message || 'Invalid code');
         } finally {
@@ -366,9 +365,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                 }
             }
 
-            router.refresh();
             const redirectUrl = searchParams.get('redirect');
-            router.push(redirectTo || redirectUrl || verificationJSON.redirect || '/');
+            window.location.assign(redirectTo || redirectUrl || verificationJSON.redirect || '/');
         } catch (err: any) {
             console.error('Passkey Auth Error:', err);
             setError(err.message || 'Passkey authentication failed');
@@ -398,9 +396,8 @@ export default function HangingSecurityCard({ isOpen, onClose, initialMode = 'se
                 }
             }
 
-            router.refresh();
             const redirectUrl = searchParams.get('redirect');
-            router.push(redirectTo || redirectUrl || data.redirect || '/');
+            window.location.assign(redirectTo || redirectUrl || data.redirect || '/');
         } catch (err: any) {
             setError(err.message || 'Invalid code');
             setVerifying(false);

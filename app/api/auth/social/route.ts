@@ -123,10 +123,10 @@ export async function POST(req: Request) {
                 const has2fa = existingUser.has_totp || existingUser.has_passkey || existingUser.has_email_otp;
                 // Direct to homepage mode to avoid redirects
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/find-work')}`
+                    ? `/?mode=verify&redirect=${encodeURIComponent(companyOwnerIntent ? '/work' : '/')}`
                     : companyOwnerIntent
                       ? `/?mode=setup&redirect=${encodeURIComponent('/work')}`
-                      : '/find-work';
+                      : '/';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -183,7 +183,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newUser.id, 'professional', false);
             // New user needs security setup
-            const response = NextResponse.json({ success: true, redirect: `/?mode=setup&redirect=${encodeURIComponent('/settings/identity?setup=1')}` });
+            const response = NextResponse.json({ success: true, redirect: `/?mode=setup&redirect=${encodeURIComponent(companyOwnerIntent ? '/work' : '/')}` });
             setSessionCookie(response, token);
             return response;
         }
@@ -244,8 +244,8 @@ export async function POST(req: Request) {
                 const has2fa = existingCompany.has_totp || existingCompany.has_passkey || existingCompany.has_phone_otp;
                 // Direct to homepage mode
                 const redirectPath = has2fa
-                    ? `/?mode=verify&redirect=${encodeURIComponent('/find-work')}`
-                    : '/find-work';
+                    ? `/?mode=verify&redirect=${encodeURIComponent('/work')}`
+                    : '/work';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -318,7 +318,7 @@ export async function POST(req: Request) {
 
             const token = await issueToken(newCompany.id, 'employer', false);
             // New employer needs security setup
-            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/find-work' });
+            const response = NextResponse.json({ success: true, redirect: '/?mode=setup&redirect=/work' });
             setSessionCookie(response, token);
             return response;
         }

@@ -205,7 +205,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const input = await request.json().catch(() => null) as MessageInput | null;
   const messageType = input?.messageType ?? 'text';
-  if (messageType !== 'text') return NextResponse.json({ error: 'Profcaria chat accepts text, HTTPS links, and inspected documents only.' }, { status: 400 });
+  if (messageType !== 'text') return NextResponse.json({ error: 'Profcaria chat accepts text, HTTPS links, checked documents and checked pictures only.' }, { status: 400 });
 
   const body = input?.body?.trim() || '';
   if (!body || body.length > 8000) return NextResponse.json({ error: 'Message must be between 1 and 8,000 characters' }, { status: 400 });

@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   const token = await new SignJWT({ uid: account.id, account_id: account.id, schema, has_totp: Boolean(account.has_totp), aal: 1 })
     .setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('30d').sign(secret);
   const has2fa = Boolean(account.has_totp || account.has_passkey || account.has_phone_otp || account.has_email_otp);
-  const destination = companyIntent ? '/work' : '/find-work';
+  const destination = companyIntent ? '/work' : '/';
   const redirect = has2fa
     ? `/?mode=verify&redirect=${encodeURIComponent(destination)}`
     : companyIntent

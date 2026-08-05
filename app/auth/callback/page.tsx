@@ -28,7 +28,7 @@ function getOAuthIntent(): OAuthIntent {
 }
 
 function getOAuthDestination() {
-    return getOAuthIntent() === 'company' ? '/work' : '/find-work';
+    return getOAuthIntent() === 'company' ? '/work' : '/';
 }
 
 function getOAuthRedirect(serverRedirect?: string) {

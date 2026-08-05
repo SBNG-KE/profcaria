@@ -8,6 +8,7 @@ import { Analytics } from '@vercel/analytics/next';
 import ThemeToggle from './ThemeToggle';
 import HangingAuthCard from './HangingAuthCard';
 import { ProfcariaMark } from './brand/ProfcariaLogo';
+import HomeAccountMenu from './HomeAccountMenu';
 
 export type PublicJob = {
   id: string;
@@ -93,8 +94,7 @@ export default function LandingPageClient() {
           <nav className="flex items-center gap-2 sm:gap-6" aria-label="Main navigation">
             <button onClick={() => openAuth('signup', 'company')} className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--text-secondary)] transition hover:text-[var(--text-primary)] sm:block">For companies</button>
             <ThemeToggle showSystem={false} />
-            <button onClick={() => openAuth('signup')} className="hidden text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)] transition hover:text-[var(--accent-primary)] md:block">Join</button>
-            <button onClick={() => openAuth('login')} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>
+            <HomeAccountMenu onJoin={() => openAuth('signup')} onSignIn={() => openAuth('login')} />
           </nav>
         </div>
       </header>
