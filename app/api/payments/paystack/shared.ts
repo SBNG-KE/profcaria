@@ -3,41 +3,26 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { decryptData } from '@/lib/security';
 import { getProfcariaSession } from '@/lib/profcaria-auth';
 
-export async function getCompanyPaymentContext() {
+export async function getCompanyPaymentContext(requestedOrganizationId?: string | null) {
   const session = await getProfcariaSession();
-  if (!session || session.schema !== 'employer') return null;
+  if (!session) return null;
 
-  const { data: company, error } = await supabaseAdmin.schema('employer').from('companies')
-    .select('enc_company_name,enc_work_email').eq('id', session.uid).maybeSingle();
-  if (error || !company) throw new Error('Company account could not be loaded.');
+  let membershipQuery = supabaseAdmin.schema('profcaria').from('organization_members')
+    .select('organization_id, role').eq('user_id', session.uid).eq('status', 'active').in('role', ['owner', 'admin']);
+  if (requestedOrganizationId) membershipQuery = membershipQuery.eq('organization_id', requestedOrganizationId);
+  const { data: membership, error: membershipError } = await membershipQuery.order('joined_at').limit(1).maybeSingle();
+  if (membershipError) throw new Error('Company billing access could not be checked.');
+  if (!membership) return null;
 
-  const email = decryptData(company.enc_work_email)?.trim().toLowerCase() || session.email?.trim().toLowerCase();
-  const companyName = decryptData(company.enc_company_name)?.trim() || 'Company workspace';
+  const { data: account, error: accountError } = await supabaseAdmin.schema('profcaria').from('accounts')
+    .select('enc_email').eq('id', session.uid).maybeSingle();
+  if (accountError) throw new Error('The billing contact could not be loaded.');
+  const email = decryptData(account?.enc_email)?.trim().toLowerCase() || session.email?.trim().toLowerCase();
   if (!email) throw new Error('A verified company email is required before payment.');
-
-  const { error: organizationError } = await supabaseAdmin.schema('profcaria').from('organizations').upsert({
-    id: session.uid,
-    legacy_company_id: session.uid,
-    name: companyName,
-    created_by: session.uid,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: 'id' });
-  if (organizationError) throw new Error('Company wallet is not ready. Apply the Profcaria database migrations first.');
-
-  const { error: membershipError } = await supabaseAdmin.schema('profcaria').from('organization_members').upsert({
-    organization_id: session.uid,
-    user_id: session.uid,
-    account_type: 'employer',
-    role: 'owner',
-    status: 'active',
-    joined_at: new Date().toISOString(),
-    ended_at: null,
-  }, { onConflict: 'organization_id,user_id' });
-  if (membershipError) throw new Error('Company owner access could not be prepared.');
 
   return {
     userId: session.uid,
-    organizationId: session.uid,
+    organizationId: membership.organization_id,
     email,
     emailHash: createHash('sha256').update(email).digest('hex'),
   };

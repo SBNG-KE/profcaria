@@ -8,12 +8,11 @@ import { cookies } from 'next/headers';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 // Updated Key Name per your request
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
-// The product was renamed before the database schema. Keep application code on
-// the Profcaria name while routing it to the deployed legacy schema until a
-// controlled database rename is completed.
+// Keep the schema override for preview environments, while using the completed
+// Profcaria schema rename by default.
 export function resolveSupabaseSchema(schema: string) {
   if (schema !== 'profcaria') return schema;
-  return process.env.NEXT_PUBLIC_SUPABASE_APP_SCHEMA || 'ondwira';
+  return process.env.NEXT_PUBLIC_SUPABASE_APP_SCHEMA || 'profcaria';
 }
 
 // 1. CLIENT-SIDE CLIENT (Safe for public usage)

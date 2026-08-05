@@ -87,6 +87,7 @@ export default function AuthCallbackPage() {
         provider: string;
         providerId: string;
         role: string;
+        accountIntent: OAuthIntent;
         token: string;
     } | null>(null);
 
@@ -136,7 +137,8 @@ export default function AuthCallbackPage() {
                     fullName,
                     provider,
                     providerId,
-                    role: pendingRole
+                    role: pendingRole,
+                    accountIntent: getOAuthIntent(),
                 };
 
                 // Call our custom social auth API
@@ -159,6 +161,7 @@ export default function AuthCallbackPage() {
                         provider,
                         providerId,
                         role: pendingRole,
+                        accountIntent: getOAuthIntent(),
                         token: session.access_token
                     });
                     setNeedsUsername(Boolean(data.needsUsername));
@@ -195,6 +198,7 @@ export default function AuthCallbackPage() {
                         body: JSON.stringify({ ...(savedTheme ? { theme: savedTheme } : {}), ...(savedFont ? { fontFamily: savedFont } : {}) }),
                     }).catch(() => undefined);
                 }
+                await createPendingCompanyWorkspace();
                 const destination = getOAuthRedirect(data.redirect);
                 clearOAuthIntent();
                 router.push(destination);

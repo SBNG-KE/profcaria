@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export type ProfcariaSession = {
   uid: string;
@@ -21,6 +22,12 @@ export async function getProfcariaSession(): Promise<ProfcariaSession | null> {
     if (typeof payload.uid !== 'string' || (payload.schema !== 'professional' && payload.schema !== 'employer')) {
       return null;
     }
+    // A signed JWT is not enough after account deletion or suspension. Checking
+    // the canonical account also invalidates cookies left behind by a data wipe.
+    const { data: account, error } = await supabaseAdmin.schema('profcaria').from('accounts')
+      .select('id, status').eq('id', payload.uid).maybeSingle();
+    if (error || account?.status !== 'active') return null;
+
     return { uid: payload.uid, schema: payload.schema, email: typeof payload.email === 'string' ? payload.email : undefined };
   } catch {
     return null;

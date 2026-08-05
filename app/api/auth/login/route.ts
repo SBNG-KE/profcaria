@@ -11,9 +11,13 @@ export const runtime = 'nodejs';
 export async function POST(request: Request) {
   const rate = await checkRateLimit(getClientIdentifier(request), 'login');
   if (!rate.allowed) return rateLimitedResponse(rate.resetIn);
-  const input = await request.json().catch(() => null) as { email?: string; password?: string } | null;
+  const input = await request.json().catch(() => null) as { email?: string; password?: string; accountIntent?: string } | null;
   const email = input?.email?.trim().toLowerCase();
   if (!email || !input?.password) return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+  if (input.accountIntent && !['individual', 'company'].includes(input.accountIntent)) {
+    return NextResponse.json({ error: 'Choose an individual or company account.' }, { status: 400 });
+  }
+  const companyIntent = input.accountIntent === 'company';
   const emailIndex = hashForIndex(email);
 
   const [{ data: person }, { data: legacyCompany }] = await Promise.all([
@@ -27,13 +31,18 @@ export async function POST(request: Request) {
   }
   if (account.tos_status === 'rejected') return NextResponse.json({ error: 'This account is suspended.' }, { status: 403 });
 
+  if (companyIntent && !account.requires_2fa) {
+    const table = schema === 'professional' ? 'users' : 'companies';
+    await supabaseAdmin.schema(schema).from(table).update({ requires_2fa: true }).eq('id', account.id);
+  }
+
   await ensureProfcariaAccount({
     id: account.id,
     identityType: schema,
     emailIndex,
     encryptedEmail: person ? account.enc_email : account.enc_work_email,
     security: {
-      requires2fa: account.requires_2fa,
+      requires2fa: companyIntent || account.requires_2fa,
       hasPasskey: account.has_passkey,
       hasTotp: account.has_totp,
       hasEmailOtp: account.has_email_otp,
@@ -45,7 +54,13 @@ export async function POST(request: Request) {
   const token = await new SignJWT({ uid: account.id, account_id: account.id, schema, has_totp: Boolean(account.has_totp), aal: 1 })
     .setProtectedHeader({ alg: 'HS256' }).setIssuedAt().setExpirationTime('30d').sign(secret);
   const has2fa = Boolean(account.has_totp || account.has_passkey || account.has_phone_otp || account.has_email_otp);
-  const response = NextResponse.json({ success: true, redirect: has2fa ? '/?mode=verify&redirect=/find-work' : '/find-work' });
+  const destination = companyIntent ? '/work' : '/find-work';
+  const redirect = has2fa
+    ? `/?mode=verify&redirect=${encodeURIComponent(destination)}`
+    : companyIntent
+      ? `/?mode=setup&redirect=${encodeURIComponent(destination)}`
+      : destination;
+  const response = NextResponse.json({ success: true, redirect });
   response.cookies.set('profcaria_session', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 60 * 60 * 24 * 30, path: '/' });
   return response;
 }

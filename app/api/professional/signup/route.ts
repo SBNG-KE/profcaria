@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       phoneNumber,
       username: requestedUsername,
       onboardingChannel = 'web',
+      accountIntent = 'individual',
     } = body;
 
     // 1. Input Validation
@@ -49,6 +50,10 @@ export async function POST(req: Request) {
     if (onboardingChannel === 'native' && !phoneResult.phone) {
       return NextResponse.json({ error: 'A phone number is required in the mobile app.' }, { status: 400 });
     }
+    if (!['individual', 'company'].includes(accountIntent)) {
+      return NextResponse.json({ error: 'Choose an individual or company account.' }, { status: 400 });
+    }
+    const requires2fa = accountIntent === 'company';
 
     // 2. Create Blind Indexes (For Lookups)
     // We strictly search by hash, never by plain text to protect identity
@@ -100,7 +105,7 @@ export async function POST(req: Request) {
           enc_email: encryptData(email),
           enc_phone_number: phoneResult.phone ? encryptData(phoneResult.phone) : null,
           // Default security
-          requires_2fa: false
+          requires_2fa: requires2fa
         }
       ])
       .select()
@@ -121,7 +126,7 @@ export async function POST(req: Request) {
         username: usernameResult.username,
         phoneIndex,
         encryptedPhone: phoneResult.phone ? encryptData(phoneResult.phone) : null,
-        security: { requires2fa: false },
+        security: { requires2fa },
       });
     } catch (accountError: unknown) {
       await supabaseAdmin.schema('professional').from('users').delete().eq('id', data.id);

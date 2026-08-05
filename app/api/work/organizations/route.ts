@@ -20,6 +20,20 @@ export async function POST(request: Request) {
   const name = input?.name?.trim().replace(/\s+/g, ' ').slice(0, 120);
   if (!name || name.length < 2) return NextResponse.json({ error: 'Enter an organisation name' }, { status: 400 });
 
+  // Make retries safe when a signup request succeeded but the browser lost the
+  // response. A person cannot accidentally create the same owned workspace twice.
+  const { data: existing } = await supabaseAdmin.schema('profcaria').from('organizations')
+    .select('id, name, updated_at').eq('created_by', session.uid).eq('name', name).maybeSingle();
+  if (existing) {
+    const [{ data: membership }, { data: group }] = await Promise.all([
+      supabaseAdmin.schema('profcaria').from('organization_members').select('role, status').eq('organization_id', existing.id).eq('user_id', session.uid).maybeSingle(),
+      supabaseAdmin.schema('profcaria').from('work_groups').select('id, name, group_type, auto_membership, conversation_id, created_at').eq('organization_id', existing.id).eq('group_type', 'company').is('archived_at', null).maybeSingle(),
+    ]);
+    if (membership?.status === 'active') {
+      return NextResponse.json({ organization: { role: membership.role, status: membership.status, organizations: existing }, group });
+    }
+  }
+
   const { data: organization, error: organizationError } = await supabaseAdmin.schema('profcaria').from('organizations')
     .insert({ name, created_by: session.uid }).select('id, name, updated_at').single();
   if (organizationError || !organization) return NextResponse.json({ error: 'Unable to create the organisation' }, { status: 500 });

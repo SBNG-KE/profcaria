@@ -12,7 +12,7 @@ type WalletResponse = {
 const presets = [500, 1000, 2500, 5000];
 const money = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 2 });
 
-export default function BillingPage() {
+export default function BillingPage({ organizationId = '' }: { organizationId?: string }) {
   const [data, setData] = useState<WalletResponse | null>(null);
   const [amount, setAmount] = useState(1000);
   const [loading, setLoading] = useState(true);
@@ -21,12 +21,12 @@ export default function BillingPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const response = await fetch('/api/payments/wallet', { cache: 'no-store' });
+    const response = await fetch(`/api/payments/wallet${organizationId ? `?organizationId=${encodeURIComponent(organizationId)}` : ''}`, { cache: 'no-store' });
     const body = await response.json().catch(() => ({}));
     if (!response.ok) setMessage(body.error || 'Wallet could not be loaded.');
     else setData(body);
     setLoading(false);
-  }, []);
+  }, [organizationId]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -35,7 +35,7 @@ export default function BillingPage() {
     setMessage('');
     try {
       const response = await fetch('/api/payments/paystack/initialize', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountKes: amount }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amountKes: amount, organizationId: organizationId || undefined }),
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || 'Top-up could not start.');

@@ -6,9 +6,9 @@ import { getCompanyPaymentContext } from '../paystack/shared';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const context = await getCompanyPaymentContext();
+    const context = await getCompanyPaymentContext(new URL(request.url).searchParams.get('organizationId'));
     if (!context) return NextResponse.json({ error: 'Company sign-in required.' }, { status: 401 });
     const [walletResult, paymentsResult, ledgerResult] = await Promise.all([
       supabaseAdmin.schema('profcaria').from('organization_wallets')

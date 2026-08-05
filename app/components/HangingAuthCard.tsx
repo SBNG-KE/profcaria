@@ -99,7 +99,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
     try {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/professional/signup';
       const payload = mode === 'login'
-        ? { email: email.trim().toLowerCase(), password }
+        ? { email: email.trim().toLowerCase(), password, accountIntent: intent }
         : {
             firstName: firstName.trim(),
             lastName: lastName.trim(),
@@ -107,8 +107,9 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
             email: email.trim().toLowerCase(),
             password,
             phoneNumber: phone.trim() ? `${countryCode}${phone.replace(/\D/g, '')}` : null,
-            onboardingChannel: 'web',
-            role: intent === 'company' ? 'Organisation owner' : 'Member',
+             onboardingChannel: 'web',
+             accountIntent: intent,
+             role: intent === 'company' ? 'Organisation owner' : 'Member',
           };
       const response = await fetch(endpoint, {
         method: 'POST',

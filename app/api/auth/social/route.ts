@@ -21,7 +21,12 @@ export async function POST(req: Request) {
             companyName,
             industry,
             username,
+            accountIntent = 'individual',
         } = body;
+        if (!['individual', 'company'].includes(accountIntent)) {
+            return NextResponse.json({ error: 'Choose an individual or company account.' }, { status: 400 });
+        }
+        const companyOwnerIntent = accountIntent === 'company';
 
         const authHeader = req.headers.get('Authorization');
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -81,14 +86,15 @@ export async function POST(req: Request) {
                         .update({
                             oauth_provider: provider,
                             oauth_provider_id: providerId,
-                            last_login: new Date().toISOString()
+                            last_login: new Date().toISOString(),
+                            ...(companyOwnerIntent ? { requires_2fa: true } : {}),
                         })
                         .eq('id', existingUser.id);
                 } else {
                     await supabaseAdmin
                         .schema('professional')
                         .from('users')
-                        .update({ last_login: new Date().toISOString() })
+                        .update({ last_login: new Date().toISOString(), ...(companyOwnerIntent ? { requires_2fa: true } : {}) })
                         .eq('id', existingUser.id);
                 }
 
@@ -99,7 +105,7 @@ export async function POST(req: Request) {
                     encryptedEmail: existingUser.enc_email,
                     authUserId: providerId,
                     security: {
-                        requires2fa: existingUser.requires_2fa,
+                        requires2fa: companyOwnerIntent || existingUser.requires_2fa,
                         hasPasskey: existingUser.has_passkey,
                         hasTotp: existingUser.has_totp,
                         hasEmailOtp: existingUser.has_email_otp,
@@ -116,7 +122,9 @@ export async function POST(req: Request) {
                 // Direct to homepage mode to avoid redirects
                 const redirectPath = has2fa
                     ? `/?mode=verify&redirect=${encodeURIComponent('/find-work')}`
-                    : '/find-work';
+                    : companyOwnerIntent
+                      ? `/?mode=setup&redirect=${encodeURIComponent('/work')}`
+                      : '/find-work';
 
                 const response = NextResponse.json({ success: true, redirect: redirectPath });
                 setSessionCookie(response, token);
@@ -144,7 +152,7 @@ export async function POST(req: Request) {
                     enc_phone_number: null,
                     oauth_provider: provider,
                     oauth_provider_id: providerId,
-                    requires_2fa: false
+                    requires_2fa: companyOwnerIntent
                 }])
                 .select()
                 .single();
@@ -162,7 +170,7 @@ export async function POST(req: Request) {
                 displayName: fullName || `${firstName} ${lastName}`.trim(),
                 authUserId: providerId,
                 username: usernameGate.username,
-                security: { requires2fa: false },
+                security: { requires2fa: companyOwnerIntent },
             });
 
             // Early adopters just join and grow naturally — badges earned via followers.

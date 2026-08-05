@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    const context = await getCompanyPaymentContext();
+    const body = await request.json().catch(() => ({}));
+    const context = await getCompanyPaymentContext(typeof body.organizationId === 'string' ? body.organizationId : null);
     if (!context) return NextResponse.json({ error: 'Company sign-in required.' }, { status: 401 });
     const limit = await checkRateLimit(getClientIdentifier(request, context.userId), 'payment');
     if (!limit.allowed) return rateLimitedResponse(limit.resetIn);
@@ -18,7 +19,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Paystack is prepared but not connected. Add a test secret key first.' }, { status: 503 });
     }
 
-    const body = await request.json().catch(() => ({}));
     const amountKes = Number(body.amountKes);
     if (!Number.isFinite(amountKes) || amountKes < 100 || amountKes > 1_000_000 || Math.round(amountKes * 100) !== amountKes * 100) {
       return NextResponse.json({ error: 'Top-ups must be between KES 100 and KES 1,000,000, with at most two decimal places.' }, { status: 400 });
