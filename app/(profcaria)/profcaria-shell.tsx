@@ -46,7 +46,7 @@ export default function ProfcariaShell({ children }: { children: React.ReactNode
     <header className="sticky top-0 z-40 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]/96 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-7">
         <button onClick={() => router.push('/work')} className="flex min-w-0 items-center gap-3 text-left"><ProfcariaLogo /><span className="hidden h-5 w-px bg-[var(--border-primary)] sm:block" /><span className="hidden truncate text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] sm:block">Hiring workspace</span></button>
-        <div className="flex items-center gap-2"><button onClick={() => router.push('/')} className="hidden items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] sm:flex">Public jobs <ExternalLink size={13} /></button><ThemeToggle showSystem={false} /></div>
+        <div className="flex items-center gap-2"><button onClick={() => router.push('/?view=jobs')} className="hidden items-center gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] sm:flex">Public jobs <ExternalLink size={13} /></button><ThemeToggle showSystem={false} /></div>
       </div>
     </header>
     <div className="mx-auto flex max-w-[1600px]">
