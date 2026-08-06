@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ProfcariaMark } from '@/app/components/brand/ProfcariaLogo';
 import {
   AlarmClock,
   ArrowRight,
@@ -240,7 +239,7 @@ function CalendarButtons({ meeting, compact = false }: { meeting: Meeting; compa
 }
 
 function ProviderMark({ provider }: { provider: Provider }) {
-  return <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--accent-soft)] text-sm font-black text-[var(--accent-strong)]">{provider === 'profcaria' ? <ProfcariaMark className="h-7 w-6" /> : providerDetails[provider].short}</span>;
+  return <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--accent-soft)] text-sm font-black text-[var(--accent-strong)]">{provider === 'profcaria' ? 'P' : providerDetails[provider].short}</span>;
 }
 
 function PreviewLine({ icon: Icon, title, text }: { icon: typeof Video; title: string; text: string }) {

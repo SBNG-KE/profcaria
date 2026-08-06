@@ -4,7 +4,7 @@ import React from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
-import ProfcariaLogo, { ProfcariaBadge } from '@/app/components/brand/ProfcariaLogo';
+import ProfcariaLogo from '@/app/components/brand/ProfcariaLogo';
 
 export default function HeroSection() {
     const { theme } = useTheme();
@@ -25,16 +25,6 @@ export default function HeroSection() {
                     <ProfcariaLogo markClassName="text-[var(--accent-primary)]" />
                 </motion.div>
             </div>
-
-            {/* Circular Logo Formation */}
-            <motion.div
-                initial={{ scale: 0, opacity: 0, rotate: -180 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ duration: 1.2, ease: "circOut", delay: 1.5 }}
-                className="relative overflow-hidden rounded-3xl border border-[var(--border-primary)] bg-[var(--surface-raised)] p-3 shadow-[var(--shadow-glow)]"
-            >
-                <ProfcariaBadge className="h-16 w-16 rounded-2xl md:h-20 md:w-20" />
-            </motion.div>
 
             {/* Downward Arrow */}
             <motion.div

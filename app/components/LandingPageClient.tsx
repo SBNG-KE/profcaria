@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ArrowDown, ArrowRight, BriefcaseBusiness, ChevronDown, MapPin, Search, X } from 'lucide-react';
+import { ArrowDown, ArrowRight, Bell, BriefcaseBusiness, Check, ChevronDown, MapPin, Search, X } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/next';
 import ThemeToggle from './ThemeToggle';
 import HangingAuthCard from './HangingAuthCard';
-import { ProfcariaMark } from './brand/ProfcariaLogo';
+import ProfcariaLogo from './brand/ProfcariaLogo';
 import HomeAccountMenu from './HomeAccountMenu';
 
 export type PublicJob = {
@@ -57,9 +57,14 @@ export default function LandingPageClient() {
   const requestedIntent = requestedAuth === 'company' || searchParams.get('intent') === 'company' ? 'company' : 'individual';
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [query, setQuery] = useState('');
+  const [roleCategory, setRoleCategory] = useState('all');
   const [locationType, setLocationType] = useState('all');
   const [employmentType, setEmploymentType] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [viewerAuthenticated, setViewerAuthenticated] = useState(false);
+  const [savingAlert, setSavingAlert] = useState(false);
+  const [alertSaved, setAlertSaved] = useState(false);
+  const [alertNotice, setAlertNotice] = useState('');
   const [notice, setNotice] = useState('');
   const [authOpen, setAuthOpen] = useState(() => requestedAuth === 'signup' || requestedAuth === 'company' || requestedAuth === 'login' || requestedSecurityMode === 'setup' || requestedSecurityMode === 'verify');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>(() => requestedAuth === 'signup' || requestedAuth === 'company' ? 'signup' : 'login');
@@ -83,7 +88,47 @@ export default function LandingPageClient() {
       .then(body => setJobs(body.jobs || []))
       .catch(error => setNotice(error.message))
       .finally(() => setLoading(false));
+    fetch('/api/auth/me?optional=1').then(response => response.ok ? response.json() : null)
+      .then(body => setViewerAuthenticated(Boolean(body?.authenticated))).catch(() => undefined);
   }, []);
+
+  async function saveCurrentSearch() {
+    if (!viewerAuthenticated) {
+      setAlertNotice('Sign in or create a free individual account to receive tailored job alerts.');
+      openAuth('login');
+      return;
+    }
+    setSavingAlert(true);
+    setAlertNotice('');
+    const categoryLabel = categoryOptions.find(option => option.value === roleCategory)?.label;
+    try {
+      const response = await fetch('/api/job-alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label: roleCategory === 'all' ? (query.trim() ? `Jobs matching ${query.trim()}` : 'All open jobs') : `${categoryLabel} jobs`,
+          query,
+          roleCategories: roleCategory === 'all' ? [] : [roleCategory],
+          locationTypes: locationType === 'all' ? [] : [locationType],
+          employmentTypes: employmentType === 'all' ? [] : [employmentType],
+          frequency: 'instant',
+          emailEnabled: true,
+        }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || 'This alert could not be saved.');
+      setAlertSaved(true);
+    } catch (error) {
+      setAlertNotice(error instanceof Error ? error.message : 'This alert could not be saved.');
+    } finally {
+      setSavingAlert(false);
+    }
+  }
+
+  useEffect(() => {
+    setAlertSaved(false);
+    setAlertNotice('');
+  }, [query, roleCategory, locationType, employmentType]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -91,9 +136,10 @@ export default function LandingPageClient() {
       const haystack = [job.title, job.organization.name, job.summary, job.location, job.roleCategory, ...job.skills].join(' ').toLowerCase();
       return (!needle || haystack.includes(needle))
         && (locationType === 'all' || canonicalFilterValue(job.locationType) === locationType)
-        && (employmentType === 'all' || canonicalFilterValue(job.employmentType) === employmentType);
+        && (employmentType === 'all' || canonicalFilterValue(job.employmentType) === employmentType)
+        && (roleCategory === 'all' || canonicalFilterValue(job.roleCategory) === roleCategory);
     });
-  }, [jobs, query, locationType, employmentType]);
+  }, [jobs, query, locationType, employmentType, roleCategory]);
 
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
@@ -101,17 +147,21 @@ export default function LandingPageClient() {
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4);
   }, [jobs]);
 
+  const categoryOptions = useMemo(() => [
+    { value: 'all', label: 'All job domains' },
+    ...[...new Map(jobs.map(job => [canonicalFilterValue(job.roleCategory || 'Other'), pretty(job.roleCategory || 'Other')])).entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label })),
+  ], [jobs]);
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
       <HangingAuthCard isOpen={authOpen} onClose={() => setAuthOpen(false)} initialScreen={authScreen} initialMode={authMode} initialTab={authIntent} />
 
       <header className="relative z-40 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
-        <div className="mx-auto flex h-[64px] max-w-[1600px] items-center justify-between px-5 sm:h-[68px] sm:px-9 lg:px-12">
-          <Link href="/" className="flex items-center gap-3" aria-label="Profcaria home">
-            <ProfcariaMark labelled={false} className="h-9 text-[var(--accent-primary)] sm:h-10" />
-            <span className="font-editorial text-2xl font-semibold tracking-[-0.045em] sm:text-[1.65rem]">Profcaria</span>
-          </Link>
-          <nav className="flex items-center gap-2 sm:gap-4" aria-label="Main navigation">
+        <div className="mx-auto flex h-[64px] max-w-[1600px] items-center justify-between gap-3 px-4 sm:h-[68px] sm:px-9 lg:px-12">
+          <Link href="/" className="min-w-0 shrink" aria-label="Profcaria home"><ProfcariaLogo className="text-[1.35rem] sm:text-[1.65rem]" /></Link>
+          <nav className="flex shrink-0 items-center gap-1.5 sm:gap-4" aria-label="Main navigation">
             <ThemeToggle showSystem={false} />
             <HomeAccountMenu onSignIn={() => openAuth('login')} />
           </nav>
@@ -126,7 +176,7 @@ export default function LandingPageClient() {
                 <span className="h-px w-8 bg-current" /> Kenya&rsquo;s open job register
               </p>
               <h1 className="font-editorial max-w-[780px] text-[clamp(2.7rem,4.6vw,5.4rem)] font-medium leading-[0.84] tracking-[-0.06em]">
-                Applying for jobs, <span className="italic">made simple.</span>
+                Applying for jobs, <span className="block italic sm:inline">made simple.</span>
               </h1>
               <p className="mt-4 max-w-2xl text-[13px] leading-5 text-[var(--text-secondary)] sm:text-sm sm:leading-6">
                 Find current work in Kenya, answer only what the company needs, and submit. No adverts. No account required until you need to continue a conversation.
@@ -139,11 +189,11 @@ export default function LandingPageClient() {
           </div>
 
           <aside className="register-panel relative overflow-hidden bg-[var(--accent-primary)] px-5 py-4 text-[var(--text-inverse)] sm:px-9 lg:min-h-full lg:px-9 lg:py-6" aria-label="Open job count">
-            <div className="relative z-10 grid h-full grid-cols-[1fr_auto] items-center gap-6 lg:flex lg:flex-col lg:items-stretch lg:justify-between">
-              <div className="flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.2em] lg:border-b lg:border-current/20 lg:pb-3">
+            <div className="relative z-10 flex h-full items-center justify-between gap-6 lg:flex-col lg:items-stretch">
+              <div className="flex flex-col items-start gap-2 text-[8px] font-semibold uppercase tracking-[0.2em] lg:w-full lg:flex-row lg:items-center lg:justify-between lg:border-b lg:border-current/20 lg:pb-3">
                 <span>Current register</span><span>Kenya</span>
               </div>
-              <div className="relative flex items-center justify-center lg:min-h-[155px] lg:flex-1 lg:py-5">
+              <div className="relative flex shrink-0 items-center justify-center lg:min-h-[155px] lg:flex-1 lg:py-5">
                 <div className="register-arch hidden lg:block" aria-hidden="true" />
                 <div className="relative z-10 text-center">
                   <p className="font-editorial text-5xl font-medium leading-none tracking-[-0.08em] lg:text-[clamp(4.2rem,6vw,6.5rem)]">{loading ? '—' : jobs.length.toString().padStart(2, '0')}</p>
@@ -165,21 +215,29 @@ export default function LandingPageClient() {
           <p className="max-w-xl text-xs leading-5 text-[var(--text-secondary)] sm:justify-self-end">Search by role, skill, company or place. Every result shown remains open to applications.</p>
         </div>
 
-        <div className="grid border-b border-[var(--border-primary)] lg:grid-cols-[minmax(0,1fr)_190px_190px]">
+        <div className="grid border-b border-[var(--border-primary)] sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_210px_180px_180px]">
           <label className="flex min-w-0 items-center gap-3 border-b border-[var(--border-primary)] py-4 lg:border-b-0 lg:border-r lg:pr-5">
             <Search size={17} strokeWidth={1.5} />
             <span className="sr-only">Search jobs</span>
             <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search the register" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-muted)]" />
             {query && <button onClick={() => setQuery('')} aria-label="Clear search"><X size={16} /></button>}
           </label>
+          <FilterSelect label="Job domain" value={roleCategory} onChange={setRoleCategory} options={categoryOptions} />
           <FilterSelect label="Work setting" value={locationType} onChange={setLocationType} options={workSettingOptions} />
           <FilterSelect label="Job type" value={employmentType} onChange={setEmploymentType} options={jobTypeOptions} />
         </div>
 
         {categories.length > 0 && <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-[var(--border-secondary)] py-5 text-xs text-[var(--text-secondary)]">
           <span className="font-semibold uppercase tracking-[0.16em] text-[var(--text-muted)]">In demand</span>
-          {categories.map(([name, count]) => <button key={name} onClick={() => setQuery(name === 'Other' ? '' : name)} className="border-b border-transparent pb-0.5 transition hover:border-current hover:text-[var(--text-primary)]">{pretty(name)} <span className="ml-1 opacity-55">{count}</span></button>)}
+          {categories.map(([name, count]) => { const value = canonicalFilterValue(name); const active = roleCategory === value; return <button key={name} onClick={() => setRoleCategory(current => current === value ? 'all' : value)} aria-pressed={active} className={`border-b pb-0.5 transition hover:text-[var(--text-primary)] ${active ? 'border-current text-[var(--text-primary)]' : 'border-transparent'}`}>{pretty(name)} <span className="ml-1 opacity-55">{count}</span></button>; })}
         </div>}
+
+        <div className="flex flex-col gap-3 border-b border-[var(--border-secondary)] py-4 text-xs text-[var(--text-secondary)] sm:flex-row sm:items-center sm:justify-between">
+          <span>{alertNotice || (loading ? 'Reading the current register...' : `${filtered.length} ${filtered.length === 1 ? 'role' : 'roles'} match your choices.`)}</span>
+          <button type="button" onClick={saveCurrentSearch} disabled={savingAlert || alertSaved} className="inline-flex w-fit items-center gap-2 border border-[var(--border-primary)] px-4 py-2.5 font-semibold text-[var(--text-primary)] transition hover:border-[var(--accent-primary)] disabled:cursor-default disabled:bg-[var(--accent-soft)]">
+            {alertSaved ? <Check size={15} /> : <Bell size={15} />}{alertSaved ? 'Alert saved' : savingAlert ? 'Saving...' : 'Save job alert'}
+          </button>
+        </div>
 
         {loading ? <div className="divide-y divide-[var(--border-secondary)] border-b border-[var(--border-primary)]">{[0, 1, 2, 3].map(i => <div key={i} className="h-36 animate-pulse bg-[var(--surface-muted)]/35" />)}</div>
           : notice ? <EmptyState title="The register is being prepared" body="Open roles are temporarily unavailable. Please return shortly." />
@@ -203,7 +261,7 @@ export default function LandingPageClient() {
 
       <footer className="mx-auto flex max-w-[1600px] flex-col gap-7 px-5 py-10 text-xs text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between sm:px-9 lg:px-14">
         <p>&copy; {new Date().getFullYear()} Profcaria, Kenya.</p>
-        <div className="flex flex-wrap gap-x-7 gap-y-3"><Link href="/pricing">Company pricing</Link><button onClick={() => openAuth('signup')}>Create an individual account</button><button onClick={() => openAuth('signup', 'company')}>Create a company workspace</button><a href="mailto:hello@profcaria.com">Report a problem</a></div>
+        <div className="flex flex-wrap gap-x-7 gap-y-3"><Link href="/pricing">Company pricing</Link><button onClick={() => openAuth('signup')}>Create an individual account</button><button onClick={() => openAuth('signup', 'company')}>Create a company workspace</button><a href="mailto:hello@profcaria.com?subject=Contact%20Profcaria">Contact us</a></div>
       </footer>
       <Analytics />
     </main>

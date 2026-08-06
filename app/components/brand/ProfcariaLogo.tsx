@@ -1,16 +1,40 @@
 import type { CSSProperties } from 'react';
 
-type LogoProps = { className?: string; markClassName?: string; compact?: boolean; variant?: 'display' | 'lowercase'; style?: CSSProperties };
+type LogoProps = {
+  className?: string;
+  /** Kept for compatibility while older screens move to the text-only wordmark. */
+  markClassName?: string;
+  compact?: boolean;
+  variant?: 'display' | 'lowercase';
+  style?: CSSProperties;
+};
 
-export function ProfcariaMark({ className = '', style, labelled = true }: Pick<LogoProps, 'className' | 'style'> & { labelled?: boolean }) {
-  return <span role={labelled ? 'img' : undefined} aria-label={labelled ? 'Profcaria PC mark' : undefined} aria-hidden={labelled ? undefined : true} className={`profcaria-mark grid aspect-square place-items-center font-editorial text-[0.42em] font-semibold tracking-[-0.06em] text-[var(--accent-primary)] ${className}`} style={style}><span className="relative z-10 text-[var(--text-inverse)]">PC</span></span>;
+function Wordmark({ className = '', variant = 'display', style }: Pick<LogoProps, 'className' | 'variant' | 'style'>) {
+  return (
+    <span
+      className={`profcaria-wordmark whitespace-nowrap font-editorial font-semibold tracking-[-0.035em] ${variant === 'lowercase' ? 'lowercase' : ''} ${className}`}
+      style={style}
+      aria-label="Profcaria"
+    >
+      <span>Profcaria</span>
+      <svg className="profcaria-wordmark-wave" viewBox="0 0 160 14" preserveAspectRatio="none" aria-hidden="true">
+        <path className="profcaria-wordmark-wave-primary" pathLength="1" d="M-12 8 C 4 1, 20 1, 36 8 S 68 15, 84 8 S 116 1, 132 8 S 164 15, 180 8" />
+        <path className="profcaria-wordmark-wave-secondary" pathLength="1" d="M-18 9 C -2 15, 14 15, 30 9 S 62 3, 78 9 S 110 15, 126 9 S 158 3, 174 9" />
+      </svg>
+    </span>
+  );
 }
 
-export function ProfcariaBadge({ className = '', markClassName = '' }: Pick<LogoProps, 'className' | 'markClassName'>) {
-  return <span className={className} role="img" aria-label="Profcaria"><ProfcariaMark labelled={false} className={`h-full ${markClassName}`} /></span>;
+/** @deprecated Visible Profcaria branding is now the text-only wordmark. */
+export function ProfcariaMark({ className = '', style }: Pick<LogoProps, 'className' | 'style'> & { labelled?: boolean }) {
+  return <Wordmark className={className} style={style} />;
 }
 
-export default function ProfcariaLogo({ className = '', markClassName = '', compact = false, variant = 'display', style }: LogoProps) {
-  if (compact) return <ProfcariaMark className={markClassName || className} style={style} />;
-  return <span className={`inline-flex items-center gap-[0.42em] whitespace-nowrap font-editorial font-semibold tracking-[-0.035em] ${variant === 'lowercase' ? 'lowercase' : ''} ${className}`} style={style} role="img" aria-label="Profcaria"><ProfcariaMark labelled={false} className={`h-[1.2em] ${markClassName}`} /><span>Profcaria</span></span>;
+/** @deprecated Visible Profcaria branding is now the text-only wordmark. */
+export function ProfcariaBadge({ className = '' }: Pick<LogoProps, 'className' | 'markClassName'>) {
+  return <Wordmark className={className} />;
+}
+
+export default function ProfcariaLogo({ className = '', variant = 'display', style }: LogoProps) {
+  return <Wordmark className={className} variant={variant} style={style} />;
 }

@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Briefcase, ChevronDown, Search, Check, Loader2 } from 'lucide-react';
-import { ProfcariaBadge } from '@/app/components/brand/ProfcariaLogo';
+import ProfcariaLogo from '@/app/components/brand/ProfcariaLogo';
 import { PixelBackground } from '@/app/components/PixelBackground';
 
 // Create a client-side Supabase client for reading the OAuth session
@@ -253,7 +253,7 @@ export default function AuthCallbackPage() {
             <div className="relative flex min-h-dvh overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)]">
                 <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
                 <div className="relative z-10 m-auto flex flex-col items-center rounded-[28px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/86 px-10 py-9 shadow-[var(--shadow-glow)] backdrop-blur-sm">
-                    <ProfcariaBadge className="mb-5 h-12 w-12 rounded-2xl" />
+                    <ProfcariaLogo className="mb-5 text-2xl" />
                     <Loader2 className="mb-4 animate-spin text-[var(--accent-primary)]" size={32} />
                     <p className="text-sm font-bold uppercase tracking-widest text-[var(--text-secondary)]">Authenticating...</p>
                 </div>
@@ -267,7 +267,7 @@ export default function AuthCallbackPage() {
             <div className="relative flex min-h-dvh overflow-hidden bg-[var(--bg-primary)] p-4 text-[var(--text-primary)]">
                 <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
                 <div className="relative z-10 m-auto flex max-w-md flex-col items-center gap-4 rounded-[28px] border border-[var(--border-secondary)] bg-[var(--surface-raised)]/90 p-8 text-center shadow-[var(--shadow-glow)] backdrop-blur-sm">
-                    <ProfcariaBadge className="h-12 w-12 rounded-2xl" />
+                    <ProfcariaLogo className="text-2xl" />
                     <p className="text-lg font-bold">{errorMessage}</p>
                     <button onClick={() => router.push('/')} className="rounded-xl bg-[var(--accent-primary)] px-6 py-3 text-sm font-bold uppercase tracking-widest text-[var(--text-inverse)] transition hover:brightness-105">
                         Back to Home
@@ -282,7 +282,7 @@ export default function AuthCallbackPage() {
         <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[var(--bg-primary)] px-4 py-8 text-[var(--text-primary)]">
             <PixelBackground isDark={isDark} className="pointer-events-none absolute inset-0" />
             <div className="relative z-10 w-full max-w-md rounded-[2rem] border border-[var(--border-primary)] bg-[var(--surface-raised)]/92 p-8 shadow-[var(--shadow-glow)] backdrop-blur-sm">
-                <ProfcariaBadge className="mx-auto mb-5 h-12 w-12 rounded-2xl" />
+                <ProfcariaLogo className="mx-auto mb-5 text-2xl" />
                 <h2 className="text-2xl font-black tracking-tight text-center mb-2">Complete your company details</h2>
                 <p className={`text-center text-sm mb-8 ${isDark ? 'text-neutral-400' : 'text-neutral-500'}`}>
                     Add the organisation details candidates should recognise.

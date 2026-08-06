@@ -35,7 +35,7 @@ export default function HomeAccountMenu({ onSignIn }: { onSignIn: () => void }) 
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  if (!account) return <button onClick={onSignIn} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>;
+  if (!account) return <button onClick={onSignIn} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-3 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6 sm:text-[11px] sm:tracking-[0.15em]">Sign in</button>;
 
   const profile = account.profile || {};
   const personName = [profile.firstName, profile.lastName].filter(Boolean).join(' ').trim();

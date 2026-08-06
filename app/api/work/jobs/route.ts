@@ -148,6 +148,10 @@ export async function POST(request: Request) {
     preferred_skills: cleanTags(screening.preferredSkills),
     required_document_kinds: cleanTags(screening.requiredDocumentKinds, 10),
     require_verified_history: Boolean(screening.requireVerifiedHistory),
+    automatic_disposition_mode: screening.automaticDispositionMode === 'knockout_only' ? 'knockout_only' : 'none',
+    send_automatic_rejection_email: screening.automaticDispositionMode === 'knockout_only' && Boolean(screening.sendAutomaticRejectionEmail),
+    rejection_delay_minutes: Number.isInteger(screening.rejectionDelayMinutes) ? Math.max(0, Math.min(10_080, screening.rejectionDelayMinutes)) : 60,
+    enc_rejection_template: cleanText(screening.rejectionTemplate, 5_000) ? encryptData(cleanText(screening.rejectionTemplate, 5_000)) : null,
     human_review_required: true,
     configured_by: session.uid,
   });

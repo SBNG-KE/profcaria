@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   applicationName: 'Profcaria',
   keywords: ['Profcaria', 'Kenya jobs', 'jobs in Kenya', 'internships Kenya', 'hiring Kenya', 'ATS'],
   icons: {
-    icon: [{ url: '/icon.png?v=20260805', type: 'image/png', sizes: '512x512' }],
-    shortcut: '/icon.png?v=20260805',
-    apple: [{ url: '/apple-touch-icon.png?v=20260805', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/icon.png?v=20260806b', type: 'image/png', sizes: '512x512' }],
+    shortcut: '/favicon.ico?v=20260806b',
+    apple: [{ url: '/apple-touch-icon.png?v=20260806b', sizes: '180x180', type: 'image/png' }],
   },
   openGraph: {
     type: 'website', url: appUrl, siteName: 'Profcaria', title: 'Profcaria — Jobs in Kenya',

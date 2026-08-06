@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Profcaria">
+  <defs>
+    <clipPath id="circle"><circle cx="256" cy="256" r="232" /></clipPath>
+  </defs>
+  <g clip-path="url(#circle)">
+    <rect width="512" height="512" fill="#F4F0E6" />
+    <path d="M0 0H512V246C470 226 428 226 386 246S302 266 260 246 176 226 134 246 50 266 0 246Z" fill="#143D33" />
+  </g>
+  <circle cx="256" cy="256" r="232" fill="none" stroke="#143D33" stroke-width="16" />
+</svg>

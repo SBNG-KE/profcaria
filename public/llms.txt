@@ -1,21 +1,16 @@
 # Profcaria
 
-> Applying for jobs, made simple.
+Profcaria is Kenya's public register of currently open jobs. Public job information may be searched, indexed and used by assistants to help people find suitable work.
 
-Profcaria is a Kenya-only jobs platform. Public pages contain currently open vacancies; jobs automatically disappear when their closing time or application limit is reached.
+## Public job sources
 
-## Machine-readable jobs
-
-- JSON feed: https://www.profcaria.com/api/jobs
-- Job pages: https://www.profcaria.com/jobs/{job-id}
+- Homepage and job search: https://www.profcaria.com/
+- Structured JSON API: https://www.profcaria.com/api/jobs
+- JSON Feed: https://www.profcaria.com/jobs/feed
 - Sitemap: https://www.profcaria.com/sitemap.xml
 
-Each job page includes Schema.org JobPosting JSON-LD. Locations are in Kenya, including Kenya-restricted remote work. Currency is Kenyan shillings (KES).
+The JSON API supports `q`, `category`, `locationType`, and `employmentType` query parameters. A vacancy disappears automatically after its closing time or application limit is reached.
 
-## Application rules
+## Privacy boundary
 
-Job seekers may apply without creating an account. An account is required only to track applications or reply to a company in Profcaria chat. Closed, paused, filled, cancelled, expired, link-only and full jobs are excluded from the public feed.
-
-## Safety
-
-Company accounts are required to publish. Links and documents are inspected before release. Reports may be filed against jobs, companies, accounts, messages and documents.
+Accounts, applications, recruiter workspaces, messages, uploaded documents, billing and internal hiring decisions are private. They must not be crawled or inferred from the public job sources.

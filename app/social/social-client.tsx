@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Archive, BellOff, ChevronDown, EllipsisVertical, LockKeyhole, MessageCirclePlus, Search, Send, Settings2, Smile, Sparkles, UsersRound } from 'lucide-react';
-import { ProfcariaBadge } from '@/app/components/brand/ProfcariaLogo';
+import ProfcariaLogo from '@/app/components/brand/ProfcariaLogo';
 
 type Conversation = {
   conversation_id: string;
@@ -89,7 +89,7 @@ export default function SocialClient() {
     <main className="min-h-screen bg-[#FBF8F0] text-[#143D33] selection:bg-[#F49BD5]/50">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside className="hidden w-[84px] flex-col items-center border-r border-[#F4F0E6] bg-white py-7 lg:flex">
-          <ProfcariaBadge className="h-11 w-11 rounded-2xl" />
+          <ProfcariaLogo className="text-base [writing-mode:vertical-rl]" />
           <nav className="mt-12 flex flex-1 flex-col gap-5 text-[#587565]">
             <button className="grid h-11 w-11 place-items-center rounded-xl bg-[#F49BD5] text-[#143D33]" aria-label="Messages"><MessageCirclePlus size={20} /></button>
             <button className="grid h-11 w-11 place-items-center rounded-xl hover:bg-[#FBF8F0]" aria-label="Groups"><UsersRound size={20} /></button>

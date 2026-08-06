@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
   const aiCrawlers = ['GPTBot','ChatGPT-User','OAI-SearchBot','Google-Extended','ClaudeBot','Claude-Web','anthropic-ai','PerplexityBot','Applebot-Extended','Meta-ExternalAgent','CCBot'];
   return {
     rules: [
-      { userAgent: '*', allow: ['/', '/jobs/', '/api/jobs'], disallow: privatePaths },
-      { userAgent: aiCrawlers, allow: ['/', '/jobs/', '/api/jobs'], disallow: privatePaths },
+      { userAgent: '*', allow: ['/', '/jobs/', '/jobs/feed', '/api/jobs'], disallow: privatePaths },
+      { userAgent: aiCrawlers, allow: ['/', '/jobs/', '/jobs/feed', '/api/jobs'], disallow: privatePaths },
     ],
     sitemap: 'https://www.profcaria.com/sitemap.xml',
     host: 'https://www.profcaria.com',

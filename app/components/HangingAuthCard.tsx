@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Building2, Check, Eye, EyeOff, UserRound } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { PixelBackground } from './PixelBackground';
-import ProfcariaLogo, { ProfcariaMark } from './brand/ProfcariaLogo';
+import ProfcariaLogo from './brand/ProfcariaLogo';
 import HangingSecurityCard from './HangingSecurityCard';
 
 const supabaseAuth = createClient(
@@ -188,7 +188,7 @@ export default function HangingAuthCard({ isOpen, onClose, initialScreen = 'auth
         <button onClick={onClose} className="absolute right-5 top-5 z-20 grid h-9 w-9 place-items-center border border-[var(--border-primary)] text-xl text-[var(--text-secondary)] transition-colors hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)]" aria-label="Close">×</button>
 
         <aside className="relative z-10 hidden min-h-0 flex-col justify-between overflow-hidden border-r border-[var(--border-primary)] bg-[var(--accent-primary)] p-10 text-[var(--text-inverse)] lg:flex xl:p-12">
-          <ProfcariaMark className="h-24 w-20" />
+          <ProfcariaLogo className="text-3xl text-[var(--text-inverse)]" />
           <div><p className="font-editorial text-6xl leading-[0.88]">{content.asideTitle}</p><p className="mt-7 max-w-xs text-sm leading-7 opacity-80">{content.asideBody}</p></div>
           <p className="text-[9px] font-bold uppercase tracking-[0.28em] opacity-65">One login · permissioned workspaces</p>
         </aside>

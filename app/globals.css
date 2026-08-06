@@ -102,19 +102,61 @@ body {
 
 ::selection { background: var(--accent-primary); color: var(--text-inverse); }
 
-.profcaria-mark {
+.profcaria-wordmark {
   position: relative;
-  overflow: hidden;
-  background: currentColor;
-  border-radius: 50% 50% 0 0;
+  display: inline-flex;
+  align-items: baseline;
+  width: fit-content;
+  padding-bottom: 0.22em;
+  line-height: 1;
 }
 
-.profcaria-mark::after {
-  content: '';
+.profcaria-wordmark-wave {
   position: absolute;
-  inset: 0.15em;
-  border: 1px solid color-mix(in srgb, var(--text-inverse) 48%, transparent);
-  border-radius: 50% 50% 0 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0.24em;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.profcaria-wordmark-wave path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-width: 1.35;
+  vector-effect: non-scaling-stroke;
+}
+
+.profcaria-wordmark-wave-primary {
+  stroke: var(--accent-primary);
+  stroke-dasharray: 0.56 0.44;
+  animation: profcaria-wave-forward 5.8s linear infinite, profcaria-wave-breathe 3.7s ease-in-out infinite;
+}
+
+.profcaria-wordmark-wave-secondary {
+  stroke: var(--accent-secondary);
+  stroke-dasharray: 0.38 0.62;
+  opacity: 0.76;
+  animation: profcaria-wave-back 7.4s linear infinite, profcaria-wave-breathe 4.9s ease-in-out -1.6s infinite reverse;
+}
+
+@keyframes profcaria-wave-forward {
+  to { stroke-dashoffset: -1; }
+}
+
+@keyframes profcaria-wave-back {
+  to { stroke-dashoffset: 1; }
+}
+
+@keyframes profcaria-wave-breathe {
+  0%, 100% { transform: translateY(0) scaleY(0.72); opacity: 0.55; }
+  50% { transform: translateY(-0.08em) scaleY(1.18); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profcaria-wordmark-wave path { animation: none; }
 }
 
 .register-panel {
