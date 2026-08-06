@@ -100,48 +100,48 @@ export default function LandingPageClient() {
       </header>
 
       <section className="border-b border-[var(--border-primary)]">
-        <div className="mx-auto grid max-w-[1600px] lg:min-h-[700px] lg:grid-cols-[minmax(0,1.42fr)_minmax(360px,.58fr)]">
-          <div className="flex flex-col justify-between px-5 py-16 sm:px-9 sm:py-20 lg:px-14 lg:py-24">
+        <div className="mx-auto grid max-w-[1600px] lg:min-h-[390px] lg:grid-cols-[minmax(0,1.42fr)_minmax(330px,.58fr)]">
+          <div className="flex flex-col px-5 py-10 sm:px-9 sm:py-12 lg:px-14 lg:py-12">
             <div>
-              <p className="mb-10 flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.28em] text-[var(--text-secondary)]">
+              <p className="mb-5 flex items-center gap-4 text-[9px] font-semibold uppercase tracking-[0.25em] text-[var(--text-secondary)]">
                 <span className="h-px w-10 bg-current" /> Kenya&rsquo;s open job register
               </p>
-              <h1 className="font-editorial max-w-[980px] text-[clamp(4.4rem,9.2vw,10.4rem)] font-medium leading-[0.78] tracking-[-0.07em]">
-                Applying for jobs,<br /><span className="italic">made simple.</span>
+              <h1 className="font-editorial max-w-[820px] text-[clamp(3rem,5.4vw,6.4rem)] font-medium leading-[0.82] tracking-[-0.065em]">
+                Applying for jobs, <span className="italic">made simple.</span>
               </h1>
-              <p className="mt-10 max-w-xl text-base leading-7 text-[var(--text-secondary)] sm:text-lg sm:leading-8">
+              <p className="mt-6 max-w-2xl text-sm leading-6 text-[var(--text-secondary)] sm:text-base">
                 Find current work in Kenya, answer only what the company needs, and submit. No adverts. No account required until you need to continue a conversation.
               </p>
             </div>
-            <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-[var(--border-primary)] pt-6">
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-[var(--border-primary)] pt-5">
               <a href="#jobs" className="group inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em]">Browse open roles <ArrowDown size={15} className="transition group-hover:translate-y-1" /></a>
               <span className="text-sm text-[var(--text-muted)]">Only genuinely open vacancies appear.</span>
             </div>
           </div>
 
-          <aside className="register-panel relative min-h-[500px] overflow-hidden bg-[var(--accent-primary)] px-8 py-12 text-[var(--text-inverse)] sm:px-12 lg:min-h-full lg:px-14 lg:py-16" aria-label="Open job count">
+          <aside className="register-panel relative min-h-[300px] overflow-hidden bg-[var(--accent-primary)] px-8 py-8 text-[var(--text-inverse)] sm:px-10 lg:min-h-full lg:px-12 lg:py-9" aria-label="Open job count">
             <div className="relative z-10 flex h-full flex-col justify-between">
-              <div className="flex items-center justify-between border-b border-current/20 pb-5 text-[10px] font-semibold uppercase tracking-[0.24em]">
+              <div className="flex items-center justify-between border-b border-current/20 pb-4 text-[9px] font-semibold uppercase tracking-[0.22em]">
                 <span>Current register</span><span>Kenya</span>
               </div>
-              <div className="relative flex min-h-[320px] flex-1 items-center justify-center py-14">
+              <div className="relative flex min-h-[190px] flex-1 items-center justify-center py-7">
                 <div className="register-arch" aria-hidden="true" />
                 <div className="relative z-10 text-center">
-                  <p className="font-editorial text-[clamp(7rem,13vw,12rem)] font-medium leading-none tracking-[-0.08em]">{loading ? '—' : jobs.length.toString().padStart(2, '0')}</p>
+                  <p className="font-editorial text-[clamp(5rem,8vw,8rem)] font-medium leading-none tracking-[-0.08em]">{loading ? '—' : jobs.length.toString().padStart(2, '0')}</p>
                   <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.23em] opacity-70">Open roles</p>
                 </div>
               </div>
-              <p className="max-w-sm border-t border-current/20 pt-6 text-sm leading-6 opacity-80">A vacancy leaves the public register when its closing time or application limit is reached.</p>
+              <p className="max-w-sm border-t border-current/20 pt-4 text-xs leading-5 opacity-75">Vacancies leave automatically when their closing time or application limit is reached.</p>
             </div>
           </aside>
         </div>
       </section>
 
-      <section id="jobs" className="mx-auto max-w-[1600px] px-5 py-20 sm:px-9 sm:py-24 lg:px-14 lg:py-28">
-        <div className="grid gap-10 border-b border-[var(--border-primary)] pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.58fr)] lg:items-end">
+      <section id="jobs" className="mx-auto max-w-[1600px] px-5 py-10 sm:px-9 sm:py-12 lg:px-14 lg:py-14">
+        <div className="grid gap-5 border-b border-[var(--border-primary)] pb-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,.58fr)] lg:items-end">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-[var(--text-muted)]">Available now</p>
-            <h2 className="font-editorial mt-3 text-[clamp(3.4rem,6vw,6.5rem)] font-medium leading-none tracking-[-0.055em]">The open register</h2>
+            <h2 className="font-editorial mt-2 text-[clamp(2.6rem,4vw,4.5rem)] font-medium leading-none tracking-[-0.05em]">The open register</h2>
           </div>
           <p className="max-w-xl text-sm leading-7 text-[var(--text-secondary)] lg:justify-self-end">Search by role, skill, company or place. Every result below remains open to applications at the moment it is shown.</p>
         </div>

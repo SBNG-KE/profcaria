@@ -10,6 +10,7 @@ import {
   type OrganizationRole,
 } from '@/lib/profcaria-organizations';
 import { validateProfcariaUsername } from '@/lib/profcaria-username';
+import { hashForIndex } from '@/lib/security';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
@@ -133,11 +134,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const session = await getProfcariaSession();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const input = await request.json().catch(() => null) as { organizationId?: unknown; username?: unknown; role?: unknown } | null;
+  const input = await request.json().catch(() => null) as { organizationId?: unknown; email?: unknown; username?: unknown; role?: unknown } | null;
   const organizationId = typeof input?.organizationId === 'string' ? input.organizationId : '';
-  const usernameResult = validateProfcariaUsername(input?.username);
+  const email = typeof input?.email === 'string' ? input.email.trim().toLowerCase() : '';
+  const validEmail = /^\S+@\S+\.\S+$/.test(email);
+  const usernameResult = email ? null : validateProfcariaUsername(input?.username);
   const role = typeof input?.role === 'string' && ROLES.includes(input.role as OrganizationRole) ? input.role as OrganizationRole : 'member';
-  if (!organizationId || !usernameResult.valid) return NextResponse.json({ error: usernameResult.error || 'Organisation required.' }, { status: 400 });
+  if (!organizationId || (!validEmail && !usernameResult?.valid)) {
+    return NextResponse.json({ error: email ? 'Enter a valid work email.' : usernameResult?.error || 'Organisation required.' }, { status: 400 });
+  }
 
   const actor = await getOrganizationMembership(organizationId, session.uid);
   if (!actor || actor.status !== 'active' || !PEOPLE_MANAGER_ROLES.includes(actor.role)) {
@@ -145,9 +150,14 @@ export async function POST(request: Request) {
   }
   if (!canAssignRole(actor.role, role)) return NextResponse.json({ error: 'You cannot assign that organisation role.' }, { status: 403 });
 
-  const { data: account, error: accountError } = await supabaseAdmin.schema('profcaria').from('accounts')
-    .select('id, email_index, username').eq('username', usernameResult.username).eq('status', 'active').maybeSingle();
-  if (accountError || !account) return NextResponse.json({ error: 'No active Profcaria account has that exact username.' }, { status: 404 });
+  let accountQuery = supabaseAdmin.schema('profcaria').from('accounts').select('id, email_index, username').eq('status', 'active');
+  accountQuery = validEmail
+    ? accountQuery.eq('email_index', hashForIndex(email))
+    : accountQuery.eq('username', usernameResult!.username);
+  const { data: account, error: accountError } = await accountQuery.maybeSingle();
+  if (accountError || !account) {
+    return NextResponse.json({ error: validEmail ? 'No active Profcaria account uses that email.' : 'No active Profcaria account has that username.' }, { status: 404 });
+  }
   if (account.id === session.uid) return NextResponse.json({ error: 'You already belong to this organisation.' }, { status: 409 });
   const existingMembership = await getOrganizationMembership(organizationId, account.id);
   if (existingMembership?.status === 'active') return NextResponse.json({ error: 'That person is already an active member.' }, { status: 409 });
@@ -169,7 +179,7 @@ export async function POST(request: Request) {
     console.error('[PROFCARIA] organisation invitation failed', error);
     return NextResponse.json({ error: 'The invitation could not be created.' }, { status: error?.code === '23505' ? 409 : 500 });
   }
-  return NextResponse.json({ invitation: { ...invitation, accountId: account.id, username: account.username } }, { status: 201 });
+  return NextResponse.json({ invitation: { ...invitation, accountId: account.id, email: validEmail ? email : undefined, username: account.username } }, { status: 201 });
 }
 
 export async function PATCH(request: Request) {
