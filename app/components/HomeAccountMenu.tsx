@@ -13,7 +13,7 @@ type Account = {
   profile?: { firstName?: string; lastName?: string; companyName?: string };
 };
 
-export default function HomeAccountMenu({ onJoin, onSignIn }: { onJoin: () => void; onSignIn: () => void }) {
+export default function HomeAccountMenu({ onSignIn }: { onSignIn: () => void }) {
   const [account, setAccount] = useState<Account | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [messagesOpen, setMessagesOpen] = useState(false);
@@ -35,10 +35,7 @@ export default function HomeAccountMenu({ onJoin, onSignIn }: { onJoin: () => vo
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  if (!account) return <>
-    <button onClick={onJoin} className="hidden text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-primary)] transition hover:text-[var(--accent-primary)] md:block">Join</button>
-    <button onClick={onSignIn} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>
-  </>;
+  if (!account) return <button onClick={onSignIn} className="border border-[var(--accent-primary)] bg-[var(--accent-primary)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-[var(--text-inverse)] transition hover:bg-[var(--accent-strong)] sm:px-6">Sign in</button>;
 
   const profile = account.profile || {};
   const personName = [profile.firstName, profile.lastName].filter(Boolean).join(' ').trim();
